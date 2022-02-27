@@ -820,6 +820,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"uefi_deep_legacy_scan")) {
             GlobalConfig.DeepLegacyScan = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"dxe_driver_rescan")) {
+            GlobalConfig.DxeDriverRescan = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"scan_delay") && (TokenCount == 2)) {
             HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }

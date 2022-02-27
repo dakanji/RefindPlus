@@ -1,5 +1,12 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `DxeDriverRescan` Feature
+  * Controls scanning for newly revealed DXE drivers when connecting handles
+    - Switch on or off with a new `dxe_driver_rescan` configuration token
+  * This was previously done by default but may negatively impact loading speed
+  * Should only be activated when specifically required
+    - Should not be required on most firmware
+  * This option currently always disabled on Apple firmware
 - Adds `HaltSeconds` Function
   * As `PauseSeconds` but does not terminate on keypress
 - Improves `TransientBoot` Feature

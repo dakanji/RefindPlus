@@ -172,6 +172,20 @@
 #
 #disable_compat_check
 
+# Check to see if it is possible to dispatch additional DXE drivers.
+# The Controller/Handle connection process may somethings reveal new
+# DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
+# automatically went into a loop to install such revealed DXE drivers
+# until all such were installed. This loop and installation may result
+# in unwanted drivers being installed and also slows the loading speed
+# while not being required on most types of firmware. Hence, an option
+# to skip this process is desirable when running most types of firmware
+# NB: This setting is disabled whenever Apple firmware is detected.
+#
+# Inactive when commented out (Skips scanning for revealed DXE drivers)
+#
+#dxe_driver_rescan
+
 # RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
 # volumes. Howver, wWhen this token is active (and the "ignore_hidden_icons"
 # token is not) RefindPlus will also scan "external" volumes for these icons.

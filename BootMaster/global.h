@@ -402,6 +402,7 @@ typedef struct {
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;
     BOOLEAN           DeepLegacyScan;
+    BOOLEAN           DxeDriverRescan;
     BOOLEAN           EnableAndLockVMX;
     BOOLEAN           FoldLinuxKernels;
     BOOLEAN           EnableMouse;

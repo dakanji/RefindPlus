@@ -87,6 +87,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
+    /* DxeDriverRescan = */ FALSE,
     /* EnableAndLockVMX = */ FALSE,
     /* FoldLinuxKernels = */ TRUE,
     /* EnableMouse = */ FALSE,
@@ -1813,11 +1814,9 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      TextRenderer:- '%s'", OffsetNext, GlobalConfig.TextRenderer ? L"Active" : L"Inactive");
 
     LOG_MSG("%s      ProtectNVRAM:- ",   OffsetNext);
-
     (!AppleFirmware                                                          )
         ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
-
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,
@@ -1828,6 +1827,10 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
+    LOG_MSG("%s      DxeDriverRescan:- ",   OffsetNext);
+    (AppleFirmware                                                           )
+        ? LOG_MSG("'Disabled'"                                               )
+        : LOG_MSG("'%s'", GlobalConfig.DxeDriverRescan ? L"Active" : L"Inactive");
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI

@@ -44,7 +44,6 @@ extern EFI_STATUS AcquireGOP (VOID);
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
-//         Technically Not Needed
 extern EFI_STATUS OcConnectDrivers (VOID);
 #endif
 
@@ -628,11 +627,12 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     CHAR16  *MsgStr = NULL;
     #endif
 
-    // First Pass Driver Connection
     // DA-TAG: Limit to TianoCore
-    //         Technically Not Needed
     #ifdef __MAKEWITH_TIANO
-    OcConnectDrivers();
+    if (GlobalConfig.DxeDriverRescan) {
+        // First Pass Driver Connection
+        OcConnectDrivers();
+    }
     #endif
 
     do {
@@ -644,7 +644,8 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
-        Status = gDS->Dispatch();
+        // Forces 'EFI_NOT_FOUND' if 'DxeDriverRescan' is not enabled.
+        Status = (GlobalConfig.DxeDriverRescan) ? gDS->Dispatch() : EFI_NOT_FOUND;
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
@@ -660,7 +661,6 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
             MY_FREE_POOL(MsgStr);
         }
         #endif
-
     } while (!EFI_ERROR(Status));
 
     #if REFIT_DEBUG > 0
