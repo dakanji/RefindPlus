@@ -1088,6 +1088,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"write_systemd_vars")) {
             GlobalConfig.WriteSystemdVars = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"unicode_collation")) {
+            GlobalConfig.UnicodeCollation = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"enable_mouse")) {
             GlobalConfig.EnableMouse = HandleBoolean (TokenList, TokenCount);
             if (GlobalConfig.EnableMouse) {

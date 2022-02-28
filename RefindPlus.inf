@@ -114,6 +114,8 @@
     RP_ApfsLib
 # For SupplyNVME
     NvmExpressLib
+# For UnicodeCollationEng
+    OcUnicodeCollationEngGenericLib
 
 [LibraryClasses.AARCH64]
     BaseStackCheckLib

@@ -120,6 +120,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* WriteSystemdVars = */ FALSE,
+    /* UnicodeCollation = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,

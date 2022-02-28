@@ -18,6 +18,10 @@
   * This option currently always disabled on Apple firmware
 - Adds `HaltSeconds` Function
   * As `PauseSeconds` but does not terminate on keypress
+- Fixes Unicode Collation
+  * Now checks for and uses Unicode Collation Protocol instances that support English
+  * Previously simply selected the first instance found (Inherited)
+  * This should allow proper support for languages using unicode text
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances
 - Improves `DirectBoot` Feature

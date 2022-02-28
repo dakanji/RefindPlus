@@ -97,6 +97,8 @@
     SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 # For SupplyNVME
     NvmExpressLib|RefindPlusPkg/Library/NvmExpressLib/NvmExpressLib.inf
+# For UnicodeCollationEng
+    OcUnicodeCollationEngGenericLib|OpenCorePkg/Library/OcUnicodeCollationEngLib/OcUnicodeCollationEngGenericLib.inf
 
 
 [LibraryClasses.AARCH64]

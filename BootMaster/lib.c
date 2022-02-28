@@ -3319,57 +3319,47 @@ VOID DirIterOpen (
     DirIter->LastFileInfo = NULL;
 }
 
-#ifndef __MAKEWITH_GNUEFI
-EFI_UNICODE_COLLATION_PROTOCOL *mUnicodeCollation = NULL;
+#if defined(__MAKEWITH_TIANO)
+EFI_UNICODE_COLLATION_PROTOCOL * OcUnicodeCollationEngInstallProtocol (IN BOOLEAN  Reinstall);
+#endif
 
 static
-EFI_STATUS InitializeUnicodeCollationProtocol (VOID) {
-   EFI_STATUS  Status;
-
-   if (mUnicodeCollation != NULL) {
-      return EFI_SUCCESS;
-   }
-
-   //
-   // BUGBUG: Proper impelmentation is to locate all Unicode Collation Protocol
-   // instances first and then select one which support English language.
-   // Current implementation just pick the first instance.
-   //
-   Status = REFIT_CALL_3_WRAPPER(
-       gBS->LocateProtocol,
-       &gEfiUnicodeCollation2ProtocolGuid,
-       NULL,
-       (VOID **) &mUnicodeCollation
-   );
-   if (EFI_ERROR(Status)) {
-       Status = REFIT_CALL_3_WRAPPER(
-           gBS->LocateProtocol,
-           &gEfiUnicodeCollationProtocolGuid,
-           NULL,
-           (VOID **) &mUnicodeCollation
-       );
-   }
-
-   return Status;
-}
-
-static
-BOOLEAN MetaiMatch (
+BOOLEAN RP_MetaiMatch (
     IN CHAR16 *String,
     IN CHAR16 *Pattern
 ) {
-   if (!mUnicodeCollation) {
-      InitializeUnicodeCollationProtocol();
-   }
-   if (mUnicodeCollation) {
-       return mUnicodeCollation->MetaiMatch (mUnicodeCollation, String, Pattern);
-   }
+#if defined (__MAKEWITH_GNUEFI)
+    return MetaiMatch (String, Pattern);
+#elif defined(__MAKEWITH_TIANO)
+    static EFI_UNICODE_COLLATION_PROTOCOL *UnicodeCollationEng = NULL;
 
-   // Should not happen
-   return FALSE;
-}
+    if (!UnicodeCollationEng) {
+        UnicodeCollationEng = OcUnicodeCollationEngInstallProtocol (GlobalConfig.UnicodeCollation);
+    }
+    if (UnicodeCollationEng) {
+        return UnicodeCollationEng->MetaiMatch (UnicodeCollationEng, String, Pattern);
+    }
 
+    // DA-TAG: Fallback on original inadequate upstream implementation
+    //         Should not get here when support is present
+    EFI_STATUS Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol,
+        &gEfiUnicodeCollation2ProtocolGuid,
+        NULL,
+        (VOID **) &UnicodeCollationEng
+    );
+    if (EFI_ERROR(Status)) {
+        REFIT_CALL_3_WRAPPER(
+            gBS->LocateProtocol,
+            &gEfiUnicodeCollationProtocolGuid,
+            NULL,
+            (VOID **) &UnicodeCollationEng
+        );
+    }
+
+    return FALSE;
 #endif
+} // static BOOLEAN RP_MetaiMatch()
 
 BOOLEAN DirIterNext (
     IN  OUT REFIT_DIR_ITER  *DirIter,
@@ -3377,9 +3367,10 @@ BOOLEAN DirIterNext (
     IN      CHAR16          *FilePattern OPTIONAL,
     OUT     EFI_FILE_INFO  **DirEntry
 ) {
-    BOOLEAN  KeepGoing = TRUE;
     UINTN    i;
     CHAR16  *OnePattern;
+    BOOLEAN  TestMetai;
+    BOOLEAN  KeepGoing = TRUE;
 
     MY_FREE_POOL(DirIter->LastFileInfo);
 
@@ -3412,16 +3403,24 @@ BOOLEAN DirIterNext (
             break;
         }
 
+        #if !defined (__MAKEWITH_GNUEFI) && !defined(__MAKEWITH_TIANO)
+        break;
+        #endif
+
         i = 0;
-        while (KeepGoing &&
+        while (
+            KeepGoing &&
             (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
         ) {
-           if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
-               KeepGoing = FALSE;
-           }
-           MY_FREE_POOL(OnePattern);
+            TestMetai = RP_MetaiMatch (
+                DirIter->LastFileInfo->FileName,
+                OnePattern
+            );
+            KeepGoing = (TestMetai) ? FALSE : TRUE;
+
+            MY_FREE_POOL(OnePattern);
         } // while
-   } while (KeepGoing && FilePattern);
+   } while (KeepGoing);
 
     *DirEntry = DirIter->LastFileInfo;
     return TRUE;

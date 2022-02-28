@@ -351,6 +351,16 @@
 #
 #uga_pass_through
 
+# RefindPlus previously simply picked and used the first Unicode Collation Protocol instance
+# it finds. This resulted in a lottery where such instances sometimes worked and sometimes
+# did not. The proper implementation process however is to first locate every instance
+# and select one that supports the English language. This has now been implemented.
+# NB: This functionality is only fully available on TianoCore Builds.
+#
+# Does not look for Unicode English support when commented out.
+#
+#unicode_collation
+
 
 ##--------------------------------------------------------------##
 ##                 AMENDED CONFIGURATION ITEMS                  ##

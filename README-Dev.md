@@ -18,6 +18,7 @@ However, the enhancements are not limited in scope to these units and may be of 
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without Native EFI on Macs.
 - Provides UGADraw on modern GOP based GPUs to permit booting legacy EfiBoot operating systems.
+- Provides improved support for languages that use unicode text
 - Emulates UEFI 2.3 on EFI 1.x units to permit running UEFI 2.x utilities on such units
 - Adds a debug version that provides extensive logging.
   * The release version is kept as an optimised version for day to day use.
@@ -49,7 +50,7 @@ RefindPlus will function with the rEFInd configuration file, `refind.conf`, but 
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below.
 
 ## Additional Functionality
-RefindPlus-Specific funtionality can be configured by adding the tokens below to a rEFInd configuration file.
+RefindPlus-Specific funtionality can be configured by adding the tokens below to a rEFInd configuration file. Additional information is provided in the sample RefindPlus configuration file.
 
 Token | Functionality
 ----- | -----
@@ -81,6 +82,7 @@ set_boot_args         |Allows setting arbitrary MacOS boot arguments
 text_renderer         |Provides a text renderer for text output when otherwise unavailable
 transient_boot        |Disables saving the last booted loader if not required
 uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
+unicode_collation     |Provides finetuned support for languages that use unicode text
 
 ## Extended Functionality
 In addition to the new functionality listed above, the following upsteam tokens have been extended:
