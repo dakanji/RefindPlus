@@ -311,7 +311,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         );
         if (EFI_ERROR(XStatus)) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
+            MsgStr = PoolPrint (L"Handle 0x%03X     - ERROR: %r", HexIndex, XStatus);
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -319,7 +319,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         }
         else if (HandleType == NULL) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
+            MsgStr = PoolPrint (L"Handle 0x%03X     - ERROR: Invalid Handle", HexIndex);
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -562,7 +562,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_INVALID_PARAMETER) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X - ERROR: Invalid Param%s",
+                            L"Handle 0x%03X     - ERROR: Invalid Param %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -571,7 +571,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X - WARN: %r%s",
+                            L"Handle 0x%03X     - WARN: %r %s",
                             HexIndex, XStatus, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

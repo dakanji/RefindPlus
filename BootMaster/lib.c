@@ -141,15 +141,15 @@ UINTN              DataVolumesCount        = 0;
 UINTN              HfsRecoveryCount        = 0;
 UINTN              VolumesCount            = 0;
 
-BOOLEAN            MediaCheck          = FALSE;
+BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScannedOnce         = FALSE;
+BOOLEAN            SkipSpacing         = FALSE;
 BOOLEAN            SelfVolSet          = FALSE;
 BOOLEAN            SelfVolRun          = FALSE;
-BOOLEAN            DoneHeadings        = FALSE;
-BOOLEAN            ScanMBR             = FALSE;
-BOOLEAN            SkipSpacing         = FALSE;
+BOOLEAN            MediaCheck          = FALSE;
 BOOLEAN            SingleAPFS          =  TRUE;
 BOOLEAN            ValidAPFS           =  TRUE;
+BOOLEAN            ScanMBR             = FALSE;
 
 #if REFIT_DEBUG > 0
 BOOLEAN            FirstVolume         =  TRUE;
@@ -182,6 +182,10 @@ extern BOOLEAN     LogNewLine;
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 // 68 KiB -- ReiserFS superblock begins at 64 KiB
 #define SAMPLE_SIZE 69632
+
+
+#define NAME_FIX(Name) FoundSubStr ((*Volume)->VolName, Name)) VolumeName = Name
+
 
 BOOLEAN egIsGraphicsModeEnabled (VOID);
 
@@ -276,7 +280,7 @@ CHAR16 * SplitDeviceString (
         if (FileName == NULL) {
             FileName = StrDuplicate (InString);
         }
-    } // if
+    }
 
     return FileName;
 } // static CHAR16* SplitDeviceString()
@@ -331,7 +335,7 @@ EFI_STATUS InitRefitLib (
         return EFI_LOAD_ERROR;
     }
 
-    // find the current directory
+    // Find the current directory
     DevicePathAsString = DevicePathToStr (SelfLoadedImage->FilePath);
     GlobalConfig.SelfDevicePath = FileDevicePath (
         SelfLoadedImage->DeviceHandle,
@@ -361,8 +365,8 @@ VOID UninitVolume (
             (*Volume)->RootDir = NULL;
         }
 
-        (*Volume)->DeviceHandle     = NULL;
         (*Volume)->BlockIO          = NULL;
+        (*Volume)->DeviceHandle     = NULL;
         (*Volume)->WholeDiskBlockIO = NULL;
     }
 } // static VOID UninitVolume()
@@ -374,8 +378,8 @@ VOID UninitVolumes (VOID) {
     UNINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
     UNINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
     UNINIT_VOLUMES(SystemVolumes,   SystemVolumesCount);
-    UNINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     UNINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
+    UNINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     UNINIT_VOLUMES(Volumes,         VolumesCount);
 } // static VOID UninitVolumes()
 
@@ -438,12 +442,12 @@ VOID ReinitVolumes (VOID) {
     REINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
     REINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
     REINIT_VOLUMES(SystemVolumes,   SystemVolumesCount);
-    REINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     REINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
+    REINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     REINIT_VOLUMES(Volumes,         VolumesCount);
 } // VOID ReinitVolumes()
 
-// called before running external programs to close open file handles
+// Called before running external programs to close open file handles
 VOID UninitRefitLib (VOID) {
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
@@ -469,7 +473,7 @@ VOID UninitRefitLib (VOID) {
     }
 } // VOID UninitRefitLib()
 
-// called after running external programs to re-open file handles
+// Called after running external programs to re-open file handles
 EFI_STATUS ReinitRefitLib (VOID) {
     EFI_STATUS Status;
 
@@ -693,6 +697,7 @@ EFI_STATUS EfivarSetRaw (
     VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
+    BOOLEAN      CheckMute = FALSE;
 
     BOOLEAN HybridLogger = FALSE;
     if (NativeLogger) {
@@ -707,9 +712,9 @@ EFI_STATUS EfivarSetRaw (
         !MyStriCmp (VariableName, L"HiddenLegacy") &&
         !MyStriCmp (VariableName, L"HiddenFirmware")
     ) {
-        MuteLogger = TRUE;
-        Status     = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_SET;
+        Status = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
+        MY_MUTELOGGER_OFF;
 
         if (!EFI_ERROR(Status)) {
             // Check for settings match
@@ -881,25 +886,23 @@ VOID SanitiseVolumeName (
     CHAR16 *VolumeName = NULL;
 
     if (Volume && *Volume && ((*Volume)->VolName)) {
-             if (FoundSubStr ((*Volume)->VolName, L"EFI System Partition")) VolumeName = L"EFI System Partition";
-        else if (FoundSubStr ((*Volume)->VolName, L"Whole Disk Volume")   ) VolumeName = L"Whole Disk Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"Unknown Volume")      ) VolumeName = L"Unknown Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"NTFS Volume")         ) VolumeName = L"NTFS Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"HFS+ Volume")         ) VolumeName = L"HFS+ Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"FAT Volume")          ) VolumeName = L"FAT Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"XFS Volume")          ) VolumeName = L"XFS Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"PreBoot")             ) VolumeName = L"PreBoot";
-        else if (FoundSubStr ((*Volume)->VolName, L"Ext4 Volume")         ) VolumeName = L"Ext4 Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"Ext3 Volume")         ) VolumeName = L"Ext3 Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"Ext2 Volume")         ) VolumeName = L"Ext2 Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"Btrfs Volume")        ) VolumeName = L"BTRFS Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"ReiserFS Volume")     ) VolumeName = L"ReiserFS Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"ISO-9660 Volume")     ) VolumeName = L"ISO-9660 Volume";
-        else if (FoundSubStr ((*Volume)->VolName, L"Basic Data Partition")) VolumeName = L"Basic Data Partition";
-
-        if (FoundSubStr ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
-            VolumeName = L"Microsoft Reserved Partition";
-        }
+        if (0);
+        else if (NAME_FIX(L"EFI System Partition"        );
+        else if (NAME_FIX(L"Whole Disk Volume"           );
+        else if (NAME_FIX(L"Unknown Volume"              );
+        else if (NAME_FIX(L"NTFS Volume"                 );
+        else if (NAME_FIX(L"HFS+ Volume"                 );
+        else if (NAME_FIX(L"FAT Volume"                  );
+        else if (NAME_FIX(L"XFS Volume"                  );
+        else if (NAME_FIX(L"PreBoot"                     );
+        else if (NAME_FIX(L"Ext4 Volume"                 );
+        else if (NAME_FIX(L"Ext3 Volume"                 );
+        else if (NAME_FIX(L"Ext2 Volume"                 );
+        else if (NAME_FIX(L"BTRFS Volume"                );
+        else if (NAME_FIX(L"ReiserFS Volume"             );
+        else if (NAME_FIX(L"ISO-9660 Volume"             );
+        else if (NAME_FIX(L"Basic Data Partition"        );
+        else if (NAME_FIX(L"Microsoft Reserved Partition");
     }
 
     if (VolumeName != NULL) {
@@ -2384,6 +2387,7 @@ VOID ScanVolumes (VOID) {
     UINT8                  *SectorBuffer2;
     CHAR16                 *RoleStr = NULL;
     CHAR16                 *PartType = NULL;
+    BOOLEAN                 CheckMute = FALSE;
     BOOLEAN                 CheckedAPFS;
     BOOLEAN                 DupFlag;
     EFI_GUID               *UuidList;
@@ -2406,7 +2410,7 @@ VOID ScanVolumes (VOID) {
     #endif
 
     if (!SelfVolRun) {
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
     }
     else {
         // Clear Volume Lists if not Scanning for Self Volume
@@ -2435,7 +2439,7 @@ VOID ScanVolumes (VOID) {
         &Handles
     );
     if (EFI_ERROR(Status)) {
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
@@ -2461,7 +2465,7 @@ VOID ScanVolumes (VOID) {
 
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
@@ -2498,7 +2502,7 @@ VOID ScanVolumes (VOID) {
         if (Volume == NULL) {
             MY_FREE_POOL(UuidList);
 
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
 
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
@@ -2588,12 +2592,14 @@ VOID ScanVolumes (VOID) {
 
             // Improve Volume Id
             if (FoundSubStr (PartType, L"Unknown")) {
-                     if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
+                if (0);
+                else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
                 else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
                 else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)";
 
                 // Split checks as '/FileVault' may be Core Storage
-                     if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS";
+                if (0);
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)  ) PartType = L"Mac Raid (ON)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff) ) PartType = L"Mac Raid (OFF)";
@@ -2789,7 +2795,7 @@ VOID ScanVolumes (VOID) {
     MY_FREE_POOL(Handles);
 
     if (!SelfVolSet || !SelfVolRun) {
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         #if REFIT_DEBUG > 0
         if (!SelfVolSet) {
@@ -2941,7 +2947,7 @@ VOID ScanVolumes (VOID) {
         VetSyncAPFS();
     }
 
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 } // VOID ScanVolumes()
 
 static
@@ -3204,7 +3210,7 @@ EFI_STATUS DirNextEntry (
         // Release pointer from last call
         MY_FREE_POOL(*DirEntry);
 
-        // read next directory entry
+        // Read next directory entry
         LastBufferSize = BufferSize = 256;
         Buffer         = AllocatePool (BufferSize);
         if (Buffer == NULL) {
@@ -3259,7 +3265,7 @@ EFI_STATUS DirNextEntry (
             break;
         }
 
-        // check for end of listing
+        // Check for end of listing
 
         if (BufferSize == 0) {
             // end of directory listing
@@ -3267,24 +3273,24 @@ EFI_STATUS DirNextEntry (
             break;
         }
 
-        // entry is ready to be returned
+        // Entry is ready to be returned
         *DirEntry = (EFI_FILE_INFO *) Buffer;
 
-        // filter results
+        // Filter results
         if (FilterMode == 1) {
-            // only return directories
+            // Only return directories
             if (((*DirEntry)->Attribute & EFI_FILE_DIRECTORY)) {
                 break;
             }
         }
         else if (FilterMode == 2) {
-            // only return files
+            // Only return files
             if (((*DirEntry)->Attribute & EFI_FILE_DIRECTORY) == 0) {
                 break;
             }
         }
         else {
-            // no filter or unknown filter -> return everything
+            // No filter or unknown filter -> return everything
             break;
         }
     } // for ;;
@@ -3787,10 +3793,10 @@ BOOLEAN FilenameIn (
 ) {
 
     CHAR16    *OneElement;
-    CHAR16    *TargetVolName  = NULL;
-    CHAR16    *TargetPath     = NULL;
-    CHAR16    *TargetFilename = NULL;
-    UINTN      i              = 0;
+    CHAR16    *TargetVolName  =  NULL;
+    CHAR16    *TargetPath     =  NULL;
+    CHAR16    *TargetFilename =  NULL;
+    UINTN      i              =     0;
     BOOLEAN    Found          = FALSE;
 
     if (Filename && List) {

@@ -495,13 +495,12 @@ extern UINTN                DataVolumesCount;
 extern UINTN                HfsRecoveryCount;
 
 extern BOOLEAN              SetSysTab;
+extern BOOLEAN              SingleAPFS;
 extern BOOLEAN              MuteLogger;
 extern BOOLEAN              NativeLogger;
 extern BOOLEAN              AppleFirmware;
-extern BOOLEAN              DetectedDevices;
 extern BOOLEAN              DevicePresence;
-extern BOOLEAN              MuteLogger;
-extern BOOLEAN              SingleAPFS;
+extern BOOLEAN              DetectedDevices;
 
 extern EFI_FILE            *SelfDir;
 extern EFI_FILE            *SelfRootDir;

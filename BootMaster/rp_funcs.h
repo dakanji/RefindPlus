@@ -8,6 +8,10 @@
 #ifndef _RP_FUNCS_H
 #define _RP_FUNCS_H
 
+// Control MuteLogger ... Especially Nested Instances
+#define MY_MUTELOGGER_SET if (!MuteLogger) CheckMute = MuteLogger = TRUE
+#define MY_MUTELOGGER_OFF if (CheckMute) CheckMute = MuteLogger = FALSE
+
 // Temp Dereference to NULL for Debugging
 #define MY_FAKE_FREE(Pointer)                 \
     do {                                      \

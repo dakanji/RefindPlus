@@ -90,8 +90,9 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
-    CHAR16   *MsgStr  = NULL;
-    EG_PIXEL  BGColor = COLOR_LIGHTBLUE;
+    CHAR16   *MsgStr    = NULL;
+    EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
+    BOOLEAN   CheckMute = FALSE;
 
     switch (CsrStatus) {
         // SIP "Cleared" Setting
@@ -171,10 +172,10 @@ VOID RecordgCsrStatus (
         );
         #endif
 
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         egDisplayMessage (MsgStr, &BGColor, CENTER);
         PauseSeconds (4);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         MY_FREE_POOL(MsgStr);
     }
@@ -287,11 +288,11 @@ VOID RotateCsrValue (VOID) {
 EFI_STATUS NormaliseCSR (VOID) {
     EFI_STATUS  Status;
     UINT32      OurCSR;
+    BOOLEAN     CheckMute = FALSE;
 
-    // Mute logging
-    MuteLogger = TRUE;
-    Status     = GetCsrStatus (&OurCSR);  // Get csr-active-config value
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_SET;
+    Status = GetCsrStatus (&OurCSR);  // Get csr-active-config value
+    MY_MUTELOGGER_OFF;
     // Restore logging
 
     if (EFI_ERROR(Status)) {

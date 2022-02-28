@@ -296,6 +296,7 @@ EFI_STATUS StartEFIImage (
     CHAR16            *EspGUID           = NULL;
     CHAR16            *MsgStr            = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
+    BOOLEAN            CheckMute         = FALSE;
 
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
@@ -334,11 +335,11 @@ EFI_STATUS StartEFIImage (
     #endif
 
     if (Verbose) {
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
     }
 
     MY_FREE_POOL(MsgStr);
@@ -760,8 +761,9 @@ VOID RebootIntoLoader (
     LOADER_ENTRY *Entry
 ) {
     EFI_STATUS  Status;
-    CHAR16     *TmpStr = L"Reboot into NVRAM Boot Option";
-    CHAR16     *MsgStr = NULL;
+    CHAR16     *TmpStr    = L"Reboot into NVRAM Boot Option";
+    CHAR16     *MsgStr    = NULL;
+    BOOLEAN     CheckMute = FALSE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
@@ -806,11 +808,11 @@ VOID RebootIntoLoader (
         LOG_MSG("\n\n");
         #endif
 
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         PauseForKey();
         MY_FREE_POOL(MsgStr);
@@ -1014,8 +1016,9 @@ VOID StartLoader (
 VOID StartTool (
     IN LOADER_ENTRY *Entry
 ) {
-    CHAR16 *MsgStr     = NULL;
-    CHAR16 *LoaderPath = NULL;
+    CHAR16  *MsgStr     =  NULL;
+    CHAR16  *LoaderPath =  NULL;
+    BOOLEAN  CheckMute  = FALSE;
 
     IsBoot        = FALSE;
     LoaderPath    = Basename (Entry->LoaderPath);
@@ -1047,12 +1050,16 @@ VOID StartTool (
 
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+            LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
             #endif
 
+            MY_MUTELOGGER_SET;
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            MY_MUTELOGGER_OFF;
+
             PauseForKey();
 
             MY_FREE_POOL(MsgStr);

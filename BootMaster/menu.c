@@ -1213,10 +1213,11 @@ VOID TextMenuStyle (
     IN UINTN              Function,
     IN CHAR16            *ParamText
 ) {
-    INTN  i;
-    UINTN MenuWidth;
-    UINTN ItemWidth;
-    UINTN MenuHeight;
+    INTN    i;
+    UINTN   MenuWidth;
+    UINTN   ItemWidth;
+    UINTN   MenuHeight;
+    BOOLEAN CheckMute = FALSE;
 
     static UINTN    MenuPosY;
     static CHAR16 **DisplayStrings;
@@ -1265,9 +1266,11 @@ VOID TextMenuStyle (
                 // DA-TAG: TODO - Review the above and possibly change other uses of 'SPrint'
                 DisplayStrings[i] = AllocateZeroPool (2 * sizeof (CHAR16));
                 DisplayStrings[i][0] = L' ';
-                MuteLogger = TRUE;
+
+                MY_MUTELOGGER_SET;
                 MergeStrings (&DisplayStrings[i], Screen->Entries[i]->Title, 0);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
+
                 if (StrLen (DisplayStrings[i]) > MenuWidth) {
                     DisplayStrings[i][MenuWidth - 1] = 0;
                 }
@@ -2071,14 +2074,15 @@ VOID PaintArrows (
     static EG_IMAGE *LeftBackground  = NULL;
     static EG_IMAGE *RightBackground = NULL;
     static BOOLEAN   LoadedArrows    = FALSE;
+    BOOLEAN          CheckMute       = FALSE;
 
     UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
 
     if (!LoadedArrows && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS)) {
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         LeftArrow  = GetIcon (&egemb_arrow_left,  L"arrow_left" );
         RightArrow = GetIcon (&egemb_arrow_right, L"arrow_right");
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         if (LeftArrow) {
             LeftBackground = egCropImage (

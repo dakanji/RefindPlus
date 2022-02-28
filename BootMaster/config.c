@@ -649,16 +649,17 @@ VOID ReadConfig (
     CHAR16           *TempStr  = NULL;
     CHAR16           *MsgStr   = NULL;
     UINTN             TokenCount, i;
+    BOOLEAN           CheckMute = FALSE;
 
     static BOOLEAN    AllowIncludes = TRUE;
 
     // Silence functions called from this
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
 
     #if REFIT_DEBUG > 0
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
     if (AllowIncludes) LOG_MSG("R E A D   C O N F I G");
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     #endif
 
     // Set a few defaults only if we are loading the default file.
@@ -703,9 +704,9 @@ VOID ReadConfig (
             L"  - WARN: Cannot Find Configuration File ... Loading Defaults!!"
         );
         #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         LOG_MSG("%s%s", OffsetNext, MsgStr);
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         #endif
         PrintUglyText (MsgStr, NEXTLINE);
         MY_FREE_POOL(MsgStr);
@@ -715,9 +716,9 @@ VOID ReadConfig (
                 L"  - WARN: Cannot Find Icons Directory ... Switching to Text Mode!!"
             );
             #if REFIT_DEBUG > 0
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
             LOG_MSG("%s%s", OffsetNext, MsgStr);
-            MuteLogger = TRUE;
+            MY_MUTELOGGER_SET;
             #endif
             PrintUglyText (MsgStr, NEXTLINE);
             MY_FREE_POOL(MsgStr);
@@ -726,9 +727,9 @@ VOID ReadConfig (
         }
 
         #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         LOG_MSG("\n");
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         #endif
 
         PauseForKey();
@@ -740,9 +741,9 @@ VOID ReadConfig (
     Status = RefitReadFile (SelfDir, FileName, &File, &i);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         LOG_MSG("\n");
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         #endif
 
         return;
@@ -768,7 +769,8 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"hideui")) {
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                     if (MyStriCmp (Flag, L"all")       ) GlobalConfig.HideUIFlags  = HIDEUI_FLAG_ALL;
+                if (0);
+                else if (MyStriCmp (Flag, L"all")       ) GlobalConfig.HideUIFlags  = HIDEUI_FLAG_ALL;
                 else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
                 else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
                 else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
@@ -788,9 +790,9 @@ VOID ReadConfig (
                     PrintUglyText (MsgStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    MuteLogger = FALSE;
+                    MY_MUTELOGGER_OFF;
                     LOG_MSG("%s%s", OffsetNext, MsgStr);
-                    MuteLogger = TRUE;
+                    MY_MUTELOGGER_SET;
                     #endif
 
                     PauseForKey();
@@ -882,7 +884,8 @@ VOID ReadConfig (
             // DA-TAG: Start Index is 1 Here
             for (i = 1; (i < TokenCount) && (i < NUM_TOOLS); i++) {
                 Flag = TokenList[i];
-                     if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[i - 1] = TAG_EXIT;
+                if (0);
+                else if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[i - 1] = TAG_EXIT;
                 else if (MyStriCmp (Flag, L"shell")           ) GlobalConfig.ShowTools[i - 1] = TAG_SHELL;
                 else if (MyStriCmp (Flag, L"gdisk")           ) GlobalConfig.ShowTools[i - 1] = TAG_GDISK;
                 else if (MyStriCmp (Flag, L"about")           ) GlobalConfig.ShowTools[i - 1] = TAG_ABOUT;
@@ -907,9 +910,9 @@ VOID ReadConfig (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MuteLogger = FALSE;
+                    MY_MUTELOGGER_OFF;
                     ALT_LOG(1, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
-                    MuteLogger = TRUE;
+                    MY_MUTELOGGER_SET;
                     #endif
                 }
             } // for
@@ -934,9 +937,9 @@ VOID ReadConfig (
                 PrintUglyText (MsgStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
                 LOG_MSG("%s%s", OffsetNext, MsgStr);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
                 #endif
 
                 PauseForKey();
@@ -1010,7 +1013,8 @@ VOID ReadConfig (
             }
 
             for (i = 1; i < TokenCount; i++) {
-                     if (MyStriCmp (TokenList[i], L"osx")     ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
+                if (0);
+                else if (MyStriCmp (TokenList[i], L"osx")     ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
                 else if (MyStriCmp (TokenList[i], L"grub")    ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
                 else if (MyStriCmp (TokenList[i], L"linux")   ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
                 else if (MyStriCmp (TokenList[i], L"elilo")   ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
@@ -1064,10 +1068,10 @@ VOID ReadConfig (
         ) {
             if (!MyStriCmp (TokenList[1], FileName)) {
                 #if REFIT_DEBUG > 0
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
                 LOG_MSG("\n");
                 LOG_MSG("Detected Overrides - L O A D   O V E R R I D E S");
-                MuteLogger = TRUE;
+                MY_MUTELOGGER_SET;
                 #endif
 
                 // Set 'AllowIncludes' to 'false' to break any 'include' chains
@@ -1077,7 +1081,7 @@ VOID ReadConfig (
                 // Reset 'AllowIncludes' to accomodate multiple instances in main file
 
                 #if REFIT_DEBUG > 0
-                MuteLogger = TRUE; // Just in case
+                MY_MUTELOGGER_SET; // Just in case
                 #endif
             }
         }
@@ -1246,9 +1250,9 @@ VOID ReadConfig (
 
     if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         LOG_MSG("%s  - WARN: Cannot Find Icons Directory ... Activating Text Only Mode", OffsetNext);
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         #endif
 
         GlobalConfig.TextOnly = TRUE;
@@ -1261,7 +1265,7 @@ VOID ReadConfig (
 
     SilenceAPFS = GlobalConfig.SilenceAPFS;
 
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     #if REFIT_DEBUG > 0
     // Skip this on inner loops

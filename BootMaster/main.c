@@ -281,6 +281,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
+    BOOLEAN CheckMute = FALSE;
     BOOLEAN BlockCert = (
         AppleFirmware &&
         (
@@ -299,14 +300,14 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         )
     );
 
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     BOOLEAN BlockMore = (
         AppleFirmware &&
         (
             FoundSubStr (VariableName, L"UnlockID")
         )
     );
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     Status = (BlockCert || BlockMore)
     ? EFI_SUCCESS
@@ -331,9 +332,9 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         (BlockCert || BlockMore) ? EFI_ACCESS_DENIED : Status
     );
 
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     LimitStringLength (LogStatus, 13);
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     CHAR16 *MsgStr = PoolPrint (
         L"In Hardware NVRAM ... %13s %s:- '%s%s'",
@@ -1197,7 +1198,8 @@ BOOLEAN SecureBootSetup (VOID) {
 static
 BOOLEAN SecureBootUninstall (VOID) {
     EFI_STATUS  Status;
-    BOOLEAN     Success = TRUE;
+    BOOLEAN     Success   =  TRUE;
+    BOOLEAN     CheckMute = FALSE;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -1213,11 +1215,11 @@ BOOLEAN SecureBootUninstall (VOID) {
 
             #endif
 
-            MuteLogger = TRUE;
+            MY_MUTELOGGER_SET;
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
 
             PauseSeconds (9);
 
@@ -1245,7 +1247,8 @@ VOID SetConfigFilename (
     CHAR16            *Options;
     CHAR16            *FileName;
     CHAR16            *SubString;
-    CHAR16            *MsgStr = NULL;
+    CHAR16            *MsgStr    =  NULL;
+    BOOLEAN            CheckMute = FALSE;
     EFI_LOADED_IMAGE  *Info;
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1284,10 +1287,10 @@ VOID SetConfigFilename (
                 LOG_MSG("\n");
                 #endif
 
-                MuteLogger = TRUE;
+                MY_MUTELOGGER_SET;
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText (MsgStr, NEXTLINE);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
 
                 MY_FREE_POOL(MsgStr);
                 MsgStr = StrDuplicate (L"         Try Default:- 'config.conf / refind.conf'");
@@ -1296,10 +1299,10 @@ VOID SetConfigFilename (
                 LOG_MSG("\n\n");
                 #endif
 
-                MuteLogger = TRUE;
+                MY_MUTELOGGER_SET;
                 PrintUglyText (MsgStr, NEXTLINE);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
 
                 PauseSeconds (9);
                 MY_FREE_POOL(MsgStr);
@@ -1577,7 +1580,8 @@ VOID LogBasicInfo (VOID) {
         HandleCount = 0;
     }
     else {
-        Status = gBS->LocateHandleBuffer (
+        Status = REFIT_CALL_5_WRAPPER(
+            gBS->LocateHandleBuffer,
             ByProtocol,
             &AppleFramebufferInfoProtocolGuid,
             NULL,
@@ -1615,19 +1619,21 @@ EFI_STATUS EFIAPI efi_main (
 ) {
     EFI_STATUS  Status;
 
-    BOOLEAN  MainLoopRunning = TRUE;
+    BOOLEAN  MainLoopRunning =  TRUE;
     BOOLEAN  MokProtocol     = FALSE;
+    BOOLEAN  CheckMute       = FALSE;
 
     REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     LOADER_ENTRY      *ourLoaderEntry = NULL;
     LEGACY_ENTRY      *ourLegacyEntry = NULL;
 
-    UINTN  i, k     = 0;
+    UINTN  i        = 0;
+    UINTN  k        = 0;
     INTN   MenuExit = 0;
 
-    EG_PIXEL   BGColor       = COLOR_LIGHTBLUE;
-    CHAR16    *MsgStr        = NULL;
-    CHAR16    *SelectionName = NULL;
+    CHAR16    *MsgStr             = NULL;
+    CHAR16    *SelectionName      = NULL;
+    EG_PIXEL   BGColor = COLOR_LIGHTBLUE;
 
     /* Init Bootstrap */
     InitializeLib (ImageHandle, SystemTable);
@@ -1637,10 +1643,10 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     /* Stash SystemTable */
-    EFI_RUNTIME_SERVICES *OrigRT  =  gRT;
-    EFI_BOOT_SERVICES    *OrigBS  =  gBS;
-    EFI_SYSTEM_TABLE     *OrigST  =  gST;
-    OrigSetVariableRT = gRT->SetVariable;
+    EFI_RUNTIME_SERVICES *OrigRT   =   gRT;
+    EFI_BOOT_SERVICES    *OrigBS   =   gBS;
+    EFI_SYSTEM_TABLE     *OrigST   =   gST;
+    OrigSetVariableRT   = gRT->SetVariable;
     OrigOpenProtocolBS = gBS->OpenProtocol;
 
     /* Remove any recovery boot flags */
@@ -1648,7 +1654,7 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Other Preambles */
     EFI_TIME Now;
-    gRT->GetTime (&Now, NULL);
+    REFIT_CALL_2_WRAPPER(gRT->GetTime, &Now, NULL);
     NowYear   = Now.Year;
     NowMonth  = Now.Month;
     NowDay    = Now.Day;
@@ -1973,7 +1979,7 @@ EFI_STATUS EFIAPI efi_main (
             CHAR16 KeyAsString[2];
             EFI_INPUT_KEY     key;
 
-            Status = REFIT_CALL_2_WRAPPER(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
             if (Status != EFI_NOT_READY) {
                 KeyAsString[0] = key.UnicodeChar;
                 KeyAsString[1] = 0;
@@ -2049,9 +2055,8 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
         #endif
 
+        MY_MUTELOGGER_SET;
         SwitchToText (FALSE);
-
-        MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2060,9 +2065,8 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-        MuteLogger = FALSE;
-
         PauseSeconds (9);
+        MY_MUTELOGGER_OFF;
 
         REFIT_CALL_4_WRAPPER(
             gRT->ResetSystem,
@@ -2144,7 +2148,7 @@ EFI_STATUS EFIAPI efi_main (
 
         ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
         GlobalConfig.ContinueOnWarning = TRUE;
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2155,16 +2159,15 @@ EFI_STATUS EFIAPI efi_main (
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"        Disabled All Features Involving UEFI Changes      ", NEXTLINE);
-        #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
         PrintUglyText (L"                See Debug Log for Details                 ", NEXTLINE);
-        #else
+#else
         PrintUglyText (L"              Run DBG Build File for Details              ", NEXTLINE);
-        #endif
+#endif
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
-
         PauseForKey();
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         GlobalConfig.ContinueOnWarning = ForceContinue;
         ForceContinue = FALSE;
 
@@ -2209,7 +2212,7 @@ EFI_STATUS EFIAPI efi_main (
 
         ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
         GlobalConfig.ContinueOnWarning = TRUE;
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2221,9 +2224,8 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L"             Program Behaviour is Undefined!!             ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
-
         PauseForKey();
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         GlobalConfig.ContinueOnWarning = ForceContinue;
         ForceContinue = FALSE;
 
@@ -2268,7 +2270,7 @@ EFI_STATUS EFIAPI efi_main (
 
         ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
         GlobalConfig.ContinueOnWarning = TRUE;
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2283,9 +2285,8 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L" * Will not contain all RefindPlus configuration tokens * ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
-
         PauseForKey();
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
         GlobalConfig.ContinueOnWarning = ForceContinue;
         ForceContinue = FALSE;
 
@@ -2484,10 +2485,10 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
-                MuteLogger = TRUE;
+                MY_MUTELOGGER_SET;
                 egDisplayMessage (TypeStr, &BGColor, CENTER);
                 PauseSeconds (3);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
 
                 REFIT_CALL_4_WRAPPER(
                     gRT->ResetSystem,
@@ -2527,10 +2528,10 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
-                MuteLogger = TRUE;
+                MY_MUTELOGGER_SET;
                 egDisplayMessage (TypeStr, &BGColor, CENTER);
                 PauseSeconds (3);
-                MuteLogger = FALSE;
+                MY_MUTELOGGER_OFF;
 
                 REFIT_CALL_4_WRAPPER(
                     gRT->ResetSystem,
@@ -3055,11 +3056,11 @@ EFI_STATUS EFIAPI efi_main (
 
     MsgStr = StrDuplicate (L"E N T E R I N G   D E A D   L O O P");
 
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");

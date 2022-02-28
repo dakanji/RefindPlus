@@ -297,7 +297,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     if (MaxMode > 0) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes on Handle[%d] - %02d Mode%s ... 0x%lx-0x%lx Framebuffer",
+            L"Analyse GOP Modes on Handle %02d - %02d Mode%s ... 0x%lx <-> 0x%lx Framebuffer",
             SelectedGOP, MaxMode,
             (MaxMode != 1) ? L"s" : L"",
             GOPDraw->Mode->FrameBufferBase,
@@ -2138,6 +2138,8 @@ VOID egScreenShot (VOID) {
     CHAR16       *MsgStr      = NULL;
     EG_PIXEL      BGColorWarn = COLOR_RED;
     EG_PIXEL      BGColorGood = COLOR_LIGHTBLUE;
+    BOOLEAN       CheckMute   = FALSE;
+
 
 
     #if REFIT_DEBUG > 0
@@ -2149,10 +2151,10 @@ VOID egScreenShot (VOID) {
     if (Image == NULL) {
         MsgStr = StrDuplicate (L"Unable to Take Screenshot ... Image is NULL");
 
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
         HaltSeconds (4);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
@@ -2187,10 +2189,10 @@ VOID egScreenShot (VOID) {
     if (EFI_ERROR(Status)) {
         MsgStr = StrDuplicate (L"Could Not Encode PNG");
 
-        MuteLogger = TRUE;
+        MY_MUTELOGGER_SET;
         egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
         HaltSeconds (4);
-        MuteLogger = FALSE;
+        MY_MUTELOGGER_OFF;
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
@@ -2212,10 +2214,10 @@ VOID egScreenShot (VOID) {
         if (EFI_ERROR(Status)) {
             MsgStr = StrDuplicate (L"Could Not Save Screenshot");
 
-            MuteLogger = TRUE;
+            MY_MUTELOGGER_SET;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
             HaltSeconds (4);
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
@@ -2239,10 +2241,10 @@ VOID egScreenShot (VOID) {
         if (EFI_ERROR(Status)) {
             MsgStr = StrDuplicate (L"Could Not Find ESP for Screenshot");
 
-            MuteLogger = TRUE;
+            MY_MUTELOGGER_SET;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
             HaltSeconds (4);
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
@@ -2266,10 +2268,10 @@ VOID egScreenShot (VOID) {
         if (i > 999) {
             MsgStr = StrDuplicate (L"Excessive Number of Saved Screenshot Files Found");
 
-            MuteLogger = TRUE;
+            MY_MUTELOGGER_SET;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
             HaltSeconds (4);
-            MuteLogger = FALSE;
+            MY_MUTELOGGER_OFF;
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
@@ -2299,10 +2301,10 @@ VOID egScreenShot (VOID) {
     LOG_MSG("\n\n");
     #endif
 
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     egDisplayMessage (MsgStr, &BGColorGood, CENTER);
     HaltSeconds (2);
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     MY_FREE_POOL(MsgStr);
     MY_FREE_POOL(FileName);

@@ -555,6 +555,8 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
+    BOOLEAN   CheckMute = FALSE;
+
     if (GlobalConfig.DirectBoot) {
         // Reset error flag
         haveError = FALSE;
@@ -563,38 +565,40 @@ VOID BeginExternalScreen (
         return;
     }
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     if (!AllowGraphicsMode) {
         UseGraphicsMode = FALSE;
     }
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Beginning Child Display with Screen Mode:- 'Graphics'"
-        );
+        MsgStr = L"Beginning Child Display with Screen Mode:- 'Graphics'";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        if (!IsBoot) {
+            LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+        }
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Beginning Child Display with Screen Mode:- 'Text'"
-        );
+        MsgStr = L"Beginning Child Display with Screen Mode:- 'Text'";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        if (!IsBoot) {
+            LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+        }
         #endif
 
         SwitchToText (UseGraphicsMode);
 
-        BOOLEAN ForceMute = FALSE;
-        if (!MuteLogger) {
-            ForceMute = MuteLogger = TRUE;
-        }
-
+        MY_MUTELOGGER_SET;
         DrawScreenHeader (Title);
-
-        if (ForceMute) {
-            MuteLogger = FALSE;
-        }
+        MY_MUTELOGGER_OFF;
     }
 
     // Reset error flag
@@ -734,9 +738,14 @@ VOID PrintUglyText (
 
 VOID PauseForKey (VOID) {
     UINTN   i, WaitOut;
-    BOOLEAN Breakout = FALSE;
+    BOOLEAN Breakout  = FALSE;
+    BOOLEAN CheckMute = FALSE;
 
-    MuteLogger = TRUE;
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
+    MY_MUTELOGGER_SET;
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
@@ -749,33 +758,33 @@ VOID PauseForKey (VOID) {
     PrintUglyText (L"                                                          ", NEXTLINE);
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
-    MuteLogger = FALSE;
-
-    #if REFIT_DEBUG > 0
-    LOG_MSG("INFO: Paused for Error/Warning");
-    LOG_MSG("\n\n");
-    #endif
+    MY_MUTELOGGER_OFF;
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 9 Seconds");
+        MsgStr = L"Paused for Error/Warning ... Waiting 9 Seconds";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
         #endif
 
         for (i = 0; i < 9; ++i) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                MsgStr = L"Pause Terminated by Keypress";
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 Breakout = TRUE;
-
-                // Clear the Keystroke Buffer
-                ReadAllKeyStrokes();
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timer Error!!");
+                MsgStr = L"Pause Terminated on Timer Error";
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 Breakout = TRUE;
@@ -788,30 +797,38 @@ VOID PauseForKey (VOID) {
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+            MsgStr = L"Pause Terminated on Timeout";
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
         }
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
+        MsgStr = L"Paused for Error/Warning ... Keypress Required";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
         #endif
 
         for (;;) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                MsgStr = L"Pause Terminated by Keypress";
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 Breakout = TRUE;
-
-                // Clear the Keystroke Buffer
-                ReadAllKeyStrokes();
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                MsgStr = L"Pause Terminated on Timer Error";
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 Breakout = TRUE;
@@ -836,12 +853,13 @@ VOID PauseSeconds (
     UINTN Seconds
 ) {
     UINTN   i, WaitOut;
-    BOOLEAN Breakout = FALSE;
+    BOOLEAN Breakout  = FALSE;
+    BOOLEAN CheckMute = FALSE;
 
     // Clear the Keystroke Buffer
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     ReadAllKeyStrokes();
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
@@ -876,9 +894,9 @@ VOID PauseSeconds (
     #endif
 
     // Clear the Keystroke Buffer
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     ReadAllKeyStrokes();
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 } // VOID PauseSeconds()
 
 // Halt for a specified number of seconds
@@ -886,7 +904,9 @@ VOID PauseSeconds (
 VOID HaltSeconds (
     UINTN Seconds
 ) {
-    UINTN i;
+    UINTN   i;
+    BOOLEAN CheckMute = FALSE;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Halting for %d Seconds", Seconds);
@@ -905,9 +925,9 @@ VOID HaltSeconds (
     #endif
 
     // Clear the Keystroke Buffer
-    MuteLogger = TRUE;
+    MY_MUTELOGGER_SET;
     ReadAllKeyStrokes();
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 } // VOID HaltSeconds()
 
 #if REFIT_DEBUG > 0
@@ -922,13 +942,15 @@ VOID DebugPause (VOID) {
 #endif
 
 VOID RefitDeadLoop (VOID) {
-    UINTN index;
-    MuteLogger = TRUE;
+    UINTN   index;
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
     for (;;) {
         ReadAllKeyStrokes();
         REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
-    MuteLogger = FALSE;
+    MY_MUTELOGGER_OFF;
 } // VOID RefitDeadLoop()
 
 //
