@@ -301,6 +301,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         )
     );
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN ForceNative = FALSE;
+    #endif
+
     MY_MUTELOGGER_SET;
     BOOLEAN BlockMore = (
         AppleFirmware &&
@@ -321,11 +325,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     );
 
     #if REFIT_DEBUG > 0
-    BOOLEAN ForceNative = FALSE;
-    if (!NativeLogger) {
-        /* Enable Forced Native Logging */
-        ForceNative = NativeLogger = TRUE;
-    }
+    /* Enable Forced Native Logging */
+    MY_NATIVELOGGER_SET;
 
     // Log Outcome
     CHAR16 *LogStatus = PoolPrint (
@@ -353,10 +354,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_FREE_POOL(MsgStr);
     MY_FREE_POOL(LogStatus);
 
-    if (ForceNative) {
-        /* Disable Forced Native Logging */
-        NativeLogger = FALSE;
-    }
+    /* Disable Forced Native Logging */
+    MY_NATIVELOGGER_OFF;
     #endif
 
     /* Clear any previously saved instance of blocked variable  */
@@ -1114,6 +1113,8 @@ VOID StoreLoaderName (
 VOID RescanAll (
     BOOLEAN Reconnect
 ) {
+    BOOLEAN ForceNative = FALSE;
+
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = L"R E S C A N   A L L   I T E M S";
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -1122,7 +1123,7 @@ VOID RescanAll (
     #endif
 
     /* Enable Forced Native Logging */
-    NativeLogger = TRUE;
+    MY_NATIVELOGGER_SET;
 
     // Reset MainMenu
     InitMainMenu();
@@ -1145,7 +1146,7 @@ VOID RescanAll (
     ScanForBootloaders();
 
     /* Disable Forced Native Logging */
-    NativeLogger = FALSE;
+    MY_NATIVELOGGER_OFF;
 
     ScanForTools();
 } // VOID RescanAll()
@@ -1623,6 +1624,7 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN  MainLoopRunning =  TRUE;
     BOOLEAN  MokProtocol     = FALSE;
     BOOLEAN  CheckMute       = FALSE;
+    BOOLEAN ForceNative      = FALSE;
 
     REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     LOADER_ENTRY      *ourLoaderEntry = NULL;
@@ -1691,7 +1693,7 @@ EFI_STATUS EFIAPI efi_main (
     InitBooterLog();
 
     /* Enable Forced Native Logging */
-    NativeLogger = TRUE;
+    MY_NATIVELOGGER_SET;
 
     #if REFIT_DEBUG > 0
     /* Start Logging */
@@ -2044,7 +2046,7 @@ EFI_STATUS EFIAPI efi_main (
     SetupScreen();
 
     /* Disable Forced Native Logging */
-    NativeLogger = FALSE;
+    MY_NATIVELOGGER_OFF;
 
     // Show Secure Boot Failure Notice and Shut Down
     if (SecureBootFailure) {
@@ -2315,12 +2317,11 @@ EFI_STATUS EFIAPI efi_main (
 
     if (GlobalConfig.LogLevel > 1) {
         /* Enable Forced Native Logging */
-        NativeLogger = TRUE;
+        MY_NATIVELOGGER_SET;
     }
-
     pdInitialize();
     /* Disable Forced Native Logging */
-    NativeLogger = FALSE;
+    MY_NATIVELOGGER_OFF;
 
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"R U N   M A I N   L O O P");

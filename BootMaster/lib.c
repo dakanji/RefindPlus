@@ -99,6 +99,7 @@ EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 
 #endif
 
 // Macros
+#define SET_BADGE_IMMAGE(x) Volume->VolBadgeImage = BuiltinIcon (x)
 #define UNINIT_VOLUMES(x, y)        \
     do {                            \
         for (i = 0; i < y; i++) {   \
@@ -551,15 +552,12 @@ EFI_STATUS EfivarGetRaw (
     OUT VOID     **VariableData,
     OUT UINTN     *VariableSize  OPTIONAL
 ) {
-    VOID        *TmpBuffer     = NULL;
-    UINTN        BufferSize    = 0;
-    EFI_STATUS   Status        = EFI_LOAD_ERROR;
+    VOID        *TmpBuffer    = NULL;
+    UINTN        BufferSize   = 0;
+    EFI_STATUS   Status       = EFI_LOAD_ERROR;
+    BOOLEAN      HybridLogger = FALSE;
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
+    MY_HYBRIDLOGGER_SET;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -674,9 +672,7 @@ EFI_STATUS EfivarGetRaw (
         #endif
     }
 
-    if (HybridLogger) {
-        NativeLogger = TRUE;
-    }
+    MY_HYBRIDLOGGER_OFF;
 
     return Status;
 } // EFI_STATUS EfivarGetRaw ()
@@ -697,13 +693,10 @@ EFI_STATUS EfivarSetRaw (
     VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
-    BOOLEAN      CheckMute = FALSE;
+    BOOLEAN      CheckMute    = FALSE;
+    BOOLEAN      HybridLogger = FALSE;
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
+    MY_HYBRIDLOGGER_SET;
 
     if (VariableSize > 0 &&
         VariableData != NULL &&
@@ -725,9 +718,7 @@ EFI_STATUS EfivarSetRaw (
 
             if (SettingMatch) {
                 // Return if settings match
-                if (HybridLogger) {
-                    NativeLogger = TRUE;
-                }
+                MY_HYBRIDLOGGER_OFF;
 
                 MY_FREE_POOL(OldBuf);
 
@@ -803,9 +794,7 @@ EFI_STATUS EfivarSetRaw (
         #endif
     }
 
-    if (HybridLogger) {
-        NativeLogger = TRUE;
-    }
+    MY_HYBRIDLOGGER_OFF;
 
     return Status;
 } // EFI_STATUS EfivarSetRaw ()
@@ -1519,10 +1508,10 @@ VOID SetVolumeBadgeIcon (
         #endif
 
         switch (Volume->DiskKind) {
-            case DISK_KIND_INTERNAL: Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL); break;
-            case DISK_KIND_EXTERNAL: Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL); break;
-            case DISK_KIND_OPTICAL:  Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);  break;
-            case DISK_KIND_NET:      Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);      break;
+            case DISK_KIND_INTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
+            case DISK_KIND_EXTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
+            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL);  break;
+            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET);      break;
         } // switch
     }
 } // VOID SetVolumeBadgeIcon()
@@ -1762,17 +1751,14 @@ VOID ScanVolume (
     EFI_HANDLE        WholeDiskHandle;
     UINTN             PartialLength;
     BOOLEAN           Bootable;
+    BOOLEAN           HybridLogger = FALSE;
 
     #if REFIT_DEBUG > 0
     UINTN   LogLineType;
     CHAR16 *StrSpacer = NULL;
     #endif
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
+    MY_HYBRIDLOGGER_SET;
 
     // Get device path
     Volume->DevicePath = DuplicateDevicePath (
@@ -2000,9 +1986,7 @@ VOID ScanVolume (
         }
     }
 
-    if (HybridLogger) {
-        NativeLogger = TRUE;
-    }
+    MY_HYBRIDLOGGER_OFF;
 
     // Open the root directory of the volume
     Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);

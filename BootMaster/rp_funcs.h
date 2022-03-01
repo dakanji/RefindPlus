@@ -8,11 +8,30 @@
 #ifndef _RP_FUNCS_H
 #define _RP_FUNCS_H
 
+// Control NativeLogger ... Especially Nested Instances
+#define MY_NATIVELOGGER_SET if (!NativeLogger) ForceNative = NativeLogger = TRUE
+#define MY_NATIVELOGGER_OFF if (ForceNative) ForceNative = NativeLogger = FALSE
+
 // Control MuteLogger ... Especially Nested Instances
 #define MY_MUTELOGGER_SET if (!MuteLogger) CheckMute = MuteLogger = TRUE
 #define MY_MUTELOGGER_OFF if (CheckMute) CheckMute = MuteLogger = FALSE
 
-// Temp Dereference to NULL for Debugging
+// Control HybridLogger ... Especially Nested Instances
+#define MY_HYBRIDLOGGER_SET                   \
+    do {                                      \
+        if (NativeLogger) {                   \
+            HybridLogger =  TRUE;             \
+            NativeLogger = FALSE;             \
+        }                                     \
+    } while (0)
+#define MY_HYBRIDLOGGER_OFF                   \
+    do {                                      \
+        if (HybridLogger) {                   \
+            NativeLogger =  TRUE;             \
+            HybridLogger = FALSE;             \
+        }                                     \
+    } while (0)
+
 #define MY_FAKE_FREE(Pointer)                 \
     do {                                      \
         if (Pointer) {                        \
