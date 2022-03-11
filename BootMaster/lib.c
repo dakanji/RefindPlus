@@ -168,6 +168,7 @@ EFI_GUID           GuidCoreStorage     =   CORE_STORAGE_GUID_VALUE;
 EFI_GUID           GuidAppleTvRec      =    APPLE_TV_RECOVERY_GUID;
 
 
+extern EFI_GUID    RefindGuid;
 extern EFI_GUID    RefindPlusGuid;
 extern BOOLEAN     ScanningLoaders;
 
@@ -561,7 +562,10 @@ EFI_STATUS EfivarGetRaw (
     #endif
 
     if (!GlobalConfig.UseNvram &&
-        GuidsAreEqual (VendorGUID, &RefindPlusGuid)
+        (
+            GuidsAreEqual (VendorGUID, &RefindPlusGuid) ||
+            GuidsAreEqual (VendorGUID, &RefindGuid)
+        )
     ) {
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
@@ -743,7 +747,10 @@ EFI_STATUS EfivarSetRaw (
 
     // Proceed ... settings do not match
     if (!GlobalConfig.UseNvram &&
-        GuidsAreEqual (VendorGUID, &RefindPlusGuid)
+        (
+            GuidsAreEqual (VendorGUID, &RefindPlusGuid) ||
+            GuidsAreEqual (VendorGUID, &RefindGuid)
+        )
     ) {
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {

@@ -210,6 +210,7 @@ BOOLEAN                WarnRevisionUEFI     = FALSE;
 BOOLEAN                WarnMissingQVInfo    = FALSE;
 BOOLEAN                SecureBootFailure    = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
+EFI_GUID               RefindGuid           = REFIND_GUID_VALUE;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
@@ -888,6 +889,63 @@ BOOLEAN ShowCleanNvramInfo (
         // Early Return
         return FALSE;
     }
+
+    // DA_TAG: Investigate This
+    //         Delete the directory tree instead?
+    //         Hook into Shell for 'rm -fr' if so?
+    //         Initial Assessment: Not worth bloat
+    //         Find native way to achieve same??
+    //
+    // Clear Emulated NVRAM
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    MY_MUTELOGGER_SET;
+    #endif
+    EfivarSetRaw (
+        &RefindPlusGuid, L"PreviousBoot",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindPlusGuid, L"HiddenTags",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindPlusGuid, L"HiddenTools",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindPlusGuid, L"HiddenLegacy",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindPlusGuid, L"HiddenFirmware",
+        NULL, 0, TRUE
+    );
+
+    // Try to handle rEFInd as well
+    EfivarSetRaw (
+        &RefindGuid, L"PreviousBoot",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindGuid, L"HiddenTags",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindGuid, L"HiddenTools",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindGuid, L"HiddenLegacy",
+        NULL, 0, TRUE
+    );
+    EfivarSetRaw (
+        &RefindGuid, L"HiddenFirmware",
+        NULL, 0, TRUE
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
