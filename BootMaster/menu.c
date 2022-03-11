@@ -1194,15 +1194,14 @@ VOID ShowTextInfoLines (
 
     BeginTextScreen (Screen->Title);
 
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut,
-        ATTR_BASIC
-    );
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
-        REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->InfoLines[i]);
+        REFIT_CALL_3_WRAPPER(
+            gST->ConOut->SetCursorPosition, gST->ConOut,
+            3, 4 + i
+        );
+        REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, Screen->InfoLines[i]);
     }
 } // VOID ShowTextInfoLines()
 
@@ -1217,7 +1216,10 @@ VOID TextMenuStyle (
     UINTN   MenuWidth;
     UINTN   ItemWidth;
     UINTN   MenuHeight;
+
+    #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
+    #endif
 
     static UINTN    MenuPosY;
     static CHAR16 **DisplayStrings;
@@ -1267,9 +1269,13 @@ VOID TextMenuStyle (
                 DisplayStrings[i] = AllocateZeroPool (2 * sizeof (CHAR16));
                 DisplayStrings[i][0] = L' ';
 
+                #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_SET;
+                #endif
                 MergeStrings (&DisplayStrings[i], Screen->Entries[i]->Title, 0);
+                #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_OFF;
+                #endif
 
                 if (StrLen (DisplayStrings[i]) > MenuWidth) {
                     DisplayStrings[i][MenuWidth - 1] = 0;
@@ -1293,10 +1299,8 @@ VOID TextMenuStyle (
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
                     REFIT_CALL_3_WRAPPER(
-                        gST->ConOut->SetCursorPosition,
-                        gST->ConOut,
-                        2,
-                        MenuPosY + (i - State->FirstVisible)
+                        gST->ConOut->SetCursorPosition, gST->ConOut,
+                        2, MenuPosY + (i - State->FirstVisible)
                     );
 
                     if (i == State->CurrentSelection) {
@@ -1310,8 +1314,11 @@ VOID TextMenuStyle (
             }
 
             // Scrolling indicators
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_SCROLLARROW);
-            REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, MenuPosY);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_SCROLLARROW);
+            REFIT_CALL_3_WRAPPER(
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                0, MenuPosY
+            );
 
             if (State->FirstVisible > 0) {
                 gST->ConOut->OutputString (gST->ConOut, ArrowUp);
@@ -1331,13 +1338,19 @@ VOID TextMenuStyle (
 
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
-                   REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 2);
-                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint1);
+                   REFIT_CALL_3_WRAPPER(
+                       gST->ConOut->SetCursorPosition, gST->ConOut,
+                       0, ConHeight - 2
+                   );
+                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, Screen->Hint1);
                }
 
                if (Screen->Hint2 != NULL) {
-                   REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 1);
-                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint2);
+                   REFIT_CALL_3_WRAPPER(
+                       gST->ConOut->SetCursorPosition, gST->ConOut,
+                       0, ConHeight - 1
+                   );
+                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, Screen->Hint2);
                }
             }
 
@@ -1345,52 +1358,40 @@ VOID TextMenuStyle (
         case MENU_FUNCTION_PAINT_SELECTION:
             // Redraw selection cursor
             REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition,
-                gST->ConOut, 2,
-                MenuPosY + (State->PreviousSelection - State->FirstVisible)
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                2, MenuPosY + (State->PreviousSelection - State->FirstVisible)
             );
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut,
-                ATTR_CHOICE_BASIC
-            );
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_BASIC);
             if (DisplayStrings[State->PreviousSelection] != NULL) {
-                REFIT_CALL_2_WRAPPER(
-                    gST->ConOut->OutputString,
-                    gST->ConOut,
-                    DisplayStrings[State->PreviousSelection]
-                );
+                REFIT_CALL_2_WRAPPER( gST->ConOut->OutputString, gST->ConOut, DisplayStrings[State->PreviousSelection]);
             }
             REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition,
-                gST->ConOut, 2,
-                MenuPosY + (State->CurrentSelection - State->FirstVisible)
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                2, MenuPosY + (State->CurrentSelection - State->FirstVisible)
             );
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut,
-                ATTR_CHOICE_CURRENT
-            );
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->OutputString,
-                gST->ConOut,
-                DisplayStrings[State->CurrentSelection]
-            );
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, DisplayStrings[State->CurrentSelection]);
 
         break;
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // Clear message
                 if (!BlankLine) PrepareBlankLine();
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
-                REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 3);
-                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, BlankLine + 1);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    0, ConHeight - 3
+                );
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, BlankLine + 1);
             }
             else {
                 // Paint or update message
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_ERROR);
-                REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
-                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, ParamText);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    3, ConHeight - 3
+                );
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, ParamText);
             }
     } // switch
 } // VOID TextMenuStyle()
@@ -2074,15 +2075,22 @@ VOID PaintArrows (
     static EG_IMAGE *LeftBackground  = NULL;
     static EG_IMAGE *RightBackground = NULL;
     static BOOLEAN   LoadedArrows    = FALSE;
-    BOOLEAN          CheckMute       = FALSE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
 
     UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
 
     if (!LoadedArrows && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS)) {
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
+        #endif
         LeftArrow  = GetIcon (&egemb_arrow_left,  L"arrow_left" );
         RightArrow = GetIcon (&egemb_arrow_right, L"arrow_right");
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
 
         if (LeftArrow) {
             LeftBackground = egCropImage (
@@ -2345,22 +2353,32 @@ UINTN WaitForInput (
 
     Length = WaitListLength;
 
-    Status = REFIT_CALL_5_WRAPPER(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->CreateEvent, EVT_TIMER,
+        0, NULL,
+        NULL, &TimerEvent
+    );
     if (Timeout == 0) {
         Length--;
     }
     else {
         if (EFI_ERROR(Status)) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
+
             return INPUT_TIMER_ERROR;
         }
-        else {
-            REFIT_CALL_3_WRAPPER(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
-            WaitList[Length - 1] = TimerEvent;
-        }
+
+        REFIT_CALL_3_WRAPPER(
+            gBS->SetTimer, TimerEvent,
+            TimerRelative, Timeout * 10000
+        );
+        WaitList[Length - 1] = TimerEvent;
     }
 
-    Status = REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, Length, WaitList, &Index);
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->WaitForEvent, Length,
+        WaitList, &Index
+    );
     REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
 
     if (EFI_ERROR(Status)) {
@@ -2397,8 +2415,7 @@ BOOLEAN EditOptions (
 
     REFIT_CALL_4_WRAPPER(
         gST->ConOut->QueryMode, gST->ConOut,
-        gST->ConOut->Mode->Mode,
-        &x_max, &y_max
+        gST->ConOut->Mode->Mode, &x_max, &y_max
     );
 
     if (!GlobalConfig.TextOnly) {
@@ -2546,13 +2563,9 @@ VOID SaveHiddenList (
     ListLen = StrLen (HiddenList);
 
     Status = EfivarSetRaw (
-        &RefindPlusGuid,
-        VarName,
-        HiddenList,
-        ListLen * 2 + 2 * (ListLen > 0),
-        TRUE
+        &RefindPlusGuid, VarName,
+        HiddenList, ListLen * 2 + 2 * (ListLen > 0), TRUE
     );
-
     CheckError (Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
@@ -2642,11 +2655,8 @@ VOID ManageHiddenTags (VOID) {
         if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
             i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
             Status = EfivarSetRaw (
-                &RefindPlusGuid,
-                L"HiddenLegacy",
-                HiddenLegacy,
-                i * 2 + 2 * (i > 0),
-                TRUE
+                &RefindPlusGuid, L"HiddenLegacy",
+                HiddenLegacy, i * 2 + 2 * (i > 0), TRUE
             );
             SaveLegacy = TRUE;
             CheckError (Status, L"in ManageHiddenTags!!");
@@ -2690,8 +2700,10 @@ CHAR16 * ReadHiddenTags (
     UINTN       Size;
     EFI_STATUS  Status;
 
-    Status = EfivarGetRaw (&RefindPlusGuid, VarName, (VOID **) &Buffer, &Size);
-
+    Status = EfivarGetRaw (
+        &RefindPlusGuid, VarName,
+        (VOID **) &Buffer, &Size
+    );
     #if REFIT_DEBUG > 0
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
         CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
@@ -2745,11 +2757,8 @@ VOID AddToHiddenTags (
 
     if (AddTag) {
         Status = EfivarSetRaw (
-            &RefindPlusGuid,
-            VarName,
-            HiddenTags,
-            StrLen (HiddenTags) * 2 + 2,
-            TRUE
+            &RefindPlusGuid, VarName,
+            HiddenTags, StrLen (HiddenTags) * 2 + 2, TRUE
         );
     }
 

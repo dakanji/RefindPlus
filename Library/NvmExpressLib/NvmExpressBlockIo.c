@@ -448,12 +448,9 @@ EFI_STATUS AsyncReadSectors (
 
         // Create Event
         Status = REFIT_CALL_5_WRAPPER(
-            gBS->CreateEvent,
-            EVT_NOTIFY_SIGNAL,
-            TPL_NOTIFY,
-            AsyncIoCallback,
-            Subtask,
-            &Subtask->Event
+            gBS->CreateEvent, EVT_NOTIFY_SIGNAL,
+            TPL_NOTIFY, AsyncIoCallback,
+            Subtask, &Subtask->Event
         );
         if (EFI_ERROR(Status)) {
             break;
@@ -576,12 +573,9 @@ EFI_STATUS AsyncWriteSectors (
 
         // Create Event
         Status = REFIT_CALL_5_WRAPPER(
-            gBS->CreateEvent,
-            EVT_NOTIFY_SIGNAL,
-            TPL_NOTIFY,
-            AsyncIoCallback,
-            Subtask,
-            &Subtask->Event
+            gBS->CreateEvent, EVT_NOTIFY_SIGNAL,
+            TPL_NOTIFY, AsyncIoCallback,
+            Subtask, &Subtask->Event
         );
         if (EFI_ERROR(Status)) {
             break;

@@ -223,7 +223,10 @@ BOOLEAN IsValidLoader (
         return FALSE;
     }
 
-    Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &Size, Header);
+    Status = REFIT_CALL_3_WRAPPER(
+        FileHandle->Read, FileHandle,
+        &Size, Header
+    );
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
     IsValid = !EFI_ERROR(Status) &&
@@ -296,7 +299,10 @@ EFI_STATUS StartEFIImage (
     CHAR16            *EspGUID           = NULL;
     CHAR16            *MsgStr            = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
-    BOOLEAN            CheckMute         = FALSE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
 
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
@@ -335,11 +341,15 @@ EFI_STATUS StartEFIImage (
     #endif
 
     if (Verbose) {
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
+        #endif
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
     }
 
     MY_FREE_POOL(MsgStr);
@@ -401,16 +411,13 @@ EFI_STATUS StartEFIImage (
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePath,
-            ImageData, ImageSize,
-            &ChildImageHandle
+            ImageData, ImageSize, &ChildImageHandle
         );
         */
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
-            SelfImageHandle,
-            DevicePath,
-            NULL, 0,
-            &ChildImageHandle
+            SelfImageHandle, DevicePath,
+            NULL, 0, &ChildImageHandle
         );
         MY_FREE_POOL(DevicePath);
         ReturnStatus = Status;
@@ -439,10 +446,8 @@ EFI_STATUS StartEFIImage (
             // Ignore return status here
             REFIT_CALL_6_WRAPPER(
                 gBS->LoadImage, FALSE,
-                SelfImageHandle,
-                GlobalConfig.SelfDevicePath,
-                NULL, 0,
-                &ChildImageHandle2
+                SelfImageHandle, GlobalConfig.SelfDevicePath,
+                NULL, 0, &ChildImageHandle2
             );
         }
     } // if/else !IsValidLoader
@@ -464,10 +469,8 @@ EFI_STATUS StartEFIImage (
     }
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        ChildImageHandle,
-        &LoadedImageProtocol,
-        (VOID **) &ChildLoadedImage
+        gBS->HandleProtocol, ChildImageHandle,
+        &LoadedImageProtocol, (VOID **) &ChildLoadedImage
     );
     ReturnStatus = Status;
 
@@ -499,13 +502,9 @@ EFI_STATUS StartEFIImage (
         #endif
 
         Status = EfivarSetRaw (
-            &SystemdGuid,
-            L"LoaderDevicePartUUID",
-            EspGUID,
-            StrLen (EspGUID) * 2 + 2,
-            TRUE
+            &SystemdGuid, L"LoaderDevicePartUUID",
+            EspGUID, StrLen (EspGUID) * 2 + 2, TRUE
         );
-
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             MsgStr = PoolPrint (
@@ -677,12 +676,9 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
     Status = EfivarGetRaw (
-        &GlobalGuid,
-        L"OsIndications",
-        (VOID **) &ItemBuffer,
-        NULL
+        &GlobalGuid, L"OsIndications",
+        (VOID **) &ItemBuffer, NULL
     );
-
     if (Status == EFI_SUCCESS) {
         osind |= *ItemBuffer;
     }
@@ -704,11 +700,8 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     }
 
     Status = EfivarSetRaw (
-        &GlobalGuid,
-        L"OsIndications",
-        &osind,
-        sizeof (UINT64),
-        TRUE
+        &GlobalGuid, L"OsIndications",
+        &osind, sizeof (UINT64), TRUE
     );
     if (Status != EFI_SUCCESS) {
         #if REFIT_DEBUG > 0
@@ -727,11 +720,8 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     #endif
 
     REFIT_CALL_4_WRAPPER(
-        gRT->ResetSystem,
-        EfiResetCold,
-        EFI_SUCCESS,
-        0,
-        NULL
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
     );
 
     Status = EFI_LOAD_ERROR;
@@ -763,7 +753,10 @@ VOID RebootIntoLoader (
     EFI_STATUS  Status;
     CHAR16     *TmpStr    = L"Reboot into NVRAM Boot Option";
     CHAR16     *MsgStr    = NULL;
-    BOOLEAN     CheckMute = FALSE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
@@ -791,11 +784,8 @@ VOID RebootIntoLoader (
     #endif
 
     Status = EfivarSetRaw (
-        &GlobalGuid,
-        L"BootNext",
-        &(Entry->EfiBootNum),
-        sizeof (UINT16),
-        TRUE
+        &GlobalGuid, L"BootNext",
+        &(Entry->EfiBootNum), sizeof (UINT16), TRUE
     );
     if (EFI_ERROR(Status)) {
         MsgStr = PoolPrint (
@@ -808,11 +798,15 @@ VOID RebootIntoLoader (
         LOG_MSG("\n\n");
         #endif
 
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
+        #endif
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
 
         PauseForKey();
         MY_FREE_POOL(MsgStr);
@@ -903,11 +897,8 @@ EFI_STATUS ApfsRecoveryBoot (
     NameNVRAM = L"internet-recovery-mode";
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
-        &AppleGUID,
-        NameNVRAM,
-        DataNVRAM,
-        AsciiStrSize (DataNVRAM),
-        TRUE
+        &AppleGUID, NameNVRAM,
+        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
     MY_FREE_POOL(DataNVRAM);
@@ -919,11 +910,8 @@ EFI_STATUS ApfsRecoveryBoot (
     // Set Recovery Initiator
     NameNVRAM = L"RecoveryBootInitiator";
     Status = EfivarSetRaw (
-        &AppleGUID,
-        NameNVRAM,
-        (VOID **) &Entry->Volume->DevicePath,
-        StrSize (DevicePathToStr (Entry->Volume->DevicePath)),
-        TRUE
+        &AppleGUID, NameNVRAM,
+        (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
     MY_FREE_POOL(DataNVRAM);
@@ -952,11 +940,8 @@ EFI_STATUS ApfsRecoveryBoot (
 
     // Set as BootNext entry
     Status = EfivarSetRaw (
-        &GlobalGuid,
-        L"BootNext",
-        &(Entry->EfiBootNum),
-        sizeof (UINT16),
-        TRUE
+        &GlobalGuid, L"BootNext",
+        &(Entry->EfiBootNum), sizeof (UINT16), TRUE
     );
     if (EFI_ERROR(Status)) {
         // Early Return
@@ -965,10 +950,8 @@ EFI_STATUS ApfsRecoveryBoot (
 
     // Reboot into new BootNext entry
     REFIT_CALL_4_WRAPPER(
-        gRT->ResetSystem,
-        EfiResetCold,
-        EFI_SUCCESS,
-        0, NULL
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
     );
 
 #endif
@@ -1018,7 +1001,10 @@ VOID StartTool (
 ) {
     CHAR16  *MsgStr     =  NULL;
     CHAR16  *LoaderPath =  NULL;
-    BOOLEAN  CheckMute  = FALSE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
 
     IsBoot        = FALSE;
     LoaderPath    = Basename (Entry->LoaderPath);
@@ -1054,11 +1040,15 @@ VOID StartTool (
             LOG_MSG("\n\n");
             #endif
 
+            #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
+            #endif
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            #if REFIT_DEBUG > 0
             MY_MUTELOGGER_OFF;
+            #endif
 
             PauseForKey();
 

@@ -50,10 +50,8 @@ EFI_STATUS GetCsrStatus (
     EFI_GUID    CsrGuid      = APPLE_GUID;
 
     Status = EfivarGetRaw (
-        &CsrGuid,
-        L"csr-active-config",
-        (VOID **) &ReturnValue,
-        &CsrLength
+        &CsrGuid, L"csr-active-config",
+        (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
         if (Status == EFI_NOT_FOUND) {
@@ -92,7 +90,6 @@ VOID RecordgCsrStatus (
 ) {
     CHAR16   *MsgStr    = NULL;
     EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
-    BOOLEAN   CheckMute = FALSE;
 
     switch (CsrStatus) {
         // SIP "Cleared" Setting
@@ -172,10 +169,15 @@ VOID RecordgCsrStatus (
         );
         #endif
 
+        #if REFIT_DEBUG > 0
+        BOOLEAN CheckMute = FALSE;
         MY_MUTELOGGER_SET;
+        #endif
         egDisplayMessage (MsgStr, &BGColor, CENTER);
         PauseSeconds (4);
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
 
         MY_FREE_POOL(MsgStr);
     }
@@ -288,12 +290,15 @@ VOID RotateCsrValue (VOID) {
 EFI_STATUS NormaliseCSR (VOID) {
     EFI_STATUS  Status;
     UINT32      OurCSR;
-    BOOLEAN     CheckMute = FALSE;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
+    #endif
     Status = GetCsrStatus (&OurCSR);  // Get csr-active-config value
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
-    // Restore logging
+    #endif
 
     if (EFI_ERROR(Status)) {
         if (Status == EFI_NOT_FOUND) {
@@ -351,10 +356,8 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     }
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &apple_set_os_guid,
-        NULL,
-        (VOID **) &SetOs
+        gBS->LocateProtocol, &apple_set_os_guid,
+        NULL, (VOID **) &SetOs
     );
     if (EFI_ERROR(Status) || SetOs == NULL) {
         #if REFIT_DEBUG > 0
@@ -398,9 +401,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     #endif
 
     UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
-    Status = REFIT_CALL_1_WRAPPER(
-        SetOs->SetOsVersion, MacVersionStr
-    );
+    Status = REFIT_CALL_1_WRAPPER(SetOs->SetOsVersion, MacVersionStr );
 
     MY_FREE_POOL(MacVersionStr);
     MY_FREE_POOL(AppleVersionOS);
@@ -411,9 +412,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     }
 
     if (SetOs->Version >= 2) {
-        REFIT_CALL_1_WRAPPER(
-            SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
-        );
+        REFIT_CALL_1_WRAPPER(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc." );
     }
 
     return EFI_SUCCESS;
@@ -807,19 +806,14 @@ VOID ClearRecoveryBootFlag (VOID) {
     BufferSize   = 0;
     VariableName = L"recovery-boot-mode";
     Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable,
-        VariableName,
-        &AppleGuid,
-        NULL,
-        &BufferSize,
-        TmpBuffer
+        gRT->GetVariable, VariableName,
+        &AppleGuid, NULL,
+        &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable,
-            VariableName,
-            &AppleGuid,
-            StorageFlags,
+            gRT->SetVariable, VariableName,
+            &AppleGuid, StorageFlags,
             0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
@@ -828,19 +822,14 @@ VOID ClearRecoveryBootFlag (VOID) {
     BufferSize   = 0;
     VariableName = L"internet-recovery-mode";
     Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable,
-        VariableName,
-        &AppleGuid,
-        NULL,
-        &BufferSize,
-        TmpBuffer
+        gRT->GetVariable, VariableName,
+        &AppleGuid, NULL,
+        &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable,
-            VariableName,
-            &AppleGuid,
-            StorageFlags,
+            gRT->SetVariable, VariableName,
+            &AppleGuid, StorageFlags,
             0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
@@ -849,19 +838,14 @@ VOID ClearRecoveryBootFlag (VOID) {
     BufferSize   = 0;
     VariableName = L"RecoveryBootInitiator";
     Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable,
-        VariableName,
-        &AppleGuid,
-        NULL,
-        &BufferSize,
-        TmpBuffer
+        gRT->GetVariable, VariableName,
+        &AppleGuid, NULL,
+        &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable,
-            VariableName,
-            &AppleGuid,
-            StorageFlags,
+            gRT->SetVariable, VariableName,
+            &AppleGuid, StorageFlags,
             0, NULL
         );
         MY_FREE_POOL(TmpBuffer);

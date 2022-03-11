@@ -126,12 +126,9 @@ EFI_STATUS ApfsReadJumpStart (
 
   // Read jump start and abort on failure.
   Status = REFIT_CALL_5_WRAPPER(
-      BlockIo->ReadBlocks,
-      BlockIo,
-      BlockIo->Media->MediaId,
-      Lba,
-      PrivateData->ApfsBlockSize,
-      JumpStart
+      BlockIo->ReadBlocks, BlockIo,
+      BlockIo->Media->MediaId, Lba,
+      PrivateData->ApfsBlockSize, JumpStart
   );
 
   if (EFI_ERROR(Status)) {
@@ -265,12 +262,9 @@ EFI_STATUS InternalApfsReadSuperBlock (
 
     // Read super block and abort on failure.
     Status = REFIT_CALL_5_WRAPPER(
-        BlockIo->ReadBlocks,
-        BlockIo,
-        BlockIo->Media->MediaId,
-        0,
-        ReadSize,
-        SuperBlock
+        BlockIo->ReadBlocks, BlockIo,
+        BlockIo->Media->MediaId, 0,
+        ReadSize, SuperBlock
     );
     if (EFI_ERROR(Status)) {
       break;

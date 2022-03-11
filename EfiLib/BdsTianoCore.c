@@ -102,12 +102,9 @@ EFI_STATUS BdsLibConnectDevicePath (
             RemainingDevicePath = Instance;
 
             Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath,
-                &EfiDevicePathProtocolGuid,
-                &RemainingDevicePath,
-                &Handle
+                gBS->LocateDevicePath, &EfiDevicePathProtocolGuid,
+                &RemainingDevicePath, &Handle
             );
-
             if (!EFI_ERROR(Status)) {
 #ifdef __MAKEWITH_TIANO
                 if (Handle == PreviousHandle) {
@@ -135,7 +132,10 @@ EFI_STATUS BdsLibConnectDevicePath (
                     // 2. If the connect succeds, the RemainingDevicepath and handle will
                     //    change, then avoid the dispatch, and we have a chance to continue the
                     //    next connection
-                    REFIT_CALL_4_WRAPPER(gBS->ConnectController, Handle, NULL, RemainingDevicePath, FALSE);
+                    REFIT_CALL_4_WRAPPER(
+                        gBS->ConnectController, Handle,
+                        NULL, RemainingDevicePath, FALSE
+                    );
                 }
             }
             // Loop until RemainingDevicePath is an empty device path
@@ -299,7 +299,11 @@ VOID * BdsLibGetVariableAndSize (
 
     // Pass in a zero size buffer to find the required buffer size.
     BufferSize = 0;
-    Status = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, Name,
+        VendorGuid, NULL,
+        &BufferSize, Buffer
+    );
     if (Status == EFI_BUFFER_TOO_SMALL) {
         // Allocate the buffer to return
         Buffer = AllocateZeroPool (BufferSize);
@@ -309,7 +313,11 @@ VOID * BdsLibGetVariableAndSize (
         }
 
         // Read variable into the allocated buffer.
-        Status = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
+        Status = REFIT_CALL_5_WRAPPER(
+            gRT->GetVariable, Name,
+            VendorGuid, NULL,
+            &BufferSize, Buffer
+        );
         if (EFI_ERROR(Status)) {
             BufferSize = 0;
         }

@@ -171,11 +171,9 @@ EFI_STATUS LibScanHandleDatabase (
     //
 
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        AllHandles,
+        gBS->LocateHandleBuffer, AllHandles,
         NULL, NULL,
-        HandleCount,
-        HandleBuffer
+        HandleCount, HandleBuffer
     );
     if (EFI_ERROR(Status)) {
         goto Error;
@@ -213,10 +211,8 @@ EFI_STATUS LibScanHandleDatabase (
         // Retrieve the list of all the protocols on each handle
         //
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->ProtocolsPerHandle,
-            (*HandleBuffer)[HandleIndex],
-            &ProtocolGuidArray,
-            &ArrayCount
+            gBS->ProtocolsPerHandle, (*HandleBuffer)[HandleIndex],
+            &ProtocolGuidArray, &ArrayCount
         );
 
         if (!EFI_ERROR(Status)) {
@@ -256,10 +252,8 @@ EFI_STATUS LibScanHandleDatabase (
                 // Retrieve the list of agents that have opened each protocol
                 //
                 Status = REFIT_CALL_4_WRAPPER(
-                    gBS->OpenProtocolInformation,
-                    (*HandleBuffer)[HandleIndex],
-                    ProtocolGuidArray[ProtocolIndex],
-                    &OpenInfo, &OpenInfoCount
+                    gBS->OpenProtocolInformation, (*HandleBuffer)[HandleIndex],
+                    ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
                 );
 
                 if (!EFI_ERROR(Status)) {
@@ -420,8 +414,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
             if (!Parent) {
                 if (HandleType[Index] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
                    Status = REFIT_CALL_4_WRAPPER(
-                       gBS->ConnectController,
-                       AllHandleBuffer[Index],
+                       gBS->ConnectController, AllHandleBuffer[Index],
                        NULL, NULL, TRUE
                    );
                }
@@ -489,12 +482,9 @@ VOID ConnectFilesystemDriver (
         // should be opened here BY_DRIVER by Partition driver
         // to produce partition volumes.
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handles[Index],
-            &gEfiBlockIoProtocolGuid,
-            (VOID **) &BlockIo
+            gBS->HandleProtocol, Handles[Index],
+            &gEfiBlockIoProtocolGuid, (VOID **) &BlockIo
         );
-
         if (EFI_ERROR(Status)) {
             continue;
         }
@@ -505,12 +495,9 @@ VOID ConnectFilesystemDriver (
 
         // If SimpleFileSystem is already produced - skip it, this is ok
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handles[Index],
-            &gEfiSimpleFileSystemProtocolGuid,
-            (VOID **) &Fs
+            gBS->HandleProtocol, Handles[Index],
+            &gEfiSimpleFileSystemProtocolGuid, (VOID **) &Fs
         );
-
         if (Status == EFI_SUCCESS) {
             continue;
         }
@@ -518,11 +505,8 @@ VOID ConnectFilesystemDriver (
         // If no SimpleFileSystem on this handle but DiskIo is opened BY_DRIVER
         // then disconnect this connection and try to connect our driver to it
         Status = REFIT_CALL_4_WRAPPER(
-            gBS->OpenProtocolInformation,
-            Handles[Index],
-            &gEfiDiskIoProtocolGuid,
-            &OpenInfo,
-            &OpenInfoCount
+            gBS->OpenProtocolInformation, Handles[Index],
+            &gEfiDiskIoProtocolGuid, &OpenInfo, &OpenInfoCount
         );
         if (EFI_ERROR(Status)) {
             continue;
@@ -537,7 +521,6 @@ VOID ConnectFilesystemDriver (
                     gBS->DisconnectController, Handles[Index],
                     OpenInfo[OpenInfoIndex].AgentHandle, NULL
                 );
-
                 if (!EFI_ERROR(Status)) {
                     DriverHandleList[0] = DriverHandle;
                     REFIT_CALL_4_WRAPPER(
@@ -613,10 +596,8 @@ UINTN ScanDriverDir (
         if (DriverHandle != NULL) {
             // Driver Loaded - Check for EFI_DRIVER_BINDING_PROTOCOL
             XStatus = REFIT_CALL_3_WRAPPER(
-                gBS->ProtocolsPerHandle,
-                DriverHandle,
-                &ProtocolGuidArray,
-                &ArrayCount
+                gBS->ProtocolsPerHandle, DriverHandle,
+                &ProtocolGuidArray, &ArrayCount
             );
             if (!EFI_ERROR(XStatus)) {
                 for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {

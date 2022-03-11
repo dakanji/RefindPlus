@@ -331,7 +331,6 @@ EFI_STATUS InitRefitLib (
         gBS->HandleProtocol, SelfImageHandle,
         &LoadedImageProtocol, (VOID **) &SelfLoadedImage
     );
-
     if (CheckFatalError (Status, L"While Getting a LoadedImageProtocol Handle")) {
         return EFI_LOAD_ERROR;
     }
@@ -502,8 +501,7 @@ EFI_STATUS FindVarsDir (VOID) {
         Status = REFIT_CALL_5_WRAPPER(
             SelfDir->Open, SelfDir,
             &gVarsDir, L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-            EFI_FILE_DIRECTORY
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
         );
 
         #if REFIT_DEBUG > 0
@@ -520,8 +518,7 @@ EFI_STATUS FindVarsDir (VOID) {
                 Status = REFIT_CALL_5_WRAPPER(
                     EspRootDir->Open, EspRootDir,
                     &gVarsDir, L"refind-vars",
-                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-                    EFI_FILE_DIRECTORY
+                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
                 );
             }
 
@@ -693,10 +690,15 @@ EFI_STATUS EfivarSetRaw (
     VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
-    BOOLEAN      CheckMute    = FALSE;
-    BOOLEAN      HybridLogger = FALSE;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute    = FALSE;
+    BOOLEAN HybridLogger = FALSE;
+    #endif
+
+    #if REFIT_DEBUG > 0
     MY_HYBRIDLOGGER_SET;
+    #endif
 
     if (VariableSize > 0 &&
         VariableData != NULL &&
@@ -705,9 +707,16 @@ EFI_STATUS EfivarSetRaw (
         !MyStriCmp (VariableName, L"HiddenLegacy") &&
         !MyStriCmp (VariableName, L"HiddenFirmware")
     ) {
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
-        Status = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
+        #endif
+        Status = EfivarGetRaw (
+            VendorGUID, VariableName,
+            &OldBuf, &OldSize
+        );
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
 
         if (!EFI_ERROR(Status)) {
             // Check for settings match
@@ -718,7 +727,10 @@ EFI_STATUS EfivarSetRaw (
 
             if (SettingMatch) {
                 // Return if settings match
+
+                #if REFIT_DEBUG > 0
                 MY_HYBRIDLOGGER_OFF;
+                #endif
 
                 MY_FREE_POOL(OldBuf);
 
@@ -794,7 +806,9 @@ EFI_STATUS EfivarSetRaw (
         #endif
     }
 
+    #if REFIT_DEBUG > 0
     MY_HYBRIDLOGGER_OFF;
+    #endif
 
     return Status;
 } // EFI_STATUS EfivarSetRaw ()
@@ -808,10 +822,10 @@ VOID AddListElement (
     IN OUT UINTN   *ElementCount,
     IN     VOID    *NewElement
 ) {
-          VOID    *TmpListPtr;
+    VOID          *TmpListPtr;
     const UINTN    AllocatePointer = sizeof (VOID *) * (*ElementCount + 16);
     const UINTN    ElementPointer  = sizeof (VOID *) * (*ElementCount);
-          BOOLEAN  Abort           = FALSE;
+    BOOLEAN        Abort           = FALSE;
 
     if (*ListPtr == NULL) {
         TmpListPtr = AllocatePool (AllocatePointer);
@@ -1258,12 +1272,9 @@ VOID ScanVolumeBootcode (
 
     // look at the boot sector (this is used for both hard disks and El Torito images!)
     Status = REFIT_CALL_5_WRAPPER(
-        Volume->BlockIO->ReadBlocks,
-        Volume->BlockIO,
-        Volume->BlockIO->Media->MediaId,
-        Volume->BlockIOOffset,
-        SAMPLE_SIZE,
-        Buffer
+        Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+        Volume->BlockIO->Media->MediaId, Volume->BlockIOOffset,
+        SAMPLE_SIZE, Buffer
     );
 
     if (!EFI_ERROR(Status)) {
@@ -1769,12 +1780,9 @@ VOID ScanVolume (
 
     // Get block i/o
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        Volume->DeviceHandle,
-        &BlockIoProtocol,
-        (VOID **) &(Volume->BlockIO)
+        gBS->HandleProtocol, Volume->DeviceHandle,
+        &BlockIoProtocol, (VOID **) &(Volume->BlockIO)
     );
-
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
 
@@ -1842,14 +1850,10 @@ VOID ScanVolume (
             // Get the handle for that path
             RemainingDevicePath = DiskDevicePath;
             Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath,
-                &BlockIoProtocol,
-                &RemainingDevicePath,
-                &WholeDiskHandle
+                gBS->LocateDevicePath, &BlockIoProtocol,
+                &RemainingDevicePath, &WholeDiskHandle
             );
-
             MY_FREE_POOL(DiskDevicePath);
-
             if (EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
                 if (DoneHeadings) {
@@ -1875,12 +1879,9 @@ VOID ScanVolume (
             else {
                 // Get the device path for later
                 Status = REFIT_CALL_3_WRAPPER(
-                    gBS->HandleProtocol,
-                    WholeDiskHandle,
-                    &DevicePathProtocol,
-                    (VOID **) &DiskDevicePath
+                    gBS->HandleProtocol, WholeDiskHandle,
+                    &DevicePathProtocol, (VOID **) &DiskDevicePath
                 );
-
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
                     if (DoneHeadings) {
@@ -1909,10 +1910,8 @@ VOID ScanVolume (
 
                 // Look at the BlockIO protocol
                 Status = REFIT_CALL_3_WRAPPER(
-                    gBS->HandleProtocol,
-                    WholeDiskHandle,
-                    &BlockIoProtocol,
-                    (VOID **) &Volume->WholeDiskBlockIO
+                    gBS->HandleProtocol, WholeDiskHandle,
+                    &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
                 );
                 if (EFI_ERROR(Status)) {
                     Volume->WholeDiskBlockIO = NULL;
@@ -2031,12 +2030,9 @@ VOID ScanExtendedPartition (
     for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
         // read current EMBR
         Status = REFIT_CALL_5_WRAPPER(
-            WholeDiskVolume->BlockIO->ReadBlocks,
-            WholeDiskVolume->BlockIO,
-            WholeDiskVolume->BlockIO->Media->MediaId,
-            ExtCurrent,
-            512,
-            SectorBuffer
+            WholeDiskVolume->BlockIO->ReadBlocks, WholeDiskVolume->BlockIO,
+            WholeDiskVolume->BlockIO->Media->MediaId, ExtCurrent,
+            512, SectorBuffer
         );
 
         if (EFI_ERROR(Status)) {
@@ -2865,23 +2861,17 @@ VOID ScanVolumes (VOID) {
 
                 // Compare boot sector read through offset vs. directly
                 Status = REFIT_CALL_5_WRAPPER(
-                    Volume->BlockIO->ReadBlocks,
-                    Volume->BlockIO,
-                    Volume->BlockIO->Media->MediaId,
-                    Volume->BlockIOOffset,
-                    512,
-                    SectorBuffer1
+                    Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+                    Volume->BlockIO->Media->MediaId, Volume->BlockIOOffset,
+                    512, SectorBuffer1
                 );
                 if (EFI_ERROR(Status)) {
                     break;
                 }
                 Status = REFIT_CALL_5_WRAPPER(
-                    Volume->WholeDiskBlockIO->ReadBlocks,
-                    Volume->WholeDiskBlockIO,
-                    Volume->WholeDiskBlockIO->Media->MediaId,
-                    MbrTable[PartitionIndex].StartLBA,
-                    512,
-                    SectorBuffer2
+                    Volume->WholeDiskBlockIO->ReadBlocks, Volume->WholeDiskBlockIO,
+                    Volume->WholeDiskBlockIO->Media->MediaId, MbrTable[PartitionIndex].StartLBA,
+                    512, SectorBuffer2
                 );
                 if (EFI_ERROR(Status)) {
                     break;
@@ -3160,10 +3150,8 @@ BOOLEAN FileExists (
     if (BaseDir != NULL) {
         Status = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
-            &TestFile,
-            RelativePath,
-            EFI_FILE_MODE_READ,
-            0
+            &TestFile, RelativePath,
+            EFI_FILE_MODE_READ, 0
         );
         if (Status == EFI_SUCCESS) {
             REFIT_CALL_1_WRAPPER(TestFile->Close, TestFile);
@@ -3204,10 +3192,8 @@ EFI_STATUS DirNextEntry (
         for (IterCount = 0; ; IterCount++) {
             Status = REFIT_CALL_3_WRAPPER(
                 Directory->Read, Directory,
-                &BufferSize,
-                Buffer
+                &BufferSize, Buffer
             );
-
             if (Status != EFI_BUFFER_TOO_SMALL || IterCount >= 4) {
                 break;
             }
@@ -3327,17 +3313,13 @@ BOOLEAN RP_MetaiMatch (
     // DA-TAG: Fallback on original inadequate upstream implementation
     //         Should not get here when support is present
     EFI_STATUS Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiUnicodeCollation2ProtocolGuid,
-        NULL,
-        (VOID **) &UnicodeCollationEng
+        gBS->LocateProtocol, &gEfiUnicodeCollation2ProtocolGuid,
+        NULL, (VOID **) &UnicodeCollationEng
     );
     if (EFI_ERROR(Status)) {
         REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol,
-            &gEfiUnicodeCollationProtocolGuid,
-            NULL,
-            (VOID **) &UnicodeCollationEng
+            gBS->LocateProtocol, &gEfiUnicodeCollationProtocolGuid,
+            NULL, (VOID **) &UnicodeCollationEng
         );
     }
 
@@ -3830,12 +3812,9 @@ BOOLEAN EjectMedia (VOID) {
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Handle = Handles[HandleIndex];
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handle,
-            &AppleRemovableMediaGuid,
-            (VOID **) &Ejectable
+            gBS->HandleProtocol, Handle,
+            &AppleRemovableMediaGuid, (VOID **) &Ejectable
         );
-
         if (EFI_ERROR(Status)) {
             continue;
         }

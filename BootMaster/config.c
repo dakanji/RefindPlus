@@ -135,7 +135,10 @@ EFI_STATUS RefitReadFile (
        *size = File->BufferSize;
     }
 
-    Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
+    Status = REFIT_CALL_3_WRAPPER(
+        FileHandle->Read, FileHandle,
+        &File->BufferSize, File->Buffer
+    );
     if (CheckError (Status, Message)) {
         MY_FREE_POOL(Message);
         MY_FREE_POOL(File->Buffer);
@@ -649,12 +652,14 @@ VOID ReadConfig (
     CHAR16           *TempStr  = NULL;
     CHAR16           *MsgStr   = NULL;
     UINTN             TokenCount, i;
-    BOOLEAN           CheckMute = FALSE;
 
     static BOOLEAN    AllowIncludes = TRUE;
 
+    #if REFIT_DEBUG > 0
     // Silence functions called from this
+    BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
+    #endif
 
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -1268,7 +1273,9 @@ VOID ReadConfig (
 
     SilenceAPFS = GlobalConfig.SilenceAPFS;
 
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 
     #if REFIT_DEBUG > 0
     // Skip this on inner loops

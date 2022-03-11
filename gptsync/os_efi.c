@@ -61,12 +61,9 @@ UINTN read_sector (
     EFI_STATUS          Status;
 
     Status = REFIT_CALL_5_WRAPPER(
-        BlockIO->ReadBlocks,
-        BlockIO,
-        BlockIO->Media->MediaId,
-        lba,
-        512,
-        buffer
+        BlockIO->ReadBlocks, BlockIO,
+        BlockIO->Media->MediaId, lba,
+        512, buffer
     );
     if (EFI_ERROR(Status)) {
         // TODO: report error
@@ -82,12 +79,9 @@ UINTN write_sector (
     EFI_STATUS          Status;
 
     Status = REFIT_CALL_5_WRAPPER(
-        BlockIO->WriteBlocks,
-        BlockIO,
-        BlockIO->Media->MediaId,
-        lba,
-        512,
-        buffer
+        BlockIO->WriteBlocks, BlockIO,
+        BlockIO->Media->MediaId, lba,
+        512, buffer
     );
     if (EFI_ERROR(Status)) {
         // TODO: report error
@@ -108,12 +102,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = REFIT_CALL_2_WRAPPER(
-            gST->ConIn->ReadKeyStroke,
-            gST->ConIn,
-            &Key
-        );
-
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &Key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -130,18 +119,21 @@ VOID PauseForKey (VOID) {
 
     Print (L"\n* Press a Key to Continue *");
 
-    if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 5000000);     // 5 seconds delay
-        ReadAllKeyStrokes();    // empty the buffer again
+    // Remove buffered key strokes
+    if (ReadAllKeyStrokes()) {
+        // 5 second delay
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 5000000);
+        // Empty the buffer again
+        ReadAllKeyStrokes();
     }
 
     REFIT_CALL_3_WRAPPER(
-        gBS->WaitForEvent,
-        1,
-        &gST->ConIn->WaitForKey,
-        &Index
+        gBS->WaitForEvent, 1,
+        &gST->ConIn->WaitForKey, &Index
     );
-    ReadAllKeyStrokes();        // empty the buffer to protect the menu
+
+    // Empty the buffer to protect the menu
+    ReadAllKeyStrokes();
 
     Print(L"\n");
 }
@@ -160,17 +152,11 @@ UINTN input_boolean (
 
     do {
         REFIT_CALL_3_WRAPPER(
-            gBS->WaitForEvent,
-            1,
-            &gST->ConIn->WaitForKey,
-            &Index
-        );
-        Status = REFIT_CALL_2_WRAPPER(
-            gST->ConIn->ReadKeyStroke,
-            gST->ConIn,
-            &Key
+            gBS->WaitForEvent, 1,
+            &gST->ConIn->WaitForKey, &Index
         );
 
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &Key);
         if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
             return 1;
         }
@@ -277,14 +263,10 @@ EFI_STATUS EFIAPI efi_main (
     InitializeLib(ImageHandle, SystemTable);
 
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &BlockIoProtocol,
-        NULL,
-        &HandleCount,
-        &HandleBuffer
+        gBS->LocateHandleBuffer, ByProtocol,
+        &BlockIoProtocol, NULL,
+        &HandleCount, &HandleBuffer
     );
-
     if (EFI_ERROR(Status)) {
         return EFI_NOT_FOUND;
     }
@@ -327,12 +309,9 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            DeviceHandle,
-            &BlockIoProtocol,
-            (VOID **) &BlockIO
+            gBS->HandleProtocol, DeviceHandle,
+            &BlockIoProtocol, (VOID **) &BlockIO
         );
-
         if (EFI_ERROR(Status)) {
             // TODO: report error
             BlockIO = NULL;

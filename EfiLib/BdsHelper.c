@@ -60,24 +60,18 @@ VOID UpdateBbsTable (
     CHAR16                     Desc[100];
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiLegacyBootProtocolGuid,
-        NULL,
-        (VOID **) &LegacyBios
+        gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
+        NULL, (VOID **) &LegacyBios
     );
-
     if (EFI_ERROR(Status) || Option == NULL) {
         return;
     }
 
     OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
     REFIT_CALL_5_WRAPPER(
-        LegacyBios->GetBbsInfo,
-        LegacyBios,
-        &HddCount,
-        &HddInfo,
-        &BbsCount,
-        &LocalBbsTable
+        LegacyBios->GetBbsInfo, LegacyBios,
+        &HddCount, &HddInfo,
+        &BbsCount, &LocalBbsTable
     );
 
     for (Idx = 0; Idx < BbsCount; Idx++) {
@@ -123,12 +117,9 @@ EFI_STATUS BdsLibDoLegacyBoot (
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiLegacyBootProtocolGuid,
-        NULL,
-        (VOID **) &LegacyBios
+        gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
+        NULL, (VOID **) &LegacyBios
     );
-
     if (EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
@@ -136,11 +127,8 @@ EFI_STATUS BdsLibDoLegacyBoot (
     UpdateBbsTable(Option);
 
     Status = REFIT_CALL_4_WRAPPER(
-        LegacyBios->LegacyBoot,
-        LegacyBios,
-        (BBS_BBS_DEVICE_PATH *) Option->DevicePath,
-        Option->LoadOptionsSize,
-        Option->LoadOptions
+        LegacyBios->LegacyBoot, LegacyBios,
+        (BBS_BBS_DEVICE_PATH *) Option->DevicePath, Option->LoadOptionsSize, Option->LoadOptions
     );
 
     return Status;

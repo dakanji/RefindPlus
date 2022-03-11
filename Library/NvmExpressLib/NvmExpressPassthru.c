@@ -565,22 +565,17 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         }
 
         Status = REFIT_CALL_5_WRAPPER(
-            gBS->CreateEvent,
-            EVT_TIMER,
-            TPL_CALLBACK,
-            NULL,
-            NULL,
-            &TimerEvent
+            gBS->CreateEvent, EVT_TIMER,
+            TPL_CALLBACK, NULL,
+            NULL, &TimerEvent
         );
         if (EFI_ERROR (Status)) {
             break;
         }
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->SetTimer,
-            TimerEvent,
-            TimerRelative,
-            Packet->CommandTimeout
+            gBS->SetTimer, TimerEvent,
+            TimerRelative, Packet->CommandTimeout
         );
         if (EFI_ERROR(Status)) {
             break;
@@ -589,10 +584,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         // Wait for completion queue to get filled in.
         Status = EFI_TIMEOUT;
         while (EFI_ERROR(
-            REFIT_CALL_1_WRAPPER(
-                gBS->CheckEvent,
-                TimerEvent
-            )
+            REFIT_CALL_1_WRAPPER( gBS->CheckEvent, TimerEvent )
         )) {
             if (Cq->Pt != Private->Pt[QueueId]) {
                 Status = EFI_SUCCESS;
@@ -619,10 +611,8 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         else {
             // Disable the timer to trigger the process of async transfers temporarily.
             Status = REFIT_CALL_3_WRAPPER(
-                gBS->SetTimer,
-                Private->TimerEvent,
-                TimerCancel,
-                0
+                gBS->SetTimer, Private->TimerEvent,
+                TimerCancel, 0
             );
             if (EFI_ERROR (Status)) {
                 break;
@@ -635,10 +625,8 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
                 if (!EFI_ERROR (Status)) {
                     // Re-enable the timer to trigger the process of async transfers.
                     Status = REFIT_CALL_3_WRAPPER(
-                        gBS->SetTimer,
-                        Private->TimerEvent,
-                        TimerPeriodic,
-                        NVME_HC_ASYNC_TIMER
+                        gBS->SetTimer, Private->TimerEvent,
+                        TimerPeriodic, NVME_HC_ASYNC_TIMER
                     );
 
                     if (!EFI_ERROR (Status)) {

@@ -185,10 +185,8 @@ EFI_STATUS EnumerateNvmeDevNamespace (
             RemainingDevicePath = DevicePath;
 
             Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath,
-                &gEfiDevicePathProtocolGuid,
-                &RemainingDevicePath,
-                &DeviceHandle
+                gBS->LocateDevicePath, &gEfiDevicePathProtocolGuid,
+                &RemainingDevicePath, &DeviceHandle
             );
             if (!EFI_ERROR(Status)
                 && (DeviceHandle != NULL)
@@ -206,17 +204,11 @@ EFI_STATUS EnumerateNvmeDevNamespace (
             Device->DeviceHandle = NULL;
 
             Status = REFIT_CALL_10_WRAPPER(
-                gBS->InstallMultipleProtocolInterfaces,
-                &Device->DeviceHandle,
-                &gEfiDevicePathProtocolGuid,
-                Device->DevicePath,
-                &gEfiBlockIoProtocolGuid,
-                &Device->BlockIo,
-                &gEfiBlockIo2ProtocolGuid,
-                &Device->BlockIo2,
-                &gEfiDiskInfoProtocolGuid,
-                &Device->DiskInfo,
-                NULL
+                gBS->InstallMultipleProtocolInterfaces, &Device->DeviceHandle,
+                &gEfiDevicePathProtocolGuid, Device->DevicePath,
+                &gEfiBlockIoProtocolGuid, &Device->BlockIo,
+                &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
+                &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
             );
             if (EFI_ERROR(Status)) {
                 break;
@@ -225,25 +217,16 @@ EFI_STATUS EnumerateNvmeDevNamespace (
             // Check if the NVMe controller supports the Security Send and Security Receive commands
             if ((Private->ControllerData->Oacs & SECURITY_SEND_RECEIVE_SUPPORTED) != 0) {
                 Status = REFIT_CALL_4_WRAPPER(
-                    gBS->InstallProtocolInterface,
-                    &Device->DeviceHandle,
-                    &gEfiStorageSecurityCommandProtocolGuid,
-                    EFI_NATIVE_INTERFACE,
-                    &Device->StorageSecurity
+                    gBS->InstallProtocolInterface, &Device->DeviceHandle,
+                    &gEfiStorageSecurityCommandProtocolGuid, EFI_NATIVE_INTERFACE, &Device->StorageSecurity
                 );
                 if (EFI_ERROR(Status)) {
                     REFIT_CALL_10_WRAPPER(
-                        gBS->UninstallMultipleProtocolInterfaces,
-                        Device->DeviceHandle,
-                        &gEfiDevicePathProtocolGuid,
-                        Device->DevicePath,
-                        &gEfiBlockIoProtocolGuid,
-                        &Device->BlockIo,
-                        &gEfiBlockIo2ProtocolGuid,
-                        &Device->BlockIo2,
-                        &gEfiDiskInfoProtocolGuid,
-                        &Device->DiskInfo,
-                        NULL
+                        gBS->UninstallMultipleProtocolInterfaces, Device->DeviceHandle,
+                        &gEfiDevicePathProtocolGuid, Device->DevicePath,
+                        &gEfiBlockIoProtocolGuid, &Device->BlockIo,
+                        &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
+                        &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
                     );
 
                     break;
@@ -251,13 +234,9 @@ EFI_STATUS EnumerateNvmeDevNamespace (
             }
 
             REFIT_CALL_6_WRAPPER(
-                gBS->OpenProtocol,
-                Private->ControllerHandle,
-                &gEfiNvmExpressPassThruProtocolGuid,
-                (VOID **) &DummyInterface,
-                Private->DriverBindingHandle,
-                Device->DeviceHandle,
-                EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                gBS->OpenProtocol, Private->ControllerHandle,
+                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &DummyInterface,
+                Private->DriverBindingHandle, Device->DeviceHandle, EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
             );
 
             // Build controller name for Component Name (2) protocol.
@@ -383,13 +362,9 @@ EFI_STATUS UnregisterNvmeNamespace (
     BlockIo = NULL;
 
     Status = REFIT_CALL_6_WRAPPER(
-        gBS->OpenProtocol,
-        Handle,
-        &gEfiBlockIoProtocolGuid,
-        (VOID **) &BlockIo,
-        This->DriverBindingHandle,
-        Controller,
-        EFI_OPEN_PROTOCOL_GET_PROTOCOL
+        gBS->OpenProtocol, Handle,
+        &gEfiBlockIoProtocolGuid, (VOID **) &BlockIo,
+        This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
     );
     if (EFI_ERROR(Status)) {
         return Status;
@@ -412,37 +387,24 @@ EFI_STATUS UnregisterNvmeNamespace (
 
     // Close the child handle
     REFIT_CALL_4_WRAPPER(
-        gBS->CloseProtocol,
-        Controller,
-        &gEfiNvmExpressPassThruProtocolGuid,
-        This->DriverBindingHandle,
-        Handle
+        gBS->CloseProtocol, Controller,
+        &gEfiNvmExpressPassThruProtocolGuid, This->DriverBindingHandle, Handle
     );
 
     // The Nvm Express driver installs the BlockIo and DiskInfo in the DriverBindingStart().
     // Here should uninstall both of them.
     Status = REFIT_CALL_10_WRAPPER(
-        gBS->UninstallMultipleProtocolInterfaces,
-        Handle,
-        &gEfiDevicePathProtocolGuid,
-        Device->DevicePath,
-        &gEfiBlockIoProtocolGuid,
-        &Device->BlockIo,
-        &gEfiBlockIo2ProtocolGuid,
-        &Device->BlockIo2,
-        &gEfiDiskInfoProtocolGuid,
-        &Device->DiskInfo,
-        NULL
+        gBS->UninstallMultipleProtocolInterfaces, Handle,
+        &gEfiDevicePathProtocolGuid, Device->DevicePath,
+        &gEfiBlockIoProtocolGuid, &Device->BlockIo,
+        &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
+        &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
     );
     if (EFI_ERROR(Status)) {
         REFIT_CALL_6_WRAPPER(
-            gBS->OpenProtocol,
-            Controller,
-            &gEfiNvmExpressPassThruProtocolGuid,
-            (VOID **) &DummyInterface,
-            This->DriverBindingHandle,
-            Handle,
-            EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+            gBS->OpenProtocol, Controller,
+            &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &DummyInterface,
+            This->DriverBindingHandle, Handle, EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
         );
 
         return Status;
@@ -450,30 +412,20 @@ EFI_STATUS UnregisterNvmeNamespace (
 
     // If Storage Security Command Protocol is installed, then uninstall this protocol.
     Status = REFIT_CALL_6_WRAPPER(
-        gBS->OpenProtocol,
-        Handle,
-        &gEfiStorageSecurityCommandProtocolGuid,
-        (VOID **) &StorageSecurity,
-        This->DriverBindingHandle,
-        Controller,
-        EFI_OPEN_PROTOCOL_GET_PROTOCOL
+        gBS->OpenProtocol, Handle,
+        &gEfiStorageSecurityCommandProtocolGuid, (VOID **) &StorageSecurity,
+        This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
     );
     if (!EFI_ERROR(Status)) {
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->UninstallProtocolInterface,
-            Handle,
-            &gEfiStorageSecurityCommandProtocolGuid,
-            &Device->StorageSecurity
+            gBS->UninstallProtocolInterface, Handle,
+            &gEfiStorageSecurityCommandProtocolGuid, &Device->StorageSecurity
         );
         if (EFI_ERROR(Status)) {
             REFIT_CALL_6_WRAPPER(
-                gBS->OpenProtocol,
-                Controller,
-                &gEfiNvmExpressPassThruProtocolGuid,
-                (VOID **) &DummyInterface,
-                This->DriverBindingHandle,
-                Handle,
-                EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                gBS->OpenProtocol, Controller,
+                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &DummyInterface,
+                This->DriverBindingHandle, Handle, EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
             );
 
             return Status;
@@ -740,13 +692,9 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingSupported (
 
     // Open the EFI Device Path protocol needed to perform the supported test
     Status = REFIT_CALL_6_WRAPPER(
-        gBS->OpenProtocol,
-        Controller,
-        &gEfiDevicePathProtocolGuid,
-        (VOID **) &ParentDevicePath,
-        This->DriverBindingHandle,
-        Controller,
-        EFI_OPEN_PROTOCOL_BY_DRIVER
+        gBS->OpenProtocol, Controller,
+        &gEfiDevicePathProtocolGuid, (VOID **) &ParentDevicePath,
+        This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_BY_DRIVER
     );
     if (Status == EFI_ALREADY_STARTED) {
         return EFI_SUCCESS;
@@ -758,22 +706,15 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingSupported (
 
     // Close protocol, don't use device path protocol in the Support() function
     REFIT_CALL_4_WRAPPER(
-        gBS->CloseProtocol,
-        Controller,
-        &gEfiDevicePathProtocolGuid,
-        This->DriverBindingHandle,
-        Controller
+        gBS->CloseProtocol, Controller,
+        &gEfiDevicePathProtocolGuid, This->DriverBindingHandle, Controller
     );
 
     // Attempt to Open PCI I/O Protocol
     Status = REFIT_CALL_6_WRAPPER(
-        gBS->OpenProtocol,
-        Controller,
-        &gEfiPciIoProtocolGuid,
-        (VOID **) &PciIo,
-        This->DriverBindingHandle,
-        Controller,
-        EFI_OPEN_PROTOCOL_BY_DRIVER
+        gBS->OpenProtocol, Controller,
+        &gEfiPciIoProtocolGuid, (VOID **) &PciIo,
+        This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_BY_DRIVER
     );
     if (Status == EFI_ALREADY_STARTED) {
         return EFI_SUCCESS;
@@ -807,11 +748,8 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingSupported (
     } while (0);
 
     REFIT_CALL_4_WRAPPER(
-        gBS->CloseProtocol,
-        Controller,
-        &gEfiPciIoProtocolGuid,
-        This->DriverBindingHandle,
-        Controller
+        gBS->CloseProtocol, Controller,
+        &gEfiPciIoProtocolGuid, This->DriverBindingHandle, Controller
     );
 
     return Status;
@@ -872,13 +810,9 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
     ParentDevicePath = NULL;
 
     Status = REFIT_CALL_6_WRAPPER(
-        gBS->OpenProtocol,
-        Controller,
-        &gEfiDevicePathProtocolGuid,
-        (VOID **) &ParentDevicePath,
-        This->DriverBindingHandle,
-        Controller,
-        EFI_OPEN_PROTOCOL_BY_DRIVER
+        gBS->OpenProtocol, Controller,
+        &gEfiDevicePathProtocolGuid, (VOID **) &ParentDevicePath,
+        This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_BY_DRIVER
     );
     if ((EFI_ERROR(Status)) && (Status != EFI_ALREADY_STARTED)) {
         return Status;
@@ -886,13 +820,9 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
 
     do {
         Status = REFIT_CALL_6_WRAPPER(
-            gBS->OpenProtocol,
-            Controller,
-            &gEfiPciIoProtocolGuid,
-            (VOID **) &PciIo,
-            This->DriverBindingHandle,
-            Controller,
-            EFI_OPEN_PROTOCOL_BY_DRIVER
+            gBS->OpenProtocol, Controller,
+            &gEfiPciIoProtocolGuid, (VOID **) &PciIo,
+            This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_BY_DRIVER
         );
         if (EFI_ERROR(Status) && (Status != EFI_ALREADY_STARTED)) {
             return Status;
@@ -968,33 +898,25 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
 
             // Start the asynchronous I/O completion monitor
             Status = REFIT_CALL_5_WRAPPER(
-                gBS->CreateEvent,
-                EVT_TIMER | EVT_NOTIFY_SIGNAL,
-                TPL_NOTIFY,
-                ProcessAsyncTaskList,
-                Private,
-                &Private->TimerEvent
+                gBS->CreateEvent, EVT_TIMER | EVT_NOTIFY_SIGNAL,
+                TPL_NOTIFY, ProcessAsyncTaskList,
+                Private, &Private->TimerEvent
             );
             if (EFI_ERROR(Status)) {
                 break;
             }
 
             Status = REFIT_CALL_3_WRAPPER(
-                gBS->SetTimer,
-                Private->TimerEvent,
-                TimerPeriodic,
-                NVME_HC_ASYNC_TIMER
+                gBS->SetTimer, Private->TimerEvent,
+                TimerPeriodic, NVME_HC_ASYNC_TIMER
             );
             if (EFI_ERROR(Status)) {
                 break;
             }
 
             Status = REFIT_CALL_4_WRAPPER(
-                gBS->InstallMultipleProtocolInterfaces,
-                &Controller,
-                &gEfiNvmExpressPassThruProtocolGuid,
-                &Private->Passthru,
-                NULL
+                gBS->InstallMultipleProtocolInterfaces, &Controller,
+                &gEfiNvmExpressPassThruProtocolGuid, &Private->Passthru, NULL
             );
             if (EFI_ERROR(Status)) {
                 break;
@@ -1004,13 +926,9 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
         }
         else {
             Status = REFIT_CALL_6_WRAPPER(
-                gBS->OpenProtocol,
-                Controller,
-                &gEfiNvmExpressPassThruProtocolGuid,
-                (VOID **) &Passthru,
-                This->DriverBindingHandle,
-                Controller,
-                EFI_OPEN_PROTOCOL_GET_PROTOCOL
+                gBS->OpenProtocol, Controller,
+                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &Passthru,
+                This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
             );
             if (EFI_ERROR(Status)) {
                 break;
@@ -1065,19 +983,13 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
     }
 
     REFIT_CALL_4_WRAPPER(
-        gBS->CloseProtocol,
-        Controller,
-        &gEfiPciIoProtocolGuid,
-        This->DriverBindingHandle,
-        Controller
+        gBS->CloseProtocol, Controller,
+        &gEfiPciIoProtocolGuid, This->DriverBindingHandle, Controller
     );
 
     REFIT_CALL_4_WRAPPER(
-        gBS->CloseProtocol,
-        Controller,
-        &gEfiDevicePathProtocolGuid,
-        This->DriverBindingHandle,
-        Controller
+        gBS->CloseProtocol, Controller,
+        &gEfiDevicePathProtocolGuid, This->DriverBindingHandle, Controller
     );
 
     return Status;
@@ -1126,15 +1038,10 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStop (
 
     if (NumberOfChildren == 0) {
         Status = REFIT_CALL_6_WRAPPER(
-            gBS->OpenProtocol,
-            Controller,
-            &gEfiNvmExpressPassThruProtocolGuid,
-            (VOID **) &PassThru,
-            This->DriverBindingHandle,
-            Controller,
-            EFI_OPEN_PROTOCOL_GET_PROTOCOL
+            gBS->OpenProtocol, Controller,
+            &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &PassThru,
+            This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
         );
-
         if (!EFI_ERROR(Status)) {
             Private = NVME_CONTROLLER_PRIVATE_DATA_FROM_PASS_THRU (PassThru);
 
@@ -1153,11 +1060,8 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStop (
             }
 
             REFIT_CALL_4_WRAPPER(
-                gBS->UninstallMultipleProtocolInterfaces,
-                Controller,
-                &gEfiNvmExpressPassThruProtocolGuid,
-                PassThru,
-                NULL
+                gBS->UninstallMultipleProtocolInterfaces, Controller,
+                &gEfiNvmExpressPassThruProtocolGuid, PassThru, NULL
             );
 
             if (Private->TimerEvent != NULL) {
@@ -1177,19 +1081,13 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStop (
         }
 
         REFIT_CALL_4_WRAPPER(
-            gBS->CloseProtocol,
-            Controller,
-            &gEfiPciIoProtocolGuid,
-            This->DriverBindingHandle,
-            Controller
+            gBS->CloseProtocol, Controller,
+            &gEfiPciIoProtocolGuid, This->DriverBindingHandle, Controller
         );
 
         REFIT_CALL_4_WRAPPER(
-            gBS->CloseProtocol,
-            Controller,
-            &gEfiDevicePathProtocolGuid,
-            This->DriverBindingHandle,
-            Controller
+            gBS->CloseProtocol, Controller,
+            &gEfiDevicePathProtocolGuid, This->DriverBindingHandle, Controller
         );
 
         NvmeUnregisterShutdownNotification ();
@@ -1242,24 +1140,18 @@ EFI_STATUS EFIAPI NvmExpressUnload (
         // those protocols installed at image handle.
         DeviceHandleBuffer = NULL;
         Status = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer,
-            ByProtocol,
-            &gEfiNvmExpressPassThruProtocolGuid,
-            NULL,
-            &DeviceHandleCount,
-            &DeviceHandleBuffer
+            gBS->LocateHandleBuffer, ByProtocol,
+            &gEfiNvmExpressPassThruProtocolGuid, NULL,
+            &DeviceHandleCount, &DeviceHandleBuffer
         );
         if (!EFI_ERROR(Status)) {
             // Disconnect the driver specified by ImageHandle from all
             // the devices in the handle database.
             for (Index = 0; Index < DeviceHandleCount; Index++) {
                 Status = REFIT_CALL_3_WRAPPER(
-                    gBS->DisconnectController,
-                    DeviceHandleBuffer[Index],
-                    ImageHandle,
-                    NULL
+                    gBS->DisconnectController, DeviceHandleBuffer[Index],
+                    ImageHandle, NULL
                 );
-
                 if (EFI_ERROR(Status)) {
                     break;
                 }
@@ -1272,13 +1164,9 @@ EFI_STATUS EFIAPI NvmExpressUnload (
 
         // Uninstall all the protocols installed in the driver entry point
         Status = REFIT_CALL_6_WRAPPER(
-            gBS->UninstallMultipleProtocolInterfaces,
-            ImageHandle,
-            &gEfiDriverBindingProtocolGuid,
-            &gNvmExpressDriverBinding,
-            &gEfiDriverSupportedEfiVersionProtocolGuid,
-            &gNvmExpressDriverSupportedEfiVersion,
-            NULL
+            gBS->UninstallMultipleProtocolInterfaces, ImageHandle,
+            &gEfiDriverBindingProtocolGuid, &gNvmExpressDriverBinding,
+            &gEfiDriverSupportedEfiVersionProtocolGuid, &gNvmExpressDriverSupportedEfiVersion, NULL
         );
         if (EFI_ERROR(Status)) {
             break;
@@ -1292,32 +1180,24 @@ EFI_STATUS EFIAPI NvmExpressUnload (
         //   gEfiMdePkgTokenSpaceGuid.PcdDriverDiagnostics2Disable
         //   gEfiMdePkgTokenSpaceGuid.PcdComponentName2Disable
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            ImageHandle,
-            &gEfiComponentNameProtocolGuid,
-            (VOID **) &ComponentName
+            gBS->HandleProtocol, ImageHandle,
+            &gEfiComponentNameProtocolGuid, (VOID **) &ComponentName
         );
         if (!EFI_ERROR(Status)) {
             REFIT_CALL_3_WRAPPER(
-                gBS->UninstallProtocolInterface,
-                ImageHandle,
-                &gEfiComponentNameProtocolGuid,
-                ComponentName
+                gBS->UninstallProtocolInterface, ImageHandle,
+                &gEfiComponentNameProtocolGuid, ComponentName
             );
         }
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            ImageHandle,
-            &gEfiComponentName2ProtocolGuid,
-            (VOID **) &ComponentName2
+            gBS->HandleProtocol, ImageHandle,
+            &gEfiComponentName2ProtocolGuid, (VOID **) &ComponentName2
         );
         if (!EFI_ERROR(Status)) {
             REFIT_CALL_3_WRAPPER(
-                gBS->UninstallProtocolInterface,
-                ImageHandle,
-                &gEfiComponentName2ProtocolGuid,
-                ComponentName2
+                gBS->UninstallProtocolInterface, ImageHandle,
+                &gEfiComponentName2ProtocolGuid, ComponentName2
             );
         }
 
@@ -1350,10 +1230,8 @@ EFI_STATUS EFIAPI NvmExpressLoad (
     VOID        *TestDriverBinding;
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiDriverBindingProtocolGuid,
-        NULL,
-        &TestDriverBinding
+        gBS->LocateProtocol, &gEfiDriverBindingProtocolGuid,
+        NULL, &TestDriverBinding
     );
     if (!EFI_ERROR(Status)) {
         return EFI_ALREADY_STARTED;
@@ -1375,11 +1253,8 @@ EFI_STATUS EFIAPI NvmExpressLoad (
     // EFI drivers that are on PCI and other plug in cards.
     gNvmExpressDriverSupportedEfiVersion.FirmwareVersion = 0x00020028;
     Status = REFIT_CALL_4_WRAPPER(
-        gBS->InstallMultipleProtocolInterfaces,
-        &ImageHandle,
-        &gEfiDriverSupportedEfiVersionProtocolGuid,
-        &gNvmExpressDriverSupportedEfiVersion,
-        NULL
+        gBS->InstallMultipleProtocolInterfaces, &ImageHandle,
+        &gEfiDriverSupportedEfiVersionProtocolGuid, &gNvmExpressDriverSupportedEfiVersion, NULL
     );
     if (EFI_ERROR(Status)) {
         Status = EFI_PROTOCOL_ERROR;

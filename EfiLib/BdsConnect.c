@@ -64,21 +64,16 @@ EFI_STATUS EFIAPI RefitConnectController (
     // DA-TAG: Do not connect controllers without device paths.
     //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        ControllerHandle,
-        &gEfiDevicePathProtocolGuid,
-        &DevicePath
+        gBS->HandleProtocol, ControllerHandle,
+        &gEfiDevicePathProtocolGuid, &DevicePath
     );
     if (EFI_ERROR(Status)) {
         return EFI_NOT_STARTED;
     }
 
     Status = REFIT_CALL_4_WRAPPER(
-        gBS->ConnectController,
-        ControllerHandle,
-        DriverImageHandle,
-        RemainingDevicePath,
-        Recursive
+        gBS->ConnectController, ControllerHandle,
+        DriverImageHandle, RemainingDevicePath, Recursive
     );
 
     return Status;
@@ -107,12 +102,9 @@ EFI_STATUS ScanDeviceHandles (
     // DA-TAG: Retrieve a list of handles with device paths
     //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &gEfiDevicePathProtocolGuid,
-        NULL,
-        HandleCount,
-        HandleBuffer
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiDevicePathProtocolGuid, NULL,
+        HandleCount, HandleBuffer
     );
     if (EFI_ERROR(Status)) {
         goto Error;
@@ -129,10 +121,8 @@ EFI_STATUS ScanDeviceHandles (
 
         // Retrieve a list of all the protocols on each handle
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->ProtocolsPerHandle,
-            (*HandleBuffer)[k],
-            &ProtocolGuidArray,
-            &ArrayCount
+            gBS->ProtocolsPerHandle, (*HandleBuffer)[k],
+            &ProtocolGuidArray, &ArrayCount
         );
         if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
@@ -166,11 +156,8 @@ EFI_STATUS ScanDeviceHandles (
 
                 // Retrieve the list of agents that have opened each protocol
                 Status = REFIT_CALL_4_WRAPPER(
-                    gBS->OpenProtocolInformation,
-                    (*HandleBuffer)[k],
-                    ProtocolGuidArray[ProtocolIndex],
-                    &OpenInfo,
-                    &OpenInfoCount
+                    gBS->OpenProtocolInformation, (*HandleBuffer)[k],
+                    ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
                 );
                 if (!EFI_ERROR(Status)) {
                     for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
@@ -271,12 +258,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     //         See notes under ScanDeviceHandles
     //Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, &AllHandleCount, &AllHandleBuffer);
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &gEfiDevicePathProtocolGuid,
-        NULL,
-        &AllHandleCount,
-        &AllHandleBuffer
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiDevicePathProtocolGuid, NULL,
+        &AllHandleCount, &AllHandleBuffer
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
@@ -378,10 +362,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                 if (DevTag) {
                     XStatus = REFIT_CALL_3_WRAPPER(
-                        gBS->HandleProtocol,
-                        AllHandleBuffer[i],
-                        &gEfiPciIoProtocolGuid,
-                        (void **) &PciIo
+                        gBS->HandleProtocol, AllHandleBuffer[i],
+                        &gEfiPciIoProtocolGuid, (void **) &PciIo
                     );
                     if (EFI_ERROR(XStatus)) {
                         #if REFIT_DEBUG > 0
@@ -391,21 +373,15 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     else {
                         // Read PCI BUS
                         REFIT_CALL_5_WRAPPER(
-                            PciIo->GetLocation,
-                            PciIo,
-                            &SegmentPCI,
-                            &BusPCI,
-                            &DevicePCI,
-                            &FunctionPCI
+                            PciIo->GetLocation, PciIo,
+                            &SegmentPCI, &BusPCI,
+                            &DevicePCI, &FunctionPCI
                         );
 
                         XStatus = REFIT_CALL_5_WRAPPER(
-                            PciIo->Pci.Read,
-                            PciIo,
-                            EfiPciIoWidthUint32,
-                            0,
-                            sizeof (Pci) / sizeof (UINT32),
-                            &Pci
+                            PciIo->Pci.Read, PciIo,
+                            EfiPciIoWidthUint32, 0,
+                            sizeof (Pci) / sizeof (UINT32), &Pci
                         );
                         if (EFI_ERROR(XStatus)) {
                             MakeConnection = FALSE;
@@ -421,7 +397,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             if (VGADevice) {
                                 // DA-TAG: Unable to reconnect later after disconnecting here
                                 //         Comment out and set MakeConnection to FALSE
-                                // REFIT_CALL_3_WRAPPER(gBS->DisconnectController, AllHandleBuffer[i], NULL, NULL);
+                                // REFIT_CALL_3_WRAPPER(
+                                //gBS->DisconnectController, AllHandleBuffer[i],
+                                //NULL, NULL
+                                //);
                                 MakeConnection = FALSE;
 
                                 #if REFIT_DEBUG > 0
@@ -458,12 +437,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                 if (!FoundGOP) {
                     XStatus = REFIT_CALL_5_WRAPPER(
-                        gBS->LocateHandleBuffer,
-                        ByProtocol,
-                        &gEfiGraphicsOutputProtocolGuid,
-                        NULL,
-                        &GOPCount,
-                        &GOPArray
+                        gBS->LocateHandleBuffer, ByProtocol,
+                        &gEfiGraphicsOutputProtocolGuid, NULL,
+                        &GOPCount, &GOPArray
                     );
                     if (!EFI_ERROR(XStatus)) {
                         for (m = 0; m < GOPCount; m++) {

@@ -138,8 +138,7 @@ VOID InitScreen (VOID) {
     // Get size of text console
     if (REFIT_CALL_4_WRAPPER(
         gST->ConOut->QueryMode, gST->ConOut,
-        gST->ConOut->Mode->Mode,
-        &ConWidth, &ConHeight
+        gST->ConOut->Mode->Mode, &ConWidth, &ConHeight
     ) != EFI_SUCCESS) {
         // Use default values on error
         ConWidth  = 80;
@@ -433,11 +432,11 @@ VOID SwitchToText (
         // Override Text Renderer Setting on Apple Firmware
         // DA-TAG: Investigate need ... was needed on MacPro but maybe not all Macs?
         //         Confirm if really needed on MacPro or else consider removing
-        EFI_CONSOLE_CONTROL_SCREEN_MODE ScreenMode = (egHasGraphics)
-            ? EfiConsoleControlScreenGraphics
-            : EfiConsoleControlScreenText;
-
-        Status = OcUseBuiltinTextOutput (ScreenMode);
+        Status = OcUseBuiltinTextOutput (
+            (egHasGraphics)
+                ? EfiConsoleControlScreenGraphics
+                : EfiConsoleControlScreenText
+        );
         if (!EFI_ERROR(Status)) {
             GlobalConfig.TextRenderer = TRUE;
 
@@ -467,13 +466,9 @@ VOID SwitchToText (
 
     // Get size of text console
     Status = REFIT_CALL_4_WRAPPER(
-        gST->ConOut->QueryMode,
-        gST->ConOut,
-        gST->ConOut->Mode->Mode,
-        &ConWidth,
-        &ConHeight
+        gST->ConOut->QueryMode, gST->ConOut,
+        gST->ConOut->Mode->Mode, &ConWidth, &ConHeight
     );
-
     if (EFI_ERROR(Status)) {
         // Use default values on error
         ConWidth  = 80;
@@ -555,7 +550,6 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
-    BOOLEAN   CheckMute = FALSE;
 
     if (GlobalConfig.DirectBoot) {
         // Reset error flag
@@ -566,7 +560,8 @@ VOID BeginExternalScreen (
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16  *MsgStr    =  NULL;
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
     if (!AllowGraphicsMode) {
@@ -596,9 +591,13 @@ VOID BeginExternalScreen (
 
         SwitchToText (UseGraphicsMode);
 
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
+        #endif
         DrawScreenHeader (Title);
+        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        #endif
     }
 
     // Reset error flag
@@ -645,17 +644,26 @@ VOID DrawScreenHeader (
     // Paint header background
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (i = 0; i < 3; i++) {
-        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, i);
+        REFIT_CALL_3_WRAPPER(
+            gST->ConOut->SetCursorPosition, gST->ConOut,
+            0, i
+        );
         Print (BlankLine);
     }
 
     // Print header text
-    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
-    Print (L"RefindPlus - %s", Title);
+    REFIT_CALL_3_WRAPPER(
+        gST->ConOut->SetCursorPosition, gST->ConOut,
+        3, 1
+    );
+    Print (L"RefindPlus Boot Manager ... %s", Title);
 
     // Reposition cursor
-    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
-    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_3_WRAPPER(
+        gST->ConOut->SetCursorPosition, gST->ConOut,
+        0, 4
+    );
 } // VOID DrawScreenHeader()
 
 //
@@ -739,13 +747,15 @@ VOID PrintUglyText (
 VOID PauseForKey (VOID) {
     UINTN   i, WaitOut;
     BOOLEAN Breakout  = FALSE;
-    BOOLEAN CheckMute = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16  *MsgStr    =  NULL;
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
+    #endif
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
@@ -758,7 +768,9 @@ VOID PauseForKey (VOID) {
     PrintUglyText (L"                                                          ", NEXTLINE);
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
@@ -854,12 +866,19 @@ VOID PauseSeconds (
 ) {
     UINTN   i, WaitOut;
     BOOLEAN Breakout  = FALSE;
-    BOOLEAN CheckMute = FALSE;
 
-    // Clear the Keystroke Buffer
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
+
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
+    #endif
+    // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
@@ -893,10 +912,14 @@ VOID PauseSeconds (
     }
     #endif
 
-    // Clear the Keystroke Buffer
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
+    #endif
+    // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 } // VOID PauseSeconds()
 
 // Halt for a specified number of seconds
@@ -905,8 +928,10 @@ VOID HaltSeconds (
     UINTN Seconds
 ) {
     UINTN   i;
-    BOOLEAN CheckMute = FALSE;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Halting for %d Seconds", Seconds);
@@ -924,10 +949,14 @@ VOID HaltSeconds (
     ALT_LOG(1, LOG_LINE_NORMAL, L"Halt Terminated on Timeout");
     #endif
 
-    // Clear the Keystroke Buffer
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
+    #endif
+    // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 } // VOID HaltSeconds()
 
 #if REFIT_DEBUG > 0
@@ -943,14 +972,23 @@ VOID DebugPause (VOID) {
 
 VOID RefitDeadLoop (VOID) {
     UINTN   index;
+
+    #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
 
     MY_MUTELOGGER_SET;
+    #endif
     for (;;) {
         ReadAllKeyStrokes();
-        REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
+
+        REFIT_CALL_3_WRAPPER(
+            gBS->WaitForEvent, 1,
+            &gST->ConIn->WaitForKey, &index
+        );
     }
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 } // VOID RefitDeadLoop()
 
 //

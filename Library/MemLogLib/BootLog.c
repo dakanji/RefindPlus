@@ -127,10 +127,8 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
 
     // Get RootDir from device we are loaded from
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        gImageHandle,
-        &gEfiLoadedImageProtocolGuid,
-        (VOID **) &LoadedImage
+        gBS->HandleProtocol, gImageHandle,
+        &gEfiLoadedImageProtocolGuid, (VOID **) &LoadedImage
     );
 
     if (EFI_ERROR(Status)) {

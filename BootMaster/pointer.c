@@ -34,12 +34,12 @@
 
 UINTN                           NumSPointerDevices = 0;
 EFI_GUID                        SPointerGuid       = EFI_SIMPLE_POINTER_PROTOCOL_GUID;
-EFI_HANDLE                     *SPointerHandles    = NULL;
-EFI_SIMPLE_POINTER_PROTOCOL   **SPointerProtocol   = NULL;
+EFI_HANDLE                     *HandleS            = NULL;
+EFI_SIMPLE_POINTER_PROTOCOL   **ProtocolS          = NULL;
 UINTN                           NumAPointerDevices = 0;
 EFI_GUID                        APointerGuid       = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
-EFI_HANDLE                     *APointerHandles    = NULL;
-EFI_ABSOLUTE_POINTER_PROTOCOL **APointerProtocol   = NULL;
+EFI_HANDLE                     *HandleA            = NULL;
+EFI_ABSOLUTE_POINTER_PROTOCOL **ProtocolA          = NULL;
 
 UINTN                           LastXPos           = 0;
 UINTN                           LastYPos           = 0;
@@ -70,27 +70,20 @@ VOID pdInitialize() {
         // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
         UINTN NumPointerHandles = 0;
         EFI_STATUS handlestatus = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer,
-            ByProtocol,
-            &APointerGuid,
-            NULL,
-            &NumPointerHandles,
-            &APointerHandles
+            gBS->LocateHandleBuffer, ByProtocol,
+            &APointerGuid, NULL,
+            &NumPointerHandles, &HandleA
         );
 
         if (!EFI_ERROR(handlestatus)) {
-            APointerProtocol = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
+            ProtocolA = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
             UINTN Index;
             for (Index = 0; Index < NumPointerHandles; Index++) {
                 // Open the protocol on the handle
                 EFI_STATUS status = REFIT_CALL_6_WRAPPER(
-                    gBS->OpenProtocol,
-                    APointerHandles[Index],
-                    &APointerGuid,
-                    (VOID **) &APointerProtocol[NumAPointerDevices],
-                    SelfImageHandle,
-                    NULL,
-                    EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+                    gBS->OpenProtocol, HandleA[Index],
+                    &APointerGuid, (VOID **) &ProtocolA[NumAPointerDevices],
+                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                 );
                 if (status == EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
@@ -112,28 +105,21 @@ VOID pdInitialize() {
         // Get all handles that support simple pointer protocol (mice)
         NumPointerHandles = 0;
         handlestatus = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer,
-            ByProtocol,
-            &SPointerGuid,
-            NULL,
-            &NumPointerHandles,
-            &SPointerHandles
+            gBS->LocateHandleBuffer, ByProtocol,
+            &SPointerGuid, NULL,
+            &NumPointerHandles, &HandleS
         );
 
         if (!EFI_ERROR(handlestatus)) {
-            SPointerProtocol = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
+            ProtocolS = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
             UINTN Index;
             BOOLEAN GotMouse = FALSE;
             for (Index = 0; Index < NumPointerHandles; Index++) {
                 // Open the protocol on the handle
                 EFI_STATUS status = REFIT_CALL_6_WRAPPER(
-                    gBS->OpenProtocol,
-                    SPointerHandles[Index],
-                    &SPointerGuid,
-                    (VOID **) &SPointerProtocol[NumSPointerDevices],
-                    SelfImageHandle,
-                    NULL,
-                    EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+                    gBS->OpenProtocol, HandleS[Index],
+                    &SPointerGuid, (VOID **) &ProtocolS[NumSPointerDevices],
+                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                 );
                 if (status == EFI_SUCCESS) {
                     GotMouse = TRUE;
@@ -183,34 +169,28 @@ VOID pdCleanup() {
     PointerAvailable = FALSE;
     pdClear();
 
-    if (APointerHandles) {
+    if (HandleA) {
         for (Index = 0; Index < NumAPointerDevices; Index++) {
             REFIT_CALL_4_WRAPPER(
-                gBS->CloseProtocol,
-                APointerHandles[Index],
-                &APointerGuid,
-                SelfImageHandle,
-                NULL
+                gBS->CloseProtocol, HandleA[Index],
+                &APointerGuid, SelfImageHandle, NULL
             );
         }
-        MY_FREE_POOL(APointerHandles);
+        MY_FREE_POOL(HandleA);
     }
 
-    MY_FREE_POOL(APointerProtocol);
-    if (SPointerHandles) {
+    MY_FREE_POOL(ProtocolA);
+    if (HandleS) {
         for (Index = 0; Index < NumSPointerDevices; Index++) {
             REFIT_CALL_4_WRAPPER(
-                gBS->CloseProtocol,
-                SPointerHandles[Index],
-                &SPointerGuid,
-                SelfImageHandle,
-                NULL
+                gBS->CloseProtocol, HandleS[Index],
+                &SPointerGuid, SelfImageHandle, NULL
             );
         }
-        MY_FREE_POOL(SPointerHandles);
+        MY_FREE_POOL(HandleS);
     }
 
-    MY_FREE_POOL(SPointerProtocol);
+    MY_FREE_POOL(ProtocolS);
     MY_FREE_IMAGE(MouseImage);
 
     NumAPointerDevices = 0;
@@ -248,9 +228,9 @@ EFI_EVENT pdWaitEvent (UINTN Index) {
     }
 
     if (Index >= NumAPointerDevices) {
-        return SPointerProtocol[Index - NumAPointerDevices]->WaitForInput;
+        return ProtocolS[Index - NumAPointerDevices]->WaitForInput;
     }
-    return APointerProtocol[Index]->WaitForInput;
+    return ProtocolA[Index]->WaitForInput;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,12 +251,10 @@ EFI_STATUS pdUpdateState() {
     BOOLEAN LastHolding = State.Holding;
 
     UINTN Index;
+    EFI_STATUS PointerStatus;
     for (Index = 0; Index < NumAPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = REFIT_CALL_2_WRAPPER(
-            APointerProtocol[Index]->GetState,
-            APointerProtocol[Index],
-            &APointerState
-        );
+        PointerStatus = REFIT_CALL_2_WRAPPER(ProtocolA[Index]->GetState, ProtocolA[Index], &APointerState);
+
         // if new state found and we have not already found a new state
         if (!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
@@ -284,27 +262,24 @@ EFI_STATUS pdUpdateState() {
 #ifdef EFI32
             State.X = (UINTN) DivU64x64Remainder (
                 APointerState.CurrentX * ScreenW,
-                APointerProtocol[Index]->Mode->AbsoluteMaxX,
+                ProtocolA[Index]->Mode->AbsoluteMaxX,
                 NULL
             );
             State.Y = (UINTN) DivU64x64Remainder (
                 APointerState.CurrentY * ScreenH,
-                APointerProtocol[Index]->Mode->AbsoluteMaxY,
+                ProtocolA[Index]->Mode->AbsoluteMaxY,
                 NULL
             );
 #else
-            State.X = (APointerState.CurrentX * ScreenW) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
-            State.Y = (APointerState.CurrentY * ScreenH) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
+            State.X = (APointerState.CurrentX * ScreenW) / ProtocolA[Index]->Mode->AbsoluteMaxX;
+            State.Y = (APointerState.CurrentY * ScreenH) / ProtocolA[Index]->Mode->AbsoluteMaxY;
 #endif
             State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
         }
     }
     for (Index = 0; Index < NumSPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = REFIT_CALL_2_WRAPPER(
-            SPointerProtocol[Index]->GetState,
-            SPointerProtocol[Index],
-            &SPointerState
-        );
+        PointerStatus = REFIT_CALL_2_WRAPPER(ProtocolS[Index]->GetState, ProtocolS[Index], &SPointerState);
+
         // if new state found and we have not already found a new state
         if (!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
@@ -315,19 +290,19 @@ EFI_STATUS pdUpdateState() {
 #ifdef EFI32
 	    TargetX = State.X + (INTN) DivS64x64Remainder (
             SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
-            SPointerProtocol[Index]->Mode->ResolutionX,
+            ProtocolS[Index]->Mode->ResolutionX,
             NULL
         );
             TargetY = State.Y + (INTN) DivS64x64Remainder (
                 SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
-                SPointerProtocol[Index]->Mode->ResolutionY,
+                ProtocolS[Index]->Mode->ResolutionY,
                 NULL
             );
 #else
             TargetX = State.X + SPointerState.RelativeMovementX *
-                GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionX;
+                GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionX;
             TargetY = State.Y + SPointerState.RelativeMovementY *
-                GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionY;
+                GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionY;
 #endif
 
             if (TargetX < 0) {

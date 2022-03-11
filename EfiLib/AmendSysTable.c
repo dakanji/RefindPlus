@@ -123,11 +123,8 @@ VOID OurDispatchEventNotifies (
     // Dispatch pending notifications
     while (!IsListEmpty (Head)) {
         Event = REFIT_CALL_4_WRAPPER(
-            CR,
-            Head->ForwardLink,
-            IEVENT,
-            NotifyLink,
-            EVENT_SIGNATURE
+            CR, Head->ForwardLink,
+            IEVENT, NotifyLink, EVENT_SIGNATURE
         );
         REFIT_CALL_1_WRAPPER(RemoveEntryList, &Event->NotifyLink);
         Event->NotifyLink.ForwardLink = NULL;
@@ -143,11 +140,7 @@ VOID OurDispatchEventNotifies (
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
 
-        REFIT_CALL_2_WRAPPER(
-            Event->NotifyFunction,
-            Event,
-            Event->NotifyContext
-        );
+        REFIT_CALL_2_WRAPPER(Event->NotifyFunction, Event, Event->NotifyContext);
 
         // Check for next pending event
         OurAcquireLock (&gEventQueueLock);

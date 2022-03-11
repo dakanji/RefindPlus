@@ -1527,12 +1527,9 @@ BOOLEAN DuplicatesFallback (
     }
 
     Status = REFIT_CALL_5_WRAPPER(
-        Volume->RootDir->Open,
-        Volume->RootDir,
-        &FileHandle,
-        FileName,
-        EFI_FILE_MODE_READ,
-        0
+        Volume->RootDir->Open, Volume->RootDir,
+        &FileHandle, FileName,
+        EFI_FILE_MODE_READ, 0
     );
 
     if (Status == EFI_SUCCESS) {
@@ -1546,12 +1543,9 @@ BOOLEAN DuplicatesFallback (
     MY_FREE_POOL(FileInfo);
 
     Status = REFIT_CALL_5_WRAPPER(
-        Volume->RootDir->Open,
-        Volume->RootDir,
-        &FallbackHandle,
-        FALLBACK_FULLNAME,
-        EFI_FILE_MODE_READ,
-        0
+        Volume->RootDir->Open, Volume->RootDir,
+        &FallbackHandle, FALLBACK_FULLNAME,
+        EFI_FILE_MODE_READ, 0
     );
 
     if (Status == EFI_SUCCESS) {
@@ -1570,17 +1564,13 @@ BOOLEAN DuplicatesFallback (
         FallbackContents = AllocatePool (FallbackSize);
         if (FileContents && FallbackContents) {
             Status = REFIT_CALL_3_WRAPPER(
-                FileHandle->Read,
-                FileHandle,
-                &FileSize,
-                FileContents
+                FileHandle->Read, FileHandle,
+                &FileSize, FileContents
             );
             if (Status == EFI_SUCCESS) {
-                Status = REFIT_CALL_3_WRAPPER
-                (FallbackHandle->Read,
-                    FallbackHandle,
-                    &FallbackSize,
-                    FallbackContents
+                Status = REFIT_CALL_3_WRAPPER(
+                    FallbackHandle->Read, FallbackHandle,
+                    &FallbackSize, FallbackContents
                 );
             }
             if (Status == EFI_SUCCESS) {
@@ -1625,12 +1615,9 @@ BOOLEAN IsSymbolicLink (
     UINTN            FileSize2 = 0;
 
     Status = REFIT_CALL_5_WRAPPER(
-        Volume->RootDir->Open,
-        Volume->RootDir,
-        &FileHandle,
-        FullName,
-        EFI_FILE_MODE_READ,
-        0
+        Volume->RootDir->Open, Volume->RootDir,
+        &FileHandle, FullName,
+        EFI_FILE_MODE_READ, 0
     );
 
     if (Status == EFI_SUCCESS) {
@@ -1816,18 +1803,15 @@ CHAR16 * RuniPXEDiscover (
     Status = REFIT_CALL_6_WRAPPER(
         gBS->LoadImage, FALSE,
         SelfImageHandle, FilePath,
-        NULL, 0,
-        &iPXEHandle
+        NULL, 0, &iPXEHandle
     );
     if (Status != 0) {
         return NULL;
     }
 
     REFIT_CALL_3_WRAPPER(
-        gBS->StartImage,
-        iPXEHandle,
-        &boot_info_size,
-        &boot_info
+        gBS->StartImage, iPXEHandle,
+        &boot_info_size, &boot_info
     );
 
     return boot_info;
@@ -3270,10 +3254,8 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_FIRMWARE:
                 if (EfivarGetRaw (
-                    &GlobalGuid,
-                    L"OsIndicationsSupported",
-                    &ItemBuffer,
-                    NULL
+                    &GlobalGuid, L"OsIndicationsSupported",
+                    &ItemBuffer, NULL
                 ) != EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL,

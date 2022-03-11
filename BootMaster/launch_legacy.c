@@ -164,7 +164,11 @@ EFI_STATUS ActivateMbrPartition (
     BOOLEAN              HaveBootCode;
 
     // Read MBR
-    Status = REFIT_CALL_5_WRAPPER(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
+    Status = REFIT_CALL_5_WRAPPER(
+        BlockIO->ReadBlocks, BlockIO,
+        BlockIO->Media->MediaId, 0,
+        512, SectorBuffer
+    );
     if (EFI_ERROR(Status)) {
         return Status;
     }
@@ -211,12 +215,9 @@ EFI_STATUS ActivateMbrPartition (
 
     // Write MBR
     Status = REFIT_CALL_5_WRAPPER(
-        BlockIO->WriteBlocks,
-        BlockIO,
-        BlockIO->Media->MediaId,
-        0,
-        512,
-        SectorBuffer
+        BlockIO->WriteBlocks, BlockIO,
+        BlockIO->Media->MediaId, 0,
+        512, SectorBuffer
     );
 
     if (EFI_ERROR(Status)) {
@@ -231,12 +232,9 @@ EFI_STATUS ActivateMbrPartition (
         for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
             // Read current EMBR
             Status = REFIT_CALL_5_WRAPPER(
-                BlockIO->ReadBlocks,
-                BlockIO,
-                BlockIO->Media->MediaId,
-                ExtCurrent,
-                512,
-                SectorBuffer
+                BlockIO->ReadBlocks, BlockIO,
+                BlockIO->Media->MediaId, ExtCurrent,
+                512, SectorBuffer
             );
 
             if (EFI_ERROR(Status)) {
@@ -274,12 +272,9 @@ EFI_STATUS ActivateMbrPartition (
 
             // Write current EMBR
             Status = REFIT_CALL_5_WRAPPER(
-                BlockIO->WriteBlocks,
-                BlockIO,
-                BlockIO->Media->MediaId,
-                ExtCurrent,
-                512,
-                SectorBuffer
+                BlockIO->WriteBlocks, BlockIO,
+                BlockIO->Media->MediaId, ExtCurrent,
+                512, SectorBuffer
             );
 
             if (EFI_ERROR(Status)) {
@@ -302,13 +297,9 @@ EFI_STATUS WriteBootDiskHint (
    EFI_STATUS Status;
 
    Status = EfivarSetRaw (
-       &AppleVariableVendorID,
-       L"BootCampHD",
-       WholeDiskDevicePath,
-       GetDevicePathSize (WholeDiskDevicePath),
-       TRUE
+       &AppleVariableVendorID, L"BootCampHD",
+       WholeDiskDevicePath, GetDevicePathSize (WholeDiskDevicePath), TRUE
    );
-
    if (EFI_ERROR(Status)) {
        return Status;
    }
@@ -363,24 +354,18 @@ VOID ExtractLegacyLoaderPaths (
         Handle = Handles[HandleIndex];
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handle,
-            &LoadedImageProtocol,
-            (VOID **) &LoadedImage
+            gBS->HandleProtocol, Handle,
+            &LoadedImageProtocol, (VOID **) &LoadedImage
         );
-
         if (EFI_ERROR(Status)) {
             // This can only happen if the firmware scewed up ... ignore it.
             continue;
         }
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            LoadedImage->DeviceHandle,
-            &DevicePathProtocol,
-            (VOID **) &DevicePath
+            gBS->HandleProtocol, LoadedImage->DeviceHandle,
+            &DevicePathProtocol, (VOID **) &DevicePath
         );
-
         if (EFI_ERROR(Status)) {
             // This happens ... ignore it.
             continue;
@@ -459,13 +444,9 @@ EFI_STATUS StartLegacyImageList (
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         Status = REFIT_CALL_6_WRAPPER(
-            gBS->LoadImage,
-            FALSE,
-            SelfImageHandle,
-            DevicePaths[DevicePathIndex],
-            NULL,
-            0,
-            &ChildImageHandle
+            gBS->LoadImage, FALSE,
+            SelfImageHandle, DevicePaths[DevicePathIndex],
+            NULL, 0, &ChildImageHandle
         );
         ReturnStatus = Status;
 
@@ -483,12 +464,9 @@ EFI_STATUS StartLegacyImageList (
     }
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        ChildImageHandle,
-        &LoadedImageProtocol,
-        (VOID **) &ChildLoadedImage
+        gBS->HandleProtocol, ChildImageHandle,
+        &LoadedImageProtocol, (VOID **) &ChildLoadedImage
     );
-
     ReturnStatus = Status;
     if (CheckError (Status, L"While Fetching LoadedImageProtocol Handle!!")) {
         if (ErrorInStep != NULL) {
@@ -512,8 +490,7 @@ EFI_STATUS StartLegacyImageList (
     UninitRefitLib();
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->StartImage,
-        ChildImageHandle,
+        gBS->StartImage, ChildImageHandle,
         NULL, NULL
     );
     ReturnStatus = Status;
@@ -951,8 +928,7 @@ VOID ScanLegacyUEFI (
     // If LegacyBios protocol is not implemented on this platform, then
     //   we do not support this type of legacy boot on this machine.
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiLegacyBootProtocolGuid,
+        gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios
     );
     if (EFI_ERROR(Status)) {
@@ -1163,8 +1139,7 @@ VOID FindLegacyBootType (VOID) {
 
     // UEFI-style legacy BIOS support is only available with some EFI implementations
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiLegacyBootProtocolGuid,
+        gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios
     );
     if (!EFI_ERROR(Status)) {

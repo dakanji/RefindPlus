@@ -514,9 +514,9 @@
 #
 #use_graphics_for osx,linux
 
-# While using NVRAM works with most computers, this can increase wear
-# and tear on the motherboard's NVRAM. In situations where the NVRAM is
-# old and worn out, it may fail to work and lead to an inability to boot.
+# While using the NVRAM works with most computers, this can increase wear
+# and tear on the motherboard's NVRAM. Under conditions where the NVRAM is
+# old and/or worn out, it may then fail and result in an inability to boot.
 # Storing variables on disk is a viable alternative and RefindPlus can save
 # its variables to a folder on the filesystem instead. This will however not
 # work if RefindPlus is on a filesystem that is read-only to the EFI, such as
@@ -527,7 +527,7 @@
 # HiddenTools, and HiddenLegacy variables and does not apply to any variables from
 # other processes/libraries (These are always written to the motherboard's NVRAM).
 #
-# Stores RefindPlus variables to the filesystem when commented out
+# Stores RefindPlus-Specific variables on the filesystem when commented out
 #
 #use_nvram
 
@@ -539,9 +539,10 @@
 #
 #
 # When scanning volumes for EFI bootloaders, RefindPlus always looks for
-# the MacOS and Microsoft Windows bootloaders in their normal locations,
-# and scans the root directory and all sub folders under the "EFI" folder
-# for additional boot loaders, but does not recurse into these locations.
+# the MacOS and Microsoft Windows bootloaders in their normal locations
+# and scans the root directory as well as sub folders under the "EFI"
+# folder for more bootloaders (Does not recurse into sub folders).
+#
 # The "also_scan_dirs" option adds more directories to the scan list and
 # directories are specified relative to the volume's root directory. This
 # option applies to ALL the volumes that RefindPlus scans UNLESS a volume

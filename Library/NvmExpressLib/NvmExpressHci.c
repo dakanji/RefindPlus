@@ -891,12 +891,9 @@ VOID EFIAPI NvmeShutdownAllControllers (
     NVME_CONTROLLER_PRIVATE_DATA        *Private;
 
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &gEfiPciIoProtocolGuid,
-        NULL,
-        &HandleCount,
-        &Handles
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiPciIoProtocolGuid, NULL,
+        &HandleCount, &Handles
     );
     if (EFI_ERROR (Status)) {
         HandleCount = 0;
@@ -904,11 +901,8 @@ VOID EFIAPI NvmeShutdownAllControllers (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Status = REFIT_CALL_4_WRAPPER(
-            gBS->OpenProtocolInformation,
-            Handles[HandleIndex],
-            &gEfiPciIoProtocolGuid,
-            &OpenInfos,
-            &OpenInfoCount
+            gBS->OpenProtocolInformation, Handles[HandleIndex],
+            &gEfiPciIoProtocolGuid, &OpenInfos, &OpenInfoCount
         );
         if (EFI_ERROR (Status)) {
             continue;
@@ -920,13 +914,9 @@ VOID EFIAPI NvmeShutdownAllControllers (
             if (((OpenInfos[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) != 0) &&
             (OpenInfos[OpenInfoIndex].AgentHandle == gImageHandle)) {
                 Status = REFIT_CALL_6_WRAPPER(
-                    gBS->OpenProtocol,
-                    OpenInfos[OpenInfoIndex].ControllerHandle,
-                    &gEfiNvmExpressPassThruProtocolGuid,
-                    (VOID **) &NvmePassThru,
-                    NULL,
-                    NULL,
-                    EFI_OPEN_PROTOCOL_GET_PROTOCOL
+                    gBS->OpenProtocol, OpenInfos[OpenInfoIndex].ControllerHandle,
+                    &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &NvmePassThru,
+                    NULL, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL
                 );
                 if (EFI_ERROR (Status)) {
                     continue;
@@ -978,10 +968,8 @@ VOID NvmeRegisterShutdownNotification (VOID) {
     mNvmeControllerNumber++;
     if (mNvmeControllerNumber == 1) {
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol,
-            &gEfiResetNotificationProtocolGuid,
-            NULL,
-            (VOID **) &ResetNotify
+            gBS->LocateProtocol, &gEfiResetNotificationProtocolGuid,
+            NULL, (VOID **) &ResetNotify
         );
         if (!EFI_ERROR (Status)) {
             ResetNotify->RegisterResetNotify (ResetNotify, NvmeShutdownAllControllers);
@@ -1001,10 +989,8 @@ VOID NvmeUnregisterShutdownNotification (VOID) {
     mNvmeControllerNumber--;
     if (mNvmeControllerNumber == 0) {
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol,
-            &gEfiResetNotificationProtocolGuid,
-            NULL,
-            (VOID **) &ResetNotify
+            gBS->LocateProtocol, &gEfiResetNotificationProtocolGuid,
+            NULL, (VOID **) &ResetNotify
         );
         if (!EFI_ERROR (Status)) {
             ResetNotify->UnregisterResetNotify (ResetNotify, NvmeShutdownAllControllers);

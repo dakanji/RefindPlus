@@ -148,12 +148,9 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
     // Get block i/o
     if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Volume->DeviceHandle,
-            &BlockIoProtocol,
-            (VOID **) &(Volume->BlockIO)
+            gBS->HandleProtocol, Volume->DeviceHandle,
+            &BlockIoProtocol, (VOID **) &(Volume->BlockIO)
         );
-
         if (EFI_ERROR(Status)) {
             Volume->BlockIO = NULL;
             Print (L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
@@ -177,24 +174,18 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
     // Read the MBR and store it in GptData->ProtectiveMBR.
     if (Status == EFI_SUCCESS) {
         Status = REFIT_CALL_5_WRAPPER(
-            Volume->BlockIO->ReadBlocks,
-            Volume->BlockIO,
-            Volume->BlockIO->Media->MediaId,
-            0,
-            sizeof (MBR_RECORD),
-            (VOID*) GptData->ProtectiveMBR
+            Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+            Volume->BlockIO->Media->MediaId, 0,
+            sizeof (MBR_RECORD), (VOID*) GptData->ProtectiveMBR
         );
     }
 
     // Read the GPT header and store it in GptData->Header.
     if (Status == EFI_SUCCESS) {
         Status = REFIT_CALL_5_WRAPPER(
-            Volume->BlockIO->ReadBlocks,
-            Volume->BlockIO,
-            Volume->BlockIO->Media->MediaId,
-            1,
-            sizeof (GPT_HEADER),
-            GptData->Header
+            Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+            Volume->BlockIO->Media->MediaId, 1,
+            sizeof (GPT_HEADER), GptData->Header
         );
     }
 
@@ -211,12 +202,9 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
             if (Status == EFI_SUCCESS)
                 Status = REFIT_CALL_5_WRAPPER(
-                    Volume->BlockIO->ReadBlocks,
-                    Volume->BlockIO,
-                    Volume->BlockIO->Media->MediaId,
-                    GptData->Header->entry_lba,
-                    BufferSize,
-                    GptData->Entries
+                    Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+                    Volume->BlockIO->Media->MediaId, GptData->Header->entry_lba,
+                    BufferSize, GptData->Entries
                 );
 
             // Check CRC status of table

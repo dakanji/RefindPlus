@@ -30,38 +30,34 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 EFI_STATUS RP_ApfsConnectParentDevice (
     VOID
 ) {
-  EFI_STATUS       Status;
-  EFI_STATUS       XStatus;
-  UINTN            HandleCount;
-  EFI_HANDLE       *HandleBuffer;
-  UINTN            Index;
+    EFI_STATUS       Status;
+    EFI_STATUS       XStatus;
+    UINTN            HandleCount;
+    EFI_HANDLE       *HandleBuffer;
+    UINTN            Index;
 
-  HandleCount = 0;
-  Status = REFIT_CALL_5_WRAPPER(
-      gBS->LocateHandleBuffer,
-      ByProtocol,
-      &gEfiBlockIoProtocolGuid,
-      NULL,
-      &HandleCount,
-      &HandleBuffer
-  );
+    HandleCount = 0;
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiBlockIoProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (!EFI_ERROR(Status)) {
+        Status = EFI_NOT_FOUND;
 
-  if (!EFI_ERROR(Status)) {
-      Status = EFI_NOT_FOUND;
+        for (Index = 0; Index < HandleCount; ++Index) {
+            XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
+            if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
+                if (EFI_ERROR(Status)) {
+                    Status = XStatus;
+                }
+            }
+        }
 
-      for (Index = 0; Index < HandleCount; ++Index) {
-          XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
-          if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
-              if (EFI_ERROR(Status)) {
-                  Status = XStatus;
-              }
-          }
-      }
+        FreePool (HandleBuffer);
+    }
 
-      FreePool (HandleBuffer);
-  }
-
-  return Status;
+    return Status;
 }
 
 EFI_STATUS RP_ApfsConnectDevices (
@@ -72,10 +68,8 @@ EFI_STATUS RP_ApfsConnectDevices (
 
 
     REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        &gEfiPartitionInfoProtocolGuid,
-        NULL,
-        &PartitionInfoInterface
+        gBS->LocateProtocol, &gEfiPartitionInfoProtocolGuid,
+        NULL, &PartitionInfoInterface
     );
     Status = RP_ApfsConnectParentDevice();
 

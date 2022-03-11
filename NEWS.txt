@@ -1,53 +1,53 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
-- Adds `RansomDrives` Feature
-  * Some types of firmware, notably on HP Notebooks, may lock some partitions
-    - This renders them inaccessible or may even lead to RefindPlus hanging
-  * Such partitions can be unlocked by setting a new `ransom_drives` configuration token
-  * This option currently always disabled on Apple firmware
 - Adds `DriverPriority` Feature
   * Asigns a higher priority to drivers loaded by RefindPlus
   * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
   * Currently tied to the `RansomDrives` Feature and only activated when that feature is active
+- Adds `RansomDrives` Feature
+  * Some types of firmware, notably on HP Notebooks, may lock some partitions
+    - This renders them inaccessible or may even lead to RefindPlus hanging
+  * Such partitions can be unlocked by setting a new `ransom_drives` configuration token
+  * This option is currently always disabled on Apple firmware
 - Adds `DxeDriverRescan` Feature
   * Controls scanning for newly revealed DXE drivers when connecting handles
     - Switch on or off with a new `dxe_driver_rescan` configuration token
   * This was previously done by default but may negatively impact loading speed
   * Should only be activated when specifically required
     - Should not be required on most firmware
-  * This option currently always disabled on Apple firmware
+  * This option is currently always disabled on Apple firmware
 - Adds `HaltSeconds` Function
-  * As `PauseSeconds` but does not terminate on keypress
+  * Works as `PauseSeconds` does, but does not terminate on keypress
 - Fixes Unicode Collation
   * Now checks for and uses Unicode Collation Protocol instances that support English
   * Previously simply selected the first instance found (Inherited)
   * This should allow proper support for languages using unicode text
 - Improves `TransientBoot` Feature
-  * Now removes pre-existing `PreviousBoot` instances
+  * Now removes pre-existing `PreviousBoot` instances when booting with this option set
 - Improves `DirectBoot` Feature
-  * Minimises screen shudder when `ESC` key is held down to override DirectBoot
+  * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
 - Improves `ScreenShot` Feature
   * Properly limited to one (1) sreenshot per keypress
-    - Removes limitation of key press not continuing beyond the on-screen message display
-  * Fixes Screenshots being only functional for the main screen
+    - Removes limitation of the keypress not continuing beyond the on-screen message display
+  * Fixes Screenshots being only functional for the main RefindPlus screen
     - This bug was introduced in v0.13.2.AN (Commit 99da7ce)
 - Improves `ProtectNVRAM` Feature
   * Now clears existing instances of blocked variables
   * Adds `UnlockID` and `UnlockIDCopy` to filtered items
     - These are not certificates but work in concert with the certificates
-    - Not required once certificates are filtered and additionally, filtering these reduces NVRAM writes
+    - Hence, not required once certificates are filtered and additionally, filtering these reduces NVRAM writes
 - Improves Identification of Linux Instances
   * `vmlinuz`, `bzImage`, and `kernel` loaders are now accounted for as Linux loaders
-  * Hence the `ProtectNVRAM` feature is not applied to such loaders
+  * The `ProtectNVRAM` feature is now not applied to such loaders
   * The `grub` loader was already accounted for
 - Improves OS Boot Filtering
   * The `OSType` flag is now taken into account
 - Improves Load Error/Warning Display
   * The `ContinueOnWarning` feature is forced on temporarily if required
 - Removes `BootKicker` feature
-  * The feature was added as part of attempts to allow the MacPro5,1 to show the RefindPlus screen
-  * This was ultimately achieved via other means
-  * The feature never actually worked properly and hence, there is no need for it to remain
+  * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
+  * This was ultimately achieved via other means but the feature was maintained for potential benefits
+  * The feature never actually worked properly however, hence the removal
 - Amends Default Loader Scan for APFS Support Volumes
   * APFS `Recovery`, `Update` and `VM` volumes are now added to the `DontScanVolume` list by default
 - Amends Scan for `.VolumeIcons` and `VolumeBadges`
@@ -55,10 +55,13 @@
 - Amends System Table Reallocations
   * No longer copies memory for system table reallocations
   * Some Mac models fail to boot with this following recent firmware updates
+  * Other recent changes to RefindPlus may have also affected booting 'FileVault' encrypted volumes
 - Amends 'HandleProtocol' Stashing
   * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
+- Amends 'CleanNvram' Feature
+  * The Emulated NVRAM on the filesystem is now also cleared
 - Renames the `SilentBoot` Feature as `DirectBoot`
-    * This more accurately describes the feature.
+  * This more accurately describes the feature.
 - Extends fixes on Mac Recovery Implementation for MacOS on APFS
   * Adjusted to cover all MacOS instances on APFS
   * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders

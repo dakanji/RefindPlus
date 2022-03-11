@@ -279,11 +279,8 @@ EFI_STATUS RenameFile (
     StrCat (NewInfo->FileName, NewName);
 
     Status = REFIT_CALL_4_WRAPPER(
-        BaseDir->SetInfo,
-        FilePtr,
-        &gEfiFileInfoGuid,
-        NewInfoSize,
-        (VOID *) NewInfo
+        BaseDir->SetInfo, FilePtr,
+        &gEfiFileInfoGuid, NewInfoSize, (VOID *) NewInfo
     );
 
     MY_FREE_POOL(NewInfo);
@@ -337,12 +334,9 @@ EFI_STATUS CreateDirectories (
         (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL
     ) {
         REFIT_CALL_5_WRAPPER(
-            BaseDir->Open,
-            BaseDir,
-            &TheDir,
-            FileName,
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-            EFI_FILE_DIRECTORY
+            BaseDir->Open, BaseDir,
+            &TheDir, FileName,
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
         );
 
         Status = REFIT_CALL_1_WRAPPER(TheDir->Close, TheDir);
@@ -1003,11 +997,8 @@ EFI_STATUS SetBootDefault (
                 } // for
 
                 Status = EfivarSetRaw (
-                   &GlobalGuid,
-                   L"BootOrder",
-                   NewBootOrder,
-                   j * sizeof (UINT16),
-                   TRUE
+                   &GlobalGuid, L"BootOrder",
+                   NewBootOrder, j * sizeof (UINT16), TRUE
                 );
 
                 MY_FREE_POOL(NewBootOrder);
@@ -1047,7 +1038,10 @@ EFI_STATUS CreateNvramEntry (
 
     if ((Status == EFI_SUCCESS) && (AlreadyExists == FALSE)) {
         VarName = PoolPrint (L"Boot%04x", BootNum);
-        Status  = EfivarSetRaw (&GlobalGuid, VarName, Entry, Size, TRUE);
+        Status  = EfivarSetRaw (
+            &GlobalGuid, VarName,
+            Entry, Size, TRUE
+        );
         MY_FREE_POOL(VarName);
     }
     MY_FREE_POOL(Entry);
@@ -1138,10 +1132,9 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     #endif
 
     Status = EfivarGetRaw (
-        &GlobalGuid, L"BootOrder", (VOID **)
-        &BootOrder, &VarSize
+        &GlobalGuid, L"BootOrder",
+        (VOID **) &BootOrder, &VarSize
     );
-
     if (Status != EFI_SUCCESS) {
         return NULL;
     }
@@ -1402,21 +1395,20 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
 
         for (i = 0; i < ListSize; i++) {
             VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-            Status  = EfivarGetRaw (&GlobalGuid, VarName, (VOID **) &Contents, &VarSize);
-            MY_FREE_POOL(VarName);
-
+            Status  = EfivarGetRaw (
+                &GlobalGuid, VarName,
+                (VOID **) &Contents, &VarSize
+            );
             if (Status == EFI_SUCCESS) {
                 NewBootOrder[j++] = BootOrder[i];
                 MY_FREE_POOL(Contents);
             }
+            MY_FREE_POOL(VarName);
         } // for
 
         Status = EfivarSetRaw (
-            &GlobalGuid,
-            L"BootOrder",
-            NewBootOrder,
-            j * sizeof (UINT16),
-            TRUE
+            &GlobalGuid, L"BootOrder",
+            NewBootOrder, j * sizeof (UINT16), TRUE
         );
 
         MY_FREE_POOL(NewBootOrder);
@@ -1440,7 +1432,10 @@ VOID ManageBootorder (VOID) {
 
     if (Operation == EFI_BOOT_OPTION_DELETE) {
         Name = PoolPrint (L"Boot%04x", BootNum);
-        EfivarSetRaw (&GlobalGuid, Name, NULL, 0, TRUE);
+        EfivarSetRaw (
+            &GlobalGuid, Name,
+            NULL, 0, TRUE
+        );
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
         DisplaySimpleMessage (L"Information", Message);

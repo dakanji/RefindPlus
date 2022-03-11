@@ -69,12 +69,9 @@ BOOLEAN secure_mode (VOID) {
     }
 
     status = EfivarGetRaw (
-        &global_var,
-        L"SecureBoot",
-        (VOID **) &sb,
-        &charsize
+        &global_var, L"SecureBoot",
+        (VOID **) &sb, &charsize
     );
-
     /* FIXME - more paranoia here? */
     if (status != EFI_SUCCESS ||
         charsize != sizeof (CHAR8) ||
@@ -84,12 +81,9 @@ BOOLEAN secure_mode (VOID) {
     }
     else {
         status = EfivarGetRaw (
-            &global_var,
-            L"SetupMode",
-            (VOID **) &setupmode,
-            &charsize
+            &global_var, L"SetupMode",
+            (VOID **) &setupmode, &charsize
         );
-
         if (status == EFI_SUCCESS &&
             charsize == sizeof (CHAR8) &&
             *setupmode == 1
@@ -117,10 +111,8 @@ BOOLEAN ShimLoaded (VOID) {
 
     return (
         REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol,
-            &ShimLockGuid,
-            NULL,
-            (VOID **) &shim_lock
+            gBS->LocateProtocol, &ShimLockGuid,
+            NULL, (VOID **) &shim_lock
         ) == EFI_SUCCESS
     );
 } // ShimLoaded()
@@ -137,10 +129,8 @@ BOOLEAN ShimValidate (
 
     if ((data != NULL) &&
         (REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol,
-            &ShimLockGuid,
-            NULL,
-            (VOID **) &shim_lock
+            gBS->LocateProtocol, &ShimLockGuid,
+            NULL, (VOID **) &shim_lock
         ) == EFI_SUCCESS)
     ) {
         if (!shim_lock) {

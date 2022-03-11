@@ -71,16 +71,12 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
 
     DrawScreenHeader (L"Line Editor");
     REFIT_CALL_3_WRAPPER(
-        ST->ConOut->SetCursorPosition,
-        ST->ConOut,
-        (ConWidth - 71) / 2,
-        ConHeight - 1
+        gST->ConOut->SetCursorPosition, gST->ConOut,
+        (ConWidth - 71) / 2, ConHeight - 1
     );
-    REFIT_CALL_2_WRAPPER(
-        ST->ConOut->OutputString,
-        ST->ConOut,
-        L"Use cursor keys to edit, Esc to exit, Enter to boot with edited options"
-    );
+
+    CHAR16 *MsgStr = L"Use Cursor Keys to Edit, 'ESC' to Exit, 'Enter' to Boot with Edited Options";
+    REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, MsgStr);
 
     if (!line_in) {
         line_in = L"";
@@ -107,16 +103,26 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         if (i >= x_max-2) {
             i = x_max-2;
         }
+
         CopyMem (print, line + first, i * sizeof (CHAR16));
+
         print[i++] = ' ';
         print[i]   = '\0';
 
-        REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, 0, y_pos);
-        REFIT_CALL_2_WRAPPER(ST->ConOut->OutputString, ST->ConOut, print);
-        REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
-
-        REFIT_CALL_3_WRAPPER(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
-        err = REFIT_CALL_2_WRAPPER(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        REFIT_CALL_3_WRAPPER(
+            gST->ConOut->SetCursorPosition, gST->ConOut,
+            0, y_pos
+        );
+        REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, print);
+        REFIT_CALL_3_WRAPPER(
+            gST->ConOut->SetCursorPosition, gST->ConOut,
+            cursor, y_pos
+        );
+        REFIT_CALL_3_WRAPPER(
+            gBS->WaitForEvent, 1,
+            &gST->ConIn->WaitForKey, &index
+        );
+        err = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (EFI_ERROR(err)) {
             continue;
         }
@@ -152,7 +158,10 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             if (first + cursor != len && first + cursor) {
                 cursor_right (&cursor, &first, x_max, len);
             }
-            REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+            REFIT_CALL_3_WRAPPER(
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                cursor, y_pos
+            );
 
             continue;
         case SCAN_DOWN:
@@ -165,7 +174,10 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             while (line[first + cursor] && line[first + cursor] == ' ') {
                 cursor_right (&cursor, &first, x_max, len);
             }
-            REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+            REFIT_CALL_3_WRAPPER(
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                cursor, y_pos
+            );
 
             continue;
         case SCAN_RIGHT:
@@ -173,12 +185,18 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
                 continue;
             }
             cursor_right (&cursor, &first, x_max, len);
-            REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+            REFIT_CALL_3_WRAPPER(
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                cursor, y_pos
+            );
 
             continue;
         case SCAN_LEFT:
             cursor_left (&cursor, &first);
-            REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+            REFIT_CALL_3_WRAPPER(
+                gST->ConOut->SetCursorPosition, gST->ConOut,
+                cursor, y_pos
+            );
 
             continue;
         case SCAN_DELETE:
@@ -265,11 +283,8 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         }
     }
 
-    REFIT_CALL_2_WRAPPER(
-        ST->ConOut->EnableCursor,
-        ST->ConOut,
-        FALSE
-    );
+    REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, FALSE);
+
     MY_FREE_POOL(print);
     MY_FREE_POOL(line);
 

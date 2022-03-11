@@ -103,12 +103,9 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
 #endif
     DPRINT(L"Scanning disks\n");
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &gMyEfiDiskIoProtocolGuid,
-        NULL,
-        &HandleCount,
-        &Handles
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gMyEfiDiskIoProtocolGuid, NULL,
+        &HandleCount, &Handles
     );
     if (Status == EFI_NOT_FOUND) {
         return -1;  // no filesystems. strange, but true...
@@ -118,24 +115,23 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
         EFI_DISK_IO *diskio;
         EFI_BLOCK_IO *blockio;
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handles[i],
-            &gMyEfiDiskIoProtocolGuid,
-            (VOID **) &diskio
+            gBS->HandleProtocol, Handles[i],
+            &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio
         );
         if (Status != 0) {
             continue;
         }
+
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol,
-            Handles[i],
-            &gMyEfiBlockIoProtocolGuid,
-            (VOID **) &blockio
+            gBS->HandleProtocol, Handles[i],
+            &gMyEfiBlockIoProtocolGuid, (VOID **) &blockio
         );
         if (Status != 0) {
             continue;
         }
+
         struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);
+
         if(vol) {
             DPRINT(L"Checking disk %d\n", i);
             if(hook(master, vol) == FSW_SUCCESS) {
@@ -144,5 +140,6 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
             free_dummy_volume(vol);
         }
     }
+
     return scanned;
 }

@@ -196,13 +196,9 @@ EFI_STATUS EFIAPI NvmExpressComponentNameGetControllerName (
 
         // Get the child context
         Status = REFIT_CALL_6_WRAPPER(
-            gBS->OpenProtocol,
-            ChildHandle,
-            &gEfiBlockIoProtocolGuid,
-            (VOID **) &BlockIo,
-            gNvmExpressDriverBinding.DriverBindingHandle,
-            ChildHandle,
-            EFI_OPEN_PROTOCOL_GET_PROTOCOL
+            gBS->OpenProtocol, ChildHandle,
+            &gEfiBlockIoProtocolGuid, (VOID **) &BlockIo,
+            gNvmExpressDriverBinding.DriverBindingHandle, ChildHandle, EFI_OPEN_PROTOCOL_GET_PROTOCOL
         );
         if (EFI_ERROR (Status)) {
             return EFI_UNSUPPORTED;

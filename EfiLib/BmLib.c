@@ -47,10 +47,8 @@ EFI_STATUS EfiLibLocateProtocol (
     EFI_STATUS  Status;
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol,
-        ProtocolGuid,
-        NULL,
-        (VOID **) Interface
+        gBS->LocateProtocol, ProtocolGuid,
+        NULL, (VOID **) Interface
     );
 
     return Status;
@@ -76,14 +74,11 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
 
     // File the file system interface to the device
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol,
-        DeviceHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID **) &Volume
+        gBS->HandleProtocol, DeviceHandle,
+        &gEfiSimpleFileSystemProtocolGuid, (VOID **) &Volume
     );
-
-    // Open the root directory of the volume
     if (!EFI_ERROR(Status)) {
+        // Open the root directory of the volume
         Status = Volume->OpenVolume (
             Volume,
             &File
