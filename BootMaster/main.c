@@ -96,10 +96,10 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenTags = */ TRUE,
     /* UseNvram = */ FALSE,
     /* TransientBoot = */ FALSE,
-    /* IgnoreHiddenIcons = */ FALSE,
-    /* ExternalHiddenIcons = */ FALSE,
-    /* PreferHiddenIcons = */ FALSE,
-    /* TextRenderer = */ FALSE,
+    /* HiddenIconsIgnore = */ FALSE,
+    /* HiddenIconsExternal = */ FALSE,
+    /* HiddenIconsPrefer = */ FALSE,
+    /* UseTextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,
     /* ReloadGOP = */ TRUE,
@@ -1507,8 +1507,8 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         Priority = Stability Over Features",   OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ProvideConsoleGOP'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReMapOpenProtocol'",     OffsetNext);
+            LOG_MSG("%s         * Disabled:- 'UseTextRenderer'",       OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UgaPassThrough'",        OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'TextRenderer'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UseDirectGop'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ProtectNVRAM'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SilenceAPFS'",           OffsetNext);
@@ -1837,8 +1837,8 @@ EFI_STATUS EFIAPI efi_main (
     if (!AllowTweakUEFI) {
         // DA-TAG: Investigate further ... Items that may conflict
         GlobalConfig.ProvideConsoleGOP   = FALSE;
+        GlobalConfig.UseTextRenderer     = FALSE;
         GlobalConfig.UgaPassThrough      = FALSE;
-        GlobalConfig.TextRenderer        = FALSE;
         GlobalConfig.UseDirectGop        = FALSE;
         GlobalConfig.ProtectNVRAM        = FALSE;
         GlobalConfig.SilenceAPFS         = FALSE;
@@ -1851,16 +1851,21 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("P R O G R E S S   B O O T S T R A P");
     LOG_MSG("\n");
 
-    LOG_MSG("INFO: RefitDBG:- '%d'",                   REFIT_DEBUG                                        );
-    LOG_MSG("%s      LogLevel:- '%d'",     OffsetNext, GlobalConfig.LogLevel                              );
-    LOG_MSG("%s      ScanDelay:- '%d'",    OffsetNext, GlobalConfig.ScanDelay                             );
-    LOG_MSG("%s      ReloadGOP:- '%s'",    OffsetNext, GlobalConfig.ReloadGOP    ? L"YES"    : L"NO"      );
-    LOG_MSG("%s      SyncAPFS:- '%s'",     OffsetNext, GlobalConfig.SyncAPFS     ? L"Active" : L"Inactive");
-    LOG_MSG("%s      TagsHelp:- '%s'",     OffsetNext, GlobalConfig.TagsHelp     ? L"Active" : L"Inactive");
-    LOG_MSG("%s      TextOnly:- '%s'",     OffsetNext, GlobalConfig.TextOnly     ? L"Active" : L"Inactive");
-    LOG_MSG("%s      DirectBoot:- '%s'",   OffsetNext, GlobalConfig.DirectBoot   ? L"Active" : L"Inactive");
-    LOG_MSG("%s      ScanAllESP:- '%s'",   OffsetNext, GlobalConfig.ScanAllESP   ? L"Active" : L"Inactive");
-    LOG_MSG("%s      TextRenderer:- '%s'", OffsetNext, GlobalConfig.TextRenderer ? L"Active" : L"Inactive");
+    #define TAG_ITEM_A(Item) OffsetNext,  Item
+    #define TAG_ITEM_B(Item) OffsetNext, (Item) ? L"YES" : L"NO"
+    #define TAG_ITEM_C(Item) OffsetNext, (Item) ? L"Active" : L"Inactive"
+
+    LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                             );
+    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel       ));
+    LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay      ));
+    LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP      ));
+    LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
+    LOG_MSG("%s      TagsHelp:- '%s'",     TAG_ITEM_C(GlobalConfig.TagsHelp       ));
+    LOG_MSG("%s      TextOnly:- '%s'",     TAG_ITEM_C(GlobalConfig.TextOnly       ));
+    LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop   ));
+    LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
+    LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
+    LOG_MSG("%s      TextRenderer:- '%s'", TAG_ITEM_C(GlobalConfig.UseTextRenderer));
 
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     (!AppleFirmware                                                          )

@@ -1111,17 +1111,17 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"transient_boot")) {
             GlobalConfig.TransientBoot = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"ignore_hidden_icons")) {
-            GlobalConfig.IgnoreHiddenIcons = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_ignore")) {
+            GlobalConfig.HiddenIconsIgnore = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"external_hidden_icons")) {
-            GlobalConfig.ExternalHiddenIcons = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_external")) {
+            GlobalConfig.HiddenIconsExternal = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"prefer_hidden_icons")) {
-            GlobalConfig.PreferHiddenIcons = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_prefer")) {
+            GlobalConfig.HiddenIconsPrefer = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"text_renderer")) {
-            GlobalConfig.TextRenderer = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"renderer_text")) {
+            GlobalConfig.UseTextRenderer = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"uga_pass_through")) {
             GlobalConfig.UgaPassThrough = HandleBoolean (TokenList, TokenCount);
@@ -1129,7 +1129,7 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
             GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"direct_gop_renderer")) {
+        else if (MyStriCmp (TokenList[0], L"renderer_direct_gop")) {
             GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"continue_on_warning")) {

@@ -65,21 +65,21 @@ decline_nvramprotect  |Disables feature that blocks UEFI Windows certificates on
 decline_reloadgop     |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden
 decline_uefiemulate   |Disables feature that emulates UEFI 2.x support on EFI 1.x units
-direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
 disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 dxe_driver_rescan     |Allows scanning for newly revealed DXE drivers when connecting handles
-external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
-ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
+hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
+hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
+hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
-prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
+renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
+renderer_text         |Provides a text renderer for text output when otherwise unavailable
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
-text_renderer         |Provides a text renderer for text output when otherwise unavailable
 transient_boot        |Disables saving the last booted loader if not required
 uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 unicode_collation     |Provides finetuned support for languages that use unicode text

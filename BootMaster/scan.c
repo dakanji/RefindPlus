@@ -654,8 +654,8 @@ VOID SetLoaderDefaults (
         else {
             BREAD_CRUMB(L"In %s ... 3b 1a 2a 1", FuncTag);
             if (!Entry->me.Image &&
-                !GlobalConfig.IgnoreHiddenIcons &&
-                GlobalConfig.PreferHiddenIcons
+                !GlobalConfig.HiddenIconsIgnore &&
+                GlobalConfig.HiddenIconsPrefer
             ) {
                 BREAD_CRUMB(L"In %s ... 3b 1a 2a 1a 1", FuncTag);
                 #if REFIT_DEBUG > 0
@@ -671,8 +671,8 @@ VOID SetLoaderDefaults (
             if (!Entry->me.Image) {
                 BREAD_CRUMB(L"In %s ... 3b 1a 2a 2a 1", FuncTag);
                 #if REFIT_DEBUG > 0
-                if (!GlobalConfig.IgnoreHiddenIcons &&
-                    GlobalConfig.PreferHiddenIcons
+                if (!GlobalConfig.HiddenIconsIgnore &&
+                    GlobalConfig.HiddenIconsPrefer
                 ) {
                     ALT_LOG(1, LOG_LINE_NORMAL, L"Could Not Find '.VolumeIcon' Image");
                 }
@@ -711,7 +711,7 @@ VOID SetLoaderDefaults (
 
                         BREAD_CRUMB(L"In %s ... 3b 1a 2a 2a 3a 1a 2", FuncTag);
                         if (!Entry->me.Image &&
-                            !GlobalConfig.IgnoreHiddenIcons
+                            !GlobalConfig.HiddenIconsIgnore
                         ) {
                             BREAD_CRUMB(L"In %s ... 3b 1a 2a 2a 3a 1a 2a 1", FuncTag);
                             Entry->me.Image = egCopyImage (Volume->VolIconImage);

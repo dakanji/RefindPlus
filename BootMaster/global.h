@@ -412,10 +412,10 @@ typedef struct {
     BOOLEAN           HiddenTags;
     BOOLEAN           UseNvram;
     BOOLEAN           TransientBoot;
-    BOOLEAN           IgnoreHiddenIcons;
-    BOOLEAN           ExternalHiddenIcons;
-    BOOLEAN           PreferHiddenIcons;
-    BOOLEAN           TextRenderer;
+    BOOLEAN           HiddenIconsIgnore;
+    BOOLEAN           HiddenIconsExternal;
+    BOOLEAN           HiddenIconsPrefer;
+    BOOLEAN           UseTextRenderer;
     BOOLEAN           UgaPassThrough;
     BOOLEAN           ProvideConsoleGOP;
     BOOLEAN           ReloadGOP;

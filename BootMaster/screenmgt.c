@@ -428,7 +428,7 @@ VOID SwitchToText (
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
-    if (!GlobalConfig.TextRenderer && !IsBoot && AppleFirmware) {
+    if (!GlobalConfig.UseTextRenderer && !IsBoot && AppleFirmware) {
         // Override Text Renderer Setting on Apple Firmware
         // DA-TAG: Investigate need ... was needed on MacPro but maybe not all Macs?
         //         Confirm if really needed on MacPro or else consider removing
@@ -438,10 +438,10 @@ VOID SwitchToText (
                 : EfiConsoleControlScreenText
         );
         if (!EFI_ERROR(Status)) {
-            GlobalConfig.TextRenderer = TRUE;
+            GlobalConfig.UseTextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: Config Setting Overriden:- 'text_renderer'");
+            LOG_MSG("INFO: Config Setting Overriden:- 'renderer_text'");
             LOG_MSG("\n");
             #endif
         }

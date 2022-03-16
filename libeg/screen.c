@@ -1170,7 +1170,7 @@ VOID egInitScreen (VOID) {
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
         if ((GOPDraw != NULL) &&
-            (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
+            (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly)
         ) {
             PrevFlag = TRUE;
         }
@@ -1226,7 +1226,7 @@ VOID egInitScreen (VOID) {
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
     if ((GOPDraw != NULL) &&
-        (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
+        (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly)
     ) {
         // Implement Text Renderer
         Status = OcUseBuiltinTextOutput (

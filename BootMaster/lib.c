@@ -3033,7 +3033,7 @@ VOID SetVolumeIcons (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"Check for '.VolumeIcon' Icons for %s Volumes",
-        (GlobalConfig.ExternalHiddenIcons) ? L"Internal/External" : L"Internal"
+        (GlobalConfig.HiddenIconsExternal) ? L"Internal/External" : L"Internal"
     );
     #endif
 
@@ -3049,10 +3049,10 @@ VOID SetVolumeIcons (VOID) {
         return;
     }
 
-    if (GlobalConfig.IgnoreHiddenIcons) {
+    if (GlobalConfig.HiddenIconsIgnore) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'ignore_hidden_icons'"
+            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'hidden_icons_ignore'"
         );
         #endif
 
@@ -3101,7 +3101,7 @@ VOID SetVolumeIcons (VOID) {
             // Load custom volume icon for internal/external disks if present
             if (!Volume->VolIconImage) {
                 if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
-                    (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.ExternalHiddenIcons)
+                    (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.HiddenIconsExternal)
                 ) {
                     Volume->VolIconImage = egLoadIconAnyType (
                         Volume->RootDir,
@@ -3114,7 +3114,7 @@ VOID SetVolumeIcons (VOID) {
                     #if REFIT_DEBUG > 0
                     if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
                         ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'external_hidden_icons'",
+                            L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'hidden_icons_external'",
                             Volume->VolName
                         );
                     }

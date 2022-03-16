@@ -137,18 +137,6 @@
 #
 #decline_uefiemulate
 
-# Use a built-in GOP renderer which may provide enhanced performance
-# and fix rendering issues on certain specific GPU models including
-# the Radeon VII and some versions of the Radeon 5700 XT. However,
-# this should only be used when there is an obvious benefit as it
-# may result in glitches in the pre-boot configuration screen or
-# slow scrolling response on booting into the operating system.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# Inactive when commented out (Does not use the built-in GOP)
-#
-#direct_gop_renderer
-
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
 # System Integrity Protection (SIP), restricts application access to OS entitlements.
@@ -186,12 +174,6 @@
 #
 #dxe_driver_rescan
 
-# RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
-# volumes. Howver, wWhen this token is active (and the "ignore_hidden_icons"
-# token is not) RefindPlus will also scan "external" volumes for these icons.
-#
-#external_hidden_icons
-
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option
 # is active however, RefindPlus will enforce MacOS "TRIM" for all types
@@ -206,6 +188,12 @@
 #
 #force_trim
 
+# RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
+# volumes. Howver, wWhen this token is active (and the "hidden_icons_ignore"
+# token is not) RefindPlus will also scan "external" volumes for these icons.
+#
+#hidden_icons_external
+
 # RefindPlus defaults to scanning volumes for .VolumeIcon image icons and if
 # found, these may be used as display icons for some volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
@@ -214,12 +202,27 @@
 # RefindPlus boot process down. When active, this speeds booting
 # RefindPlus up by skipping scanning volumes for these files.
 #
-# NB: This token overrides the "external_hidden_icons" and
-# the "prefer_hidden_icons" tokens when it is active.
+# NB: This token overrides the "hidden_icons_external" and
+# the "hidden_icons_prefer" tokens when it is active.
 #
 # Always scans for ".VolumeIcon" image icons when commented out
 #
-#ignore_hidden_icons
+#hidden_icons_ignore
+
+# While RefindPlus does default to scanning volumes for ".VolumeIcon" image icons,
+# any such files found are only used as last ditch display icons when all other
+# display icon options fail. When this option is set, RefindPlus will instead
+# first try to display ".VolumeIcon" image files before attempting to load
+# other image icon files. This permits flexibility in theming loaders by
+# positioning such files for loading by RefindPlus. Note however, that
+# the "hidden_icons_ignore" option takes priority over this setting.
+#
+# NB: ".VolumeIcon" icon files can be in any supported format ...
+# ICNS (*.icns), BMP (*.bmp), PNG (*.png), or JPG (*.jpg/jpeg).
+#
+# Does not prioritise ".VolumeIcon" images when commented out
+#
+#hidden_icons_prefer
 
 # As of MacOS v11.x (Big Sur), the previous default SIP/SSV settings, which had all included
 # the CSR_ALLOW_APPLE_INTERNAL bit, may leave Macs not able to receive "Over The Air" (OTA)
@@ -235,21 +238,6 @@
 # Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
 #
 #normalise_csr
-
-# While RefindPlus does default to scanning volumes for ".VolumeIcon" image icons,
-# any such files found are only used as last ditch display icons when all other
-# display icon options fail. When this option is set, RefindPlus will instead
-# first try to display ".VolumeIcon" image files before attempting to load
-# other image icon files. This permits flexibility in theming loaders by
-# positioning such files for loading by RefindPlus. Note however, that
-# the "ignore_hidden_icons" option takes priority over this setting.
-#
-# NB: ".VolumeIcon" icon files can be in any supported format ...
-# ICNS (*.icns), BMP (*.bmp), PNG (*.png), or JPG (*.jpg/jpeg).
-#
-# Does not prioritise ".VolumeIcon" images when commented out
-#
-#prefer_hidden_icons
 
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
@@ -280,6 +268,33 @@
 # Does not try to unlock such partitions when commented out
 #
 #ransom_drives
+
+# Use a built-in GOP renderer which may provide enhanced performance
+# and fix rendering issues on certain specific GPU models including
+# the Radeon VII and some versions of the Radeon 5700 XT. However,
+# this should only be used when there is an obvious benefit as it
+# may result in glitches in the pre-boot configuration screen or
+# slow scrolling response on booting into the operating system.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not use the built-in GOP)
+#
+#renderer_direct_gop
+
+# The SimpleText protocol on the ConsoleOut handle is usually used for
+# text output. On Macs and some other firmware, this is complicated by
+# the ConsoleControl protocol which determines whether to output text,
+# graphics, or both, and this often results in an inability to display
+# text, or use tools needing text output (such as EFI Shell). A custom
+# text renderer is added on top of GOP by this option as a workaround.
+# Note that this option is forced on whenever text output is required,
+# such as when running EFI Shell or, whenever RefindPlus is changed to
+# text mode as part of its operations (mainly to show error messages).
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not use a custom text renderer)
+#
+#renderer_text
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
@@ -314,21 +329,6 @@
 # Inactive when commented out (Does not change boot arguments)
 #
 #set_boot_args "-v"
-
-# The SimpleText protocol on the ConsoleOut handle is usually used for
-# text output. On Macs and some other firmware, this is complicated by
-# the ConsoleControl protocol which determines whether to output text,
-# graphics, or both, and this often results in an inability to display
-# text, or use tools needing text output (such as EFI Shell). A custom
-# text renderer is added on top of GOP by this option as a workaround.
-# Note that this option is forced on whenever text output is required,
-# such as when running EFI Shell or, whenever RefindPlus is changed to
-# text mode as part of its operations (mainly to show error messages).
-# NB: This functionality is only available on TianoCore Builds.
-#
-# Inactive when commented out (Does not use a custom text renderer)
-#
-#text_renderer
 
 # RefindPlus defaults to storing the name of the last booted loader in
 # the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
