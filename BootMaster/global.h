@@ -403,7 +403,7 @@ typedef struct {
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;
     BOOLEAN           DeepLegacyScan;
-    BOOLEAN           DxeDriverRescan;
+    BOOLEAN           RescanDrivers;
     BOOLEAN           RansomDrives;
     BOOLEAN           EnableAndLockVMX;
     BOOLEAN           FoldLinuxKernels;

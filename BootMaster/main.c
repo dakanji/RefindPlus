@@ -87,7 +87,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
-    /* DxeDriverRescan = */ FALSE,
+    /* RescanDrivers = */ FALSE,
     /* RansomDrives = */ FALSE,
     /* EnableAndLockVMX = */ FALSE,
     /* FoldLinuxKernels = */ TRUE,
@@ -1886,10 +1886,10 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      DxeDriverRescan:- ",  OffsetNext);
-    (AppleFirmware                                                           )
-        ? LOG_MSG("'Disabled'"                                               )
-        : LOG_MSG("'%s'", GlobalConfig.DxeDriverRescan ? L"Active" : L"Inactive");
+    LOG_MSG("%s      RescanDrivers:- ",  OffsetNext);
+    (AppleFirmware                                                            )
+        ? LOG_MSG("'Disabled'"                                                )
+        : LOG_MSG("'%s'", GlobalConfig.RescanDrivers ? L"Active" : L"Inactive");
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI

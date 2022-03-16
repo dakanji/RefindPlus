@@ -68,7 +68,6 @@ decline_tagshelp      |Disables feature that ensures hidden tags can always be u
 decline_uefiemulate   |Disables feature that emulates UEFI 2.x support on EFI 1.x units
 disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
-dxe_driver_rescan     |Allows scanning for newly revealed DXE drivers when connecting handles
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
@@ -77,6 +76,7 @@ provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
 renderer_text         |Provides a text renderer for text output when otherwise unavailable
+rescan_drivers        |Allows scanning for newly revealed DXE drivers when connecting handles
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
@@ -120,7 +120,7 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **UEFI 2.x Emulation:** RefindPlus always emulates the `CreateEventEx` feature from UEFI 2.x on EFI 1.x units and additionally modifies the EFI Revision value to `UEFI 2.3`. This often allows running UEFI 2.x utilities on legacy units since several such utilities only require CreateEventEx to function. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_uefiemulate` configuration token to switch it off.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_espfilter` configuration token to switch it off.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
-- **Revealed DXE Drivers:** RefindPlus does not scan for newly revealed DXE drivers during handle connection unless the `dxe_driver_rescan` token is active. This is because such scans are not required by most types of firmware and therefore better to remove the speed penalty while retaining the ability for this to be done on firmware that require this process.
+- **Revealed DXE Drivers:** RefindPlus does not scan for newly revealed DXE drivers during handle connection unless the `rescan_drivers` token is active. This is because such scans are not required by most types of firmware and therefore better to remove the speed penalty while retaining the ability for this to be done on firmware that require this process.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).

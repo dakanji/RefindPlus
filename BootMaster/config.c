@@ -827,8 +827,8 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"uefi_deep_legacy_scan")) {
             GlobalConfig.DeepLegacyScan = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"dxe_driver_rescan")) {
-            GlobalConfig.DxeDriverRescan = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"rescan_drivers")) {
+            GlobalConfig.RescanDrivers = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"ransom_drives")) {
             GlobalConfig.RansomDrives = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);

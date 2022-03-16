@@ -9,9 +9,9 @@
     - This renders them inaccessible or may even lead to RefindPlus hanging
   * Such partitions can be unlocked by setting a new `ransom_drives` configuration token
   * This option is currently always disabled on Apple firmware
-- Adds `DxeDriverRescan` Feature
+- Adds `RescanDrivers` Feature
   * Controls scanning for newly revealed DXE drivers when connecting handles
-    - Switch on or off with a new `dxe_driver_rescan` configuration token
+    - Switch on or off with a new `rescan_drivers` configuration token
   * This was previously done by default but may negatively impact loading speed
   * Should only be activated when specifically required
     - Should not be required on most firmware
