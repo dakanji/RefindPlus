@@ -54,8 +54,9 @@ RefindPlus-Specific funtionality can be configured by adding the tokens below to
 
 Token | Functionality
 ----- | -----
-active_csr            |Actively enables or disables the SIP Policy on Macs
 continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended boot)
+csr_dynamic           |Actively enables or disables the SIP Policy on Macs
+csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
 decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
@@ -72,7 +73,6 @@ force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
-normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
@@ -90,7 +90,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
 - **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS 11.x (Big Sur), or later, with SIP enabled.
-  - This is equivalent to activating the `normalise_csr` token.
+  - This is equivalent to activating the `csr_normalise` token.
 - **"timeout" Token:** The default is no timeout unless explicitly set.
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.

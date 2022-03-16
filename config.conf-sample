@@ -7,6 +7,15 @@
 ##--------------------------------------------------------------##
 #
 #
+# Proceed automatically when on-screen notices
+# are shown. When this option is active, RefindPlus
+# will pause for nine (9) seconds when on-screen notices
+# are shown, and then proceed as if a key had been pressed.
+#
+# Inactive when commented out (Does not proceed automatically)
+#
+#continue_on_warning
+
 # This token allows actively enabling or disabling the System Integrity Protection (SIP)
 # and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
 # token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
@@ -19,16 +28,22 @@
 #
 # Inactive when commented out (Takes no action on SIP and/or SSV)
 #
-#active_csr 1
+#csr_dynamic 1
 
-# Proceed automatically when on-screen notices
-# are shown. When this option is active, RefindPlus
-# will pause for nine (9) seconds when on-screen notices
-# are shown, and then proceed as if a key had been pressed.
+# As of MacOS v11.x (Big Sur), the previous default SIP/SSV settings, which had all included
+# the CSR_ALLOW_APPLE_INTERNAL bit, may leave Macs not able to receive "Over The Air" (OTA)
+# updates from Apple. MacOS v11.x (and later) remove this bit on boot if detected but the
+# attempted removal may fail when booting into MacOS via non-standard approaches such as
+# RefindPlus. It is also possible that Apple will remove this remediation feature once
+# Mac models supporting MacOS v10.15 (Catalina) are deemed to be obsolete by Apple.
 #
-# Inactive when commented out (Does not proceed automatically)
+# When this token is set, RefindPlus will remove this bit from the saved CSR bits
+# when booting into MacOS, OpenCore or Clover similar to the process undertaken
+# in MacOS 11.x and later. This setting can also be used with older versions.
 #
-#continue_on_warning
+# Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
+#
+#csr_normalise
 
 # Supply APFS filesystem capability. By default, RefindPlus is set up to jumpstart
 # MacOS APFS filesystem drivers, apfs.efi, which are available in system folders of
@@ -224,21 +239,6 @@
 #
 #hidden_icons_prefer
 
-# As of MacOS v11.x (Big Sur), the previous default SIP/SSV settings, which had all included
-# the CSR_ALLOW_APPLE_INTERNAL bit, may leave Macs not able to receive "Over The Air" (OTA)
-# updates from Apple. MacOS v11.x (and later) remove this bit on boot if detected but the
-# attempted removal may fail when booting into MacOS via non-standard approaches such as
-# RefindPlus. It is also possible that Apple will remove this remediation feature once
-# Mac models supporting MacOS v10.15 (Catalina) are deemed to be obsolete by Apple.
-#
-# When this token is set, RefindPlus will remove this bit from the saved CSR bits
-# when booting into MacOS, OpenCore or Clover similar to the process undertaken
-# in MacOS 11.x and later. This setting can also be used with older versions.
-#
-# Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
-#
-#normalise_csr
-
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
 #     - Others installed on GPU handles.
@@ -386,7 +386,7 @@
 # setting when "0" is used in place of "10" for the "OFF" value.
 # This setting is also valid on earlier versions of MacOS. It
 # is recommended however, to keep the default "OFF" setting
-# of "10" in place, and to use the "normalise_csr" token
+# of "10" in place, and to use the "csr_normalise" token
 # instead to better achieve the same end (both values).
 #      CSR_ALLOW_UNTRUSTED_KEXTS                0x0001
 #      CSR_ALLOW_UNRESTRICTED_FS                0x0002

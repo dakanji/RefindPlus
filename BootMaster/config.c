@@ -1188,9 +1188,9 @@ VOID ReadConfig (
             // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
-        else if (MyStriCmp (TokenList[0], L"active_csr")) {
+        else if (MyStriCmp (TokenList[0], L"csr_dynamic")) {
             // DA-TAG: Signed integer as can have negative value
-            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.DynamicCSR));
         }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
             HandleInt (TokenList, TokenCount, &i);

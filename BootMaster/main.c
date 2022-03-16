@@ -141,7 +141,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ScreensaverTime = */ 0,
     /* Timeout = */ 0,
     /* ScaleUI = */ 0,
-    /* ActiveCSR = */ 0,
+    /* DynamicCSR = */ 0,
     /* LogLevel = */ 0,
     /* ScreenR = */ -1,
     /* ScreenG = */ -1,
@@ -424,12 +424,12 @@ EFI_STATUS FilterCSR (VOID) {
 } // static EFI_STATUS FilterCSR()
 
 static
-VOID ActiveCSR (VOID) {
+VOID AlignCSR (VOID) {
     UINT32  CsrStatus;
     BOOLEAN RotateCsr = FALSE;
 
-    if ((GlobalConfig.ActiveCSR == 0) ||
-        (GlobalConfig.ActiveCSR != -1 && GlobalConfig.ActiveCSR != 1)
+    if ((GlobalConfig.DynamicCSR == 0) ||
+        (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1)
     ) {
         // Early return if improperly set or configured not to set CSR
         return;
@@ -452,7 +452,7 @@ VOID ActiveCSR (VOID) {
     // Check 'gCsrStatus' variable for 'Enabled' term
     BOOLEAN CsrEnabled = (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
 
-    if (GlobalConfig.ActiveCSR == -1) {
+    if (GlobalConfig.DynamicCSR == -1) {
         // Set to always disable
         //
         // Seed the log buffer
@@ -466,7 +466,7 @@ VOID ActiveCSR (VOID) {
         }
     }
     else {
-        // Set to always enable ... GlobalConfig.ActiveCSR == 1
+        // Set to always enable ... GlobalConfig.DynamicCSR == 1
         //
         // Seed the log buffer
         #if REFIT_DEBUG > 0
@@ -494,7 +494,7 @@ VOID ActiveCSR (VOID) {
     LOG_MSG(" SIP/SSV ... %r", Status);
     LOG_MSG("\n\n");
     #endif
-} // static VOID ActiveCSR()
+} // static VOID AlignCSR()
 
 
 static
@@ -2641,7 +2641,7 @@ EFI_STATUS EFIAPI efi_main (
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
                     // Set CSR if required
-                    ActiveCSR();
+                    AlignCSR();
 
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
@@ -2668,7 +2668,7 @@ EFI_STATUS EFIAPI efi_main (
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
                 ) {
                     // Set CSR if required
-                    ActiveCSR();
+                    AlignCSR();
 
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
@@ -2695,7 +2695,7 @@ EFI_STATUS EFIAPI efi_main (
                     || ourLoaderEntry->OSType == 'M'
                 ) {
                     // Set CSR if required
-                    ActiveCSR();
+                    AlignCSR();
 
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received Input:'

@@ -452,7 +452,7 @@ typedef struct {
     INTN              ScreensaverTime;
     INTN              Timeout;
     INTN              ScaleUI;
-    INTN              ActiveCSR;
+    INTN              DynamicCSR;
     INTN              LogLevel;
     INTN              ScreenR;
     INTN              ScreenG;
