@@ -67,7 +67,8 @@
 #include <efilib.h>
 #endif
 
-extern BOOLEAN AllowTweakUEFI;
+extern BOOLEAN  AllowTweakUEFI;
+extern EG_PIXEL MenuBackgroundPixel;
 
 #if REFIT_DEBUG > 0
 extern UINTN   AppleFramebuffers;
@@ -1921,62 +1922,103 @@ VOID egDrawImageArea (
     }
 } // VOID egDrawImageArea()
 
+static
+VOID egDisplayMessageEx (
+    CHAR16    *Text,
+    EG_PIXEL  *BGColor,
+    UINTN      PositionCode,
+    BOOLEAN    ResetPosition
+) {
+    UINTN BoxWidth, BoxHeight, LumIndex;
+    static UINTN Position = 1;
+    EG_IMAGE *Box;
+
+    if (Text == NULL || BGColor == NULL) {
+        // Early Return
+        return;
+    }
+
+    egMeasureText (Text, &BoxWidth, &BoxHeight);
+    BoxWidth  += 14;
+    BoxHeight *=  2;
+    if (BoxWidth > egScreenWidth) {
+        BoxWidth = egScreenWidth;
+    }
+    Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, BGColor);
+
+    if (!ResetPosition) {
+        // Get Luminance Index
+        UINTN FactorFP = 10;
+        UINTN Divisor  = 3 * FactorFP;
+        UINTN PixelsR  = (UINTN) BGColor->r;
+        UINTN PixelsG  = (UINTN) BGColor->g;
+        UINTN PixelsB  = (UINTN) BGColor->b;
+
+        LumIndex = (
+            (
+                (PixelsR * FactorFP) +
+                (PixelsG * FactorFP) +
+                (PixelsB * FactorFP) +
+                (Divisor / 2) // Added For Rounding
+            ) / Divisor
+        );
+
+        egRenderText (
+            Text, Box, 7,
+            BoxHeight / 4,
+            (UINT8) LumIndex
+        );
+    }
+
+    switch (PositionCode) {
+        case TOP:     Position  = 1;                                  break;
+        case CENTER:  Position  = ((egScreenHeight - BoxHeight) / 2); break;
+        case BOTTOM:  Position  = (egScreenHeight - (BoxHeight * 2)); break;
+        default:      Position += (BoxHeight + (BoxHeight / 10));     break; // NEXTLINE
+    } // switch
+
+    if (ResetPosition) {
+        if (PositionCode != TOP && PositionCode != CENTER && PositionCode != BOTTOM) {
+            Position -= (BoxHeight + (BoxHeight / 10));
+        }
+    }
+
+    egDrawImage (Box, (egScreenWidth - BoxWidth) / 2, Position);
+
+    if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5))) {
+        Position = 1;
+    }
+} // VOID egDisplayMessageEx()
+
 // Display a message in the center of the screen, surrounded by a box of the
 // specified color. For the moment, uses graphics calls only. (It still works
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
 VOID egDisplayMessage (
-    IN CHAR16 *Text,
+    CHAR16    *Text,
     EG_PIXEL  *BGColor,
-    UINTN      PositionCode
+    UINTN      PositionCode,
+    UINTN      PauseLength,
+    CHAR16    *PauseType     OPTIONAL
 ) {
-   UINTN BoxWidth, BoxHeight, LumIndex;
-   static UINTN Position = 1;
-   EG_IMAGE *Box;
+    if (Text == NULL || BGColor == NULL) {
+        // Early Return
+        return;
+    }
 
-   if ((Text != NULL) && (BGColor != NULL)) {
-      egMeasureText (Text, &BoxWidth, &BoxHeight);
-      BoxWidth  += 14;
-      BoxHeight *=  2;
+    // Display the message
+    egDisplayMessageEx (Text, BGColor, PositionCode, FALSE);
 
-      if (BoxWidth > egScreenWidth) {
-          BoxWidth = egScreenWidth;
-      }
+    if (PauseType && PauseLength > 0) {
+        if (MyStriCmp (PauseType, L"HaltSeconds")) {
+            HaltSeconds (PauseLength);
+        }
+        else {
+            PauseSeconds (PauseLength);
+        }
 
-      // Get Luminance Index
-      UINTN FactorFP = 10;
-      UINTN Divisor  = 3 * FactorFP;
-      UINTN PixelsR  = (UINTN) BGColor->r;
-      UINTN PixelsG  = (UINTN) BGColor->g;
-      UINTN PixelsB  = (UINTN) BGColor->b;
-
-      LumIndex = (
-          (
-              (PixelsR * FactorFP) +
-              (PixelsG * FactorFP) +
-              (PixelsB * FactorFP) +
-              (Divisor / 2) // Added For Rounding
-          ) / Divisor
-      );
-
-      Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, BGColor);
-      egRenderText (
-          Text, Box, 7,
-          BoxHeight / 4,
-          (UINT8) LumIndex
-      );
-
-      switch (PositionCode) {
-          case TOP:     Position  = 1;                                  break;
-          case CENTER:  Position  = ((egScreenHeight - BoxHeight) / 2); break;
-          case BOTTOM:  Position  = (egScreenHeight - (BoxHeight * 2)); break;
-          default:      Position += (BoxHeight + (BoxHeight / 10));     break; // NEXTLINE
-      } // switch
-
-      egDrawImage (Box, (egScreenWidth - BoxWidth) / 2, Position);
-      if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5))) {
-          Position = 1;
-      }
-   } // if non-NULL inputs
+        // Erase the message
+        egDisplayMessageEx (Text, &MenuBackgroundPixel, PositionCode, TRUE);
+    }
 } // VOID egDisplayMessage()
 
 // Copy the current contents of the display into an EG_IMAGE.
@@ -2058,8 +2100,11 @@ VOID egScreenShot (VOID) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-        HaltSeconds (4);
+        egDisplayMessage (
+            MsgStr, &BGColorWarn,
+            CENTER,
+            4, L"HaltSeconds"
+        );
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         #endif
@@ -2100,8 +2145,11 @@ VOID egScreenShot (VOID) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-        HaltSeconds (4);
+        egDisplayMessage (
+            MsgStr, &BGColorWarn,
+            CENTER,
+            4, L"HaltSeconds"
+        );
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         #endif
@@ -2129,8 +2177,11 @@ VOID egScreenShot (VOID) {
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            HaltSeconds (4);
+            egDisplayMessage (
+                MsgStr, &BGColorWarn,
+                CENTER,
+                4, L"HaltSeconds"
+            );
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_OFF;
             #endif
@@ -2160,8 +2211,11 @@ VOID egScreenShot (VOID) {
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            HaltSeconds (4);
+            egDisplayMessage (
+                MsgStr, &BGColorWarn,
+                CENTER,
+                4, L"HaltSeconds"
+            );
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_OFF;
             #endif
@@ -2191,8 +2245,11 @@ VOID egScreenShot (VOID) {
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            HaltSeconds (4);
+            egDisplayMessage (
+                MsgStr, &BGColorWarn,
+                CENTER,
+                4, L"HaltSeconds"
+            );
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_OFF;
             #endif
@@ -2218,7 +2275,7 @@ VOID egScreenShot (VOID) {
         goto bailout_wait;
     }
 
-    MsgStr = StrDuplicate (L"Saving Screenshot");
+    MsgStr = StrDuplicate (L"Saved Screenshot");
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);
@@ -2228,8 +2285,11 @@ VOID egScreenShot (VOID) {
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
     #endif
-    egDisplayMessage (MsgStr, &BGColorGood, CENTER);
-    HaltSeconds (2);
+    egDisplayMessage (
+        MsgStr, &BGColorGood,
+        CENTER,
+        2, L"HaltSeconds"
+    );
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif

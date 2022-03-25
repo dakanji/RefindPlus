@@ -733,7 +733,11 @@ VOID PrintUglyText (
             AppleFirmware &&
             egIsGraphicsModeEnabled()
         ) {
-            egDisplayMessage (Text, &BGColor, PositionCode);
+            egDisplayMessage (
+                Text, &BGColor,
+                PositionCode,
+                0, NULL
+            );
             GraphicsScreenDirty = TRUE;
         }
         else {

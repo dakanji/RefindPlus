@@ -173,8 +173,10 @@ VOID RecordgCsrStatus (
         BOOLEAN CheckMute = FALSE;
         MY_MUTELOGGER_SET;
         #endif
-        egDisplayMessage (MsgStr, &BGColor, CENTER);
-        PauseSeconds (4);
+        egDisplayMessage (
+            MsgStr, &BGColor, CENTER,
+            4, L"PauseSeconds"
+        );
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         #endif
@@ -209,9 +211,9 @@ VOID RotateCsrValue (VOID) {
         egDisplayMessage (
             gCsrStatus,
             &BGColor,
-            CENTER
+            CENTER,
+            4, L"PauseSeconds"
         );
-        PauseSeconds (4);
 
         // Early Return
         return;
@@ -268,9 +270,9 @@ VOID RotateCsrValue (VOID) {
         egDisplayMessage (
             gCsrStatus,
             &BGColor,
-            CENTER
+            CENTER,
+            4, L"PauseSeconds"
         );
-        PauseSeconds (4);
 
         // Early Return
         return;

@@ -24,8 +24,6 @@
   * This should allow proper support for languages using unicode text
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
-- Improves `HandleSignedInt` Function
-  * Removed limitation on handled values
 - Improves `DirectBoot` Feature
   * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
 - Improves `ScreenShot` Feature
@@ -33,6 +31,15 @@
     - Removes limitation of the keypress not continuing beyond the on-screen message display
   * Fixes Screenshots being only functional for the main RefindPlus screen
     - This bug was introduced in v0.13.2.AN (Commit 99da7ce)
+- Improves `HandleSignedInt` Function
+  * Removed limitation on handled values
+- Improves `egDisplaymessage` Function
+  * Now includes option to pause in the function
+    - Previously needed a separate call
+  * Now erases the message after the display (if a pause is invoked)
+    - Previously only properly erased when called on the main screen
+      * This erasure happened when the OS icons were redrawn
+    - Now fixed for all screens but artefacts may result with some custom banners
 - Improves `ProtectNVRAM` Feature
   * Now clears existing instances of blocked variables
   * Adds `UnlockID` and `UnlockIDCopy` to filtered items

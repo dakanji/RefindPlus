@@ -2120,7 +2120,11 @@ EFI_STATUS EFIAPI efi_main (
         UINTN Trigger = 3;
         if (GlobalConfig.ScanDelay > Trigger) {
             CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
-            egDisplayMessage (PartMsg, &BGColor, CENTER);
+            egDisplayMessage (
+                PartMsg, &BGColor,
+                CENTER,
+                0, NULL
+            );
 
             MY_FREE_POOL(PartMsg);
         }
@@ -2534,8 +2538,11 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_SET;
                 #endif
-                egDisplayMessage (TypeStr, &BGColor, CENTER);
-                PauseSeconds (3);
+                egDisplayMessage (
+                    TypeStr, &BGColor,
+                    CENTER,
+                    3, L"PauseSeconds"
+                );
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_OFF;
                 #endif
@@ -2579,8 +2586,11 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_SET;
                 #endif
-                egDisplayMessage (TypeStr, &BGColor, CENTER);
-                PauseSeconds (3);
+                egDisplayMessage (
+                    TypeStr, &BGColor,
+                    CENTER,
+                    3, L"PauseSeconds"
+                );
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_OFF;
                 #endif

@@ -106,8 +106,14 @@ VOID egClearScreen (IN EG_PIXEL *Color);
 VOID egFillImage (IN OUT EG_IMAGE *CompImage, IN EG_PIXEL *Color);
 VOID egGetScreenSize (OUT UINTN *ScreenWidth, OUT UINTN *ScreenHeight);
 VOID egMeasureText (IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height);
-VOID egDisplayMessage (IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode);
 VOID egDrawImage (IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY);
+VOID egDisplayMessage (
+    CHAR16    *Text,
+    EG_PIXEL  *BGColor,
+    UINTN      PositionCode,
+    UINTN      PauseLength,
+    CHAR16    *PauseType     OPTIONAL
+);
 VOID egRenderText (
     IN     CHAR16   *Text,
     IN OUT EG_IMAGE *CompImage,
