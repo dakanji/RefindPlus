@@ -24,6 +24,8 @@
   * This should allow proper support for languages using unicode text
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
+- Improves `HandleSignedInt` Function
+  * Removed limitation on handled values
 - Improves `DirectBoot` Feature
   * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
 - Improves `ScreenShot` Feature

@@ -404,8 +404,6 @@ VOID HandleInt (
 }
 
 // Handle a parameter with a single integer argument (signed)
-// DA-TAG: We currently only have such arguments of up to '-1'
-//         Superflous '-2' added as update reminder if required
 static
 VOID HandleSignedInt (
     IN  CHAR16 **TokenList,
@@ -413,15 +411,9 @@ VOID HandleSignedInt (
     OUT INTN    *Value
 ) {
     if (TokenCount == 2) {
-        if (StrCmp (TokenList[1], L"-1") == 0) {
-            *Value = -1;
-        }
-        else if (StrCmp (TokenList[1], L"-2") == 0) {
-            *Value = -2;
-        }
-        else {
-            *Value = Atoi(TokenList[1]);
-        }
+        *Value = (TokenList[1][0] == '-')
+            ? -Atoi(TokenList[1]+1)
+            :  Atoi(TokenList[1]);
     }
 }
 
