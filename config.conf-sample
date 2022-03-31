@@ -61,7 +61,7 @@
 # suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
 # This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
 # This feature may impact other text output however, and should be disabled by activating
-# this option if such negative effects are observed. This option only applies to MacOS.
+# this option if such negative effects are observed. This setting only applies to MacOS.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # Verbose APFS text is allowed (if generated) when commented out
@@ -260,7 +260,7 @@
 #
 # Defaults to zero when commented out (Does not adjust the icon rows)
 #
-#icon_row_tune -15
+#icon_row_tune -20
 
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
@@ -539,15 +539,15 @@
 # set RefindPlus up to boot every type of loader in text mode.
 #
 # Valid options:
-#   linux       - A Linux kernel with EFI stub loader
-#   grub        - The GRUB (Legacy or 2) boot loader
-#   opencore    - The OpenCore boot loader
-#   clover      - The Clover boot loader
-#   elilo       - The ELILO boot loader
-#   windows     - Microsoft Windows
-#   osx         - MacOS
+#   osx         - MacOS loader
+#   windows     - Windows loader
+#   linux       - Linux stub loader
+#   grub        - The GRUB bootloader
+#   elilo       - The ELILO bootloader
+#   clover      - The Clover bootloader
+#   opencore    - The OpenCore bootloader
 #
-# Uses osx (Launches MacOS in graphics mode) when commented out
+# Defaults to 'osx' when commented out (Launches MacOS in graphics mode)
 #
 #use_graphics_for osx,linux
 
@@ -1083,9 +1083,9 @@
 # Similarly, the "disabled" line, when used, should be
 # immediately after the "menuentry" line.
 
-# Below are several sample boot stanzas. All are disabled by default.
+# Below are several sample boot stanzas (Disabled by default).
 # Find one similar to what is required, copy it, remove the
-# "disabled" line, and adjust the entries to suit.
+# "disabled" line, and adjust the other entries to suit.
 
 # A sample entry for a Linux 3.13 kernel with EFI boot stub support
 # on a partition with a GUID of 904404F8-B481-440C-A1E3-11A5A954E601.
@@ -1102,7 +1102,7 @@ menuentry Linux {
     options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
 }
 
-# Below is a more complex Linux example, specifically for Arch Linux.
+# Below is a more complex example for Linux, specifically for Arch Linux.
 # This example MUST be modified for each specific installation. If nothing
 # else, the PARTUUID code must be changed to match the disk in use. As Arch
 # Linux does not include version numbers in its kernel and initrd filenames,
@@ -1126,7 +1126,7 @@ menuentry "Arch Linux" {
 }
 
 # A sample entry for loading Ubuntu using its standard name for
-# its GRUB 2 boot loader. Note uses of Linux-style forward slashes
+# its GRUB 2 bootloader. Note use of Linux-style forward slashes
 #
 menuentry Ubuntu {
     disabled
@@ -1134,7 +1134,7 @@ menuentry Ubuntu {
     loader /EFI/ubuntu/grubx64.efi
 }
 
-# A minimal ELILO entry. Probably offers nothing
+# A minimal ELILO entry. Offers nothing
 # that auto-detection cannot accomplish.
 #
 menuentry "ELILO" {
@@ -1143,7 +1143,7 @@ menuentry "ELILO" {
 }
 
 # This, like the ELILO entry, offers nothing additional to auto-detection
-# but may help with disabling auto-detection but still booting Windows
+# but may help with disabling auto-detection while still booting Windows
 #
 menuentry "Windows 7" {
     disabled
@@ -1166,8 +1166,8 @@ menuentry "Windows via shell script" {
 # MacOS is normally detected and run automatically; however,
 # a manual boot stanza may permit customisation. This example
 # does nothing very unusual, but may serve as a start point.
-# Note that the "volume" line will almost certainly need
-# modification for this example to work.
+# Note that the "volume" line in the example will almost
+# certainly need modification for it to actually work.
 #
 menuentry "My MacOS" {
     disabled

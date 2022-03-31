@@ -2,7 +2,7 @@
  * AcquireGOP.c
  * Installs GOP by reloading a copy of the GPU's OptionROM from RAM
  *
- * Copyright (c) 2020 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2020 Joe van Tunen (joevt@shaw.ca)
  * Portions Copyright (c) 2004-2008 The Intel Corporation
  *

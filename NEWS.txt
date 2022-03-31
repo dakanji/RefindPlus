@@ -10,12 +10,8 @@
     - Sometimes needed when icons block parts of custom banners
   * Base position can be specified using a new `icon_row_move` configuration token
 - Adds `IconRowTune` Feature
-  * Allows finetuning the adjusting the `IconRowMove` position
+  * Allows adjustments to the `IconRowMove` position
   * Offset value can be specified using a new `icon_row_tune` configuration token
-- Adds `DriverPriority` Feature
-  * Asigns a higher priority to drivers loaded by RefindPlus
-  * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
-  * Currently tied to the `RansomDrives` Feature and only activated when that feature is active
 - Adds `RansomDrives` Feature
   * Some types of firmware, notably on HP Notebooks, may lock some partitions
     - This renders them inaccessible or may even lead to RefindPlus hanging
@@ -28,6 +24,10 @@
   * Should only be activated when specifically required
     - Should not be required on most firmware
   * This option is currently always disabled on Apple firmware
+- Adds `DriverPriority` Feature
+  * Asigns a higher priority to drivers loaded by RefindPlus
+  * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
+  * Currently tied to the `RansomDrives` Feature and only activated when that feature is active
 - Adds `HaltSeconds` Function
   * Works as `PauseSeconds` does, but does not terminate on keypress
 - Fixes Unicode Collation
@@ -50,7 +50,7 @@
     - Previously needed a separate call
   * Now erases the message after the display (if a pause is invoked)
     - Previously only properly erased when called on the main screen
-    - The erasure was however also lost on the main screen when `IconRowTune` is active
+    - The erasure was however also lost on the main screen when `IconRowMove` and/or `IconRowTune` is active
     - Now fixed for all screens but artefacts may result with some custom banners
 - Improves `ProtectNVRAM` Feature
   * Now clears existing instances of blocked variables
@@ -65,6 +65,9 @@
   * The `OSType` flag is now taken into account
 - Improves Load Error/Warning Display
   * The `ContinueOnWarning` feature is forced on temporarily if required
+- Improves Time Bound Primed Buffer Mitigation
+  * Mitigates against RefindPlus spontaneously running default items
+  * Intervention is based on a rising threshold based on build type and presence of Apple firmware
 - Removes `BootKicker` feature
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
   * This was ultimately achieved via other means but the feature was maintained for potential benefits

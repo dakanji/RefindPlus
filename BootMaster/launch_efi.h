@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -56,10 +56,6 @@
 #include "../include/tiano_includes.h"
 #endif
 #include "global.h"
-
-#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
-#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
-#endif
 
 EFI_STATUS StartEFIImage (
     IN   REFIT_VOLUME  *Volume,

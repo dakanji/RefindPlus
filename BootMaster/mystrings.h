@@ -22,6 +22,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifndef __MYSTRINGS_H_
 #define __MYSTRINGS_H_
@@ -75,8 +81,8 @@ CHAR16 * MyAsciiStrCopyToUnicode (
 VOID DeleteStringList (STRING_LIST *StringList);
 VOID ToUpper (CHAR16 *MyString);
 VOID ToLower (CHAR16 * MyString);
-VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
-VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
+VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
+VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
 VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MergeUniqueWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeFilterString (

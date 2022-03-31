@@ -239,7 +239,9 @@ extern EFI_GUID                      X509_GUID;
 extern EFI_GUID                      RSA2048_GUID;
 extern EFI_GUID                      PKCS7_GUID;
 extern EFI_GUID                      EFI_CERT_SHA256_GUID;
+
 extern EFI_FILE                     *gVarsDir;
+
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 //
@@ -1879,11 +1881,10 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG(
-        "%s      RansomDrives:- '%s'",
-        OffsetNext,
-        GlobalConfig.RansomDrives ? L"Active" : L"Inactive"
-    );
+    LOG_MSG("%s      RansomDrives:- ",  OffsetNext);
+    (AppleFirmware                                                           )
+        ? LOG_MSG("'Disabled'"                                               )
+        : LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,
@@ -2124,8 +2125,7 @@ EFI_STATUS EFIAPI efi_main (
         if (GlobalConfig.ScanDelay > Trigger) {
             CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (
-                PartMsg, &BGColor,
-                CENTER,
+                PartMsg, &BGColor, CENTER,
                 0, NULL
             );
 
@@ -2542,8 +2542,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_MUTELOGGER_SET;
                 #endif
                 egDisplayMessage (
-                    TypeStr, &BGColor,
-                    CENTER,
+                    TypeStr, &BGColor, CENTER,
                     3, L"PauseSeconds"
                 );
                 #if REFIT_DEBUG > 0
@@ -2590,8 +2589,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_MUTELOGGER_SET;
                 #endif
                 egDisplayMessage (
-                    TypeStr, &BGColor,
-                    CENTER,
+                    TypeStr, &BGColor, CENTER,
                     3, L"PauseSeconds"
                 );
                 #if REFIT_DEBUG > 0

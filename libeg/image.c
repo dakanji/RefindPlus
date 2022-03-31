@@ -314,7 +314,7 @@ EFI_STATUS egLoadFile (
     EFI_FILE_HANDLE     FileHandle;
 
     if ((BaseDir == NULL) || (FileName == NULL)) {
-
+        // Early Return
         return EFI_INVALID_PARAMETER;
     }
 
@@ -324,6 +324,7 @@ EFI_STATUS egLoadFile (
         EFI_FILE_MODE_READ, 0
     );
     if (EFI_ERROR(Status)) {
+        // Early Return
         return Status;
     }
 
@@ -331,6 +332,7 @@ EFI_STATUS egLoadFile (
     if (FileInfo == NULL) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
+        // Early Return
         return EFI_NOT_FOUND;
     }
 
@@ -342,11 +344,12 @@ EFI_STATUS egLoadFile (
 
     MY_FREE_POOL(FileInfo);
 
-    BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
+    BufferSize = (UINTN) ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
+        // Early Return
         return EFI_OUT_OF_RESOURCES;
     }
 
@@ -358,6 +361,7 @@ EFI_STATUS egLoadFile (
     if (EFI_ERROR(Status)) {
         MY_FREE_POOL(Buffer);
 
+        // Early Return
         return Status;
     }
 
@@ -382,8 +386,8 @@ EFI_STATUS egFindESP (
     OUT EFI_FILE_HANDLE *RootDir
 ) {
     EFI_STATUS   Status;
-    UINTN        HandleCount = 0;
     EFI_HANDLE  *Handles;
+    UINTN        HandleCount = 0;
     EFI_GUID     ESPGuid = ESP_GUID_VALUE;
 
     Status = LibLocateHandle (ByProtocol, &ESPGuid, NULL, &HandleCount, &Handles);
@@ -413,6 +417,7 @@ EFI_STATUS egSaveFile (
     if (BaseDir == NULL) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
+            // Early Return
             return Status;
         }
     }
@@ -423,6 +428,7 @@ EFI_STATUS egSaveFile (
         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
     );
     if (EFI_ERROR(Status)) {
+        // Early Return
         return Status;
     }
 
@@ -455,10 +461,10 @@ EG_IMAGE * egDecodeAny (
     IN UINTN     IconSize,
     IN BOOLEAN   WantAlpha
 ) {
-         EG_IMAGE *NewImage = egDecodePNG  (FileData, FileDataLength, IconSize, WantAlpha);
-    if (!NewImage) NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
-    if (!NewImage) NewImage = egDecodeBMP  (FileData, FileDataLength, IconSize, WantAlpha);
-    if (!NewImage) NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
+    EG_IMAGE       *NewImage = egDecodePNG  (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage)  NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage)  NewImage = egDecodeBMP  (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage)  NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
 
     return NewImage;
 } // static EG_IMAGE * egDecodeAny ()
@@ -478,10 +484,11 @@ EG_IMAGE * egLoadImage (
         ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
         #endif
 
+        // Early Return
         return NULL;
     }
 
-    // load file
+    // Load file
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
@@ -491,10 +498,11 @@ EG_IMAGE * egLoadImage (
         );
         #endif
 
+        // Early Return
         return NULL;
     }
 
-    // decode it
+    // Decode it
     // '128' can be any arbitrary value
     NewImage = egDecodeAny (FileData, FileDataLength, 128, WantAlpha);
     MY_FREE_POOL(FileData);
@@ -538,6 +546,7 @@ EG_IMAGE * egLoadIcon (
         );
         #endif
 
+        // Early Return
         return NULL;
     }
 
@@ -567,6 +576,7 @@ EG_IMAGE * egLoadIcon (
         );
         #endif
 
+        // Early Return
         return NULL;
     }
 
@@ -638,6 +648,7 @@ EG_IMAGE * egLoadIconAnyType (
         );
         #endif
 
+        // Early Return
         return NULL;
     }
 
@@ -725,10 +736,12 @@ EG_IMAGE * egPrepareEmbeddedImage (
     LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
 
-    // sanity checks
+    // Sanity checks
     if (!EmbeddedImage) {
         BREAD_CRUMB(L"In %s ... 1a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
         LOG_SEP(L"X");
+
+        // Early Return
         return NULL;
     }
 
@@ -742,10 +755,11 @@ EG_IMAGE * egPrepareEmbeddedImage (
         BREAD_CRUMB(L"In %s ... 2a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
         LOG_SEP(L"X");
 
+        // Early Return
         return NULL;
     }
 
-    // allocate image structure and pixel buffer
+    // Allocate image structure and pixel buffer
     BREAD_CRUMB(L"In %s ... 3", FuncTag);
     EG_IMAGE *NewImage = egCreateImage (
         EmbeddedImage->Width,
@@ -758,6 +772,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         BREAD_CRUMB(L"In %s ... 4a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
         LOG_SEP(L"X");
 
+        // Early Return
         return NULL;
     }
 
@@ -770,14 +785,15 @@ EG_IMAGE * egPrepareEmbeddedImage (
     UINTN  PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
     BREAD_CRUMB(L"In %s ... 6", FuncTag);
-    // FUTURE: for EG_EICOMPMODE_EFICOMPRESS, decompress whole data block here
+    // DA-TAG: Investigate This
+    //         Decompress whole data block here for EG_EICOMPMODE_EFICOMPRESS
 
     BREAD_CRUMB(L"In %s ... 7", FuncTag);
     if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA
     ) {
         BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
-        // copy grayscale plane and expand
+        // Copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             BREAD_CRUMB(L"In %s ... 7a 1a 1 - Grey Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
@@ -798,7 +814,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA
     ) {
         BREAD_CRUMB(L"In %s ... 7b 1", FuncTag);
-        // copy color planes
+        // Copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             BREAD_CRUMB(L"In %s ... 7b 1a 1", FuncTag);
             #if REFIT_DEBUG > 1
@@ -843,7 +859,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
         BREAD_CRUMB(L"In %s ... 7c 2", FuncTag);
         #if REFIT_DEBUG > 0
-        // DA-TAG: Limit to Embedded Banner
+        // DA-TAG: Limit Logging to Embedded Banner
         if ((WantAlpha && ForegroundColor) &&
             (EmbeddedImage->Width == egemb_refindplus_banner.Width) &&
             (EmbeddedImage->Height == egemb_refindplus_banner.Height)

@@ -32,6 +32,12 @@
  *
  * Modifications distributed under the preceding terms.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "global.h"
 #include "screenmgt.h"
@@ -39,26 +45,38 @@
 #include "../include/refit_call_wrapper.h"
 
 static
-VOID cursor_left (UINTN *cursor, UINTN *first) {
+VOID cursor_left (
+    UINTN *cursor,
+    UINTN *first
+) {
     if ((*cursor) > 0) {
         (*cursor)--;
     }
     else if ((*first) > 0) {
         (*first)--;
     }
-}
+} // static VOID cursor_left()
 
 static
-VOID cursor_right (UINTN *cursor, UINTN *first, UINTN x_max, UINTN len) {
+VOID cursor_right (
+    UINTN *cursor,
+    UINTN *first,
+    UINTN  x_max,
+    UINTN  len
+) {
     if ((*cursor)+2 < x_max) {
         (*cursor)++;
     }
     else if ((*first) + (*cursor) < len) {
         (*first)++;
     }
-}
+} // static VOID cursor_right()
 
-BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
+BOOLEAN line_edit (
+    CHAR16  *line_in,
+    CHAR16 **line_out,
+    UINTN    x_max
+) {
     CHAR16  *line;
     UINTN    size;
     UINTN    len;
@@ -82,17 +100,28 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         line_in = L"";
     }
     size = StrLen (line_in) + 1024;
-    line = AllocatePool (size * sizeof (CHAR16));
+    line = AllocatePool (sizeof (CHAR16) * size);
+    if (line == NULL) {
+        // Early Return
+        return FALSE;
+    }
     StrCpy (line, line_in);
-    len   = StrLen (line);
-    print = AllocatePool (x_max * sizeof (CHAR16));
 
-    REFIT_CALL_2_WRAPPER(ST->ConOut->EnableCursor, ST->ConOut, TRUE);
+    print = AllocatePool (sizeof (CHAR16) * x_max);
+    if (print == NULL) {
+        MY_FREE_POOL(line);
+
+        // Early Return
+        return FALSE;
+    }
 
     first  = 0;
     cursor = 0;
     enter  = FALSE;
     exit   = FALSE;
+    len    = StrLen (line);
+
+    REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
     while (!exit) {
         UINTN         index;
         EFI_STATUS    err;
@@ -128,161 +157,167 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         }
 
         switch (key.ScanCode) {
-        case SCAN_ESC:
-            exit = TRUE;
+            case SCAN_ESC:
+                exit = TRUE;
 
             break;
-        case SCAN_HOME:
-            cursor = 0;
-            first  = 0;
+            case SCAN_HOME:
+                cursor = 0;
+                first  = 0;
 
             continue;
-        case SCAN_END:
-            cursor = len;
-            if (cursor >= x_max) {
-                cursor = x_max-2;
-                first  = len - (x_max-2);
-            }
+            case SCAN_END:
+                cursor = len;
+                if (cursor >= x_max) {
+                    cursor = x_max-2;
+                    first  = len - (x_max-2);
+                }
 
             continue;
-        case SCAN_UP:
-            while ((first + cursor) && line[first + cursor] == ' ') {
+            case SCAN_UP:
+                while ((first + cursor) && line[first + cursor] == ' ') {
+                    cursor_left (&cursor, &first);
+                }
+                while ((first + cursor) && line[first + cursor] != ' ') {
+                    cursor_left (&cursor, &first);
+                }
+                while ((first + cursor) && line[first + cursor] == ' ') {
+                    cursor_left (&cursor, &first);
+                }
+                if (first + cursor != len && first + cursor) {
+                    cursor_right (&cursor, &first, x_max, len);
+                }
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    cursor, y_pos
+                );
+
+            continue;
+            case SCAN_DOWN:
+                while (line[first + cursor] && line[first + cursor] == ' ') {
+                    cursor_right (&cursor, &first, x_max, len);
+                }
+                while (line[first + cursor] && line[first + cursor] != ' ') {
+                    cursor_right (&cursor, &first, x_max, len);
+                }
+                while (line[first + cursor] && line[first + cursor] == ' ') {
+                    cursor_right (&cursor, &first, x_max, len);
+                }
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    cursor, y_pos
+                );
+
+            continue;
+            case SCAN_RIGHT:
+                if (first + cursor == len) {
+                    continue;
+                }
+                cursor_right (&cursor, &first, x_max, len);
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    cursor, y_pos
+                );
+
+            continue;
+            case SCAN_LEFT:
                 cursor_left (&cursor, &first);
-            }
-            while ((first + cursor) && line[first + cursor] != ' ') {
-                cursor_left (&cursor, &first);
-            }
-            while ((first + cursor) && line[first + cursor] == ' ') {
-                cursor_left (&cursor, &first);
-            }
-            if (first + cursor != len && first + cursor) {
-                cursor_right (&cursor, &first, x_max, len);
-            }
-            REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition, gST->ConOut,
-                cursor, y_pos
-            );
+                REFIT_CALL_3_WRAPPER(
+                    gST->ConOut->SetCursorPosition, gST->ConOut,
+                    cursor, y_pos
+                );
 
             continue;
-        case SCAN_DOWN:
-            while (line[first + cursor] && line[first + cursor] == ' ') {
-                cursor_right (&cursor, &first, x_max, len);
-            }
-            while (line[first + cursor] && line[first + cursor] != ' ') {
-                cursor_right (&cursor, &first, x_max, len);
-            }
-            while (line[first + cursor] && line[first + cursor] == ' ') {
-                cursor_right (&cursor, &first, x_max, len);
-            }
-            REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition, gST->ConOut,
-                cursor, y_pos
-            );
+            case SCAN_DELETE:
+                if (len == 0) {
+                    continue;
+                }
+                if (first + cursor == len) {
+                    continue;
+                }
+
+                for (i = first + cursor; i < len; i++) {
+                    line[i] = line[i+1];
+                }
+
+                line[len-1] = ' ';
+                len--;
 
             continue;
-        case SCAN_RIGHT:
-            if (first + cursor == len) {
-                continue;
-            }
-            cursor_right (&cursor, &first, x_max, len);
-            REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition, gST->ConOut,
-                cursor, y_pos
-            );
-
-            continue;
-        case SCAN_LEFT:
-            cursor_left (&cursor, &first);
-            REFIT_CALL_3_WRAPPER(
-                gST->ConOut->SetCursorPosition, gST->ConOut,
-                cursor, y_pos
-            );
-
-            continue;
-        case SCAN_DELETE:
-            if (len == 0) {
-                continue;
-            }
-            if (first + cursor == len) {
-                continue;
-            }
-
-            for (i = first + cursor; i < len; i++) {
-                line[i] = line[i+1];
-            }
-
-            line[len-1] = ' ';
-            len--;
-
-            continue;
-        }
+        } // switch
 
         switch (key.UnicodeChar) {
-        case CHAR_LINEFEED:
-        case CHAR_CARRIAGE_RETURN:
-            *line_out = line;
-             line     = NULL;
-             enter    = TRUE;
-             exit     = TRUE;
+            case CHAR_LINEFEED:
+            case CHAR_CARRIAGE_RETURN:
+                *line_out = line;
+                line      = NULL;
+                enter     = TRUE;
+                exit      = TRUE;
             break;
-        case CHAR_BACKSPACE:
-            if (len == 0) {
-                continue;
-            }
-            if (first == 0 && cursor == 0) {
-                continue;
-            }
-            for (i = first + cursor-1; i < len; i++) {
-                line[i] = line[i+1];
-            }
-            len--;
-            if (cursor > 0) {
-                cursor--;
-            }
-            if (cursor > 0 || first == 0) {
-                continue;
-            }
-            /* show full line if it fits */
-            if (len < x_max-2) {
-                cursor = first;
-                first = 0;
+            case CHAR_BACKSPACE:
+                if (len == 0) {
+                    continue;
+                }
+                if (first == 0 && cursor == 0) {
+                    continue;
+                }
 
-                continue;
-            }
-            /* jump left to see what we delete */
-            if (first > 10) {
-                first -= 10;
-                cursor = 10;
-            }
-            else {
-                cursor = first;
-                first = 0;
-            }
+                for (i = first + cursor-1; i < len; i++) {
+                    line[i] = line[i+1];
+                }
+                len--;
 
-            continue;
-        case '\t':
-        case ' ' ... '~':
-        case 0x80 ... 0xffff:
-            if (len+1 == size) {
-                continue;
-            }
-            for (i = len; i > first + cursor; i--) {
-                line[i] = line[i-1];
-            }
-            line[first + cursor] = key.UnicodeChar;
-            len++;
-            line[len] = '\0';
-            if (cursor+2 < x_max) {
-                cursor++;
-            }
-            else if (first + cursor < len) {
-                first++;
-            }
+                if (cursor > 0) {
+                    cursor--;
+                }
+                if (cursor > 0 || first == 0) {
+                    continue;
+                }
+
+                /* show full line if it fits */
+                if (len < x_max-2) {
+                    cursor = first;
+                    first = 0;
+
+                    continue;
+                }
+
+                /* jump left to see what we delete */
+                if (first > 10) {
+                    first -= 10;
+                    cursor = 10;
+                }
+                else {
+                    cursor = first;
+                    first = 0;
+                }
 
             continue;
-        }
-    }
+            case '\t':
+            case ' ' ... '~':
+            case 0x80 ... 0xffff:
+                if (len+1 == size) {
+                    continue;
+                }
 
+                for (i = len; i > first + cursor; i--) {
+                    line[i] = line[i-1];
+                }
+
+                line[first + cursor] = key.UnicodeChar;
+                len++;
+                line[len] = '\0';
+
+                if (cursor+2 < x_max) {
+                    cursor++;
+                }
+                else if (first + cursor < len) {
+                    first++;
+                }
+
+            continue;
+        } // switch
+    } // while
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, FALSE);
 
     MY_FREE_POOL(print);

@@ -61,61 +61,59 @@
 #include "../EfiLib/GenericBdsLib.h"
 #include "../libeg/libeg.h"
 
-// Tag classifications; used in various ways.
-#define TAG_GENERIC             (0)
-#define TAG_ABOUT               (1)
-#define TAG_REBOOT              (2)
-#define TAG_SHUTDOWN            (3)
-#define TAG_TOOL                (4)
-#define TAG_LOADER              (5)
-#define TAG_LEGACY              (6)
-#define TAG_FIRMWARE_LOADER     (7)
-#define TAG_EXIT                (8)
-#define TAG_SHELL               (9)
-#define TAG_GPTSYNC            (10)
-#define TAG_LEGACY_UEFI        (11)
-#define TAG_RECOVERY_APPLE     (12)
-#define TAG_RECOVERY_WINDOWS   (13)
-#define TAG_MOK_TOOL           (14)
-#define TAG_FIRMWARE           (15)
-#define TAG_MEMTEST            (16)
-#define TAG_GDISK              (17)
-#define TAG_NETBOOT            (18)
-#define TAG_CSR_ROTATE         (19)
-#define TAG_FWUPDATE_TOOL      (20)
-#define TAG_HIDDEN             (21)
-#define TAG_INSTALL            (22)
-#define TAG_BOOTORDER          (23)
-#define TAG_INFO_NVRAMCLEAN    (24)
-#define TAG_LOAD_NVRAMCLEAN    (25)
-#define NUM_TOOLS              (26)
+// Tag classifications ... Used in various ways.
+#define TAG_GENERIC               (0)
+#define TAG_ABOUT                 (1)
+#define TAG_REBOOT                (2)
+#define TAG_SHUTDOWN              (3)
+#define TAG_TOOL                  (4)
+#define TAG_LOADER                (5)
+#define TAG_LEGACY                (6)
+#define TAG_FIRMWARE_LOADER       (7)
+#define TAG_EXIT                  (8)
+#define TAG_SHELL                 (9)
+#define TAG_GPTSYNC              (10)
+#define TAG_LEGACY_UEFI          (11)
+#define TAG_RECOVERY_APPLE       (12)
+#define TAG_RECOVERY_WINDOWS     (13)
+#define TAG_MOK_TOOL             (14)
+#define TAG_FIRMWARE             (15)
+#define TAG_MEMTEST              (16)
+#define TAG_GDISK                (17)
+#define TAG_NETBOOT              (18)
+#define TAG_CSR_ROTATE           (19)
+#define TAG_FWUPDATE_TOOL        (20)
+#define TAG_HIDDEN               (21)
+#define TAG_INSTALL              (22)
+#define TAG_BOOTORDER            (23)
+#define TAG_INFO_NVRAMCLEAN      (24)
+#define TAG_LOAD_NVRAMCLEAN      (25)
+#define NUM_TOOLS                (26)
 
-#define NUM_SCAN_OPTIONS       (11)
+#define NUM_SCAN_OPTIONS         (11)
 
-#define DEFAULT_ICONS_DIR L"icons"
-
-// OS bit codes (Actual Decimal); used in GlobalConfig.GraphicsFor
-#define GRAPHICS_FOR_OSX         (1)
-#define GRAPHICS_FOR_LINUX       (2)
-#define GRAPHICS_FOR_ELILO       (4)
-#define GRAPHICS_FOR_GRUB        (8)
-#define GRAPHICS_FOR_WINDOWS    (16)
-#define GRAPHICS_FOR_OPENCORE   (32)
-#define GRAPHICS_FOR_CLOVER     (64)
+// OS bit codes (Actual Decimal) ... Used in GlobalConfig.GraphicsFor
+#define GRAPHICS_FOR_OSX          (1)
+#define GRAPHICS_FOR_LINUX        (2)
+#define GRAPHICS_FOR_ELILO        (4)
+#define GRAPHICS_FOR_GRUB         (8)
+#define GRAPHICS_FOR_WINDOWS     (16)
+#define GRAPHICS_FOR_OPENCORE    (32)
+#define GRAPHICS_FOR_CLOVER      (64)
 
 // Type of legacy (BIOS) boot support detected
-#define LEGACY_TYPE_NONE         (0)
-#define LEGACY_TYPE_MAC          (1)
-#define LEGACY_TYPE_UEFI         (2)
+#define LEGACY_TYPE_NONE          (0)
+#define LEGACY_TYPE_MAC           (1)
+#define LEGACY_TYPE_UEFI          (2)
 
-// How was a loader added to the menu?
-#define DISCOVERY_TYPE_UNKNOWN   (0)
-#define DISCOVERY_TYPE_AUTO      (1)
-#define DISCOVERY_TYPE_MANUAL    (2)
+// Flags how a loader entry was added to a menu
+#define DISCOVERY_TYPE_UNKNOWN    (0)
+#define DISCOVERY_TYPE_AUTO       (1)
+#define DISCOVERY_TYPE_MANUAL     (2)
 
 #ifdef __MAKEWITH_GNUEFI
 
-// define BBS Device Types
+// Define BBS Device Types
 #define BBS_FLOPPY             (0x01)
 #define BBS_HARDDISK           (0x02)
 #define BBS_CDROM              (0x03)
@@ -168,14 +166,16 @@
 #define ICON_SIZE_MOUSE           (3)
 
 // Minimum resolutions for a screen to be considered High-DPI
-#define HIDPI_LONG 2560
-#define HIDPI_SHORT 1600
+#define HIDPI_LONG             (2560)
+#define HIDPI_SHORT            (1600)
 
 #ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
 #endif
 
-// Names of binaries that can manage MOKs.
+#define DEFAULT_ICONS_DIR           L"icons"
+
+// Names of binaries that can manage MOKs
 #if defined (EFIX64)
     #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
 #elif defined(EFI32)
@@ -186,7 +186,7 @@
     #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
 #endif
 
-// Names of binaries that can update firmware.
+// Names of binaries that can update firmware
 #if defined (EFIX64)
     #define FWUPDATE_NAMES          L"fwupx64.efi"
 #elif defined(EFI32)
@@ -202,7 +202,7 @@
 #define MOK_LOCATIONS \
 L"\\EFI\\tools,\\EFI\\fedora,\\EFI\\redhat,\\EFI\\ubuntu,\\EFI\\suse,\\EFI\\opensuse,\\EFI\\altlinux"
 
-// Directories to search for memtest86.
+// Directories to search for memtest86
 #define MEMTEST_LOCATIONS \
 L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest,\
 \\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
@@ -240,45 +240,45 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
 // Definitions for the "hideui" option in config.conf
-#define HIDEUI_FLAG_NONE       (0x0000)
-#define HIDEUI_FLAG_BANNER     (0x0001)
-#define HIDEUI_FLAG_LABEL      (0x0002)
-#define HIDEUI_FLAG_SINGLEUSER (0x0004)
-#define HIDEUI_FLAG_HWTEST     (0x0008)
-#define HIDEUI_FLAG_ARROWS     (0x0010)
-#define HIDEUI_FLAG_HINTS      (0x0020)
-#define HIDEUI_FLAG_EDITOR     (0x0040)
-#define HIDEUI_FLAG_SAFEMODE   (0x0080)
-#define HIDEUI_FLAG_BADGES     (0x0100)
-#define HIDEUI_FLAG_ALL        (0x01FF)
+#define HIDEUI_FLAG_NONE        (0x0000)
+#define HIDEUI_FLAG_BANNER      (0x0001)
+#define HIDEUI_FLAG_LABEL       (0x0002)
+#define HIDEUI_FLAG_SINGLEUSER  (0x0004)
+#define HIDEUI_FLAG_HWTEST      (0x0008)
+#define HIDEUI_FLAG_ARROWS      (0x0010)
+#define HIDEUI_FLAG_HINTS       (0x0020)
+#define HIDEUI_FLAG_EDITOR      (0x0040)
+#define HIDEUI_FLAG_SAFEMODE    (0x0080)
+#define HIDEUI_FLAG_BADGES      (0x0100)
+#define HIDEUI_FLAG_ALL         (0x01FF)
 
 // Default hint text for program-launch submenus
 #define SUBSCREEN_HINT1            L"Use Arrow Keys to Move Selection and Press 'Enter' to Run Selected Item"
 #define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to Edit Options or Press 'Esc' to Return to Main Menu"
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to Return to Main Menu"
 
-#define NULL_GUID_VALUE               {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
-#define REFIND_GUID_VALUE             {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
-#define REFINDPLUS_GUID               {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
-#define ESP_GUID_VALUE                {0xC12A7328, 0xF81F, 0x11D2, {0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B}};
-#define HFS_GUID_VALUE                {0x48465300, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define APFS_GUID_VALUE               {0x7C3457EF, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define APPLE_TV_RECOVERY_GUID        {0x426F6F74, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define MAC_RAID_ON_GUID_VALUE        {0x52414944, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define MAC_RAID_OFF_GUID_VALUE       {0x52414944, 0x5F4F, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define CORE_STORAGE_GUID_VALUE       {0x53746F72, 0x6167, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define MAC_RECOVERYHD_GUID_VALUE     {0x426F6F74, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
-#define MICROSOFT_VENDOR_GUID         {0x77FA9ABD, 0x0359, 0x4D32, {0xBD, 0x60, 0x28, 0xF4, 0xE7, 0x8F, 0x78, 0x4B}};
-#define SYSTEMD_GUID_VALUE            {0x4a67b082, 0x0a4c, 0x41cf, {0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f}};
+#define NULL_GUID_VALUE              {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+#define REFIND_GUID_VALUE            {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
+#define REFINDPLUS_GUID              {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
+#define ESP_GUID_VALUE               {0xC12A7328, 0xF81F, 0x11D2, {0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B}};
+#define HFS_GUID_VALUE               {0x48465300, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define APFS_GUID_VALUE              {0x7C3457EF, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define APPLE_TV_RECOVERY_GUID       {0x426F6F74, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define MAC_RAID_ON_GUID_VALUE       {0x52414944, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define MAC_RAID_OFF_GUID_VALUE      {0x52414944, 0x5F4F, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define CORE_STORAGE_GUID_VALUE      {0x53746F72, 0x6167, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define MAC_RECOVERYHD_GUID_VALUE    {0x426F6F74, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define MICROSOFT_VENDOR_GUID        {0x77FA9ABD, 0x0359, 0x4D32, {0xBD, 0x60, 0x28, 0xF4, 0xE7, 0x8F, 0x78, 0x4B}};
+#define SYSTEMD_GUID_VALUE           {0x4a67b082, 0x0a4c, 0x41cf, {0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f}};
 
 // DA-TAG: Define EFI Certificate GUIDs ... Others are in mok/guid.c
-#define EFI_CERT_SHA1_GUID            {0x826ca512, 0xcf10, 0x4ac9, {0xb1, 0x87, 0xbe, 0x01, 0x49, 0x66, 0x31, 0xbd}};
-#define EFI_CERT_SHA224_GUID          {0x0b6e5233, 0xa65c, 0x44c9, {0x94, 0x07, 0xd9, 0xab, 0x83, 0xbf, 0xc8, 0xbd}};
-#define EFI_CERT_SHA384_GUID          {0xff3e5307, 0x9fd0, 0x48c9, {0x85, 0xf1, 0x8a, 0xd5, 0x6c, 0x70, 0x1e, 0x01}};
-#define EFI_CERT_SHA512_GUID          {0x093e0fae, 0xa6c4, 0x4f50, {0x9f, 0x1b, 0xd4, 0x1e, 0x2b, 0x89, 0xc1, 0x9a}};
-#define EFI_CERT_TYPE_PKCS7_GUID      {0x4aafd29d, 0x68df, 0x49ee, {0x8a, 0xa9, 0x34, 0x7d, 0x37, 0x56, 0x65, 0xa7}};
-#define EFI_CERT_RSA2048_SHA1_GUID    {0x67f8444f, 0x8743, 0x48f1, {0xa3, 0x28, 0x1e, 0xaa, 0xb8, 0x73, 0x60, 0x80}};
-#define EFI_CERT_RSA2048_SHA256_GUID  {0xe2b36190, 0x879b, 0x4a3d, {0xad, 0x8d, 0xf2, 0xe7, 0xbb, 0xa3, 0x27, 0x84}};
+#define EFI_CERT_SHA1_GUID           {0x826ca512, 0xcf10, 0x4ac9, {0xb1, 0x87, 0xbe, 0x01, 0x49, 0x66, 0x31, 0xbd}};
+#define EFI_CERT_SHA224_GUID         {0x0b6e5233, 0xa65c, 0x44c9, {0x94, 0x07, 0xd9, 0xab, 0x83, 0xbf, 0xc8, 0xbd}};
+#define EFI_CERT_SHA384_GUID         {0xff3e5307, 0x9fd0, 0x48c9, {0x85, 0xf1, 0x8a, 0xd5, 0x6c, 0x70, 0x1e, 0x01}};
+#define EFI_CERT_SHA512_GUID         {0x093e0fae, 0xa6c4, 0x4f50, {0x9f, 0x1b, 0xd4, 0x1e, 0x2b, 0x89, 0xc1, 0x9a}};
+#define EFI_CERT_TYPE_PKCS7_GUID     {0x4aafd29d, 0x68df, 0x49ee, {0x8a, 0xa9, 0x34, 0x7d, 0x37, 0x56, 0x65, 0xa7}};
+#define EFI_CERT_RSA2048_SHA1_GUID   {0x67f8444f, 0x8743, 0x48f1, {0xa3, 0x28, 0x1e, 0xaa, 0xb8, 0x73, 0x60, 0x80}};
+#define EFI_CERT_RSA2048_SHA256_GUID {0xe2b36190, 0x879b, 0x4a3d, {0xad, 0x8d, 0xf2, 0xe7, 0xbb, 0xa3, 0x27, 0x84}};
 
 // Configuration file variables
 #define KERNEL_VERSION L"%v"
@@ -362,7 +362,7 @@ typedef struct _refit_menu_entry {
 } REFIT_MENU_ENTRY;
 
 typedef struct _refit_menu_screen {
-    CHAR16            *Title;          // For EFI firmware entry, this includes "Reboot to" prefix
+    CHAR16            *Title;          // EFI firmware entry ... Includes "Reboot to" prefix
     EG_IMAGE          *TitleImage;
     UINTN              InfoLineCount;
     CHAR16           **InfoLines;
@@ -376,13 +376,13 @@ typedef struct _refit_menu_screen {
 
 typedef struct {
     REFIT_MENU_ENTRY  me;
-    CHAR16           *Title;            // For EFI firmware entry, this is "raw" title
+    CHAR16           *Title;            // EFI firmware entry "raw" title
     CHAR16           *LoaderPath;
     REFIT_VOLUME     *Volume;
     BOOLEAN           UseGraphicsMode;
     BOOLEAN           Enabled;
     CHAR16           *LoadOptions;
-    CHAR16           *InitrdPath;       // Linux stub loader only
+    CHAR16           *InitrdPath;       // Linux stub loader
     CHAR8             OSType;
     UINTN             DiscoveryType;
     EFI_DEVICE_PATH  *EfiLoaderPath;    // Path to NVRAM-defined loader
@@ -544,20 +544,20 @@ LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 /* Misc Extra Items - START */
 #define MY_OFFSET_OF(st, m) ((UINTN)((char *) &((st *)0)->m - (char *)0))
 
-#define LOG_BLOCK_SEP        0
-#define LOG_BLANK_LINE_SEP   1
-#define LOG_LINE_SPECIAL     2
-#define LOG_LINE_SAME        3
-#define LOG_LINE_NORMAL      4
-#define LOG_LINE_SEPARATOR   5
-#define LOG_LINE_THIN_SEP    6
-#define LOG_STAR_SEPARATOR   7
-#define LOG_LINE_DASH_SEP    8
-#define LOG_THREE_STAR_SEP   9
-#define LOG_THREE_STAR_MID   10
-#define LOG_THREE_STAR_END   11
-#define LOG_STAR_HEAD_SEP    12
-#define LOG_LINE_FORENSIC    13
+#define LOG_BLOCK_SEP         (0)
+#define LOG_BLANK_LINE_SEP    (1)
+#define LOG_LINE_SPECIAL      (2)
+#define LOG_LINE_SAME         (3)
+#define LOG_LINE_NORMAL       (4)
+#define LOG_LINE_SEPARATOR    (5)
+#define LOG_LINE_THIN_SEP     (6)
+#define LOG_STAR_SEPARATOR    (7)
+#define LOG_LINE_DASH_SEP     (8)
+#define LOG_THREE_STAR_SEP    (9)
+#define LOG_THREE_STAR_MID   (10)
+#define LOG_THREE_STAR_END   (11)
+#define LOG_STAR_HEAD_SEP    (12)
+#define LOG_LINE_FORENSIC    (13)
 
 VOID DebugLog (
     IN        INTN  DebugMode,

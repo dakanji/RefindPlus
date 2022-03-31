@@ -78,14 +78,29 @@ typedef struct {
 
 #define APPLE_APFS_VOLUME_ROLE_UNDEFINED  (0x00) // Early APFS ... Combined System/Data Volume
 #define APPLE_APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
+#define APPLE_APFS_VOLUME_ROLE_USER       (0x02) // Usersʼ home directories
 #define APPLE_APFS_VOLUME_ROLE_RECOVERY   (0x04)
 #define APPLE_APFS_VOLUME_ROLE_VM         (0x08)
 #define APPLE_APFS_VOLUME_ROLE_PREBOOT    (0x10)
+#define APPLE_APFS_VOLUME_ROLE_INSTALLER  (0x20)
 #define APPLE_APFS_VOLUME_ROLE_DATA       (0x40)
 #define APPLE_APFS_VOLUME_ROLE_UPDATE     (0xC0)
 #define APPLE_APFS_VOLUME_ROLE_UNKNOWN    (0xFF)
 typedef UINT32 APPLE_APFS_VOLUME_ROLE;
 
+#define APFS_VOLUME_ENUM_SHIFT               (6)
+
+#define APFS_VOL_ROLE_DATA         (1 << APFS_VOLUME_ENUM_SHIFT) // 0x40
+#define APFS_VOL_ROLE_BASEBAND     (2 << APFS_VOLUME_ENUM_SHIFT) // Used by radio firmware
+#define APFS_VOL_ROLE_UPDATE       (3 << APFS_VOLUME_ENUM_SHIFT) // 0xC0
+#define APFS_VOL_ROLE_XART         (4 << APFS_VOLUME_ENUM_SHIFT) // Manages OS access to secure user data
+#define APFS_VOL_ROLE_HARDWARE     (5 << APFS_VOLUME_ENUM_SHIFT) // Firmware data ... iOS
+#define APFS_VOL_ROLE_BACKUP       (6 << APFS_VOLUME_ENUM_SHIFT) // Time Machine backups
+#define APFS_VOL_ROLE_RESERVED_7   (7 << APFS_VOLUME_ENUM_SHIFT)
+#define APFS_VOL_ROLE_RESERVED_8   (8 << APFS_VOLUME_ENUM_SHIFT)
+#define APFS_VOL_ROLE_ENTERPRISE   (9 << APFS_VOLUME_ENUM_SHIFT)
+#define APFS_VOL_ROLE_RESERVED_10 (10 << APFS_VOLUME_ENUM_SHIFT)
+#define APFS_VOL_ROLE_PRELOGIN    (11 << APFS_VOLUME_ENUM_SHIFT) // Stores system data used before login
 
 #define APPLE_APFS_VOLUME_INFO_GUID  \
 { \

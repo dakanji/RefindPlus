@@ -2092,8 +2092,7 @@ VOID egScreenShot (VOID) {
         MY_MUTELOGGER_SET;
         #endif
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
-            CENTER,
+            MsgStr, &BGColorWarn, CENTER,
             4, L"HaltSeconds"
         );
         #if REFIT_DEBUG > 0
@@ -2137,8 +2136,7 @@ VOID egScreenShot (VOID) {
         MY_MUTELOGGER_SET;
         #endif
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
-            CENTER,
+            MsgStr, &BGColorWarn, CENTER,
             4, L"HaltSeconds"
         );
         #if REFIT_DEBUG > 0
@@ -2169,8 +2167,7 @@ VOID egScreenShot (VOID) {
             MY_MUTELOGGER_SET;
             #endif
             egDisplayMessage (
-                MsgStr, &BGColorWarn,
-                CENTER,
+                MsgStr, &BGColorWarn, CENTER,
                 4, L"HaltSeconds"
             );
             #if REFIT_DEBUG > 0
@@ -2203,8 +2200,7 @@ VOID egScreenShot (VOID) {
             MY_MUTELOGGER_SET;
             #endif
             egDisplayMessage (
-                MsgStr, &BGColorWarn,
-                CENTER,
+                MsgStr, &BGColorWarn, CENTER,
                 4, L"HaltSeconds"
             );
             #if REFIT_DEBUG > 0
@@ -2237,8 +2233,7 @@ VOID egScreenShot (VOID) {
             MY_MUTELOGGER_SET;
             #endif
             egDisplayMessage (
-                MsgStr, &BGColorWarn,
-                CENTER,
+                MsgStr, &BGColorWarn, CENTER,
                 4, L"HaltSeconds"
             );
             #if REFIT_DEBUG > 0
@@ -2277,8 +2272,7 @@ VOID egScreenShot (VOID) {
     MY_MUTELOGGER_SET;
     #endif
     egDisplayMessage (
-        MsgStr, &BGColorGood,
-        CENTER,
+        MsgStr, &BGColorGood, CENTER,
         2, L"HaltSeconds"
     );
     #if REFIT_DEBUG > 0

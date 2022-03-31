@@ -28,7 +28,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 #endif
 
-#define IS_PCI_GFX(_p) IS_CLASS2 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_OTHER)
+#define IS_PCI_GFX(_p) IS_CLASS2(_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_OTHER)
 
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
@@ -732,8 +732,12 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 ) {
     EFI_STATUS Status;
 
-    // Clear Keystrokes
-    ReadAllKeyStrokes();
+    // Remove any buffered key strokes
+    BOOLEAN KeyStrokeFound = ReadAllKeyStrokes();
+    if (!KeyStrokeFound && !AppleFirmware) {
+        // No KeyStrokes found ... Reset the buffer on UEFI PC anyway
+        REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
+    }
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {

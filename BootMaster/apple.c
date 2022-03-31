@@ -209,9 +209,7 @@ VOID RotateCsrValue (VOID) {
 
         EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus,
-            &BGColor,
-            CENTER,
+            gCsrStatus, &BGColor, CENTER,
             4, L"PauseSeconds"
         );
 
@@ -268,9 +266,7 @@ VOID RotateCsrValue (VOID) {
 
         EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus,
-            &BGColor,
-            CENTER,
+            gCsrStatus, &BGColor, CENTER,
             4, L"PauseSeconds"
         );
 

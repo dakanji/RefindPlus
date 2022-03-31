@@ -100,17 +100,17 @@ EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 
 
 // Macros
 #define SET_BADGE_IMMAGE(x) Volume->VolBadgeImage = BuiltinIcon (x)
-#define UNINIT_VOLUMES(x, y)        \
-    do {                            \
-        for (i = 0; i < y; i++) {   \
-            UninitVolume (&x[i]);   \
-        }                           \
+#define UNINIT_VOLUMES(x, y)              \
+    do {                                  \
+        for (UINTN i = 0; i < y; i++) {   \
+            UninitVolume (&x[i]);         \
+        }                                 \
     } while (0)
-#define REINIT_VOLUMES(x, y)        \
-    do {                            \
-        for (i = 0; i < y; i++) {   \
-            ReinitVolume (&x[i]);   \
-        }                           \
+#define REINIT_VOLUMES(x, y)              \
+    do {                                  \
+        for (UINTN i = 0; i < y; i++) {   \
+            ReinitVolume (&x[i]);         \
+        }                                 \
     } while (0)
 
 
@@ -374,7 +374,6 @@ VOID UninitVolume (
 
 static
 VOID UninitVolumes (VOID) {
-    UINTN  i;
     UNINIT_VOLUMES(RecoveryVolumes, RecoveryVolumesCount);
     UNINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
     UNINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
@@ -438,7 +437,6 @@ VOID ReinitVolume (
 } // static VOID ReinitVolume()
 
 VOID ReinitVolumes (VOID) {
-    UINTN  i;
     REINIT_VOLUMES(RecoveryVolumes, RecoveryVolumesCount);
     REINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
     REINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
@@ -1436,14 +1434,8 @@ VOID ScanVolumeBootcode (
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
             if (DoneHeadings) {
-                if (SkipSpacing) {
-                    StrSpacer   = L" ... ";
-                    LogLineType = LOG_LINE_SAME;
-                }
-                else {
-                    StrSpacer   = L"";
-                    LogLineType = LOG_LINE_SPECIAL;
-                }
+                LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                 ALT_LOG(1, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
                 SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
             }
@@ -1475,14 +1467,8 @@ VOID ScanVolumeBootcode (
                     FoundMBR = TRUE;
 
                     if (DoneHeadings) {
-                        if (SkipSpacing) {
-                            StrSpacer   = L" ... ";
-                            LogLineType = LOG_LINE_SAME;
-                        }
-                        else {
-                            StrSpacer   = L"";
-                            LogLineType = LOG_LINE_SPECIAL;
-                        }
+                        LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                        StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                         ALT_LOG(1, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
                         SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
                     }
@@ -1794,12 +1780,7 @@ VOID ScanVolume (
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
-        if (HybridLogger) {
-            LogLineType = LOG_LINE_SPECIAL;
-        }
-        else {
-            LogLineType = LOG_LINE_NORMAL;
-        }
+        LogLineType = (HybridLogger) ? LOG_LINE_SPECIAL : LOG_LINE_NORMAL;
         ALT_LOG(1, LogLineType, L"Cannot Get BlockIO Protocol in ScanVolume!!");
         #endif
     }
@@ -1865,14 +1846,8 @@ VOID ScanVolume (
                 #if REFIT_DEBUG > 0
                 if (DoneHeadings) {
                     if (HybridLogger) {
-                        if (SkipSpacing) {
-                            StrSpacer   = L" ... ";
-                            LogLineType = LOG_LINE_SAME;
-                        }
-                        else {
-                            StrSpacer   = L"";
-                            LogLineType = LOG_LINE_SPECIAL;
-                        }
+                        LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                        StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                     }
                     else {
                         StrSpacer   = L"";
@@ -1893,14 +1868,8 @@ VOID ScanVolume (
                     #if REFIT_DEBUG > 0
                     if (DoneHeadings) {
                         if (HybridLogger) {
-                            if (SkipSpacing) {
-                                StrSpacer   = L" ... ";
-                                LogLineType = LOG_LINE_SAME;
-                            }
-                            else {
-                                StrSpacer   = L"";
-                                LogLineType = LOG_LINE_SPECIAL;
-                            }
+                            LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                            StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                         }
                         else {
                             StrSpacer   = L"";
@@ -1926,14 +1895,8 @@ VOID ScanVolume (
                     #if REFIT_DEBUG > 0
                     if (DoneHeadings) {
                         if (HybridLogger) {
-                            if (SkipSpacing) {
-                                StrSpacer   = L" ... ";
-                                LogLineType = LOG_LINE_SAME;
-                            }
-                            else {
-                                StrSpacer   = L"";
-                                LogLineType = LOG_LINE_SPECIAL;
-                            }
+                            LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                            StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                         }
                         else {
                             StrSpacer   = L"";
@@ -1968,14 +1931,8 @@ VOID ScanVolume (
             CHAR16 *MsgStr = L"Considered Non-Bootable but Boot Code is Present";
             if (DoneHeadings) {
                 if (HybridLogger) {
-                    if (SkipSpacing) {
-                        StrSpacer   = L" ... ";
-                        LogLineType = LOG_LINE_SAME;
-                    }
-                    else {
-                        StrSpacer   = L"";
-                        LogLineType = LOG_LINE_SPECIAL;
-                    }
+                    LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+                    StrSpacer   = (SkipSpacing) ? L" ... "      : L"";
                 }
                 else {
                     StrSpacer   = L"";
@@ -2096,7 +2053,11 @@ VOID ScanExtendedPartition (
                 ScanMBR = FALSE;
 
                 SetVolumeBadgeIcon (Volume);
-                AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
+                AddListElement (
+                    (VOID ***) &Volumes,
+                    &VolumesCount,
+                    Volume
+                );
             }
         } // for i
     } // for ExtCurrent = ExtBase
@@ -2345,14 +2306,24 @@ CHAR16 * GetApfsRoleString (
     CHAR16 *retval = NULL;
 
     switch (VolumeRole) {
-        case APPLE_APFS_VOLUME_ROLE_UNDEFINED: retval = L"0x00 - Undefined";  break;
-        case APPLE_APFS_VOLUME_ROLE_SYSTEM:    retval = L"0x01 - System";     break;
-        case APPLE_APFS_VOLUME_ROLE_RECOVERY:  retval = L"0x04 - Recovery";   break;
-        case APPLE_APFS_VOLUME_ROLE_VM:        retval = L"0x08 - VM";         break;
-        case APPLE_APFS_VOLUME_ROLE_PREBOOT:   retval = L"0x10 - PreBoot";    break;
-        case APPLE_APFS_VOLUME_ROLE_DATA:      retval = L"0x40 - Data";       break;
-        case APPLE_APFS_VOLUME_ROLE_UPDATE:    retval = L"0xC0 - Snapshot";   break;
-        default:                               retval = L"0xFF - Unknown";    break;
+        case APPLE_APFS_VOLUME_ROLE_UNDEFINED:         retval = L"0x00 - Undefined";       break;
+        case APPLE_APFS_VOLUME_ROLE_SYSTEM:            retval = L"0x01 - System";          break;
+        case APPLE_APFS_VOLUME_ROLE_USER:              retval = L"0x02 - UserHome";        break;
+        case APPLE_APFS_VOLUME_ROLE_RECOVERY:          retval = L"0x04 - Recovery";        break;
+        case APPLE_APFS_VOLUME_ROLE_VM:                retval = L"0x08 - VM";              break;
+        case APPLE_APFS_VOLUME_ROLE_PREBOOT:           retval = L"0x10 - PreBoot";         break;
+        case APPLE_APFS_VOLUME_ROLE_INSTALLER:         retval = L"0x20 - Installer";       break;
+        case APPLE_APFS_VOLUME_ROLE_DATA:              retval = L"0x40 - Data";            break;
+        case APPLE_APFS_VOLUME_ROLE_UPDATE:            retval = L"0xC0 - Snapshot";        break;
+        case APFS_VOL_ROLE_XART:                       retval = L"0x?? - SecData";         break;
+        case APFS_VOL_ROLE_HARDWARE:                   retval = L"0x?? - Firmware";        break;
+        case APFS_VOL_ROLE_BACKUP:                     retval = L"0x?? - BackupTM";        break;
+        case APFS_VOL_ROLE_RESERVED_7:                 retval = L"0x?? - Resrved07";       break;
+        case APFS_VOL_ROLE_RESERVED_8:                 retval = L"0x?? - Resrved08";       break;
+        case APFS_VOL_ROLE_ENTERPRISE:                 retval = L"0x?? - Enterprse";       break;
+        case APFS_VOL_ROLE_RESERVED_10:                retval = L"0x?? - Resrved10";       break;
+        case APFS_VOL_ROLE_PRELOGIN:                   retval = L"0x?? - PreLogin";        break;
+        default:                                       retval = L"0xFF - Unknown";         break;
     } // switch
 
     return retval;
@@ -2374,7 +2345,6 @@ VOID ScanVolumes (VOID) {
     UINT8                  *SectorBuffer2;
     CHAR16                 *RoleStr = NULL;
     CHAR16                 *PartType = NULL;
-    BOOLEAN                 CheckMute = FALSE;
     BOOLEAN                 CheckedAPFS;
     BOOLEAN                 DupFlag;
     EFI_GUID               *UuidList;
@@ -2387,6 +2357,7 @@ VOID ScanVolumes (VOID) {
     CHAR16  *PartGUID      = NULL;
     CHAR16  *PartTypeGUID  = NULL;
     CHAR16  *VolumeUUID    = NULL;
+    BOOLEAN  CheckMute     = FALSE;
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
@@ -2394,12 +2365,19 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLD = L"VOLUME UUID";
     const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
     const CHAR16 *ITEMVOLF = L"VOLUME NAME";
-    #endif
 
     if (!SelfVolRun) {
         MY_MUTELOGGER_SET;
     }
-    else {
+
+    MsgStr = StrDuplicate (L"E X A M I N E   A V A I L A B L E   V O L U M E S");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("%s", MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
+    if (SelfVolRun) {
         // Clear Volume Lists if not Scanning for Self Volume
         FreeVolumes (
             &Volumes,
@@ -2408,14 +2386,6 @@ VOID ScanVolumes (VOID) {
         FreeSyncVolumes();
         ForgetPartitionTables();
     }
-
-    #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"E X A M I N E   A V A I L A B L E   V O L U M E S");
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("\n\n");
-    LOG_MSG("%s", MsgStr);
-    MY_FREE_POOL(MsgStr);
-    #endif
 
     // Get all filesystem handles
     Status = LibLocateHandle (
@@ -2426,9 +2396,8 @@ VOID ScanVolumes (VOID) {
         &Handles
     );
     if (EFI_ERROR(Status)) {
-        MY_MUTELOGGER_OFF;
-
         #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
         MsgStr = PoolPrint (
             L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)",
             Status
@@ -2452,9 +2421,8 @@ VOID ScanVolumes (VOID) {
 
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
-        MY_MUTELOGGER_OFF;
-
         #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
         Status = EFI_BUFFER_TOO_SMALL;
 
         MsgStr = PoolPrint (
@@ -2489,9 +2457,8 @@ VOID ScanVolumes (VOID) {
         if (Volume == NULL) {
             MY_FREE_POOL(UuidList);
 
-            MY_MUTELOGGER_OFF;
-
             #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_OFF;
             Status = EFI_BUFFER_TOO_SMALL;
 
             MsgStr = PoolPrint (
@@ -2540,8 +2507,12 @@ VOID ScanVolumes (VOID) {
         } // for
 
         if (SelfVolRun) {
-            // Update/Create Volumes List if not Scanning for Self Volume
-            AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
+            // Update/Create 'Volumes' List if not Scanning for Self Volume
+            AddListElement (
+                (VOID ***) &Volumes,
+                &VolumesCount,
+                Volume
+            );
         }
 
         if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) {
@@ -2622,7 +2593,8 @@ VOID ScanVolumes (VOID) {
 
             RoleStr = L"";
             VolumeRole = 0;
-                 if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
+            if (0);
+            else if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
             else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * HFS Recovery";
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
             else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
@@ -2762,7 +2734,6 @@ VOID ScanVolumes (VOID) {
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
-
             MY_FREE_POOL(PartName);
             MY_FREE_POOL(PartGUID);
             MY_FREE_POOL(PartTypeGUID);
@@ -2782,9 +2753,8 @@ VOID ScanVolumes (VOID) {
     MY_FREE_POOL(Handles);
 
     if (!SelfVolSet || !SelfVolRun) {
-        MY_MUTELOGGER_OFF;
-
         #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
         if (!SelfVolSet) {
             MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
             ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
@@ -2895,9 +2865,10 @@ VOID ScanVolumes (VOID) {
                     continue;
                 }
 
-                // TODO: mark entry as non-bootable if it is an extended partition
-
-                // We are now reasonably sure the association is correct...
+                // DA-TAG: Investigate this
+                //         Mark entry as non-bootable if it is an extended partition
+                //
+                // We are now reasonably sure the association is correct
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = PartitionIndex;
                 if (Volume->VolName == NULL) {
@@ -2928,7 +2899,9 @@ VOID ScanVolumes (VOID) {
         VetSyncAPFS();
     }
 
+    #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
+    #endif
 } // VOID ScanVolumes()
 
 static
@@ -2938,6 +2911,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
+    UINTN    LogLineType;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
@@ -2963,6 +2937,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         );
         #endif
 
+        // Early Return
         return;
     }
 
@@ -2996,7 +2971,7 @@ VOID GetVolumeBadgeIcons (VOID) {
                 Volume->VolName
             );
 
-            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
             ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
@@ -3046,6 +3021,7 @@ VOID SetVolumeIcons (VOID) {
         MY_FREE_POOL(MsgStr);
         #endif
 
+        // Early Return
         return;
     }
 
@@ -3056,6 +3032,7 @@ VOID SetVolumeIcons (VOID) {
         );
         #endif
 
+        // Early Return
         return;
     }
 
@@ -3089,12 +3066,8 @@ VOID SetVolumeIcons (VOID) {
                 Volume->VolName
             );
 
-            if (LoopOnce) {
-                ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-            }
-            else {
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            }
+            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 

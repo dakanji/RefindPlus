@@ -736,8 +736,7 @@ VOID PrintUglyText (
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (
-                Text, &BGColor,
-                PositionCode,
+                Text, &BGColor, PositionCode,
                 0, NULL
             );
             GraphicsScreenDirty = TRUE;

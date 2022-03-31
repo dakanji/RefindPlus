@@ -342,8 +342,8 @@ VOID ToUpper (
 // *First, though.
 VOID MergeStrings (
     IN OUT CHAR16 **First,
-    IN CHAR16      *Second,
-    CHAR16          AddChar
+    IN     CHAR16  *Second,
+    IN     CHAR16   AddChar
 ) {
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
@@ -424,8 +424,8 @@ VOID MergeStrings (
 // As MergeStrings but does not repeat substrings.
 VOID MergeUniqueStrings (
     IN OUT CHAR16 **First,
-    IN CHAR16      *Second,
-    CHAR16          AddChar
+    IN     CHAR16  *Second,
+    IN     CHAR16   AddChar
 ) {
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
@@ -822,8 +822,8 @@ CHAR16 * FindNumbers (
 // String1 is "FooBar" and String2 is "FoodiesBar", this function
 // will return "3", since they both start with "Foo".
 UINTN NumCharsInCommon (
-    IN CHAR16* String1,
-    IN CHAR16* String2
+    IN CHAR16 *String1,
+    IN CHAR16 *String2
 ) {
     UINTN Count = 0;
     if ((String1 == NULL) || (String2 == NULL)) {
@@ -1162,7 +1162,8 @@ BOOLEAN IsGuid (
                     break;
                 }
             }
-            // DA-TAG: Condition below can never be met
+            // DA-TAG: Investigate This
+            //         Condition below can apparently never be met (coverity scan)
             //         Comment out until review
             //else if (((a < L'a') || (a > L'f')) &&
             //    ((a < L'A') || (a > L'F')) &&
@@ -1183,17 +1184,37 @@ CHAR16 * GuidAsString (
     EFI_GUID *GuidData
 ) {
     CHAR16 *TheString = NULL;
-    if (GuidData && (TheString = AllocatePool(37 * sizeof (CHAR16)))) {
-        SPrint (
-            TheString, 37 * sizeof (CHAR16), L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-            (UINTN) GuidData->Data1,    (UINTN) GuidData->Data2,    (UINTN) GuidData->Data3,
-            (UINTN) GuidData->Data4[0], (UINTN) GuidData->Data4[1], (UINTN) GuidData->Data4[2],
-            (UINTN) GuidData->Data4[3], (UINTN) GuidData->Data4[4], (UINTN) GuidData->Data4[5],
-            (UINTN) GuidData->Data4[6], (UINTN) GuidData->Data4[7]
-        );
+
+    if (GuidData == NULL) {
+        // Early Return
+        return NULL;
     }
+
+    TheString = AllocatePool (sizeof (CHAR16) * 37);
+    if (TheString == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    SPrint (
+        TheString,
+        sizeof (CHAR16) * 37,
+        L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        (UINTN) GuidData->Data1,
+        (UINTN) GuidData->Data2,
+        (UINTN) GuidData->Data3,
+        (UINTN) GuidData->Data4[0],
+        (UINTN) GuidData->Data4[1],
+        (UINTN) GuidData->Data4[2],
+        (UINTN) GuidData->Data4[3],
+        (UINTN) GuidData->Data4[4],
+        (UINTN) GuidData->Data4[5],
+        (UINTN) GuidData->Data4[6],
+        (UINTN) GuidData->Data4[7]
+    );
+
     return TheString;
-} // GuidAsString(EFI_GUID *GuidData)
+} // CHAR16 * GuidAsString()
 
 EFI_GUID StringAsGuid (
     CHAR16 *InString
@@ -1227,7 +1248,7 @@ CHAR16 * GetTimeString (VOID) {
     EFI_TIME    CurrentTime;
     CHAR16     *TimeStr = NULL;
 
-    Status  = REFIT_CALL_2_WRAPPER(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
+    Status  = REFIT_CALL_2_WRAPPER(gST->RuntimeServices->GetTime, &CurrentTime, NULL);
     TimeStr = EFI_ERROR(Status)
         ? StrDuplicate (L"Unknown Time")
         : PoolPrint (
@@ -1268,7 +1289,7 @@ CHAR16 * MyAsciiStrCopyToUnicode (
 ) {
     CHAR16  *UnicodeString;
     CHAR16  *UnicodeStringWalker;
-    UINTN   UnicodeStringSize;
+    UINTN    UnicodeStringSize;
 
     if (AsciiString == NULL) {
         return NULL;

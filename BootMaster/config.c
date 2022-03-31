@@ -61,7 +61,7 @@
 #include "../include/refit_call_wrapper.h"
 #include "../mok/mok.h"
 
-// constants
+// Constants
 
 #define LINUX_OPTIONS_FILENAMES  L"refindplus_linux.conf,refindplus-linux.conf,refind_linux.conf,refind-linux.conf"
 #define MAXCONFIGFILESIZE        (128*1024)
@@ -84,7 +84,7 @@ BOOLEAN InnerScan = FALSE;
 
 
 //
-// read a file into a buffer
+// Read a file into a buffer
 //
 
 EFI_STATUS RefitReadFile (
@@ -113,6 +113,7 @@ EFI_STATUS RefitReadFile (
     if (CheckError (Status, Message)) {
         MY_FREE_POOL(Message);
 
+        // Early Return
         return Status;
     }
 
@@ -120,6 +121,8 @@ EFI_STATUS RefitReadFile (
     if (FileInfo == NULL) {
         // TODO: print and register the error
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+
+        // Early Return
         return EFI_LOAD_ERROR;
     }
     ReadSize = FileInfo->FileSize;
@@ -129,34 +132,41 @@ EFI_STATUS RefitReadFile (
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
        size = 0;
+
+       // Early Return
        return EFI_OUT_OF_RESOURCES;
     }
-    else {
-       *size = File->BufferSize;
-    }
+
+    *size = File->BufferSize;
 
     Status = REFIT_CALL_3_WRAPPER(
         FileHandle->Read, FileHandle,
         &File->BufferSize, File->Buffer
     );
     if (CheckError (Status, Message)) {
+        size = 0;
         MY_FREE_POOL(Message);
         MY_FREE_POOL(File->Buffer);
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
+        // Early Return
         return Status;
     }
     MY_FREE_POOL(Message);
 
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
-    // setup for reading
+    // Setup for reading
     File->Current8Ptr  = (CHAR8 *)File->Buffer;
     File->End8Ptr      = File->Current8Ptr + File->BufferSize;
     File->Current16Ptr = (CHAR16 *)File->Buffer;
     File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
 
-    // detect encoding
+    // DA_TAG: Investigate This
+    //        Detect other encodings
+    //        Some are also implemented
+    //
+    // Detect Encoding
     File->Encoding = ENCODING_ISO8859_1;   // default: 1:1 translation of CHAR8 to CHAR16
     if (File->BufferSize >= 4) {
         if (File->Buffer[0] == 0xFF && File->Buffer[1] == 0xFE) {
@@ -172,7 +182,6 @@ EFI_STATUS RefitReadFile (
         else if (File->Buffer[1] == 0 && File->Buffer[3] == 0) {
             File->Encoding = ENCODING_UTF16_LE;   // use CHAR16 as is
         }
-        // TODO: detect other encodings as they are implemented
     }
 
     return EFI_SUCCESS;
@@ -191,15 +200,26 @@ CHAR16 * ReadLine (
     UINTN    LineLength;
 
     if (File->Buffer == NULL) {
+        // Early Return
         return NULL;
     }
 
-    if (File->Encoding == ENCODING_ISO8859_1 || File->Encoding == ENCODING_UTF8) {
+    if (File->Encoding != ENCODING_UTF8      &&
+        File->Encoding != ENCODING_UTF16_LE  &&
+        File->Encoding != ENCODING_ISO8859_1
+    ) {
+        // Early Return ... Unsupported encoding
+        return NULL;
+    }
 
+    if (File->Encoding == ENCODING_UTF8 ||
+        File->Encoding == ENCODING_ISO8859_1
+    ) {
         CHAR8 *p, *LineStart, *LineEnd;
 
         p = File->Current8Ptr;
         if (p >= File->End8Ptr) {
+            // Early Return
             return NULL;
         }
 
@@ -217,9 +237,10 @@ CHAR16 * ReadLine (
         }
         File->Current8Ptr = p;
 
-        LineLength = (UINTN)(LineEnd - LineStart) + 1;
-        Line = AllocatePool (LineLength * sizeof (CHAR16));
+        LineLength = (UINTN) (LineEnd - LineStart) + 1;
+        Line = AllocatePool (sizeof (CHAR16) * LineLength);
         if (Line == NULL) {
+            // Early Return
             return NULL;
         }
 
@@ -230,52 +251,51 @@ CHAR16 * ReadLine (
             }
         }
         else if (File->Encoding == ENCODING_UTF8) {
-            // TODO: actually handle UTF-8
+            // DA-TAG: Investigate This
+            //         Actually handle UTF-8
+            //         Currently just duplicates previous block
             for (p = LineStart; p < LineEnd; ) {
                 *q++ = *p++;
             }
         }
         *q = 0;
 
+        return Line;
     }
-    else if (File->Encoding == ENCODING_UTF16_LE) {
 
-        CHAR16 *p, *LineStart, *LineEnd;
-
-        p = File->Current16Ptr;
-        if (p >= File->End16Ptr) {
-            return NULL;
-        }
-
-        LineStart = p;
-        for (; p < File->End16Ptr; p++) {
-            if (*p == 13 || *p == 10) {
-                break;
-            }
-        }
-        LineEnd = p;
-        for (; p < File->End16Ptr; p++) {
-            if (*p != 13 && *p != 10) {
-                break;
-            }
-        }
-        File->Current16Ptr = p;
-
-        LineLength = (UINTN)(LineEnd - LineStart) + 1;
-        Line = AllocatePool (LineLength * sizeof (CHAR16));
-        if (Line == NULL) {
-            return NULL;
-        }
-
-        for (p = LineStart, q = Line; p < LineEnd; ) {
-            *q++ = *p++;
-        }
-        *q = 0;
-
+    // Encoding is ENCODING_UTF16_LE
+    CHAR16 *p, *LineStart, *LineEnd;
+    p = File->Current16Ptr;
+    if (p >= File->End16Ptr) {
+        // Early Return
+        return NULL;
     }
-    else {
-        return NULL;   // unsupported encoding
+
+    LineStart = p;
+    for (; p < File->End16Ptr; p++) {
+        if (*p == 13 || *p == 10) {
+            break;
+        }
     }
+    LineEnd = p;
+    for (; p < File->End16Ptr; p++) {
+        if (*p != 13 && *p != 10) {
+            break;
+        }
+    }
+    File->Current16Ptr = p;
+
+    LineLength = (UINTN) (LineEnd - LineStart) + 1;
+    Line = AllocatePool (sizeof (CHAR16) * LineLength);
+    if (Line == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    for (p = LineStart, q = Line; p < LineEnd; ) {
+        *q++ = *p++;
+    }
+    *q = 0;
 
     return Line;
 }
@@ -288,37 +308,43 @@ BOOLEAN KeepReading (
     IN OUT CHAR16  *p,
     IN OUT BOOLEAN *IsQuoted
 ) {
-   BOOLEAN  MoreToRead = FALSE;
-   CHAR16  *Temp       = NULL;
+    BOOLEAN  MoreToRead = FALSE;
+    CHAR16  *Temp       = NULL;
 
-   if ((p == NULL) || (IsQuoted == NULL)) {
-       return FALSE;
-   }
+    if ((p == NULL) || (IsQuoted == NULL)) {
+        return FALSE;
+    }
 
-   if (*p == L'\0') {
-       return FALSE;
-   }
+    if (*p == L'\0') {
+        return FALSE;
+    }
 
-   if ((*p != ' ' && *p != '\t' && *p != '=' && *p != '#' && *p != ',') || *IsQuoted) {
-      MoreToRead = TRUE;
-   }
+    if ((
+        *p != ' '  &&
+        *p != '\t' &&
+        *p != '='  &&
+        *p != '#'  &&
+        *p != ','
+    ) || *IsQuoted) {
+        MoreToRead = TRUE;
+    }
 
-   if (*p == L'"') {
-      if (p[1] == L'"') {
-         Temp = StrDuplicate (&p[1]);
-         if (Temp != NULL) {
-            StrCpy (p, Temp);
-            MY_FREE_POOL(Temp);
-         }
-         MoreToRead = TRUE;
-      }
-      else {
-         *IsQuoted = !(*IsQuoted);
-         MoreToRead = FALSE;
-      } // if/else second character is a quote
-   } // if first character is a quote
+    if (*p == L'"') {
+        if (p[1] != L'"') {
+            *IsQuoted  = !(*IsQuoted);
+            MoreToRead = FALSE;
+        }
+        else {
+            Temp = StrDuplicate (&p[1]);
+            if (Temp != NULL) {
+                StrCpy (p, Temp);
+                MY_FREE_POOL(Temp);
+            }
+            MoreToRead = TRUE;
+        }
+    } // if first character is a quote
 
-   return MoreToRead;
+    return MoreToRead;
 } // BOOLEAN KeepReading()
 
 //
@@ -328,9 +354,9 @@ UINTN ReadTokenLine (
     IN  REFIT_FILE   *File,
     OUT CHAR16     ***TokenList
 ) {
-    BOOLEAN          LineFinished, IsQuoted = FALSE;
-    CHAR16          *Line, *Token, *p;
-    UINTN            TokenCount = 0;
+    BOOLEAN  LineFinished, IsQuoted = FALSE;
+    CHAR16  *Line, *Token, *p;
+    UINTN    TokenCount = 0;
 
     *TokenList = NULL;
 
@@ -343,9 +369,14 @@ UINTN ReadTokenLine (
         p = Line;
         LineFinished = FALSE;
         while (!LineFinished) {
-            // skip whitespace & find start of token
-            while ((!IsQuoted)
-                && (*p == ' ' || *p == '\t' || *p == '=' || *p == ',')
+            // Skip whitespace and find start of token
+            while (!IsQuoted &&
+                (
+                    *p == ' '  ||
+                    *p == '\t' ||
+                    *p == '='  ||
+                    *p == ','
+                )
             ) {
                 p++;
             } // while
@@ -361,35 +392,41 @@ UINTN ReadTokenLine (
 
             Token = p;
 
-            // find end of token
+            // Find end of token
             while (KeepReading (p, &IsQuoted)) {
                if ((*p == L'/') && !IsQuoted) {
-                   // Switch Unix-style to DOS-style directory separators
+                   // Switch Unix style to DOS style directory separators
                    *p = L'\\';
                }
                p++;
             } // while
+
             if (*p == L'\0' || *p == L'#') {
                 LineFinished = TRUE;
             }
             *p++ = 0;
 
-            AddListElement ((VOID ***) TokenList, &TokenCount, (VOID *) StrDuplicate (Token));
+            AddListElement (
+                (VOID ***) TokenList,
+                &TokenCount,
+                (VOID *) StrDuplicate (Token)
+            );
         } // while
 
         MY_FREE_POOL(Line);
     }
 
     return TokenCount;
-} /* ReadTokenLine() */
+} // UINTN ReadTokenLine()
 
 VOID FreeTokenLine (
     IN OUT CHAR16 ***TokenList,
     IN OUT UINTN    *TokenCount
 ) {
-    // TODO: also free the items
+    // DA-TAG: Investigate this
+    //         Also free the items
     FreeList ((VOID ***) TokenList, TokenCount);
-}
+} // VOID FreeTokenLine()
 
 // Handle a parameter with a single integer argument (unsigned)
 static
@@ -401,7 +438,7 @@ VOID HandleInt (
     if (TokenCount == 2) {
         *Value = Atoi(TokenList[1]);
     }
-}
+} // static VOID HandleInt()
 
 // Handle a parameter with a single integer argument (signed)
 static
@@ -415,9 +452,9 @@ VOID HandleSignedInt (
             ? -Atoi(TokenList[1]+1)
             :  Atoi(TokenList[1]);
     }
-}
+} // static VOID HandleSignedInt()
 
-// handle a parameter with a single string argument
+// Handle a parameter with a single string argument
 static
 VOID HandleString (
     IN  CHAR16  **TokenList,
@@ -805,12 +842,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"scanfor")) {
             for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
-                if (i < TokenCount) {
-                    GlobalConfig.ScanFor[i] = TokenList[i][0];
-                }
-                else {
-                    GlobalConfig.ScanFor[i] = ' ';
-                }
+                GlobalConfig.ScanFor[i] = (i < TokenCount) ? TokenList[i][0] : ' ';
             } // for
         }
         else if (MyStriCmp (TokenList[0], L"use_nvram")) {
@@ -833,7 +865,8 @@ VOID ReadConfig (
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
             // Sanitise levels
             UINTN MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
-                 if (GlobalConfig.LogLevel < MINLOGLEVEL) GlobalConfig.LogLevel = MINLOGLEVEL;
+            if (0);
+            else if (GlobalConfig.LogLevel < MINLOGLEVEL) GlobalConfig.LogLevel = MINLOGLEVEL;
             else if (GlobalConfig.LogLevel > MaxLogLevel) GlobalConfig.LogLevel = MaxLogLevel;
         }
         else if (MyStriCmp (TokenList[0], L"icon_row_move") && (TokenCount == 2)) {
@@ -1181,11 +1214,6 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.TagsHelp = DeclineSetting ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_texthelp")) {
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.TextHelp = DeclineSetting ? FALSE : TRUE;
-
         }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);

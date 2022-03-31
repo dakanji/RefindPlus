@@ -76,31 +76,31 @@
 #define MENU_FUNCTION_PAINT_TIMEOUT   (4)
 #define MENU_FUNCTION_PAINT_HINTS     (5)
 
-static CHAR16 ArrowUp[2]   = { ARROW_UP, 0 };
-static CHAR16 ArrowDown[2] = { ARROW_DOWN, 0 };
-static UINTN  TileSizes[2] = { 144, 64 };
+static CHAR16 ArrowUp[2]   = {ARROW_UP, 0};
+static CHAR16 ArrowDown[2] = {ARROW_DOWN, 0};
+static UINTN  TileSizes[2] = {144, 64};
 
 // Text and icon spacing constants.
-#define TEXT_YMARGIN       (2)
-#define TITLEICON_SPACING (16)
+#define TEXT_YMARGIN                  (2)
+#define TITLEICON_SPACING            (16)
 
-#define TILE_XSPACING      (8)
-#define TILE_YSPACING     (16)
+#define TILE_XSPACING                 (8)
+#define TILE_YSPACING                (16)
 
 // Alignment values for PaintIcon()
 #define ALIGN_RIGHT 1
 #define ALIGN_LEFT  0
 
-EG_IMAGE *SelectionImages[2]       = { NULL, NULL };
+EG_IMAGE *SelectionImages[2] = {NULL, NULL};
 
-EFI_EVENT *WaitList       = NULL;
-UINT64     MainMenuLoad   = 0;
-UINTN      WaitListLength = 0;
+EFI_EVENT *WaitList          = NULL;
+UINT64     MainMenuLoad      = 0;
+UINTN      WaitListLength    = 0;
 
 // Pointer variables
-BOOLEAN PointerEnabled    = FALSE;
-BOOLEAN PointerActive     = FALSE;
-BOOLEAN DrawSelection     = TRUE;
+BOOLEAN PointerEnabled       = FALSE;
+BOOLEAN PointerActive        = FALSE;
+BOOLEAN DrawSelection        = TRUE;
 
 REFIT_MENU_ENTRY MenuEntryNo = {
     L"No",
@@ -552,8 +552,9 @@ VOID IdentifyRows (
 
 // Blank the screen, wait for a keypress or pointer event, and restore banner/background.
 // Screen may still require redrawing of text and icons on return.
-// TODO: Support more sophisticated screen savers, such as power-saving
-// mode and dynamic images.
+// DA-TAG: Investigate This
+//         Support more sophisticated screen savers
+//         E.g., power-saving mode and dynamic images
 static
 VOID SaveScreen (VOID) {
     UINTN  retval;
@@ -824,7 +825,6 @@ UINTN RunGenericMenu (
             if (Status == EFI_SUCCESS) {
                 // Reset to keep the keystroke buffer clear
                 REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
-                REFIT_CALL_1_WRAPPER(gBS->Stall, 100000);
             }
             else {
                 WaitForRelease = FALSE;
@@ -834,7 +834,8 @@ UINTN RunGenericMenu (
             continue;
         }
 
-        // DA-TAG: Toggle the selection once to work around failure to
+        // DA-TAG: Investigate This
+        //         Toggle the selection once to work around failure to
         //         display the default selection on load in text mode.
         //         This is a Workaround ... 'Proper' solution needed.
         if (!Toggled) {
@@ -1004,13 +1005,13 @@ UINTN RunGenericMenu (
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyTxt = L"INFER_ENTER    Key:SpaceBar";        break;
-                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key:LineFeed";        break;
-                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key:CarriageReturn";  break;
-                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key:BackSpace";       break;
-                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key:Tab";             break;
-                    case '+':                  KeyTxt = L"INFER_DETAILS  Key:'+'...'Plus'";    break;
-                    case '-':                  KeyTxt = L"INFER_REMOVE   Key:'-'...'Minus'";   break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER    Key: SpaceBar";        break;
+                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key: LineFeed";        break;
+                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key: CarriageReturn";  break;
+                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key: BackSpace";       break;
+                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key: Tab";             break;
+                    case '+':                  KeyTxt = L"INFER_DETAILS  Key: '+' (Plus)";      break;
+                    case '-':                  KeyTxt = L"INFER_REMOVE   Key: '-' (Minus)";     break;
                 } // switch
             }
             ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1136,17 +1137,17 @@ UINTN RunGenericMenu (
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
         UINT64 MenuExitNumb = 500;
-        UINT64 MenuExitGate = MenuExitNumb;
+        UINT64 MenuExitGate = MenuExitNumb * 2;
 
         if (!AppleFirmware) {
-            MenuExitGate = MenuExitGate + MenuExitNumb;
+            MenuExitGate = MenuExitNumb * 3;
 
             #if REFIT_DEBUG > 0
             if (GlobalConfig.LogLevel > 0) {
-                MenuExitGate = MenuExitGate + MenuExitNumb;
+                MenuExitGate = MenuExitNumb * 4;
             }
             if (GlobalConfig.LogLevel > 1) {
-                MenuExitGate = MenuExitGate + MenuExitNumb;
+                MenuExitGate = MenuExitNumb * 5;
             }
             #endif
         }
@@ -1265,7 +1266,9 @@ VOID TextMenuStyle (
                 // the StrSize parameter could just be doubled, but that seems unsafe
                 // in case a future library change starts treating this as characters,
                 // so it is being done the 'hard' way in this instance.
-                // DA-TAG: TODO - Review the above and possibly change other uses of 'SPrint'
+                //
+                // DA-TAG: Investigate This
+                //         Review the above and possibly change other uses of 'SPrint'
                 DisplayStrings[i] = AllocateZeroPool (2 * sizeof (CHAR16));
                 DisplayStrings[i][0] = L' ';
 
@@ -1277,11 +1280,12 @@ VOID TextMenuStyle (
                 MY_MUTELOGGER_OFF;
                 #endif
 
+                // DA-TAG: Investigate This
+                //         1. Improve shortening long strings ... Ellipses in the middle
+                //         2. Account for double-width characters
                 if (StrLen (DisplayStrings[i]) > MenuWidth) {
                     DisplayStrings[i][MenuWidth - 1] = 0;
                 }
-                // DA-TAG: TODO - Improve shortening long strings ... Ellipses in the middle
-                // DA-TAG: TODO - Account for double-width characters
             } // for
 
         break;
@@ -1439,7 +1443,7 @@ VOID DrawText (
     if (Selected) {
         EG_PIXEL SelectionBackgroundPixel = { 0xFF, 0xFF, 0xFF, 0 };
 
-        // draw selection bar background
+        // Draw selection bar background
         egFillImageArea (
             TextBuffer,
             0, 0,
@@ -1616,7 +1620,7 @@ VOID ComputeSubScreenWindowSize (
 
     *XPos = (ScreenW - *Width) / 2;
 
-    // top of hint text
+    // Top of hint text
     HintTop  = ScreenH - (FontCellHeight * 3);
     *Height *= TextLineHeight();
 
@@ -1639,7 +1643,6 @@ VOID ComputeSubScreenWindowSize (
     }
 
     if (*Height > (HintTop - BannerBottomEdge - FontCellHeight * 2)) {
-        // DA-TAG: TODO - Port downstream scrolling feature.
         *Height = (HintTop - BannerBottomEdge - FontCellHeight * 2);
     }
 
@@ -1671,6 +1674,9 @@ VOID GraphicsMenuStyle (
     State->ScrollMode = SCROLL_MODE_TEXT;
 
     switch (Function) {
+        case MENU_FUNCTION_CLEANUP:
+            // Nothing to do
+        break;
         case MENU_FUNCTION_INIT:
             InitScroll (State, Screen->EntryCount, 0);
             ComputeSubScreenWindowSize (
@@ -1707,12 +1713,7 @@ VOID GraphicsMenuStyle (
                }
             }
 
-            break;
-
-        case MENU_FUNCTION_CLEANUP:
-            // Nothing to do
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_ALL:
             ComputeSubScreenWindowSize (
                 Screen, State,
@@ -1742,7 +1743,7 @@ VOID GraphicsMenuStyle (
             EntriesPosY += (TextLineHeight() * 2);
 
             if (Screen->InfoLineCount > 0) {
-                for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
+                for (i = 0; i < (INTN) Screen->InfoLineCount; i++) {
                     DrawText (
                         Screen->InfoLines[i],
                         FALSE, LineWidth,
@@ -1784,8 +1785,7 @@ VOID GraphicsMenuStyle (
                 }
             }
 
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_SELECTION:
             // Redraw selection cursor
             DrawText (
@@ -1802,17 +1802,16 @@ VOID GraphicsMenuStyle (
                 EntriesPosY + State->CurrentSelection * TextLineHeight()
             );
 
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_TIMEOUT:
             DrawText (ParamText, FALSE, LineWidth, EntriesPosX, TimeoutPosY);
 
-            break;
+        break;
     } // switch
 } // static VOID GraphicsMenuStyle()
 
 //
-// graphical main menu style
+// Graphical main menu style
 //
 
 static
@@ -1824,7 +1823,7 @@ VOID DrawMainMenuEntry (
 ) {
     EG_IMAGE *Background;
 
-    // If using pointer, do not draw selection image when not hovering
+    // Do not draw selection image when not hoverin if using pointer
     if (!selected || !DrawSelection) {
         // Image not selected ... copy background
         egDrawImageWithTransparency (
@@ -1929,7 +1928,7 @@ VOID PaintAll (
     }
 } // static VOID PaintAll()
 
-// Move the selection to State->CurrentSelection, adjusting icon row if necessary...
+// Move the selection to State->CurrentSelection ... Adjust icon row if necessary
 static
 VOID PaintSelection (
     IN REFIT_MENU_SCREEN *Screen,
@@ -2229,24 +2228,24 @@ VOID MainMenuStyle (
             // Initial painting
             InitSelection();
             SwitchToGraphicsAndClear (TRUE);
-            break;
 
+        break;
         case MENU_FUNCTION_CLEANUP:
             MY_FREE_POOL(itemPosX);
-            break;
 
+        break;
         case MENU_FUNCTION_PAINT_ALL:
             PaintAll (Screen, State, itemPosX, row0PosY, row1PosY, textPosY);
             // For PaintArrows(), the starting Y position is moved to the midpoint
             // of the surrounding row; PaintIcon() adjusts this back up by half the
             // icon's height to properly center it.
             PaintArrows (State, row0PosX - TILE_XSPACING, row0PosY + (TileSizes[0] / 2), row0Loaders);
-            break;
 
+        break;
         case MENU_FUNCTION_PAINT_SELECTION:
             PaintSelection (Screen, State, itemPosX, row0PosY, row1PosY, textPosY);
-            break;
 
+        break;
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
                DrawTextWithTransparency (L"", 0, textPosY + TextLineHeight());
@@ -2256,7 +2255,8 @@ VOID MainMenuStyle (
                    textPosY + TextLineHeight()
                );
             }
-            break;
+
+        break;
     } // switch
 } // VOID MainMenuStyle()
 
@@ -2373,7 +2373,7 @@ VOID GenerateWaitList(VOID) {
 } // VOID GenerateWaitList()
 
 UINTN WaitForInput (
-    UINTN Timeout
+    IN UINTN Timeout
 ) {
     EFI_STATUS  Status;
     UINTN       Length;
@@ -3191,7 +3191,11 @@ UINTN RunMainMenu (
     BREAD_CRUMB(L"In %s ... 5", FuncTag);
 
     // Remove any buffered key strokes
-    ReadAllKeyStrokes();
+    BOOLEAN KeyStrokeFound = ReadAllKeyStrokes();
+    if (!KeyStrokeFound && !AppleFirmware) {
+        // No KeyStrokes found ... Reset the buffer on UEFI PC anyway
+        REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
+    }
     BREAD_CRUMB(L"In %s ... 6", FuncTag);
 
     if (AllowGraphicsMode) {
@@ -3546,6 +3550,7 @@ BOOLEAN GetYesNoMenuEntry (
         // Early Return
         return FALSE;
     }
+
     MenuEntryYes->Title = StrDuplicate (L"Yes");
     MenuEntryYes->Tag   = TAG_YES;
     AddMenuEntry (*Screen, MenuEntryYes);
@@ -3557,6 +3562,7 @@ BOOLEAN GetYesNoMenuEntry (
         // Early Return
         return FALSE;
     }
+
     MenuEntryNo->Title = StrDuplicate (L"No");
     MenuEntryNo->Tag   = TAG_NO;
     AddMenuEntry (*Screen, MenuEntryNo);

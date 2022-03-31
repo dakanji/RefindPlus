@@ -3638,7 +3638,7 @@ VOID ScanForTools (VOID) {
                             RecoveryVolumes[j],
                             FileName, Description,
                             BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                            'R', TRUE
+                            'R', FALSE
                         );
                         MY_FREE_POOL(Description);
 
