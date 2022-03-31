@@ -75,6 +75,7 @@ hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not re
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 icon_row_move         |Adjusts the main screen icon row positions (vertically)
 icon_row_tune         |Finetunes the main screen icon row positions
+pass_uga_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
@@ -84,7 +85,6 @@ scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
 transient_boot        |Disables saving the last booted loader if not required
-uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 unicode_collation     |Provides finetuned support for languages that use unicode text
 
 ## Extended Functionality

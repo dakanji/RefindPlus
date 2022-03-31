@@ -1145,25 +1145,43 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"transient_boot")) {
             GlobalConfig.TransientBoot = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"hidden_icons_ignore")) {
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_ignore")
+            ||  MyStriCmp  (TokenList[0], L"ignore_hidden_icons")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.HiddenIconsIgnore = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"hidden_icons_external")) {
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_external")
+            ||  MyStriCmp  (TokenList[0], L"external_hidden_icons")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.HiddenIconsExternal = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"hidden_icons_prefer")) {
+        else if (MyStriCmp (TokenList[0], L"hidden_icons_prefer")
+            ||  MyStriCmp  (TokenList[0], L"prefer_hidden_icons")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.HiddenIconsPrefer = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"renderer_text")) {
+        else if (MyStriCmp (TokenList[0], L"renderer_text")
+            ||  MyStriCmp  (TokenList[0], L"text_renderer")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.UseTextRenderer = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"uga_pass_through")) {
-            GlobalConfig.UgaPassThrough = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"pass_uga_through")
+            ||  MyStriCmp  (TokenList[0], L"uga_pass_through")
+        ) {
+            // DA_TAG: Accomodate Deprecation
+            GlobalConfig.PassUgaThrough = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
             GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"renderer_direct_gop")) {
+        else if (MyStriCmp (TokenList[0], L"renderer_direct_gop")
+            ||  MyStriCmp  (TokenList[0], L"direct_gop_renderer")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"continue_on_warning")) {
@@ -1215,14 +1233,20 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.TagsHelp = DeclineSetting ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
+        else if (MyStriCmp (TokenList[0], L"csr_normalise")
+            ||  MyStriCmp  (TokenList[0], L"normalise_csr")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
             // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
-        else if (MyStriCmp (TokenList[0], L"csr_dynamic")) {
+        else if (MyStriCmp (TokenList[0], L"csr_dynamic")
+            ||  MyStriCmp  (TokenList[0], L"active_csr")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.DynamicCSR));
         }

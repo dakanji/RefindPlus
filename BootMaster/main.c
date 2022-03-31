@@ -100,7 +100,7 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenIconsExternal = */ FALSE,
     /* HiddenIconsPrefer = */ FALSE,
     /* UseTextRenderer = */ FALSE,
-    /* UgaPassThrough = */ FALSE,
+    /* PassUgaThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,
     /* ReloadGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
@@ -1513,7 +1513,7 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         * Disabled:- 'ProvideConsoleGOP'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReMapOpenProtocol'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UseTextRenderer'",       OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'UgaPassThrough'",        OffsetNext);
+            LOG_MSG("%s         * Disabled:- 'PassUgaThrough'",        OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UseDirectGop'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ProtectNVRAM'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SilenceAPFS'",           OffsetNext);
@@ -1843,7 +1843,7 @@ EFI_STATUS EFIAPI efi_main (
         // DA-TAG: Investigate further ... Items that may conflict
         GlobalConfig.ProvideConsoleGOP   = FALSE;
         GlobalConfig.UseTextRenderer     = FALSE;
-        GlobalConfig.UgaPassThrough      = FALSE;
+        GlobalConfig.PassUgaThrough      = FALSE;
         GlobalConfig.UseDirectGop        = FALSE;
         GlobalConfig.ProtectNVRAM        = FALSE;
         GlobalConfig.SilenceAPFS         = FALSE;

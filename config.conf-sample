@@ -262,6 +262,14 @@
 #
 #icon_row_tune -20
 
+# Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
+# display when using modern GPUs on units with only EFIBoot capability.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not add UGA to GOP)
+#
+#pass_uga_through
+
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
 #     - Others installed on GPU handles.
@@ -379,14 +387,6 @@
 # Always saves the "PreviousBoot" variable when commented out
 #
 #transient_boot
-
-# Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
-# display when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# Inactive when commented out (Does not add UGA to GOP)
-#
-#uga_pass_through
 
 # RefindPlus previously simply picked and used the first Unicode Collation Protocol instance
 # it finds. This resulted in a lottery where such instances sometimes worked and sometimes

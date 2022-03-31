@@ -88,8 +88,10 @@
   * The Emulated NVRAM on the filesystem is now also cleared
 - Renames the `SilentBoot` Feature as `DirectBoot`
   * This more accurately describes the feature.
-- Renames `XYZ_hidden_icons` tokens as `hidden_icons_XYZ` and `XYZ_renderer` as `renderer_XYZ`
-    * This permits better grouping of these related items.
+- Renames Misc Tokens to Permit Grouping of Related Tokens.
+  * The `uga_pass_through` token is renamed as `pass_uga_through`
+  * The `XYZ_hidden_icons` tokens are renamed as `hidden_icons_XYZ`
+  * The `XYZ_renderer` tokens are renamed as `renderer_XYZ`
 - Extends fixes on Mac Recovery Implementation for MacOS on APFS
   * Adjusted to cover all MacOS instances on APFS
   * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders

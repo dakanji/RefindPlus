@@ -1160,7 +1160,7 @@ VOID egInitScreen (VOID) {
 
 // DA-TAG: Limit to TianoCore
 #ifdef __MAKEWITH_TIANO
-        if (GlobalConfig.UgaPassThrough && thisValidGOP) {
+        if (GlobalConfig.PassUgaThrough && thisValidGOP) {
             // Run OcProvideUgaPassThrough from OpenCorePkg
             Status = OcProvideUgaPassThrough();
         }

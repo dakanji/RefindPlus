@@ -416,7 +416,7 @@ typedef struct {
     BOOLEAN           HiddenIconsExternal;
     BOOLEAN           HiddenIconsPrefer;
     BOOLEAN           UseTextRenderer;
-    BOOLEAN           UgaPassThrough;
+    BOOLEAN           PassUgaThrough;
     BOOLEAN           ProvideConsoleGOP;
     BOOLEAN           ReloadGOP;
     BOOLEAN           UseDirectGop;
