@@ -88,7 +88,7 @@
   * The Emulated NVRAM on the filesystem is now also cleared
 - Renames the `SilentBoot` Feature as `DirectBoot`
   * This more accurately describes the feature.
-- Renames Misc Tokens to Permit Grouping of Related Tokens.
+- Renames Misc Tokens to Permit Grouping of Related Tokens
   * The `uga_pass_through` token is renamed as `pass_uga_through`
   * The `XYZ_hidden_icons` tokens are renamed as `hidden_icons_XYZ`
   * The `XYZ_renderer` tokens are renamed as `renderer_XYZ`
@@ -170,10 +170,10 @@
   * Calls to `ASSERT`, and similar, are activated on DEBUG Builds
     - Failed `ASSERT` calls put RefindPlus into a Deadloop
   * Enables `NOOPT` Build Target
-    - This is a debug build with misc compile time optimisation items disabled
+    - This is a debug build with compile time optimisation items disabled
     - Log Level 2 is only exposed on this build target
   * The `REFIT_DEBUG` define has been converted to a compiler option
-    - The constant is no longer defined in `global.h` and instead set in `RefindPlus.inf`
+    - The constant is no longer defined in `global.h` and is now set in `RefindPlus.inf` instead
     - This change removes the need for compile time edits to set build targets
     - The requirements are now managed transparently by the build process itself
   * The various `*.inf` files for filesystem drivers etc, have been standardised

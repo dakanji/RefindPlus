@@ -1142,7 +1142,10 @@ VOID ReadConfig (
                 GlobalConfig.EnableMouse = FALSE;
             }
         }
-        else if (MyStriCmp (TokenList[0], L"transient_boot")) {
+        else if (MyStriCmp (TokenList[0], L"transient_boot")
+            ||  MyStriCmp  (TokenList[0], L"ignore_previous_boot")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.TransientBoot = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"hidden_icons_ignore")
@@ -1187,7 +1190,10 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"continue_on_warning")) {
             GlobalConfig.ContinueOnWarning = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"force_trim")) {
+        else if (MyStriCmp (TokenList[0], L"force_trim")
+            ||  MyStriCmp  (TokenList[0], L"trim_force")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_compat_check")) {
