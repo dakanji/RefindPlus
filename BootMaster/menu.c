@@ -2057,8 +2057,48 @@ VOID PaintIcon (
     );
 } // static VOID PaintIcon()
 
-UINTN ComputeRow0PosY (VOID) {
-    return ((ScreenH / 2) - TileSizes[0] / 2);
+UINTN ComputeRow0PosY (
+    IN BOOLEAN ApplyOffset
+) {
+    UINTN Row0PosY;
+    INTN  IconRowTweak;
+
+    // Default IconRowTweak to zero
+    // Keep rows in central position
+    IconRowTweak = 0;
+
+    // Amend IconRowTweak if 'ApplyOffset' is active
+    if (ApplyOffset) {
+        if (GlobalConfig.IconRowMove != 0) {
+            // Set positive value
+            // Moves rows to lower third of screen
+            IconRowTweak = (ScreenH / 4);
+
+            if (GlobalConfig.IconRowMove > 0) {
+                // Set negative value
+                // Moves rows to upper third of screen
+                IconRowTweak *= -1;
+
+                // Finetune position
+                // Account for icon size ... only when in upper third
+                IconRowTweak += (TileSizes[0] / 2);
+            }
+        }
+    }
+
+    // Set base row position
+    // Adds 'IconRowTweak' value (which may be zero)
+    Row0PosY = ((ScreenH / 2) - (TileSizes[0] / 2)) + IconRowTweak;
+
+    // Amend row position if 'ApplyOffset' is active
+    if (ApplyOffset) {
+        // Amend row position
+        // Adds 'icon_row_tune' value (which may be zero)
+        Row0PosY += GlobalConfig.IconRowTune;
+    }
+
+    // Return row position
+    return Row0PosY;
 } // UINTN ComputeRow0PosY()
 
 // Display (or erase) the arrow icons to the left
@@ -2166,7 +2206,7 @@ VOID MainMenuStyle (
             } // for
 
             row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-            row0PosY = ComputeRow0PosY();
+            row0PosY = ComputeRow0PosY(TRUE);
             row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
             row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
 
@@ -2259,7 +2299,7 @@ UINTN FindMainMenuItem (
     } // for
 
     row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-    row0PosY = ComputeRow0PosY();
+    row0PosY = ComputeRow0PosY(TRUE);
     row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
     row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
 

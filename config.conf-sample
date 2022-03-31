@@ -22,9 +22,9 @@
 # RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
 # "Toggle CSR" tool after RefindPlus is loaded.
 # The following options are available:
-#  -1    - Always Disable SIP (and SSV on MacOS 11.x or later when configured in "csr_values")
-#   0    - Take no Action
 #   1    - Always Enable SIP (and SSV on MacOS 11.x or later)
+#   0    - Take no Action
+#  -1    - Always Disable SIP (and SSV on MacOS 11.x or later when configured in "csr_values")
 #
 # Inactive when commented out (Takes no action on SIP and/or SSV)
 #
@@ -225,6 +225,28 @@
 #
 #hidden_icons_prefer
 
+# Offset the OS icon row position on the main screen vertically from the default.
+# This token accepts positive/negative indicative flags that indicate the offset
+# position of OS icons on the main RefindPlus screen. Such offsets may be useful
+# when the default position of the icon row clashes with parts of custom banners.
+# The indicative flags are:
+#   1    - Move icon rows to the upper third of the screen
+#   0    - Maintain default icon row position (mid screen)
+#  -1    - Move icon rows to the lower third of the screen
+#
+# Defaults to zero when commented out (Does not move the icon rows)
+#
+#icon_row_move -1
+
+# Finetune the OS icon row position set by the 'icon_row_move' setting. This
+# token accepts positive/negative pixel values which are used to adjust the
+# position of icon rows on the main RefindPlus screen. This adjustment may
+# be needed to finetune the 'icon_row_move' outcome upwards or downwards.
+#
+# Defaults to zero when commented out (Does not adjust the icon rows)
+#
+#icon_row_tune -15
+
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
 #     - Others installed on GPU handles.
@@ -299,9 +321,9 @@
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
 # This setting allows overriding the detection as follows:
-#  -1    - Never scale UI elements up
-#   0    - Scale UI elements up, or not, based on screen resolution
 #   1    - Always scale UI elements up
+#   0    - Scale UI elements up, or not, based on screen resolution
+#  -1    - Never scale UI elements up
 #
 # Scales UI elements based on screen resolution when commented out
 #

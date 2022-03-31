@@ -1342,7 +1342,7 @@ VOID BltClearScreen (
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
-            BannerPosY = (INTN) (ComputeRow0PosY() / 2) - (INTN) Banner->Height;
+            BannerPosY = (INTN) (ComputeRow0PosY(FALSE) / 2) - (INTN) Banner->Height;
             if (BannerPosY < 0) {
                 BannerPosY = 0;
             }

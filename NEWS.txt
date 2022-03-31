@@ -1,5 +1,12 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `IconRowMove` Feature
+  * Allows repositioning the icon row position on the RefindPlus screen
+    - Sometimes needed when icons block parts of custom banners
+  * Base position can be specified using a new `icon_row_move` configuration token
+- Adds `IconRowTune` Feature
+  * Allows finetuning the adjusting the `IconRowMove` position
+  * Offset value can be specified using a new `icon_row_tune` configuration token
 - Adds `DriverPriority` Feature
   * Asigns a higher priority to drivers loaded by RefindPlus
   * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
@@ -38,7 +45,7 @@
     - Previously needed a separate call
   * Now erases the message after the display (if a pause is invoked)
     - Previously only properly erased when called on the main screen
-      * This erasure happened when the OS icons were redrawn
+    - The erasure was however also lost on the main screen when `IconRowTune` is active
     - Now fixed for all screens but artefacts may result with some custom banners
 - Improves `ProtectNVRAM` Feature
   * Now clears existing instances of blocked variables

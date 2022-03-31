@@ -836,6 +836,15 @@ VOID ReadConfig (
                  if (GlobalConfig.LogLevel < MINLOGLEVEL) GlobalConfig.LogLevel = MINLOGLEVEL;
             else if (GlobalConfig.LogLevel > MaxLogLevel) GlobalConfig.LogLevel = MaxLogLevel;
         }
+        else if (MyStriCmp (TokenList[0], L"icon_row_move") && (TokenCount == 2)) {
+            // DA-TAG: Signed integer as *MAY* have negative value input
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.IconRowMove));
+        }
+        else if (MyStriCmp (TokenList[0], L"icon_row_tune") && (TokenCount == 2)) {
+            // DA-TAG: Signed integer as *MAY* have negative value input
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.IconRowTune));
+            GlobalConfig.IconRowTune *= -1;
+        }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
         }

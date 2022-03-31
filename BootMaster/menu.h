@@ -158,7 +158,7 @@ VOID GraphicsMenuStyle (
     IN CHAR16 *ParamText
 );
 
-UINTN ComputeRow0PosY (VOID);
+UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
 UINTN WaitForInput (IN UINTN Timeout);
 UINTN RunGenericMenu (
     IN REFIT_MENU_SCREEN *Screen,

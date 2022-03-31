@@ -454,6 +454,8 @@ typedef struct {
     INTN              ScaleUI;
     INTN              DynamicCSR;
     INTN              LogLevel;
+    INTN              IconRowMove;
+    INTN              IconRowTune;
     INTN              ScreenR;
     INTN              ScreenG;
     INTN              ScreenB;
