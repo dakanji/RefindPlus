@@ -772,14 +772,14 @@ UINTN RunGenericMenu (
 
     if (Screen->TimeoutSeconds == -1) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-        if (Status == EFI_NOT_READY) {
+        if (EFI_ERROR(Status)) {
             MenuExit = MENU_EXIT_TIMEOUT;
         }
         else {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
-            ShortcutEntry  = FindMenuShortcutEntry (Screen, KeyAsString);
 
+            ShortcutEntry = FindMenuShortcutEntry (Screen, KeyAsString);
             if (ShortcutEntry >= 0) {
                 State.CurrentSelection = ShortcutEntry;
                 MenuExit = MENU_EXIT_ENTER;
@@ -822,7 +822,7 @@ UINTN RunGenericMenu (
 
         if (WaitForRelease) {
             Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 // Reset to keep the keystroke buffer clear
                 REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
             }
@@ -880,9 +880,9 @@ UINTN RunGenericMenu (
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
 
-        if (Status == EFI_SUCCESS) {
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        if (!EFI_ERROR(Status)) {
             PointerActive      = FALSE;
             DrawSelection      = TRUE;
             TimeSinceKeystroke = 0;

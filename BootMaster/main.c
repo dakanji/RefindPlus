@@ -2018,7 +2018,7 @@ EFI_STATUS EFIAPI efi_main (
             EFI_INPUT_KEY     key;
 
             Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-            if (Status != EFI_NOT_READY) {
+            if (!EFI_ERROR(Status)) {
                 KeyAsString[0] = key.UnicodeChar;
                 KeyAsString[1] = 0;
 

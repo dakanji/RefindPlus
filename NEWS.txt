@@ -38,6 +38,8 @@
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
 - Improves `DirectBoot` Feature
   * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
+- Improves `SilentBoot` Feature
+  * Previously failed when a keyboard was not connected
 - Improves `ScreenShot` Feature
   * Properly limited to one (1) sreenshot per keypress
     - Removes limitation of the keypress not continuing beyond the on-screen message display

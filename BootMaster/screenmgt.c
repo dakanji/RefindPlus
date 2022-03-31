@@ -682,16 +682,27 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     if (FirstCall || !GlobalConfig.DirectBoot) {
         for (;;) {
             Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-            if (Status == EFI_SUCCESS) {
-                ClearedBuffer = TRUE;
-                GotKeyStrokes = TRUE;
-                continue;
+            switch (Status) {
+                case EFI_SUCCESS:
+                    // Found keystrokes ... Tag this ... Repeat loop
+                    ClearedBuffer = TRUE;
+                    GotKeyStrokes = TRUE;
+
+                break;
+                case EFI_DEVICE_ERROR:
+                    // Ensure the buffer is clear
+                    REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
+
+                // No Break
+                default:
+                    EmptyBuffer = TRUE;
+            } // switch
+
+            if (EFI_ERROR(Status)) {
+                // Exit loop on error ... Buffer is empty
+                break;
             }
-            else if (Status == EFI_NOT_READY) {
-                EmptyBuffer = TRUE;
-            }
-            break;
-        }
+        } // for
     }
 
     #if REFIT_DEBUG > 0
