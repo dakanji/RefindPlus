@@ -89,6 +89,8 @@ extern EG_PIXEL  MenuBackgroundPixel;
 
 EFI_STATUS SwitchToGraphics (VOID);
 
+EG_PIXEL FontComplement (VOID);
+
 BOOLEAN ReadAllKeyStrokes (VOID);
 BOOLEAN CheckError (
     IN EFI_STATUS  Status,
@@ -97,6 +99,12 @@ BOOLEAN CheckError (
 BOOLEAN CheckFatalError (
     IN EFI_STATUS  Status,
     IN CHAR16     *where
+);
+
+UINTN GetLumIndex (
+    UINTN PixelR,
+    UINTN PixelG,
+    UINTN PixelB
 );
 
 VOID InitScreen (VOID);

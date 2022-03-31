@@ -141,6 +141,21 @@
 #
 #decline_tagshelp
 
+# RefindPlus defaults to using complementary colours (of the title banner) for text
+# to improve legibility. With custom banners however, the base colour is based on the
+# coulr of first pixel in the pixel array (top left pixel). This may not always embody
+# all pixels in banners with multiple colours. As such, the chosen complementary colour
+# for the text may not be suitable for all portions of the title banner in such cases.
+# In such cases, users may wish to disable the "TextHelp" feature by activating this
+# token, which will make the text either white or black, based on the brightness of
+# colour of the first pixel in the pixel array instead. NB: Only applies to custom
+# title banners and complementary colours are always used for text when using the
+# default RefindPlus title banner, as this always has a single solid colour.
+#
+# The "hidden_tags" tool is always available when commented out
+#
+#decline_texthelp
+
 # Emulate UEFI 2.x support. By default, RefindPlus is set up to always
 # emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
 # available. It additionally modifies the EFI Revision value to UEFI 2.3.

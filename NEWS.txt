@@ -1,5 +1,10 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `TextHelp` Feature
+  * Uses complementary text colours to improve legibility
+  * Can be disabled using a new `decline_texthelp` configuration token
+    - Only when using a custom title banner
+    - Always on when using the default title banner
 - Adds `IconRowMove` Feature
   * Allows repositioning the icon row position on the RefindPlus screen
     - Sometimes needed when icons block parts of custom banners

@@ -1451,18 +1451,10 @@ VOID DrawText (
     }
 
     // Get Luminance Index
-    UINTN FactorFP = 10;
-    UINTN Divisor  = 3 * FactorFP;
-    UINTN PixelsR  = (UINTN) Bg.r;
-    UINTN PixelsG  = (UINTN) Bg.g;
-    UINTN PixelsB  = (UINTN) Bg.b;
-    UINTN LumIndex = (
-        (
-            (PixelsR * FactorFP) +
-            (PixelsG * FactorFP) +
-            (PixelsB * FactorFP) +
-            (Divisor / 2) // Added For Rounding
-        ) / Divisor
+    UINTN LumIndex = GetLumIndex (
+        (UINTN) Bg.r,
+        (UINTN) Bg.g,
+        (UINTN) Bg.b
     );
 
     // Render the text

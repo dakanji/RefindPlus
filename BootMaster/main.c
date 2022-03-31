@@ -116,6 +116,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ProtectNVRAM = */ TRUE,
     /* ScanAllESP = */ FALSE,
     /* TagsHelp = */ TRUE,
+    /* TextHelp = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,

@@ -35,7 +35,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -45,16 +45,16 @@
 #include "libegint.h"
 #include "../BootMaster/global.h"
 #include "../BootMaster/rp_funcs.h"
+#include "../BootMaster/screenmgt.h"
 #include "egemb_font.h"
 #include "egemb_font_large.h"
 
 #define FONT_NUM_CHARS 96
 
-static
-EG_PIXEL  TextFontColor = { 0x00, 0x00, 0x00, 0 };
-static
-UINTN     FontCellWidth = 7;
+extern
+BOOLEAN   DefaultBanner;
 
+UINTN     FontCellWidth = 7;
 EG_IMAGE *BaseFontImage = NULL;
 
 //
@@ -63,7 +63,8 @@ EG_IMAGE *BaseFontImage = NULL;
 
 static
 VOID egPrepareFont (VOID) {
-    UINTN ScreenW, ScreenH;
+    UINTN     ScreenW, ScreenH;
+    EG_PIXEL  TextFontColor = { 0x00, 0x00, 0x00, 0 };
 
     egGetScreenSize(&ScreenW, &ScreenH);
 
@@ -116,8 +117,8 @@ VOID egMeasureText (
 ) {
     egPrepareFont();
 
-    if (Width != NULL)  *Width  = StrLen (Text) * FontCellWidth;
     if (Height != NULL) *Height = BaseFontImage->Height;
+    if (Width  != NULL) *Width  = StrLen (Text) * FontCellWidth;
 } // VOID egMeasureText()
 
 VOID egRenderText (
@@ -130,45 +131,63 @@ VOID egRenderText (
     EG_IMAGE        *FontImage;
     EG_PIXEL        *BufferPtr;
     EG_PIXEL        *FontPixelData;
-    UINTN            BufferLineOffset, FontLineOffset;
+    UINTN            BufferLineOffset;
+    UINTN            FontLineOffset;
     UINTN            TextLength;
     UINTN            i, c;
 
     static EG_IMAGE *DarkFontImage  = NULL;
     static EG_IMAGE *LightFontImage = NULL;
 
-    // Nothing to do if nothing was passed
-    if (!Text) return;
+    // Early Return if nothing was passed
+    if (Text == NULL) return;
 
     egPrepareFont();
 
-    // clip the text
+    // Clip the text
     TextLength = StrLen (Text);
 
     if (TextLength * FontCellWidth + PosX > CompImage->Width) {
         TextLength = (CompImage->Width - PosX) / FontCellWidth;
     }
 
-    if (BGBrightness < 128) {
+    if (BGBrightness >= 128) {
+        if (DarkFontImage == NULL) DarkFontImage = egCopyImage (BaseFontImage);
+        if (DarkFontImage == NULL) return;
+
+        FontImage = DarkFontImage;
+    }
+    else {
         if (LightFontImage == NULL) {
             LightFontImage = egCopyImage (BaseFontImage);
             if (LightFontImage == NULL) return;
 
-            for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
-                LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
-                LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
-                LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
-            } // for
-        }
-        FontImage = LightFontImage;
-    }
-    else {
-        if (DarkFontImage == NULL) DarkFontImage = egCopyImage (BaseFontImage);
-        if (DarkFontImage == NULL) return;
-        FontImage = DarkFontImage;
-    }
+            EG_PIXEL OurFont = {0xFF, 0xFF, 0xFF, 0};
+            if (DefaultBanner || GlobalConfig.TextHelp) {
+                OurFont = FontComplement();
+            }
 
-    // render it
+            for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
+                if (LightFontImage->PixelData[i].r == 0 &&
+                    LightFontImage->PixelData[i].g == 0 &&
+                    LightFontImage->PixelData[i].b == 0
+                ) {
+                    LightFontImage->PixelData[i].r = OurFont.r;
+                    LightFontImage->PixelData[i].g = OurFont.g;
+                    LightFontImage->PixelData[i].b = OurFont.b;
+                }
+                else {
+                    LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
+                    LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
+                    LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
+                }
+            } // for
+        } // if LightFontImage == NULL
+
+        FontImage = LightFontImage;
+    } // if/else BGBrightness >= 128
+
+    // Render it
     BufferPtr         = CompImage->PixelData;
     BufferLineOffset  = CompImage->Width;
     BufferPtr        += PosX + PosY * BufferLineOffset;
@@ -200,7 +219,7 @@ VOID egLoadFont (
     MY_FREE_IMAGE(BaseFontImage);
     BaseFontImage = egLoadImage (SelfDir, Filename, TRUE);
     if (BaseFontImage == NULL) {
-        Print(L"Note: Font image file %s is invalid! Using default font!\n");
+        Print (L"Note: Font image file %s is invalid! Using default font!\n");
     }
     egPrepareFont();
 } // VOID egLoadFont()

@@ -1929,7 +1929,7 @@ VOID egDisplayMessageEx (
     UINTN      PositionCode,
     BOOLEAN    ResetPosition
 ) {
-    UINTN BoxWidth, BoxHeight, LumIndex;
+    UINTN BoxWidth, BoxHeight;
     static UINTN Position = 1;
     EG_IMAGE *Box;
 
@@ -1948,19 +1948,10 @@ VOID egDisplayMessageEx (
 
     if (!ResetPosition) {
         // Get Luminance Index
-        UINTN FactorFP = 10;
-        UINTN Divisor  = 3 * FactorFP;
-        UINTN PixelsR  = (UINTN) BGColor->r;
-        UINTN PixelsG  = (UINTN) BGColor->g;
-        UINTN PixelsB  = (UINTN) BGColor->b;
-
-        LumIndex = (
-            (
-                (PixelsR * FactorFP) +
-                (PixelsG * FactorFP) +
-                (PixelsB * FactorFP) +
-                (Divisor / 2) // Added For Rounding
-            ) / Divisor
+        UINTN LumIndex = GetLumIndex (
+            (UINTN) BGColor->r,
+            (UINTN) BGColor->g,
+            (UINTN) BGColor->b
         );
 
         egRenderText (

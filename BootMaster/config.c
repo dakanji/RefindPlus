@@ -1182,6 +1182,11 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.TagsHelp = DeclineSetting ? FALSE : TRUE;
         }
+        else if (MyStriCmp (TokenList[0], L"decline_texthelp")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.TextHelp = DeclineSetting ? FALSE : TRUE;
+
+        }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }

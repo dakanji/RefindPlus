@@ -432,6 +432,7 @@ typedef struct {
     BOOLEAN           ProtectNVRAM;
     BOOLEAN           ScanAllESP;
     BOOLEAN           TagsHelp;
+    BOOLEAN           TextHelp;
     BOOLEAN           NormaliseCSR;
     BOOLEAN           ShutdownAfterTimeout;
     BOOLEAN           Install;

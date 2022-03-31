@@ -72,6 +72,7 @@ UINTN      ScreenShortest         = 0;
 
 BOOLEAN    AllowGraphicsMode      = FALSE;
 BOOLEAN    ClearedBuffer          = FALSE;
+BOOLEAN    DefaultBanner          = FALSE;
 
 EG_PIXEL   BlackPixel             = { 0x00, 0x00, 0x00, 0 };
 EG_PIXEL   GrayPixel              = { 0xBF, 0xBF, 0xBF, 0 };
@@ -80,6 +81,7 @@ EG_PIXEL   WhitePixel             = { 0xFF, 0xFF, 0xFF, 0 };
 EG_PIXEL   StdBackgroundPixel     = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   MenuBackgroundPixel    = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
+
 
 // General defines and variables
 static BOOLEAN     GraphicsScreenDirty;
@@ -1122,6 +1124,76 @@ VOID egFreeImageQEMU (
 #endif
 
 
+UINTN GetLumIndex (
+    UINTN DataR,
+    UINTN DataG,
+    UINTN DataB
+) {
+    UINTN FactorFP = 10;
+    UINTN Divisor  = 3 * FactorFP;
+    UINTN LumIndex = (
+        (
+            (DataR * FactorFP) +
+            (DataG * FactorFP) +
+            (DataB * FactorFP) +
+            (Divisor / 2) // Added For Rounding
+        ) / Divisor
+    );
+
+    return LumIndex;
+} // UINTN GetLumIndex()
+
+EG_PIXEL FontComplement (VOID) {
+    EG_PIXEL OurPix = {0x0, 0x0, 0x0, 0};
+    UINTN    PixelR = (UINTN) MenuBackgroundPixel.r;
+    UINTN    PixelG = (UINTN) MenuBackgroundPixel.g;
+    UINTN    PixelB = (UINTN) MenuBackgroundPixel.b;
+
+    if (PixelR == 191 &&
+        PixelG == 191 &&
+        PixelB == 191
+    ) {
+        // Early Return
+        // Default Background ... Use default dark font
+        return OurPix;
+    }
+
+    // Get Screen Luminance Index
+    UINTN LumIndex = GetLumIndex (PixelR, PixelG, PixelB);
+
+    if (LumIndex >= 128) {
+        // Early Return
+        // Lightish Background ... Use default dark font
+        return OurPix;
+    }
+
+    // Use complementary colour on darkish backgrounds
+    // Complementary colour for Mid Grey is ... Mid Grey!
+    // Check for a broadly defined 'Grey' to fix
+    // Difficult to read text otherwise
+    UINTN MaxRGB = (PixelR > PixelG) ? PixelR : PixelG;
+    MaxRGB       = (MaxRGB > PixelB) ? MaxRGB : PixelB;
+
+    UINTN MinRGB = (PixelR < PixelG) ? PixelR : PixelG;
+    MinRGB       = (MinRGB < PixelB) ? MinRGB : PixelB;
+
+    if ((MaxRGB - MinRGB) <= 64) {
+        // We have 'Grey' ... Determine if it is 'Mid Grey'
+        if (MaxRGB < 160 && MinRGB > 96) {
+            // We have 'Mid Grey' ... Set base to 'Black'
+            // Will be flipped to complementary 'White' later
+            PixelR = PixelG = PixelB = 0;
+        }
+    }
+
+    // Get complementary font colour
+    OurPix.r = 255 - PixelR;
+    OurPix.g = 255 - PixelG;
+    OurPix.b = 255 - PixelB;
+
+    return OurPix;
+} // EG_PIXEL FontComplement()
+
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
@@ -1229,54 +1301,16 @@ VOID BltClearScreen (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                // Get Screen Luminance Index
-                UINTN FactorFP = 10;
-                UINTN Divisor  = 3 * FactorFP;
-                UINTN PixelsR  = (UINTN) MenuBackgroundPixel.r;
-                UINTN PixelsG  = (UINTN) MenuBackgroundPixel.g;
-                UINTN PixelsB  = (UINTN) MenuBackgroundPixel.b;
-                UINTN LumIndex = (
-                    (
-                        (PixelsR * FactorFP) +
-                        (PixelsG * FactorFP) +
-                        (PixelsB * FactorFP) +
-                        (Divisor / 2) // Added For Rounding
-                    ) / Divisor
-                );
-
-                EG_PIXEL BannerFontColor = BlackPixel;
-                // DA-TAG: Use complementary colour for banner text on darkish backgrounds
-                //         Do not apply to other text to avoid OTT effect
-                if (LumIndex < 128) {
-                    // Complementary colour for Mid Grey is ... Mid Grey!
-                    // Check for a broadly defined 'Grey' to fix
-                    // Difficult to read text otherwise
-                    UINTN MaxRGB = (PixelsR > PixelsG) ? PixelsR : PixelsG;
-                    MaxRGB       = (MaxRGB  > PixelsB) ? MaxRGB  : PixelsB;
-
-                    UINTN MinRGB = (PixelsR < PixelsG) ? PixelsR : PixelsG;
-                    MinRGB       = (MinRGB  < PixelsB) ? MinRGB  : PixelsB;
-
-                    if ((MaxRGB - MinRGB) <= 64) {
-                        // We have 'Grey' ... Determine if it is 'Mid Grey'
-                        if (MaxRGB < 160 && MinRGB > 96) {
-                            // We have 'Mid Grey' ... Set Input Pixels to Black
-                            // Will be flipped to complementary White later
-                            PixelsR = PixelsG = PixelsB = 0;
-                        }
-                    }
-
-                    // Get complementary colour of Input Pixels
-                    BannerFontColor.r = 255 - PixelsR;
-                    BannerFontColor.g = 255 - PixelsG;
-                    BannerFontColor.b = 255 - PixelsB;
-                }
+                // Get complementary font colour if needed
+                EG_PIXEL BannerFont = FontComplement();
 
                 Banner = egPrepareEmbeddedImage (
                     &egemb_refindplus_banner,
                     TRUE,
-                    &BannerFontColor
+                    &BannerFont
                 );
+
+                DefaultBanner = TRUE;
             } // if/else Banner != NULL
 
             if (Banner != NULL) {
