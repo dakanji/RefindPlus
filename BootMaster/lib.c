@@ -1117,6 +1117,8 @@ VOID SetFilesystemData (
 
     if ((Buffer != NULL) && (Volume != NULL)) {
         SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
+
+        // Default to Unknown FS TYpe
         Volume->FSType = FS_TYPE_UNKNOWN;
 
         if (BufferSize >= (1024 + 100)) {
@@ -1234,12 +1236,6 @@ VOID SetFilesystemData (
         // If no other filesystem is identified, assume APFS if on partition with APFS GUID
         if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
             Volume->FSType = FS_TYPE_APFS;
-            return;
-        }
-
-        // If no other filesystem is identified, assume HFS+ if on partition with HFS+ GUID
-        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-            Volume->FSType = FS_TYPE_HFSPLUS;
             return;
         }
     } // if ((Buffer != NULL) && (Volume != NULL))
@@ -1650,7 +1646,7 @@ CHAR16 * GetVolumeName (
                 FoundName = StrDuplicate (L"APFS/FileVault Container");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                FoundName = StrDuplicate (L"Unidentified HFS+ Volume");
+                FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
             }
             else {
                 if (MyStriCmp (TypeName, L"APFS")) {
@@ -2390,10 +2386,8 @@ VOID ScanVolumes (VOID) {
     // Get all filesystem handles
     Status = LibLocateHandle (
         ByProtocol,
-        &BlockIoProtocol,
-        NULL,
-        &HandleCount,
-        &Handles
+        &BlockIoProtocol, NULL,
+        &HandleCount, &Handles
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
@@ -2557,8 +2551,8 @@ VOID ScanVolumes (VOID) {
 
                 // Split checks as '/FileVault' may be Core Storage
                 if (0);
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS  (Assumed)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+  (Assumed)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)  ) PartType = L"Mac Raid (ON)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff) ) PartType = L"Mac Raid (OFF)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec) ) PartType = L"AppleTV Recov";
@@ -2911,7 +2905,6 @@ VOID GetVolumeBadgeIcons (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    UINTN    LogLineType;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
@@ -2971,7 +2964,7 @@ VOID GetVolumeBadgeIcons (VOID) {
                 Volume->VolName
             );
 
-            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
             ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
@@ -3779,10 +3772,8 @@ BOOLEAN EjectMedia (VOID) {
 
     Status = LibLocateHandle (
         ByProtocol,
-        &AppleRemovableMediaGuid,
-        NULL,
-        &HandleCount,
-        &Handles
+        &AppleRemovableMediaGuid, NULL,
+        &HandleCount, &Handles
     );
     if (EFI_ERROR(Status) || HandleCount == 0) {
         // probably not an Apple system

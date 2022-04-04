@@ -3,6 +3,9 @@ name: 'Issue Labels'
 on:
   issues:
     types: [opened, reopened, closed]
+  push:
+    branches:
+      - GOPFix
 
 permissions:
   issues: write
@@ -48,6 +51,18 @@ jobs:
         with:
           github_token: ${{ github.token }}
           labels: Cancelled
+
+  add_label_self_close:
+    name: Commit Closure Label
+    runs-on: ubuntu-latest
+
+    if: github.actor == 'dakanji' && github.event_name == 'push' && contains(github.event.comment.body, '[Resolves] and Closes')
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Resolved
 
   # Del Labels - https://github.com/dessant/label-actions
   del_label_user_reopen:

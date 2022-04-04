@@ -74,6 +74,10 @@
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
   * This was ultimately achieved via other means but the feature was maintained for potential benefits
   * The feature never actually worked properly however, hence the removal
+- Amends GOP Mode Selection Preference
+  * RefindPlus defaults to selecting the maximum resolution GOP Mode when a screen resolution is not specified
+  * When two modes have the same resolution, the later mode was used
+  * This is now changed to prefer the first mode found
 - Amends OpenProtocol Remapping on Macs without AppleFramebuffers
   * The remapping is now disabled when GOP is absent on any type of firmware
   * It is now also disabled when AppleFramebuffers are absent on Apple firmware

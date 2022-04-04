@@ -348,7 +348,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         (BlockCert)
             ? L"Certificate  :::  "
             : (BlockMore)
-                ? L"SecurityTag  :::  "
+                ? L"IdentityTag  :::  "
                 : L"",
         VariableName
     );
@@ -1413,11 +1413,11 @@ VOID AdjustDefaultSelection (VOID) {
                 LoggedOnce = TRUE;
                 if (FormatLog) {
                     BRK_MIN("\n");
-                    MsgStr = StrDuplicate (L"Added Previous Selection");
+                    MsgStr = StrDuplicate (L"Changed to Previous Selection");
                 }
                 else {
                     BRK_MOD("\n");
-                    MsgStr = StrDuplicate (L"Added Preferred Selection");
+                    MsgStr = StrDuplicate (L"Changed to Preferred Selection");
                 }
                 LOG_MSG("%s:- '%s'", MsgStr, Element);
             }
@@ -1515,7 +1515,7 @@ VOID LogBasicInfo (VOID) {
         if (WarnVersionEFI) {
             AllowTweakUEFI = FALSE;
 
-            #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
             LOG_MSG("** WARN: Inconsistent EFI Versions Detected");
             LOG_MSG("%s         Program Behaviour is *NOT* Defined",   OffsetNext);
             LOG_MSG("%s         Priority = Stability Over Features",   OffsetNext);
@@ -1542,11 +1542,11 @@ VOID LogBasicInfo (VOID) {
 #endif
     } // if/else WarnVersionEFI || WarnRevisionUEFI
 
-    #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
     /* NVRAM Storage Info */
     BOOLEAN QVInfoSupport = FALSE;
     LOG_MSG("Non-Volatile Storage:");
-    #endif
+#endif
 
     if (gRT->Hdr.Revision >> 16 > 1 && !AppleFirmware) {
         if ((gRT->Hdr.HeaderSize <
@@ -1837,7 +1837,8 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Align 'AllowTweakUEFI' */
     if (!AllowTweakUEFI) {
-        // DA-TAG: Investigate further ... Items that may conflict
+        // DA-TAG: Investigate This
+        //         Items that may conflict with EFI version mismatch
         GlobalConfig.ProvideConsoleGOP   = FALSE;
         GlobalConfig.UseTextRenderer     = FALSE;
         GlobalConfig.PassUgaThrough      = FALSE;
@@ -1867,12 +1868,16 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop   ));
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
-    LOG_MSG("%s      TextRenderer:- '%s'", TAG_ITEM_C(GlobalConfig.UseTextRenderer));
 
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     (!AppleFirmware                                                          )
         ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
+    LOG_MSG(
+        "%s      TextRenderer:- '%s'",
+        OffsetNext,
+        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
+    );
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,

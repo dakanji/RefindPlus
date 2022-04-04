@@ -1397,13 +1397,11 @@ VOID BltClearScreen (
                 BltImage (Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
             }
         }
-    } // if/else !BannerPass
 
-    #if REFIT_DEBUG > 0
-    if (!IsBoot) {
+        #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-    }
-    #endif
+        #endif
+    } // if/else !BannerPass
 
     GraphicsScreenDirty = FALSE;
 

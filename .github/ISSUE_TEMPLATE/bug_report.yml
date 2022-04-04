@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
-        If you only wish to ask a question, please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature.
+        If you actually only wish to ask a question or make a comment, please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) instead.
   - type: dropdown
     id: version
     attributes:
@@ -14,8 +14,8 @@ body:
       options:
         - 'v0.13.2.AN Release'
         - 'v0.13.2.AM Release'
-        - 'Another Released Version'
-        - 'Build of Current Unreleased Code'
+        - 'Older Released Version'
+        - 'Pre-Release Code Build'
     validations:
       required: true
   - type: dropdown
@@ -28,7 +28,7 @@ body:
         - 'UEFI PC'
         - 'Apple Mac'
         - 'Chromebook'
-        - 'Other'
+        - 'Other Device'
     validations:
       required: true
   - type: textarea
@@ -91,5 +91,5 @@ body:
       description: |
         Add additional context that may provide clarity on the problem.
       placeholder: |
-        You can also add screenshots to better explain the context.
+        You can also add screenshots to shed more light on the problem.
         Screenshots can be saved by pressing the F10 key in RefindPlus.

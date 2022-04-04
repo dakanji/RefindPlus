@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to suggest improvements to RefindPlus.
-        If you only wish to ask a question, please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature.
+        If you actually only wish to ask a question or make a comment, please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) instead.
   - type: textarea
     id: suggested-feature
     attributes:

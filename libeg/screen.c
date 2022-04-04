@@ -197,20 +197,23 @@ EFI_STATUS RefitCheckGOP (VOID) {
                     Height   = 0;
 
                     for (Mode = 0; Mode < MaxMode; Mode++) {
-                        // Free Info if set
-                        MY_FREE_POOL(Info);
-
                         Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
                         if (!EFI_ERROR(Status)) {
-                            if (Width > Info->HorizontalResolution) {
+                            if (Width  > Info->HorizontalResolution ||
+                                Height > Info->VerticalResolution
+                            ) {
                                 continue;
                             }
-                            if (Height > Info->VerticalResolution) {
+                            else if (Width == Info->HorizontalResolution
+                                && Height  == Info->VerticalResolution
+                            ) {
                                 continue;
                             }
                             Width  = Info->HorizontalResolution;
                             Height = Info->VerticalResolution;
                         }
+
+                        MY_FREE_POOL(Info);
                     } // for
 
                     if (Width == 0 || Height == 0) {
@@ -237,7 +240,6 @@ EFI_STATUS RefitCheckGOP (VOID) {
             } // if HandleBuffer[i]
         } // for i = 0
 
-        MY_FREE_POOL(Info);
         MY_FREE_POOL(HandleBuffer);
 
         #if REFIT_DEBUG > 0
@@ -314,13 +316,9 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
             #if REFIT_DEBUG > 0
             UINT32 ModeLog;
+
             // Limit logged value to 99
-            if (Mode > 99) {
-                ModeLog = 99;
-            }
-            else {
-                ModeLog = Mode;
-            }
+            ModeLog = (Mode > 99) ? 99 : Mode;
 
             LOG_MSG("%s  - Mode[%02d]", OffsetNext, ModeLog);
             #endif
@@ -348,8 +346,6 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                     LOG_MSG("\n\n");
                 }
                 #endif
-
-                MY_FREE_POOL(Info);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -367,7 +363,9 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                     LOG_MSG("\n");
                 }
                 #endif
-            } // if Status == EFI_SUCCESS
+            } // if/else !EFI_ERROR(Status)
+
+            MY_FREE_POOL(Info);
         } // for (Mode = 0; Mode <= MaxMode; Mode++)
     } // if MaxMode > 0
 
@@ -488,7 +486,7 @@ EFI_STATUS egSetGopMode (
             }
 
             i++;
-        }
+        } // while
     }
 
     return Status;
@@ -550,10 +548,10 @@ EFI_STATUS egSetMaxResolution (VOID) {
             BestMode = Mode;
             Width    = Info->HorizontalResolution;
             Height   = Info->VerticalResolution;
-
-            MY_FREE_POOL(Info);
         }
-    }
+
+        MY_FREE_POOL(Info);
+    } // for
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"BestMode: Mode[%d] on Handle[%d] @ %d x %d",
@@ -969,9 +967,9 @@ VOID egInitScreen (VOID) {
                                 );
                                 #endif
                             }
-
-                            MY_FREE_POOL(Info);
                         }
+
+                        MY_FREE_POOL(Info);
                     } // for GopMode = 0
                 } // if !EFI_ERROR(Status)
             } // for

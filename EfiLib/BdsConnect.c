@@ -43,8 +43,8 @@ UINTN   AllHandleCount;
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
 
-#ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
+#ifdef __MAKEWITH_TIANO
 extern EFI_STATUS OcConnectDrivers (VOID);
 #endif
 
@@ -397,10 +397,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                             if (VGADevice) {
                                 // DA-TAG: Unable to reconnect later after disconnecting here
-                                //         Comment out and set MakeConnection to FALSE
-                                // REFIT_CALL_3_WRAPPER(
-                                //gBS->DisconnectController, AllHandleBuffer[i],
-                                //NULL, NULL
+                                //         Comment out and set 'MakeConnection' to FALSE
+                                //REFIT_CALL_3_WRAPPER(
+                                //    gBS->DisconnectController, AllHandleBuffer[i],
+                                //    NULL, NULL
                                 //);
                                 MakeConnection = FALSE;
 
@@ -420,8 +420,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 #endif
                             }
                             else {
-                                // DA-TAG: Not doing anything with these apart and just logging
-                                //         Might have options later based on item above
+                                // DA-TAG: Not doing anything with these and just logging
+                                //         Might be options out of the items above later
                                 #if REFIT_DEBUG > 0
                                 DeviceData = PoolPrint (
                                     L" - PCI(%02llX|%02llX:%02llX.%llX)",

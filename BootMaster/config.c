@@ -1109,7 +1109,7 @@ VOID ReadConfig (
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_OFF;
                 LOG_MSG("\n");
-                LOG_MSG("Detected Overrides - L O A D   O V E R R I D E S");
+                LOG_MSG("Detected Overrides File - L O A D   O V E R R I D E S");
                 MY_MUTELOGGER_SET;
                 #endif
 

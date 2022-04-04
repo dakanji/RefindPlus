@@ -117,14 +117,15 @@
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
 # mandate that on installation, compliant GOP drivers should confirm devices are
 # UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
-# do not activate on Classic MacPros for instance, as these are not actually
+# do not activate on classic MacPros for instance, as these are not actually
 # UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
 # all of, the UEFI 2.x capabilities. RefindPlus is configred by default to
-# temporarily partially amend a device's EFI Revision to v2.x and then try
-# reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
-# is not available. The changes are reverted afterwards and permit running
-# modern GPUs on some legacy units when they would otherwise fail to work.
-# This program default configuration is deactivated by setting this token.
+# amend a device's EFI Revision to v2.x and then try einstalling a copy of
+# the GPU's Option ROM whenever it detects that GOP is not available. The
+# This permits running modern GPUs on some legacy units when they would
+# otherwise fail to work. The change is reverted automatically once it
+# is longer required to allow GPU activation except when the related
+# "decline_uefiemulate" token is inactive and this is not reverted.
 #
 # GOP drivers are not reloaded when commented out
 #
@@ -134,8 +135,8 @@
 # by default (even when the tool is not specified in the "showtools" list). This is done
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
 # the "hidden_tags" tool is available). When this option is enabled, this "help" with
-# setup will be deactivated and the ability to unhide items will be solely based on
-# whether the "hidden_tags" tool has been explicitly added to the "showtools" list.
+# setup will be deactivated, and the ability to unhide items will be solely based on
+# whether "hidden_tags" has been explicitly defined in the "showtools" list or not.
 #
 # The "hidden_tags" tool is always available when commented out
 #
@@ -270,19 +271,19 @@
 #
 #pass_uga_through
 
-# Some computers may have multiple GOP instances:
-#     - One installed on the ConsoleOut handle
+# Some computers, such as classic MacPros, may have multiple GOP instances:
+#     - One installed on the Console Out handle
 #     - Others installed on GPU handles.
-# GOP on the ConsoleOut Handle is what everything uses and is provided by
-# the system firmware and others provided by GPU firmware. The firmware
-# should typically forward calls from the ConsoleOut Handle GOP to the
+# GOP on the Console Out Handle is what everything uses and is provided by
+# the system firmware and others by GPU Option ROMs. The system firmware
+# should typically forward calls from the Console Out Handle GOP to the
 # others transparently. On such models, it only works in this way with
 # GPUs with system firmware support. This option replaces GOP on the
-# ConsoleOut Handle with one from a GPU Handle on such models when
-# running capable GPUs but without full system firmware support.
+# Console Out Handle with one from a GPU Handle on such models when
+# running capable GPUs that are not supported by system firmware.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Inactive when commented out (Does not provide ConsoleOut GOP)
+# Inactive when commented out (Does not provide GOP from GPU)
 #
 #provide_console_gop
 
@@ -294,7 +295,7 @@
 # in RefindPlus hanging as the drivers provided by the firmware can also be
 # defective. This setting disconnects such drivers and allows installing
 # alternative properly functioning drivers instead (otherwise blocked).
-# NB: This setting is disabled whenever Apple firmware is detected.
+# NB: This setting is disabled (always inactive) on Apple firmware.
 #
 # Does not try to unlock such partitions when commented out
 #

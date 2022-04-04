@@ -150,7 +150,23 @@ BOOLEAN IsValidLoader (
     CHAR16   *FileName
 ) {
 #if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
-    // Assume TRUE
+    // DA-TAG: Investigate This
+    //
+    // Return TRUE
+    #if REFIT_DEBUG > 0
+    ValidText = L"EFI File is *TAKEN* as Valid";
+    ALT_LOG(1, LOG_THREE_STAR_MID,
+        L"%s:- '%s'",
+        ValidText,
+        FileName ? FileName : L"NULL File"
+    );
+    if (IsBoot) {
+        LOG_MSG("\n");
+        LOG_MSG("%s ... Loading", ValidText);
+        LOG_MSG("\n <<----- * ----->>\n\n");
+    }
+    #endif
+
     return TRUE;
 #else
     EFI_FILE_HANDLE FileHandle;
@@ -229,7 +245,8 @@ BOOLEAN IsValidLoader (
     );
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
-    IsValid = !EFI_ERROR(Status) &&
+    IsValid = (
+        !EFI_ERROR(Status) &&
         Size == sizeof (Header) &&
         (
             (
@@ -243,7 +260,8 @@ BOOLEAN IsValidLoader (
                 *(UINT16 *) &Header[Size+4]  ==  EFI_STUB_ARCH
             ) ||
             (*(UINT32 *) &Header == FAT_ARCH)
-        );
+        )
+    );
 
     #if REFIT_DEBUG > 0
     ValidText = (IsValid)

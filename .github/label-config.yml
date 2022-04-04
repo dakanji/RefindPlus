@@ -204,8 +204,8 @@ Unclear:
       - 'Stale'
       - 'Queries'
 
-# The `wontfix` label is added to issues
-wontfix:
+# The `WontFix` label is added to issues
+WontFix:
   issues:
     # Remove labels
     unlabel:
@@ -215,14 +215,14 @@ wontfix:
       - 'Queries'
       - 'Unclear'
 
-# The `wontfix` label is removed from issues
--wontfix:
+# The `WontFix` label is removed from issues
+-WontFix:
   issues:
     # Reopen the issue
     reopen: true
 
-# The `Works-For-Me` label is added to issues
-Works-For-Me:
+# The `Cannot-Replicate` label is added to issues
+Cannot-Replicate:
   issues:
     # Remove labels
     unlabel:

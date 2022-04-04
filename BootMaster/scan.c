@@ -2920,7 +2920,7 @@ BOOLEAN FindTool (
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
-                        L"Added Tool:- '%-15s    :::    %s'",
+                        L"Added Tool:- '%-18s    :::    %s'",
                         Description, PathName
                     );
 
@@ -3246,7 +3246,7 @@ VOID ScanForTools (VOID) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("*_ NOTE _*    %s", ToolStr);
+                    LOG_MSG(" * NOTE *     %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
                     #endif
                 }
@@ -3333,7 +3333,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-15s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3390,7 +3390,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-15s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3434,7 +3434,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-15s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3480,7 +3480,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-15s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3549,7 +3549,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (
-                                L"Added Tool:- '%-15s    :::    %s for %s'",
+                                L"Added Tool:- '%-18s    :::    %s for %s'",
                                 ToolName, FileName, VolumeTag
                             );
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -3644,7 +3644,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (
-                            L"Added Tool:- '%-15s    :::    %s for %s'",
+                            L"Added Tool:- '%-18s    :::    %s for %s'",
                             ToolName, FileName, VolumeTag
                         );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -3718,7 +3718,7 @@ VOID ScanForTools (VOID) {
                             MY_FREE_POOL(Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- '%-15s    :::    %s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 LOG_MSG("%s%s", OffsetNext, Spacer);
