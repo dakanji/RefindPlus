@@ -32,6 +32,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
+BOOLEAN ReinstalledGOP  = FALSE;
 BOOLEAN AcquireErrorGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
 BOOLEAN DevicePresence  = FALSE;
@@ -742,7 +743,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR(Status) && ResetGOP && !ReLoaded && DetectedDevices) {
-            ReLoaded = TRUE;
+            ReLoaded = ReinstalledGOP = TRUE;
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0

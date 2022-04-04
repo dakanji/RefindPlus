@@ -74,6 +74,10 @@
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
   * This was ultimately achieved via other means but the feature was maintained for potential benefits
   * The feature never actually worked properly however, hence the removal
+- Amends OpenProtocol Remapping on Macs without AppleFramebuffers
+  * The remapping is now disabled when GOP is absent on any type of firmware
+  * It is now also disabled when AppleFramebuffers are absent on Apple firmware
+  * This is to avoid potential memory management issues pending further investigation
 - Amends Default Loader Scan for APFS Support Volumes
   * APFS `Recovery`, `Update` and `VM` volumes are now added to the `DontScanVolume` list by default
 - Amends Scan for `.VolumeIcons` and `VolumeBadges`

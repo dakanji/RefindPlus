@@ -50,6 +50,7 @@
 #include "libegint.h"
 #include "../BootMaster/screenmgt.h"
 #include "../BootMaster/global.h"
+#include "../BootMaster/apple.h"
 #include "../BootMaster/lib.h"
 #include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"
@@ -67,12 +68,11 @@
 #include <efilib.h>
 #endif
 
+extern UINTN    AppleFramebuffers;
 extern BOOLEAN  AllowTweakUEFI;
+extern BOOLEAN  ReinstalledGOP;
 extern EG_PIXEL MenuBackgroundPixel;
 
-#if REFIT_DEBUG > 0
-extern UINTN   AppleFramebuffers;
-#endif
 
 // Console defines and variables
 EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
@@ -648,6 +648,33 @@ VOID egDetermineScreenSize (
     }
 } // static VOID egDetermineScreenSize()
 
+UINTN egCountAppleFramebuffers (VOID) {
+    EFI_STATUS  Status;
+    UINTN       HandleCount                       = 0;
+    EFI_GUID    AppleFramebufferInfoProtocolGuid  = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
+    EFI_HANDLE *HandleBuffer                      = NULL;
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
+
+    Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
+    if (EFI_ERROR(Status)) {
+        HandleCount = 0;
+    }
+    else {
+        Status = REFIT_CALL_5_WRAPPER(
+            gBS->LocateHandleBuffer, ByProtocol,
+            &AppleFramebufferInfoProtocolGuid, NULL,
+            &HandleCount, &HandleBuffer
+        );
+        if (EFI_ERROR(Status)) {
+            HandleCount = 0;
+        }
+    }
+
+    MY_FREE_POOL(HandleBuffer);
+
+    return HandleCount;
+} // UINTN egCountAppleFramebuffers()
+
 VOID egGetScreenSize (
     OUT UINTN *ScreenWidth,
     OUT UINTN *ScreenHeight
@@ -673,6 +700,7 @@ VOID egInitScreen (VOID) {
     BOOLEAN                        thisValidGOP = FALSE;
 
     #if REFIT_DEBUG > 0
+    UINTN    SizeFB   = 0;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  PrevFlag = FALSE;
     BOOLEAN  FlagUGA  = FALSE;
@@ -997,6 +1025,8 @@ VOID egInitScreen (VOID) {
             LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
+
+            SizeFB = (GOPDraw->Mode->FrameBufferSize == 0) ? 0 : 1;
             #endif
         }
         else {
@@ -1103,13 +1133,35 @@ VOID egInitScreen (VOID) {
         MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
         if (!EFI_ERROR(Status)) {
             thisValidGOP = TRUE;
+
+            if (AppleFirmware) {
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Apple Framebuffer Count ... Initial:- '%d'", AppleFramebuffers);
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
+
+                // Update AppleFramebuffer Count
+                AppleFramebuffers = egCountAppleFramebuffers();
+
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Apple Framebuffer Count ... Updated:- '%d'", AppleFramebuffers);
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
+            }
         }
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG("\n\n");
+        #endif
     }
 
     // Get Screen Size
@@ -1151,6 +1203,24 @@ VOID egInitScreen (VOID) {
             }
             #endif
         }
+
+        #if REFIT_DEBUG > 0
+        if (GOPDraw && ReinstalledGOP) {
+            MsgStr = PoolPrint (L"Basic Framebuffer Count ... Initial:- '%d'", SizeFB);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+
+            SizeFB = (GOPDraw->Mode->FrameBufferSize == 0) ? 0 : 1;
+
+            MsgStr = PoolPrint (L"Basic Framebuffer Count ... Updated:- '%d'", SizeFB);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            MY_FREE_POOL(MsgStr);
+            LOG_MSG("\n\n");
+        }
+        #endif
+
     } // if GOPDraw != NULL
 
     if (UGADraw != NULL) {
@@ -1254,16 +1324,20 @@ VOID egInitScreen (VOID) {
         MsgStr = StrDuplicate (L"No");
     }
     else {
+        BOOLEAN BaseCheck = (AppleFirmware && AppleFramebuffers == 0);
         if (FlagUGA) {
-            if (AppleFirmware && AppleFramebuffers == 0) {
-                MsgStr = StrDuplicate (L"Yes (Without Display ... Apple Framebuffers are Absent)");
-            }
-            else {
-                MsgStr = StrDuplicate (L"Yes");
-            }
+            MsgStr = StrDuplicate (
+                (BaseCheck)
+                ? L"Yes (Without Display ... Apple Framebuffers are Missing)"
+                : L"Yes"
+            );
         }
         else {
-            MsgStr = StrDuplicate (L"Yes");
+            MsgStr = StrDuplicate (
+                (DevicePresence && BaseCheck)
+                ? L"Yes (Possibly Without Display ... Apple Framebuffers are Missing)"
+                : L"Yes"
+            );
         }
     }
 

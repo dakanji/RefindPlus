@@ -195,6 +195,7 @@ REFIT_CONFIG GlobalConfig = {
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
+UINTN                  AppleFramebuffers    = 0;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                IsBoot               = FALSE;
@@ -217,9 +218,6 @@ EFI_GUID               RefindGuid           = REFIND_GUID_VALUE;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
-#if REFIT_DEBUG > 0
-UINTN                 AppleFramebuffers = 0;
-#endif
 
 extern VOID              InitBooterLog (VOID);
 
@@ -828,14 +826,24 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 
 static
 VOID ReMapOpenProtocol (VOID) {
+    if (!GOPDraw) {
+        // Early Return if GOP is Absent
+        return;
+    }
     if (!AllowTweakUEFI) {
-        // Early Return
+        // Early Return on Invalid UEFI Versions
         return;
     }
 
-    if (AppleFirmware && !DevicePresence) {
-        // Early Return
-        return;
+    if (AppleFirmware) {
+        if (!DevicePresence) {
+            // Early Return on Compact Macs
+            return;
+        }
+        if (AppleFramebuffers == 0) {
+            // Early Return on Macs without AppleFramebuffers
+            return;
+        }
     }
 
     // Amend EFI_BOOT_SERVICES.OpenProtocol
@@ -1473,11 +1481,7 @@ VOID LogBasicInfo (VOID) {
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
-    UINTN       HandleCount                        = 0;
-    EFI_GUID    ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
-    EFI_GUID    AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
-    EFI_HANDLE *HandleBuffer                       = NULL;
-    APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
+    EFI_GUID    ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 
     LogRevisionInfo (&gST->Hdr, L"    System Table", sizeof (*gST), TRUE);
     LogRevisionInfo (&gBS->Hdr, L"   Boot Services", sizeof (*gBS), TRUE);
@@ -1485,6 +1489,11 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof (*gDS), FALSE);
     LOG_MSG("\n\n");
 #endif
+
+
+    // Get AppleFramebuffer Count
+    AppleFramebuffers = egCountAppleFramebuffers();
+
 
     WarnVersionEFI = WarnRevisionUEFI = FALSE;
     if (((gST->Hdr.Revision >> 16) != EfiMajorVersion) ||
@@ -1520,15 +1529,18 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         * Disabled:- 'SupplyUEFI'",            OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SupplyAPFS'",            OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReloadGOP'",             OffsetNext);
+#endif
         }
         else {
+#if REFIT_DEBUG > 0
             LOG_MSG("** WARN: Inconsistent UEFI Revisions Detected");
-            #endif
-        }
-        #if REFIT_DEBUG > 0
+#endif
+        } // if/else WarnVersionEFI
+
+#if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-        #endif
-    }
+#endif
+    } // if/else WarnVersionEFI || WarnRevisionUEFI
 
     #if REFIT_DEBUG > 0
     /* NVRAM Storage Info */
@@ -1564,8 +1576,11 @@ VOID LogBasicInfo (VOID) {
             QVInfoSupport = TRUE;
 #endif
         }
-    }
-/* Function ends here on RELEASE Builds */
+    } // if gRT->Hdr.Revision
+
+/**
+ * Function ends here on RELEASE Builds
+**/
 
 #if REFIT_DEBUG > 0
     if (!QVInfoSupport) {
@@ -1604,26 +1619,8 @@ VOID LogBasicInfo (VOID) {
     LOG_MSG("\n");
     LOG_MSG("Secure Boot:- '%s'", secure_mode() ? L"Active"  : L"Inactive");
     LOG_MSG("\n");
-
-    /* Apple Framebuffers */
-    Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
-    if (EFI_ERROR(Status)) {
-        HandleCount = 0;
-    }
-    else {
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &AppleFramebufferInfoProtocolGuid, NULL,
-            &HandleCount, &HandleBuffer
-        );
-        if (EFI_ERROR(Status)) {
-            HandleCount = 0;
-        }
-    }
-    AppleFramebuffers = HandleCount;
     LOG_MSG("Apple Framebuffers:- '%d'", AppleFramebuffers);
     LOG_MSG("\n");
-    MY_FREE_POOL(HandleBuffer);
 
     /* CSM Type */
     switch (GlobalConfig.LegacyType) {

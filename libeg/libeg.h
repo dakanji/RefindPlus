@@ -229,6 +229,7 @@ EFI_STATUS egSaveFile(
 
 UINTN egGetFontHeight (VOID);
 UINTN egGetFontCellWidth (VOID);
+UINTN egCountAppleFramebuffers (VOID);
 UINTN egComputeTextWidth (IN CHAR16 *Text);
 
 #endif /* __LIBEG_LIBEG_H__ */
