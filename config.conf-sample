@@ -191,6 +191,19 @@
 #
 #disable_compat_check
 
+# Check to see if it is possible to dispatch additional DXE drivers.
+# The Controller/Handle connection exercise may sometimes reveal new
+# DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
+# automatically went into a loop to install such revealed DXE drivers
+# until all such were installed. This loop and installation may result
+# in unwanted drivers being installed and also slows the loading speed
+# while not being required on most types of firmware. Hence, an option
+# to skip this process is desirable when running most types of firmware
+#
+# Inactive when commented out (Allows scanning for revealed DXE drivers)
+#
+#disable_rescan_dxe
+
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option
 # is active however, RefindPlus will enforce MacOS "TRIM" for all types
@@ -327,20 +340,6 @@
 # Inactive when commented out (Does not use a custom text renderer)
 #
 #renderer_text
-
-# Check to see if it is possible to dispatch additional DXE drivers.
-# The Controller/Handle connection process may somethings reveal new
-# DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
-# automatically went into a loop to install such revealed DXE drivers
-# until all such were installed. This loop and installation may result
-# in unwanted drivers being installed and also slows the loading speed
-# while not being required on most types of firmware. Hence, an option
-# to skip this process is desirable when running most types of firmware
-# NB: This setting is disabled whenever Apple firmware is detected.
-#
-# Inactive when commented out (Skips scanning for revealed DXE drivers)
-#
-#rescan_drivers
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.

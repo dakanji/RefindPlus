@@ -87,7 +87,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
-    /* RescanDrivers = */ FALSE,
+    /* RescanDXE = */ TRUE,
     /* RansomDrives = */ FALSE,
     /* EnableAndLockVMX = */ FALSE,
     /* FoldLinuxKernels = */ TRUE,
@@ -239,6 +239,8 @@ extern EFI_GUID                      PKCS7_GUID;
 extern EFI_GUID                      EFI_CERT_SHA256_GUID;
 
 extern EFI_FILE                     *gVarsDir;
+
+extern BOOLEAN                       ForceRescanDXE;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -1161,7 +1163,10 @@ VOID RescanAll (
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary.
     if (Reconnect) {
+        // Always rescan for DXE drivers when connecting drivers here
+        ForceRescanDXE = TRUE;
         ConnectAllDriversToAllControllers (FALSE);
+
         ScanVolumes();
     }
 
@@ -1865,6 +1870,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
     LOG_MSG("%s      TagsHelp:- '%s'",     TAG_ITEM_C(GlobalConfig.TagsHelp       ));
     LOG_MSG("%s      TextOnly:- '%s'",     TAG_ITEM_C(GlobalConfig.TextOnly       ));
+    LOG_MSG("%s      RescanDXE:- '%s'",    TAG_ITEM_C(GlobalConfig.RescanDXE      ));
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop   ));
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
@@ -1892,10 +1898,6 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      RescanDrivers:- ",  OffsetNext);
-    (AppleFirmware                                                            )
-        ? LOG_MSG("'Disabled'"                                                )
-        : LOG_MSG("'%s'", GlobalConfig.RescanDrivers ? L"Active" : L"Inactive");
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI

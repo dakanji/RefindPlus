@@ -32,6 +32,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
+BOOLEAN ForceRescanDXE  = FALSE;
 BOOLEAN ReinstalledGOP  = FALSE;
 BOOLEAN AcquireErrorGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
@@ -599,6 +600,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 static
 EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     EFI_STATUS  Status;
+    BOOLEAN     RescanDrivers = (GlobalConfig.RescanDXE || ForceRescanDXE);
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -606,8 +608,8 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
 
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO
-    if (GlobalConfig.RescanDrivers) {
-        // First Pass Driver Connection
+    if (RescanDrivers) {
+        // Optional Silent First Pass Driver Connection
         OcConnectDrivers();
     }
     #endif
@@ -621,8 +623,8 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
-        // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' is not enabled.
-        Status = (GlobalConfig.RescanDrivers) ? gDS->Dispatch() : EFI_NOT_FOUND;
+        // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' is false.
+        Status = (RescanDrivers) ? gDS->Dispatch() : EFI_NOT_FOUND;
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
