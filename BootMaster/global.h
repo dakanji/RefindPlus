@@ -291,7 +291,7 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 EFI_STATUS OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
 EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
-EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
+EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE Mode);
 #endif
 
 

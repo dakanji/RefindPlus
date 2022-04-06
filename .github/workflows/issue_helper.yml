@@ -1,0 +1,241 @@
+name: 'Issue Helper'
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        description: Issue Action
+        options:
+        - 'Assignment - Self - Add'
+        - 'Assignment - Self - Remove'
+        - 'Comment - Delete'
+        - 'Issue - Close'
+        - 'Issue - Lock'
+        - 'Issue - Unlock'
+        - 'Label - Add - Cannot-Replicate'
+        - 'Label - Add - Incomplete'
+        - 'Label - Add - Invalid'
+        - 'Label - Add - Resolved'
+        - 'Label - Add - Tagged'
+        - 'Label - Remove - Cannot-Replicate'
+        - 'Label - Remove - Incomplete'
+        - 'Label - Remove - Invalid'
+        - 'Label - Remove - Resolved'
+        - 'Label - Remove - Tagged'
+      item_id:
+        description: 'Item ID'
+        required: true
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Handle Issue Assignment - https://github.com/actions-cool/issues-helper
+  add_assignees:
+    name: Assignment - Self - Add
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Assignment - Self - Add'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-assignees'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          assignees: ${{ github.actor }}
+
+  remove_assignees:
+    name: Assignment - Self - Remove
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Assignment - Self - Remove'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-assignees'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          assignees: ${{ github.actor }}
+
+  comment_delete:
+    name: Comment - Delete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Comment - Delete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'delete-comment'
+          github_token: ${{ secrets.github_token }}
+          comment-id: ${{ github.event.inputs.item_id }}
+
+  issue_close:
+    name: Issue - Close
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Close'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_lock:
+    name: Issue - Lock
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Lock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_unlock:
+    name: Issue - Unlock
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Unlock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  label_add_cannot-replicate:
+    name: Label - Add - Cannot-Replicate
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cannot-Replicate'
+
+  label_add_invalid:
+    name: Label - Add - Invalid
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Invalid'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Invalid'
+
+  label_add_incomplete:
+    name: Label - Add - Incomplete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Incomplete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Incomplete'
+
+  label_add_resolved:
+    name: Label - Add - Resolved
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Resolved'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Resolved'
+
+  label_add_resolved:
+    name: Label - Add - Tagged
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Tagged'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Tagged'
+
+  label_remove_cannot-replicate:
+    name: Label - Remove - Cannot-Replicate
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cannot-Replicate'
+
+  label_remove_invalid:
+    name: Label - Remove - Invalid
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Invalid'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Invalid'
+
+  label_remove_incomplete:
+    name: Label - Remove - Incomplete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Incomplete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Incomplete'
+
+  label_remove_resolved:
+    name: Label - Remove - Resolved
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Resolved'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Resolved'
+
+  label_remove_resolved:
+    name: Label - Remove - Tagged
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Tagged'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          github_token: ${{ secrets.github_token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Tagged'

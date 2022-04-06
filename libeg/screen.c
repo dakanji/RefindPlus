@@ -1139,7 +1139,7 @@ VOID egInitScreen (VOID) {
 
             if (AppleFirmware) {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Apple Framebuffer Count ... Initial:- '%d'", AppleFramebuffers);
+                MsgStr = PoolPrint (L"AppleFramebuffer Count ... Initial:- '%d'", AppleFramebuffers);
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -1149,7 +1149,7 @@ VOID egInitScreen (VOID) {
                 AppleFramebuffers = egCountAppleFramebuffers();
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Apple Framebuffer Count ... Updated:- '%d'", AppleFramebuffers);
+                MsgStr = PoolPrint (L"AppleFramebuffer Count ... Updated:- '%d'", AppleFramebuffers);
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -1204,14 +1204,14 @@ VOID egInitScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         if (GOPDraw && ReinstalledGOP) {
-            MsgStr = PoolPrint (L"Basic Framebuffer Count ... Initial:- '%d'", SizeFB);
+            MsgStr = PoolPrint (L"BasicFramebuffer Count ... Initial:- '%d'", SizeFB);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
             SizeFB = (GOPDraw->Mode->FrameBufferSize == 0) ? 0 : 1;
 
-            MsgStr = PoolPrint (L"Basic Framebuffer Count ... Updated:- '%d'", SizeFB);
+            MsgStr = PoolPrint (L"BasicFramebuffer Count ... Updated:- '%d'", SizeFB);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s      %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -1326,14 +1326,14 @@ VOID egInitScreen (VOID) {
         if (FlagUGA) {
             MsgStr = StrDuplicate (
                 (BaseCheck)
-                ? L"Yes (Without Display ... Apple Framebuffers are Missing)"
+                ? L"Yes (Without Display ... AppleFramebuffers are Missing)"
                 : L"Yes"
             );
         }
         else {
             MsgStr = StrDuplicate (
                 (DevicePresence && BaseCheck)
-                ? L"Yes (Possibly Without Display ... Apple Framebuffers are Missing)"
+                ? L"Yes (Possibly Without Display ... AppleFramebuffers are Missing)"
                 : L"Yes"
             );
         }

@@ -50,6 +50,7 @@ jobs:
           days-before-close: 3
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
+          remove-issue-stale-when-updated: true
           any-of-labels: 'Incomplete, Unclear'
 
       - name: Flag or Close No-Response Issues
@@ -64,6 +65,7 @@ jobs:
           days-before-close: 5
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
+          remove-issue-stale-when-updated: true
           any-of-labels: 'Queries'
 
       - name: Flag or Close Inactive Issues
@@ -78,6 +80,7 @@ jobs:
           days-before-close: 8
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
+          remove-issue-stale-when-updated: true
           exempt-issue-labels: 'Parked, Help-Wanted'
 
       - name: Flag or Close Parked Issues
@@ -92,6 +95,7 @@ jobs:
           days-before-close: 28
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
+          remove-issue-stale-when-updated: true
           any-of-labels: 'Parked'
 
       - name: Flag or Close Parked Issues
@@ -106,6 +110,7 @@ jobs:
           days-before-close: 60
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
+          remove-issue-stale-when-updated: true
           any-of-labels: 'Help-Wanted'
 
       - name: Close Duplicate Issues

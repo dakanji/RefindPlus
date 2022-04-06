@@ -716,7 +716,10 @@ EFI_STATUS ApplyGOPFix (VOID) {
             LOG_MSG("\n\n");
             #endif
 
+            BOOLEAN TempRescanDXE  = GlobalConfig.RescanDXE;
+            GlobalConfig.RescanDXE = FALSE;
             Status = BdsLibConnectAllDriversToAllControllersEx();
+            GlobalConfig.RescanDXE = TempRescanDXE;
         }
     }
 
