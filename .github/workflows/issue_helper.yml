@@ -162,7 +162,7 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Resolved'
 
-  label_add_resolved:
+  label_add_tagged:
     name: Label - Add - Tagged
     runs-on: ubuntu-latest
 
@@ -227,7 +227,7 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Resolved'
 
-  label_remove_resolved:
+  label_remove_tagged:
     name: Label - Remove - Tagged
     runs-on: ubuntu-latest
 
