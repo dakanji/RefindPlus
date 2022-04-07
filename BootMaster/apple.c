@@ -789,6 +789,143 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     return EFI_SUCCESS;
 } // EFI_STATUS RP_GetApfsVolumeInfo()
 
+static
+EFI_STATUS RP_UninstallAllProtocolInstances (
+    EFI_GUID  *Protocol
+) {
+    EFI_STATUS      Status;
+    EFI_HANDLE     *Handles;
+    UINTN           Index;
+    UINTN           NoHandles;
+    VOID           *OriginalProto;
+
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        Protocol, NULL,
+        &NoHandles, &Handles
+    );
+    if (EFI_ERROR (Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            return EFI_SUCCESS;
+        }
+
+        return Status;
+    }
+
+    for (Index = 0; Index < NoHandles; ++Index) {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, Handles[Index],
+            Protocol, &OriginalProto
+        );
+        if (EFI_ERROR (Status)) {
+            break;
+        }
+
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->UninstallProtocolInterface, Handles[Index],
+            Protocol, OriginalProto
+        );
+        if (EFI_ERROR (Status)) {
+            break;
+        }
+    }
+
+    MY_FREE_POOL(Handles);
+
+    return Status;
+} // static EFI_STATUS RP_UninstallAllProtocolInstances()
+
+static
+EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
+    IN   APPLE_FRAMEBUFFER_INFO_PROTOCOL  *This,
+    OUT  EFI_PHYSICAL_ADDRESS             *FramebufferBase,
+    OUT  UINT32                           *FramebufferSize,
+    OUT  UINT32                           *ScreenRowBytes,
+    OUT  UINT32                           *ScreenWidth,
+    OUT  UINT32                           *ScreenHeight,
+    OUT  UINT32                           *ScreenDepth
+) {
+    EFI_STATUS                             Status;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL          *GraphicsOutput;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE     *Mode;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
+
+    if (NULL == This            ||
+        NULL == FramebufferBase ||
+        NULL == FramebufferSize ||
+        NULL == ScreenRowBytes  ||
+        NULL == ScreenWidth     ||
+        NULL == ScreenHeight    ||
+        NULL == ScreenDepth
+    ) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    Status = gBS->HandleProtocol (
+        gST->ConsoleOutHandle,
+        &gEfiGraphicsOutputProtocolGuid,
+        (VOID **) &GraphicsOutput
+    );
+    if (EFI_ERROR (Status)) {
+        return EFI_UNSUPPORTED;
+    }
+
+    Mode = GraphicsOutput->Mode;
+    Info = Mode->Info;
+    if (Info == NULL) {
+        return EFI_UNSUPPORTED;
+    }
+
+    // DA-TAG: This is a bit inaccurate as it assumes 32-bit BPP but will do for most cases.
+    *FramebufferBase = Mode->FrameBufferBase;
+    *FramebufferSize = (UINT32) Mode->FrameBufferSize;
+    *ScreenRowBytes  = (UINT32) (Info->PixelsPerScanLine * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL));
+    *ScreenWidth     = Info->HorizontalResolution;
+    *ScreenHeight    = Info->VerticalResolution;
+    *ScreenDepth     = DEFAULT_COLOUR_DEPTH;
+
+    return EFI_SUCCESS;
+} // static EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo()
+
+static
+APPLE_FRAMEBUFFER_INFO_PROTOCOL
+OurAppleFramebufferInfo = {
+  RP_AppleFramebufferGetInfo
+};
+
+APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
+    IN BOOLEAN  Reinstall
+) {
+    EFI_STATUS                       Status;
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
+
+    if (Reinstall) {
+        Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
+        if (EFI_ERROR (Status)) {
+            return NULL;
+        }
+    }
+    else {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
+            NULL, (VOID *) &Protocol
+        );
+        if (!EFI_ERROR (Status)) {
+            return Protocol;
+        }
+    }
+
+    Status = REFIT_CALL_4_WRAPPER(
+        gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+        &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
+    );
+    if (EFI_ERROR (Status)) {
+        return NULL;
+    }
+
+    return &OurAppleFramebufferInfo;
+} // APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol()
+
 // DA-TAG: Limit to TianoCore - END
 #endif
 

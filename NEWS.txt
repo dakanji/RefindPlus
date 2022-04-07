@@ -1,5 +1,8 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `SupplyAppleFB` Feature
+  * Attempts to provide AppleFramebuffers on Macs when absent under certain circumstances
+  * This feature is not configurable and is limited to TianoCore Builds
 - Adds `TextHelp` Feature
   * Uses complementary text colours to improve legibility
   * Can be disabled using a new `decline_texthelp` configuration token

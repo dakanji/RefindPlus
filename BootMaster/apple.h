@@ -19,13 +19,16 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
 
 #ifndef __APPLE_H_
 #define __APPLE_H_
+
+#define DEFAULT_COLOUR_DEPTH  32
+#define DEFAULT_REFRESH_RATE  60
 
 #ifndef APPLE_FRAMEBUFFER_INFO_H
 #define APPLE_FRAMEBUFFER_INFO_H
@@ -52,6 +55,11 @@ EFI_STATUS
 struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
     APPLE_FRAMEBUFFER_INFO_GET_INFO     GetInfo;
 };
+
+// DA-TAG: Limit to TianoCore Builds
+#ifdef __MAKEWITH_TIANO
+APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (IN BOOLEAN Reinstall);
+#endif
 
 #endif // APPLE_FRAMEBUFFER_INFO_H
 

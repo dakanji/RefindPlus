@@ -1131,40 +1131,46 @@ VOID egInitScreen (VOID) {
         MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
         if (!EFI_ERROR(Status)) {
             thisValidGOP = TRUE;
-
-            if (AppleFirmware) {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"AppleFramebuffer Count ... Initial:- '%d'", AppleFramebuffers);
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-
-                // Update AppleFramebuffer Count
-                AppleFramebuffers = egCountAppleFramebuffers();
-
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"AppleFramebuffer Count ... Updated:- '%d'", AppleFramebuffers);
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-            }
         }
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
-        #endif
     }
 
     // Get Screen Size
     egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
+        if (AppleFirmware && ReinstalledGOP) {
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Initial:- '%d'", AppleFramebuffers);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+            #endif
+
+            // DA-TAG: Limit to TianoCore Builds
+            #ifdef __MAKEWITH_TIANO
+            if (AppleFramebuffers == 0) {
+                // SupplyAppleFB Feature
+                RP_AppleFbInfoInstallProtocol (TRUE);
+            }
+            #endif
+
+            // Update AppleFramebuffer Count
+            AppleFramebuffers = egCountAppleFramebuffers();
+
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Updated:- '%d'", AppleFramebuffers);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
+        }
+
         Status = egDumpGOPVideoModes();
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
