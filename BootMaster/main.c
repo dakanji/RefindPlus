@@ -122,6 +122,7 @@ REFIT_CONFIG GlobalConfig = {
     /* Install = */ FALSE,
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
+    /* SupplyAppleFB = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,
@@ -1893,6 +1894,10 @@ EFI_STATUS EFIAPI efi_main (
     (AppleFirmware                                                           )
         ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
+    LOG_MSG("%s      SupplyAppleFB:- ",     OffsetNext);
+    (!AppleFirmware                                                          )
+        ? LOG_MSG("'Disabled'"                                               )
+        : LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,

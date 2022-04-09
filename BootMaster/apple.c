@@ -887,17 +887,17 @@ EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
     return EFI_SUCCESS;
 } // static EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo()
 
-static
-APPLE_FRAMEBUFFER_INFO_PROTOCOL
-OurAppleFramebufferInfo = {
-  RP_AppleFramebufferGetInfo
-};
-
 APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     IN BOOLEAN  Reinstall
 ) {
     EFI_STATUS                       Status;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
+
+    static
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL
+    OurAppleFramebufferInfo = {
+      RP_AppleFramebufferGetInfo
+    };
 
     if (Reinstall) {
         Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
@@ -922,6 +922,16 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     if (EFI_ERROR (Status)) {
         return NULL;
     }
+
+    #if REFIT_DEBUG > 0
+    if (Reinstall) {
+        CHAR16 *MsgStr = PoolPrint (L"Install AppleFramebuffers ... %r", Status);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+    }
+    #endif
 
     return &OurAppleFramebufferInfo;
 } // APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol()

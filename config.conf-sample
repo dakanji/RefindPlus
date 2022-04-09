@@ -87,6 +87,16 @@
 #
 #decline_apfssync
 
+# Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
+# is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
+# This feature can be disabled by activating this token. It is only active when the GOP
+# protocol is available. It is typically inactive when running a UGA protocol GPU.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Apple FramebufferInfo protocol is installed (if missing on Macs) when commented out
+#
+#decline_applefb
+
 # Allow scans of multiple ESPs. When this option is active, RefindPlus
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.

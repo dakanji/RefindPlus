@@ -1044,6 +1044,32 @@ VOID egInitScreen (VOID) {
                 Status = RefitCheckGOP();
 
                 if (!EFI_ERROR(Status)) {
+                    if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
+                        EFI_STATUS                    StatusFB;
+                        EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutputFB;
+                        StatusFB = REFIT_CALL_3_WRAPPER(
+                            gBS->HandleProtocol, gST->ConsoleOutHandle,
+                            &gEfiGraphicsOutputProtocolGuid, (VOID **) &GraphicsOutputFB
+                        );
+                        if (EFI_ERROR (StatusFB)) {
+                            StatusFB = EFI_UNSUPPORTED;
+                        }
+
+                        EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE     *Mode = GraphicsOutputFB->Mode;
+                        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = Mode->Info;
+                        if (Info == NULL) {
+                            StatusFB = EFI_NOT_FOUND;
+                        }
+
+                        // DA-TAG: Limit to TianoCore Builds
+                        #ifdef __MAKEWITH_TIANO
+                        if (!EFI_ERROR(StatusFB)) {
+                            // SupplyAppleFB Feature ... Install AppleFramebuffers
+                            RP_AppleFbInfoInstallProtocol (TRUE);
+                        }
+                        #endif
+                    }
+
                     // Run OpenCore Function
                     Status = OcProvideConsoleGop (TRUE);
                     if (!EFI_ERROR(Status)) {
@@ -1149,14 +1175,6 @@ VOID egInitScreen (VOID) {
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
-            #endif
-
-            // DA-TAG: Limit to TianoCore Builds
-            #ifdef __MAKEWITH_TIANO
-            if (AppleFramebuffers == 0) {
-                // SupplyAppleFB Feature
-                RP_AppleFbInfoInstallProtocol (TRUE);
-            }
             #endif
 
             // Update AppleFramebuffer Count

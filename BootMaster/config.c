@@ -1219,9 +1219,11 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyUEFI = DeclineSetting ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
+        else if (MyStriCmp (TokenList[0], L"decline_applefb")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SilenceAPFS = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SupplyAppleFB = DeclineSetting ? FALSE : TRUE;
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfssync")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
