@@ -142,6 +142,7 @@ UINTN              DataVolumesCount        = 0;
 UINTN              HfsRecoveryCount        = 0;
 UINTN              VolumesCount            = 0;
 
+BOOLEAN            FoundExternalDisk   = FALSE;
 BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScannedOnce         = FALSE;
 BOOLEAN            SkipSpacing         = FALSE;
@@ -1803,6 +1804,7 @@ VOID ScanVolume (
         ) {
             // USB/FireWire/FC device -> external
             Volume->DiskKind = DISK_KIND_EXTERNAL;
+            FoundExternalDisk = TRUE;
         }
 
         if (DevicePathType (DevicePath) == MEDIA_DEVICE_PATH &&

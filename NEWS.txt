@@ -77,6 +77,9 @@
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
   * This was ultimately achieved via other means but the feature was maintained for potential benefits
   * The feature never actually worked properly however, hence the removal
+- Amends Primed Keystroke Buffer Mitigation
+  * Extends threshold by 0.50 seconds when external disks are detected
+  * The issue appears to be worse when such disks are connected
 - Amends GOP Mode Selection Preference
   * RefindPlus defaults to selecting the maximum resolution GOP Mode when a screen resolution is not specified
   * When two modes have the same resolution, the later mode was used

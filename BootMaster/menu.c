@@ -117,6 +117,7 @@ REFIT_MENU_ENTRY MenuEntryYes = {
 
 extern UINT64              GetCurrentMS (VOID);
 extern CHAR16             *VendorInfo;
+extern BOOLEAN             FoundExternalDisk;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
@@ -1128,7 +1129,7 @@ UINTN RunGenericMenu (
     }
 
     // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
-    // Primed Keystroke Buffer appears to only affect UEFI PC
+    // Primed Keystroke Buffer appears to only affect UEFI PC but some provision to cover Macs made
     if (!GlobalConfig.DirectBoot &&
         MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
@@ -1150,6 +1151,11 @@ UINTN RunGenericMenu (
                 MenuExitGate = MenuExitNumb * 5;
             }
             #endif
+
+            if (FoundExternalDisk) {
+                // Extend threshold when external disks are detected
+                MenuExitGate += MenuExitNumb;
+            }
         }
 
         if (MenuExitDiff < MenuExitGate) {
