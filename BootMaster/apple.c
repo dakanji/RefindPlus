@@ -582,10 +582,9 @@ CHAR16 * RP_GetAppleDiskLabel (
         return NULL;
     }
 
-    Status = gBS->HandleProtocol (
-        Volume->DeviceHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID **) &FileSystem
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, Volume->DeviceHandle,
+        &gEfiSimpleFileSystemProtocolGuid, (VOID **) &FileSystem
     );
     if (EFI_ERROR (Status)) {
         MY_FREE_POOL(BootDirectoryName);
@@ -742,10 +741,9 @@ EFI_STATUS RP_GetApfsVolumeInfo (
 
     Root = NULL;
 
-    Status = gBS->HandleProtocol (
-        Device,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID **) &FileSystem
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, Device,
+        &gEfiSimpleFileSystemProtocolGuid, (VOID **) &FileSystem
     );
     if (EFI_ERROR(Status)) {
         // Early Return ... Return Error
@@ -828,7 +826,7 @@ EFI_STATUS RP_UninstallAllProtocolInstances (
         if (EFI_ERROR (Status)) {
             break;
         }
-    }
+    } // for
 
     MY_FREE_POOL(Handles);
 
@@ -861,10 +859,9 @@ EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
         return EFI_INVALID_PARAMETER;
     }
 
-    Status = gBS->HandleProtocol (
-        gST->ConsoleOutHandle,
-        &gEfiGraphicsOutputProtocolGuid,
-        (VOID **) &GraphicsOutput
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, gST->ConsoleOutHandle,
+        &gEfiGraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput
     );
     if (EFI_ERROR (Status)) {
         return EFI_UNSUPPORTED;

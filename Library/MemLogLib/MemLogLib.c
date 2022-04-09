@@ -18,7 +18,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -36,6 +36,7 @@
 #include <Library/IoLib.h>
 #include <Library/PciLib.h>
 #include "GenericIch.h"
+#include "../../include/refit_call_wrapper.h"
 
 // Struct for holding mem buffer.
 typedef struct {
@@ -168,7 +169,10 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     }
 
     // Try to use existing MEM_LOG
-    Status = gBS->LocateProtocol (&mMemLogProtocolGuid, NULL, (VOID **) &mMemLog);
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol, &mMemLogProtocolGuid,
+        NULL, (VOID **) &mMemLog
+    );
     if (Status == EFI_SUCCESS && mMemLog != NULL) {
         // We are inited with an existing MEM_LOG
         return EFI_SUCCESS;
@@ -284,11 +288,9 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     mMemLog->TscLast  = Tsc0;
 
     // Install (publish) MEM_LOG
-    Status = gBS->InstallMultipleProtocolInterfaces (
-        &gImageHandle,
-        &mMemLogProtocolGuid,
-        mMemLog,
-        NULL
+    Status = REFIT_CALL_4_WRAPPER(
+        gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+        &mMemLogProtocolGuid, mMemLog, NULL
     );
 
     // Show Notice if Required

@@ -2170,7 +2170,7 @@ VOID ScanEfiFiles (
         ShouldScan (Volume, L"EFI\\BOOT") &&
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
-        AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Boot Loader", Volume, TRUE);
+        AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Loader", Volume, TRUE);
     }
 
     MY_FREE_POOL(MatchPatterns);

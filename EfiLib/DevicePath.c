@@ -20,6 +20,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include "Platform.h"
 #include "../BootMaster/rp_funcs.h"
+#include "../include/refit_call_wrapper.h"
 
 /**
 Concatenates a formatted unicode string to allocated pool.
@@ -1231,12 +1232,10 @@ CHAR16 * EFIAPI DevicePathToStr (
         goto Done;
     }
 
-    Status = gBS->LocateProtocol (
-        &gEfiDevicePathToTextProtocolGuid,
-        NULL,
-        (VOID **) &DevPathToText
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol, &gEfiDevicePathToTextProtocolGuid,
+        NULL, (VOID **) &DevPathToText
     );
-
     if (!EFI_ERROR(Status)) {
         ToText = DevPathToText->ConvertDevicePathToText (
             DevPath, FALSE, TRUE

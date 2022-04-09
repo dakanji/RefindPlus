@@ -11,6 +11,8 @@ Bug:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Cancelled` label is added to issues
 Cancelled:
@@ -22,6 +24,7 @@ Cancelled:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
 
 # The `Declined` label is added to pull requests
 Declined:
@@ -33,6 +36,8 @@ Declined:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Discussion` label is added to issues
 Discussion:
@@ -44,6 +49,8 @@ Discussion:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Documentation` label is added to issues or pull requests
 Documentation:
@@ -55,14 +62,19 @@ Documentation:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
   prs:
     # Remove labels
     unlabel:
+      - 'Prorogued'
       - 'Parked'
       - 'Pending'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Duplicate` label is added to issues
 Duplicate:
@@ -74,6 +86,7 @@ Duplicate:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
 
 # The `Enhancement` label is added to issues
 Enhancement:
@@ -85,6 +98,8 @@ Enhancement:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Tagged` label is added to issues
 Tagged:
@@ -96,6 +111,7 @@ Tagged:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
 
 # The `Good-First-Issue` label is added to issues
 Good-First-Issue:
@@ -107,6 +123,8 @@ Good-First-Issue:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Help-Wanted` label is added to issues
 Help-Wanted:
@@ -116,6 +134,8 @@ Help-Wanted:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Incomplete` label is added to issues
 Incomplete:
@@ -127,6 +147,8 @@ Incomplete:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Invalid` label is added to issues
 Invalid:
@@ -138,6 +160,8 @@ Invalid:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Known-Issue` label is added to issues
 Known-Issue:
@@ -149,6 +173,8 @@ Known-Issue:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Parked` label is added to issues
 Parked:
@@ -159,6 +185,8 @@ Parked:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Queries` label is added to issues
 Queries:
@@ -169,6 +197,8 @@ Queries:
       - 'Pending'
       - 'Stale'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Resolved` label is added to discussions
 Resolved:
@@ -183,6 +213,8 @@ Resolved:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Stale` label is added to issues
 Stale:
@@ -193,6 +225,8 @@ Stale:
       - 'Pending'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `Unclear` label is added to issues
 Unclear:
@@ -203,6 +237,8 @@ Unclear:
       - 'Pending'
       - 'Stale'
       - 'Queries'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `WontFix` label is added to issues
 WontFix:
@@ -214,6 +250,8 @@ WontFix:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
 
 # The `WontFix` label is removed from issues
 -WontFix:
@@ -231,3 +269,23 @@ Cannot-Replicate:
       - 'Stale'
       - 'Queries'
       - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
+
+# The `Prorogued` label is added to issues
+Prorogued:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+      - 'Duplicate'
+
+# The `Prorogued` label is removed from issues
+-Prorogued:
+  issues:
+    # Reopen the issue
+    reopen: true

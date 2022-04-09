@@ -853,7 +853,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"disable_rescan_dxe")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.RescanDXE = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.RescanDXE = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"ransom_drives")) {
             GlobalConfig.RansomDrives = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
@@ -1205,42 +1205,45 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"decline_reloadgop")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ReloadGOP = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.ReloadGOP = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_nvmeload")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyNVME = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SupplyNVME = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfsload")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyAPFS = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SupplyAPFS = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_uefiemulate")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyUEFI = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SupplyUEFI = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_applefb")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyAppleFB = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SupplyAppleFB = (!AppleFirmware)
+                ? FALSE
+                : (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfssync")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SyncAPFS = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.SyncAPFS = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
-
+            GlobalConfig.ProtectNVRAM = (!AppleFirmware)
+                ? FALSE
+                : (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ScanAllESP = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.TagsHelp = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.TagsHelp = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"csr_normalise")
             ||  MyStriCmp  (TokenList[0], L"normalise_csr")

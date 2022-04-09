@@ -24,9 +24,7 @@
   * Controls scanning for newly revealed DXE drivers when connecting handles
     - Switch on or off with a new `disable_rescan_dxe` configuration token
   * This was previously done by default but may negatively impact loading speed
-  * Should only be activated when specifically required
-    - Should not be required on most firmware
-  * This option is currently always disabled on Apple firmware
+  * Should only be activated when specifically required and not required on most firmware
 - Adds `DriverPriority` Feature
   * Asigns a higher priority to drivers loaded by RefindPlus
   * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
@@ -40,9 +38,8 @@
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
 - Improves `DirectBoot` Feature
-  * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
-- Improves `SilentBoot` Feature
   * Previously failed when a keyboard was not connected
+  * Minimises screen shudder when the `ESC` key is held down to override DirectBoot
 - Improves `ScreenShot` Feature
   * Properly limited to one (1) sreenshot per keypress
     - Removes limitation of the keypress not continuing beyond the on-screen message display
@@ -73,13 +70,12 @@
 - Improves Time Bound Primed Buffer Mitigation
   * Mitigates against RefindPlus spontaneously running default items
   * Intervention is based on a rising threshold based on build type and presence of Apple firmware
+  * Also extends threshold by 0.50 seconds when external disks are detected
+    - The issue appears to be worse when such disks are connected
 - Removes `BootKicker` feature
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1
   * This was ultimately achieved via other means but the feature was maintained for potential benefits
   * The feature never actually worked properly however, hence the removal
-- Amends Primed Keystroke Buffer Mitigation
-  * Extends threshold by 0.50 seconds when external disks are detected
-  * The issue appears to be worse when such disks are connected
 - Amends GOP Mode Selection Preference
   * RefindPlus defaults to selecting the maximum resolution GOP Mode when a screen resolution is not specified
   * When two modes have the same resolution, the later mode was used

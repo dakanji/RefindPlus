@@ -1073,10 +1073,9 @@ VOID egInitScreen (VOID) {
                     // Run OpenCore Function
                     Status = OcProvideConsoleGop (TRUE);
                     if (!EFI_ERROR(Status)) {
-                        Status = gBS->HandleProtocol (
-                            gST->ConsoleOutHandle,
-                            &GOPDrawProtocolGuid,
-                            (VOID **) &GOPDraw
+                        Status = REFIT_CALL_3_WRAPPER(
+                            gBS->HandleProtocol, gST->ConsoleOutHandle,
+                            &GOPDrawProtocolGuid, (VOID **) &GOPDraw
                         );
                     }
                 }

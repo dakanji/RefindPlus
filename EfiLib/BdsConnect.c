@@ -258,7 +258,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
     // DA_TAG: Only connect controllers with device paths.
     //         See notes under ScanDeviceHandles
-    //Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, &AllHandleCount, &AllHandleBuffer);
+    //Status = REFIT_CALL_5_WRAPPER(
+    //    gBS->LocateHandleBuffer, AllHandles,
+    //    NULL, NULL,
+    //    &AllHandleCount, &AllHandleBuffer
+    //);
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &gEfiDevicePathProtocolGuid, NULL,
