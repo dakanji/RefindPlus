@@ -984,11 +984,12 @@ UINTN RunGenericMenu (
             switch (key.UnicodeChar) {
                 case ' ':
                 case CHAR_LINEFEED:
-                case CHAR_CARRIAGE_RETURN: MenuExit = MENU_EXIT_ENTER;   break;
-                case CHAR_BACKSPACE:       MenuExit = MENU_EXIT_ESCAPE;  break;
+                case CHAR_CARRIAGE_RETURN: MenuExit = MENU_EXIT_ENTER;         break;
+                case CHAR_BACKSPACE:       MenuExit = MENU_EXIT_ESCAPE;        break;
                 case '+':
-                case CHAR_TAB:             MenuExit = MENU_EXIT_DETAILS; break;
-                case '-':                  MenuExit = MENU_EXIT_HIDE;    break;
+                case CHAR_TAB:             MenuExit = MENU_EXIT_DETAILS;       break;
+                case '-':                  MenuExit = MENU_EXIT_HIDE;          break;
+                case '\\':                 MenuExit = MENU_EXIT_SCREENSHOT;    break;
                 default:
                     KeyAsString[0] = key.UnicodeChar;
                     KeyAsString[1] = 0;
