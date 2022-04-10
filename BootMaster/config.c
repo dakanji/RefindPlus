@@ -1237,6 +1237,12 @@ VOID ReadConfig (
                 ? FALSE
                 : (DeclineSetting) ? FALSE : TRUE;
         }
+        else if (MyStriCmp (TokenList[0], L"decline_panicfilter")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.PanicFilter = (!AppleFirmware)
+                ? FALSE
+                : (DeclineSetting) ? FALSE : TRUE;
+        }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;

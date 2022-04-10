@@ -114,6 +114,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ TRUE,
+    /* PanicFilter = */ TRUE,
     /* ScanAllESP = */ FALSE,
     /* TagsHelp = */ TRUE,
     /* TextHelp = */ TRUE,
@@ -325,11 +326,22 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             FoundSubStr (VariableName, L"UnlockID")
         )
     );
+
+    BOOLEAN BlockAppleKP = GlobalConfig.PanicFilter;
+    if (BlockAppleKP) {
+        EFI_GUID AppleGUID = APPLE_GUID;
+        BOOLEAN AppleNvram = CompareGuid (VendorGuid, &AppleGUID);
+        BlockAppleKP = (
+            AppleNvram &&
+            AppleFirmware &&
+            FoundSubStr (VariableName, L"AAPL,PanicInfo")
+        );
+    }
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
 
-    Status = (BlockCert || BlockMore)
+    Status = (BlockCert || BlockMore || BlockAppleKP)
     ? EFI_SUCCESS
     : OrigSetVariableRT (
         VariableName, VendorGuid,
@@ -343,7 +355,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     // Log Outcome
     CHAR16 *LogStatus = PoolPrint (
         L"%r",
-        (BlockCert || BlockMore) ? EFI_ACCESS_DENIED : Status
+        (BlockCert || BlockMore || BlockAppleKP) ? EFI_ACCESS_DENIED : Status
     );
 
     MY_MUTELOGGER_SET;
@@ -357,8 +369,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         (BlockCert)
             ? L"Certificate  :::  "
             : (BlockMore)
-                ? L"IdentityTag  :::  "
-                : L"",
+                ? L"SecurityTag  :::  "
+                : (BlockAppleKP)
+                    ? L"KernelPanic  :::  "
+                    : L"",
         VariableName
     );
     LOG_MSG("%s", MsgStr);
@@ -370,7 +384,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_NATIVELOGGER_OFF;
     #endif
 
-    /* Clear any previously saved instance of blocked variable  */
+    /* Clear any previously saved instance of blocked variable */
+    /* BlockAppleKP is excluded as has dynamic naming */
     if (BlockCert || BlockMore) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
@@ -2689,6 +2704,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
+
+                    if (GlobalConfig.PanicFilter) {
+                        // Protect Mac NVRAM from KP Dumps
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"Clover") ||
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
@@ -2716,6 +2736,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
+
+                    if (GlobalConfig.PanicFilter) {
+                        // Protect Mac NVRAM from KP Dumps
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                     || ourLoaderEntry->OSType == 'M'
@@ -2792,6 +2817,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
+
+                    if (GlobalConfig.PanicFilter) {
+                        // Protect Mac NVRAM from KP Dumps
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"Windows")
                     || ourLoaderEntry->OSType == 'W'

@@ -123,6 +123,17 @@
 #
 #decline_nvramprotect
 
+# MacOS 11 (Big Sur) and later write kernel panic information to the NVRAM,
+# particularly during updates. This increases wear and tear of the NVRAM,
+# particularly on legacy Macs. RefindPlus now defaults to block such
+# NVRAM write attempts unless this token is active, whereupon such
+# NVRAM write attempts will be permitted. NB: This setting only
+# works when the "ProtectNVRAM" functionality is also active.
+#
+# Blocks Mac kernel panic information when commented out
+#
+#decline_panicfilter
+
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
 # mandate that on installation, compliant GOP drivers should confirm devices are

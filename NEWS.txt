@@ -1,5 +1,8 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `PanicFilter` Feature
+  * RefindPlus now discards NVRAM write attempts of kernel panic information by default
+  * Can be disabled using a new `decline_panicfilter` configuration token
 - Adds `SupplyAppleFB` Feature
   * Attempts to provide AppleFramebuffers on Macs when absent under certain circumstances
   * Can be disabled using a new `decline_applefb` configuration token
