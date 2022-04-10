@@ -38,6 +38,8 @@
   * Now checks for and uses Unicode Collation Protocol instances that support English
   * Previously simply selected the first instance found (Inherited)
   * This should allow proper support for languages using unicode text
+- Improves UEFI Runtime Function Wrapping
+  * The wrapped UEFI Runtime `SetVariable` function is not managed better
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
 - Improves `DirectBoot` Feature
