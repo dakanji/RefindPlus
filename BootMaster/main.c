@@ -316,6 +316,12 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     BOOLEAN BlockMore = (
         AppleFirmware &&
         (
+            MyStriCmp (VariableName, L"db")  || /* EFI_IMAGE_SECURITY_DATABASE */
+            MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
+            MyStriCmp (VariableName, L"dbt") || /* EFI_IMAGE_SECURITY_DATABASE2 */
+            MyStriCmp (VariableName, L"dbr") || /* EFI_IMAGE_SECURITY_DATABASE3 */
+            MyStriCmp (VariableName, L"KEK") || /* EFI_KEY_EXCHANGE_KEY_NAME */
+            MyStriCmp (VariableName, L"PK")  || /* EFI_PLATFORM_KEY_NAME */
             FoundSubStr (VariableName, L"UnlockID")
         )
     );
