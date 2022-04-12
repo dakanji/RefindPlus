@@ -877,6 +877,7 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"icon_row_tune") && (TokenCount == 2)) {
             // DA-TAG: Signed integer as *MAY* have negative value input
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.IconRowTune));
+            // Store as opposite number
             GlobalConfig.IconRowTune *= -1;
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
@@ -1340,11 +1341,6 @@ VOID ReadConfig (
         #endif
 
         GlobalConfig.TextOnly = TRUE;
-    }
-
-    // Disable ProtectNVRAM on Non-Apple Firmware
-    if (!AppleFirmware) {
-        GlobalConfig.ProtectNVRAM = FALSE;
     }
 
     SilenceAPFS = GlobalConfig.SilenceAPFS;

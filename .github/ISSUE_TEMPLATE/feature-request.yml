@@ -19,9 +19,10 @@ body:
     attributes:
       label: Background Information
       description: |
-        Is your feature request related to a specific problem?
-        Please provide a clear and concise description of the problem if so.
         Add information about any alternative solutions or features you have considered.
+        If your feature request related to a specific problem, please provide a clear and concise description of the problem.
+    validations:
+      required: true
   - type: textarea
     id: extra-info
     attributes:

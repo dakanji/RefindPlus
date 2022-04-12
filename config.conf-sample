@@ -90,10 +90,10 @@
 # Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
 # This feature can be disabled by activating this token. It is only active when the GOP
-# protocol is available. It is typically inactive when running a UGA protocol GPU.
+# protocol is available and it is typically inactive when running a UGA protocol GPU.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Apple FramebufferInfo protocol is installed (if missing on Macs) when commented out
+# Apple FramebufferInfo protocol is installed (if required) when commented out
 #
 #decline_applefb
 
@@ -118,8 +118,9 @@
 # By default, RefindPlus will prevent UEFI Windows Secure Boot from writing security
 # certificates to the NVRAM on Apple Macs as this can result in an inability to boot.
 # This setting is only activated when Apple Firmware is detected on UEFI Windows boot.
+# NB: The "ProtectNVRAM" feature must be active to activate this "PanicFilter" feature.
 #
-# UEFI Windows security certificate writes to Mac NVRAM are allowed when commented out
+# The "ProtectNVRAM" feature is enabled when commented out
 #
 #decline_nvramprotect
 
@@ -130,7 +131,10 @@
 # NVRAM write attempts will be permitted. NB: This setting only
 # works when the "ProtectNVRAM" functionality is also active.
 #
-# Blocks Mac kernel panic information when commented out
+# This feature is currently limited to when
+# directly booting MacOS on Apple Firmware.
+#
+# The "PanicFilter" feature is enabled when commented out
 #
 #decline_panicfilter
 
@@ -148,7 +152,7 @@
 # is longer required to allow GPU activation except when the related
 # "decline_uefiemulate" token is inactive and this is not reverted.
 #
-# GOP drivers are not reloaded when commented out
+# GOP drivers are reloaded (if required) when commented out
 #
 #decline_reloadgop
 
@@ -174,7 +178,7 @@
 # title banners and complementary colours are always used for text when using the
 # default RefindPlus title banner, as this always has a single solid colour.
 #
-# The "hidden_tags" tool is always available when commented out
+# The "TextHelp" feature is enabled when commented out
 #
 #decline_texthelp
 
@@ -185,7 +189,7 @@
 # as Legacy Macs as several such tools only require CreateEventEx to work.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# UEFI 2.x emulation is not provided when commented out
+# UEFI 2.x emulation is provided when commented out
 #
 #decline_uefiemulate
 
@@ -535,6 +539,7 @@
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 #
 # The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate
+# Setting "showtools" alone, with no options, disables scanning for tools.
 #
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 

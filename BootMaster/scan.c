@@ -2163,8 +2163,7 @@ VOID ScanEfiFiles (
     }
     MY_FREE_POOL(SelfPath);
 
-    // If not a duplicate & if it exists & if it is not us, create an entry
-    // for the fallback boot loader
+    // Create an entry for fallback loaders
     if (ScanFallbackLoader &&
         FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&
         ShouldScan (Volume, L"EFI\\BOOT") &&

@@ -1155,7 +1155,7 @@ UINTN RunGenericMenu (
 
             if (FoundExternalDisk) {
                 // Extend threshold when external disks are detected
-                MenuExitGate += MenuExitNumb;
+                MenuExitGate += (MenuExitNumb * 2);
             }
         }
 
@@ -2204,7 +2204,7 @@ VOID MainMenuStyle (
             } // for
 
             row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-            row0PosY = ComputeRow0PosY(TRUE);
+            row0PosY = ComputeRow0PosY (TRUE);
             row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
             row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
 
@@ -2298,7 +2298,7 @@ UINTN FindMainMenuItem (
     } // for
 
     row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
-    row0PosY = ComputeRow0PosY(TRUE);
+    row0PosY = ComputeRow0PosY (TRUE);
     row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
     row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
 

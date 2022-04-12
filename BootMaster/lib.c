@@ -675,7 +675,7 @@ EFI_STATUS EfivarGetRaw (
     MY_HYBRIDLOGGER_OFF;
 
     return Status;
-} // EFI_STATUS EfivarGetRaw ()
+} // EFI_STATUS EfivarGetRaw()
 
 // Set an UEFI variable. This is normally done to NVRAM; however, RefindPlus'
 // variables (as determined by the *VendorGUID code) will be saved to a disk file IF
@@ -817,7 +817,7 @@ EFI_STATUS EfivarSetRaw (
     #endif
 
     return Status;
-} // EFI_STATUS EfivarSetRaw ()
+} // EFI_STATUS EfivarSetRaw()
 
 //
 // list functions
@@ -2550,15 +2550,16 @@ VOID ScanVolumes (VOID) {
                 else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
                 else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
                 else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)";
+                else if (FoundSubStr (Volume->VolName, L"Optical Disc Drive")        ) PartType = L"Optical Drive" ;
 
                 // Split checks as '/FileVault' may be Core Storage
                 if (0);
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS  (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+  (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)  ) PartType = L"Mac Raid (ON)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS (Assumed)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+ (Assumed)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff) ) PartType = L"Mac Raid (OFF)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec) ) PartType = L"AppleTV Recov";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) PartType = L"Core Storage";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)  ) PartType = L"Mac Raid (ON)" ;
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec) ) PartType = L"AppleTV Recov" ;
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) PartType = L"Core Storage"  ;
             }
 
             if (!DoneHeadings) {

@@ -12,6 +12,20 @@ concurrency:
 
 jobs:
 
+  # Add Labels - https://github.com/actions-cool/issues-similarity-analysis
+  similarity_analysis:
+    name: Check Similarity
+    runs-on: ubuntu-latest
+
+    if: github.actor != 'dakanji' && github.event.action == 'opened'
+    steps:
+      - uses: actions-cool/issues-similarity-analysis@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter-threshold: 0.5
+          comment-title: '### Similarity Analysis'
+          show-footer: false
+
   # Add Labels - https://github.com/actions-ecosystem/action-add-labels
   add_label_user_open:
     name: Default Issue Label
@@ -29,7 +43,7 @@ jobs:
     name: Enhancement Request Label
     runs-on: ubuntu-latest
 
-    if: github.event.action == 'opened' && startsWith(github.event.comment.body, '### Suggested Feature') && contains(github.event.comment.body, '### Background Information')
+    if: github.event.action == 'opened' && contains(github.event.comment.body, 'Suggested Feature') && contains(github.event.comment.body, 'Background Information') && contains(github.event.comment.body, 'Additional Context')
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1

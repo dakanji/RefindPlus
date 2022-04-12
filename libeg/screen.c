@@ -1055,9 +1055,7 @@ VOID egInitScreen (VOID) {
                             StatusFB = EFI_UNSUPPORTED;
                         }
 
-                        EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE     *Mode = GraphicsOutputFB->Mode;
-                        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = Mode->Info;
-                        if (Info == NULL) {
+                        if (GraphicsOutputFB->Mode->Info == NULL) {
                             StatusFB = EFI_NOT_FOUND;
                         }
 

@@ -123,7 +123,7 @@ REFIT_CONFIG GlobalConfig = {
     /* Install = */ FALSE,
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
-    /* SupplyAppleFB = */ FALSE,
+    /* SupplyAppleFB = */ TRUE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,
@@ -269,6 +269,109 @@ VOID InitMainMenu (VOID) {
 } // static VOID InitMainMenu()
 
 static
+EFI_STATUS GetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    OUT VOID     **VariableData,
+    OUT UINTN     *VariableSize  OPTIONAL
+) {
+    VOID        *TmpBuffer    = NULL;
+    UINTN        BufferSize   = 0;
+    EFI_STATUS   Status       = EFI_LOAD_ERROR;
+
+    // Pass in a zero-size buffer to find the required buffer size.
+    // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
+    // Any other status means the variable does not exist.
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, VariableName,
+        VendorGuid, NULL,
+        &BufferSize, TmpBuffer
+    );
+    if (Status != EFI_BUFFER_TOO_SMALL) {
+        return EFI_NOT_FOUND;
+    }
+
+    TmpBuffer = AllocateZeroPool (BufferSize);
+    if (!TmpBuffer) {
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Retry with the correct buffer size.
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, VariableName,
+        VendorGuid, NULL,
+        &BufferSize, TmpBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(TmpBuffer);
+        *VariableData = NULL;
+        *VariableSize = 0;
+
+        return EFI_LOAD_ERROR;
+    }
+
+    *VariableData = TmpBuffer;
+    *VariableSize = (BufferSize) ? BufferSize : 0;
+
+    return EFI_SUCCESS;
+} // static EFI_STATUS GetHardwareNvramVariable()
+
+static
+EFI_STATUS SetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    IN  UINT32     Attributes,
+    IN  UINTN      VariableSize,
+    IN  VOID      *VariableData
+) {
+    EFI_STATUS   Status;
+    VOID        *OldBuf;
+    UINTN        OldSize;
+    BOOLEAN      SettingMatch;
+
+    Status = GetHardwareNvramVariable (
+        VariableName, VendorGuid,
+        &OldBuf, &OldSize
+    );
+    if (EFI_ERROR(Status)) {
+        SettingMatch = FALSE;
+    }
+    else {
+        // Check for settings match
+        SettingMatch = (
+            VariableSize == OldSize &&
+            CompareMem (VariableData, OldBuf, VariableSize) == 0
+        );
+    }
+    MY_FREE_POOL(OldBuf);
+
+    if (Status == EFI_OUT_OF_RESOURCES) {
+        return Status;
+    }
+    if (SettingMatch) {
+        // Early Return
+        return EFI_ALREADY_STARTED;
+    }
+
+    if (Status != EFI_NOT_FOUND) {
+        // Clear the current value
+        OrigSetVariableRT (
+            VariableName, VendorGuid,
+            Attributes, 0, NULL
+        );
+    }
+
+    // Store the new value
+    Status = OrigSetVariableRT (
+        VariableName, VendorGuid,
+        Attributes, VariableSize, VariableData
+    );
+
+    return Status;
+} // EFI_STATUS SetHardwareNvramVariable()
+
+
+static
 EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  CHAR16    *VariableName,
     IN  EFI_GUID  *VendorGuid,
@@ -330,37 +433,46 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     BOOLEAN BlockAppleKP = GlobalConfig.PanicFilter;
     if (BlockAppleKP) {
         EFI_GUID AppleGUID = APPLE_GUID;
-        BOOLEAN AppleNvram = CompareGuid (VendorGuid, &AppleGUID);
         BlockAppleKP = (
-            AppleNvram &&
             AppleFirmware &&
+            CompareGuid (VendorGuid, &AppleGUID) &&
             FoundSubStr (VariableName, L"AAPL,PanicInfo")
         );
     }
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
 
     Status = (BlockCert || BlockMore || BlockAppleKP)
     ? EFI_SUCCESS
-    : OrigSetVariableRT (
+    : SetHardwareNvramVariable (
         VariableName, VendorGuid,
         Attributes, VariableSize, VariableData
     );
 
     #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
 
     // Log Outcome
     CHAR16 *LogStatus = PoolPrint (
         L"%r",
-        (BlockCert || BlockMore || BlockAppleKP) ? EFI_ACCESS_DENIED : Status
+        (BlockCert || BlockMore || BlockAppleKP)
+            ? EFI_ACCESS_DENIED : Status
     );
 
     MY_MUTELOGGER_SET;
     LimitStringLength (LogStatus, 13);
     MY_MUTELOGGER_OFF;
+
+    // Do not free LogName
+    CHAR16 *LogName = NULL;
+    if (0);
+    else if (StrCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE" ;
+    else if (StrCmp (VariableName, L"dbx"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE1";
+    else if (StrCmp (VariableName, L"dbt"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE2";
+    else if (StrCmp (VariableName, L"dbr"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE3";
+    else if (StrCmp (VariableName, L"KEK"))   LogName = L"EFI_KEY_EXCHANGE_KEY_NAME"   ;
+    else if (StrCmp (VariableName, L"PK") )   LogName = L"EFI_PLATFORM_KEY_NAME"       ;
 
     CHAR16 *MsgStr = PoolPrint (
         L"In Hardware NVRAM ... %13s %s:- '%s%s'",
@@ -373,7 +485,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 : (BlockAppleKP)
                     ? L"KernelPanic  :::  "
                     : L"",
-        VariableName
+        (LogName) ? LogName : VariableName
     );
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
@@ -1954,6 +2066,10 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
+    LOG_MSG("%s      PanicFilter:- ",      OffsetNext);
+    (!AppleFirmware                                                          )
+        ? LOG_MSG("'Disabled'"                                               )
+        : LOG_MSG("'%s'", GlobalConfig.PanicFilter ? L"Active" : L"Inactive" );
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     (!AppleFirmware                                                          )
         ? LOG_MSG("'Disabled'"                                               )
@@ -2761,11 +2877,6 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
-
-                    if (GlobalConfig.PanicFilter) {
-                        // Protect Mac NVRAM from KP Dumps
-                        SetProtectNvram (SystemTable, TRUE);
-                    }
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"Clover") ||
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
@@ -2793,11 +2904,6 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
-
-                    if (GlobalConfig.PanicFilter) {
-                        // Protect Mac NVRAM from KP Dumps
-                        SetProtectNvram (SystemTable, TRUE);
-                    }
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                     || ourLoaderEntry->OSType == 'M'

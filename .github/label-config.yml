@@ -26,19 +26,6 @@ Cancelled:
       - 'Unclear'
       - 'Prorogued'
 
-# The `Declined` label is added to pull requests
-Declined:
-  prs:
-    # Remove labels
-    unlabel:
-      - 'Parked'
-      - 'Pending'
-      - 'Stale'
-      - 'Queries'
-      - 'Unclear'
-      - 'Prorogued'
-      - 'Duplicate'
-
 # The `Discussion` label is added to issues
 Discussion:
   issues:
@@ -57,17 +44,6 @@ Documentation:
   issues:
     # Remove labels
     unlabel:
-      - 'Parked'
-      - 'Pending'
-      - 'Stale'
-      - 'Queries'
-      - 'Unclear'
-      - 'Prorogued'
-      - 'Duplicate'
-  prs:
-    # Remove labels
-    unlabel:
-      - 'Prorogued'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -200,11 +176,8 @@ Queries:
       - 'Prorogued'
       - 'Duplicate'
 
-# The `Resolved` label is added to discussions
+# The `Resolved` label is added to issues
 Resolved:
-  discussions:
-    # Lock the discussion
-    lock: true
   issues:
     # Remove labels
     unlabel:

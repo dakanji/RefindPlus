@@ -232,7 +232,7 @@ jobs:
             This thread is being locked. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related issues.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Resolved'
-          exclude-any-issue-labels: 'Parked, Help-Wanted'
+          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
           add-issue-labels: ''
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
@@ -245,6 +245,6 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Parked, Help-Wanted'
+          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
