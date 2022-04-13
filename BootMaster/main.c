@@ -393,6 +393,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
+    BOOLEAN BlockAppleKP = FALSE;
+    BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = (
         AppleFirmware &&
         (
@@ -417,27 +419,38 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     MY_MUTELOGGER_SET;
     #endif
-    BOOLEAN BlockMore = (
-        AppleFirmware &&
-        (
-            MyStriCmp (VariableName, L"db")  || /* EFI_IMAGE_SECURITY_DATABASE */
-            MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
-            MyStriCmp (VariableName, L"dbt") || /* EFI_IMAGE_SECURITY_DATABASE2 */
-            MyStriCmp (VariableName, L"dbr") || /* EFI_IMAGE_SECURITY_DATABASE3 */
-            MyStriCmp (VariableName, L"KEK") || /* EFI_KEY_EXCHANGE_KEY_NAME */
-            MyStriCmp (VariableName, L"PK")  || /* EFI_PLATFORM_KEY_NAME */
-            FoundSubStr (VariableName, L"UnlockID")
-        )
-    );
-
-    BOOLEAN BlockAppleKP = GlobalConfig.PanicFilter;
-    if (BlockAppleKP) {
-        EFI_GUID AppleGUID = APPLE_GUID;
-        BlockAppleKP = (
+    if (!BlockCert) {
+        BlockMore = (
             AppleFirmware &&
-            CompareGuid (VendorGuid, &AppleGUID) &&
-            FoundSubStr (VariableName, L"AAPL,PanicInfo")
+            (
+                (
+                    FoundSubStr (VariableName, L"UnlockID")
+                ) || (
+                    CompareGuid (VendorGuid, &gEfiGlobalVariableGuid) &&
+                    (
+                        MyStriCmp (VariableName, L"PK")  || /* EFI_PLATFORM_KEY_NAME     */
+                        MyStriCmp (VariableName, L"KEK")    /* EFI_KEY_EXCHANGE_KEY_NAME */
+                    )
+                ) || (
+                    CompareGuid (VendorGuid, &gEfiImageSecurityDatabaseGuid) &&
+                    (
+                        MyStriCmp (VariableName, L"db")  || /* EFI_IMAGE_SECURITY_DATABASE0 */
+                        MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
+                        MyStriCmp (VariableName, L"dbt") || /* EFI_IMAGE_SECURITY_DATABASE2 */
+                        MyStriCmp (VariableName, L"dbr")    /* EFI_IMAGE_SECURITY_DATABASE3 */
+                    )
+                )
+            )
         );
+
+        if (!BlockMore && GlobalConfig.PanicFilter) {
+            EFI_GUID AppleGUID = APPLE_GUID;
+            BlockAppleKP = (
+                AppleFirmware &&
+                CompareGuid (VendorGuid, &AppleGUID) &&
+                FoundSubStr (VariableName, L"AAPL,PanicInfo")
+            );
+        }
     }
 
     Status = (BlockCert || BlockMore || BlockAppleKP)
@@ -467,7 +480,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     // Do not free LogName
     CHAR16 *LogName = NULL;
     if (0);
-    else if (StrCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE" ;
+    else if (StrCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE0";
     else if (StrCmp (VariableName, L"dbx"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE1";
     else if (StrCmp (VariableName, L"dbt"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE2";
     else if (StrCmp (VariableName, L"dbr"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE3";
@@ -509,59 +522,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 } // VOID gRTSetVariableEx()
 
 static
-VOID EFIAPI TranslateAddressesHandlerON (
-    IN EFI_EVENT   Event,
-    IN VOID       *Context
-) {
-    gRT->ConvertPointer (0, (VOID **) &OrigSetVariableRT);
-}
-
-static
-VOID EFIAPI TranslateAddressesHandlerOFF (
-    IN EFI_EVENT   Event,
-    IN VOID       *Context
-) {
-    gRT->ConvertPointer (0, (VOID **) &gRTSetVariableEx);
-}
-
-static
-VOID ResetRuntimeServices (
-    BOOLEAN SwitchRT
-) {
-    EFI_STATUS        Status;
-    static EFI_EVENT  TranslateEventON;
-    static EFI_EVENT  TranslateEventOFF;
-
-    // DA-TAG: Temporarily tie availability to GlobalConfig.PanicFilter
-    //         Provides a way to disable pending full testing
-    if (!GlobalConfig.PanicFilter) {
-        return;
-    }
-
-    gRT->Hdr.CRC32 = 0;
-    REFIT_CALL_3_WRAPPER(
-        gBS->CalculateCrc32, gRT,
-        gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
-    );
-
-    if (SwitchRT) {
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->CreateEvent, EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE,
-            TPL_CALLBACK, TranslateAddressesHandlerON,
-            NULL, &TranslateEventON
-        );
-    }
-    else {
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->CreateEvent, EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE,
-            TPL_CALLBACK, TranslateAddressesHandlerOFF,
-            NULL, &TranslateEventOFF
-        );
-    }
-    ASSERT_EFI_ERROR (Status);
-} // static VOID ResetRuntimeServices()
-
-static
 VOID SetProtectNvram (
     IN EFI_SYSTEM_TABLE *SystemTable,
     IN BOOLEAN           Activate
@@ -575,22 +535,20 @@ VOID SetProtectNvram (
 
     if (Activate) {
         if (!ProtectActive) {
-            ProtectActive                             = TRUE;
-            RT->SetVariable                           = gRTSetVariableEx;
-            gRT->SetVariable                          = gRTSetVariableEx;
-            SystemTable->RuntimeServices->SetVariable = gRTSetVariableEx;
-
-            ResetRuntimeServices(TRUE);
+            ProtectActive                                =             TRUE;
+            RT->SetVariable                              = gRTSetVariableEx;
+            gRT->SetVariable                             = gRTSetVariableEx;
+            SystemTable->RuntimeServices->SetVariable    = gRTSetVariableEx;
+            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
         }
     }
     else {
         if (ProtectActive) {
-            ProtectActive                             = FALSE;
-            RT->SetVariable                           = OrigSetVariableRT;
-            gRT->SetVariable                          = OrigSetVariableRT;
-            SystemTable->RuntimeServices->SetVariable = OrigSetVariableRT;
-
-            ResetRuntimeServices(FALSE);
+            ProtectActive                               =             FALSE;
+            RT->SetVariable                             = OrigSetVariableRT;
+            gRT->SetVariable                            = OrigSetVariableRT;
+            SystemTable->RuntimeServices->SetVariable   = OrigSetVariableRT;
+            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
         }
     }
 } // static VOID SetProtectNvram()
