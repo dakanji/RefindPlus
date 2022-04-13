@@ -125,6 +125,7 @@
 
 [Guids]
     gEfiDxeServicesTableGuid                                                ## CONSUMES           ## GUID
+    gEfiGlobalVariableGuid                                                  ## SOMETIMES_CONSUMES ## GUID
     gEfiEventVirtualAddressChangeGuid                                       ## SOMETIMES_CONSUMES ## GUID
     gEfiEventExitBootServicesGuid                                           ## SOMETIMES_CONSUMES ## GUID
     gEfiFileInfoGuid                                                        ## CONSUMES           ## GUID

@@ -144,9 +144,6 @@ static
 EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, \
     { 0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82 } };
 
-EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
-    { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C } };
-
 BOOLEAN FirstLegacyScan = TRUE;
 
 
@@ -947,7 +944,7 @@ VOID ScanLegacyUEFI (
     // Grab the boot order
     BootOrder = BdsLibGetVariableAndSize (
         L"BootOrder",
-        &EfiGlobalVariableGuid,
+        &gEfiGlobalVariableGuid,
         &BootOrderSize
     );
 
