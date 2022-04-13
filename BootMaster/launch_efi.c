@@ -539,9 +539,6 @@ EFI_STATUS StartEFIImage (
         MY_FREE_POOL(EspGUID);
     } // if write systemd UEFI variables
 
-    // Close open file handles
-    UninitRefitLib();
-
     #if REFIT_DEBUG > 0
     CHAR16 *ConstMsgStr = L"Loading UEFI Driver";
     #endif
@@ -557,6 +554,9 @@ EFI_STATUS StartEFIImage (
         //         These may return to the RefindPlus screen but any issues will be trivial
         FreeSyncVolumes();
     }
+
+    // Close open file handles
+    UninitRefitLib();
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,

@@ -535,20 +535,28 @@ VOID SetProtectNvram (
 
     if (Activate) {
         if (!ProtectActive) {
-            ProtectActive                                =             TRUE;
-            RT->SetVariable                              = gRTSetVariableEx;
-            gRT->SetVariable                             = gRTSetVariableEx;
-            SystemTable->RuntimeServices->SetVariable    = gRTSetVariableEx;
-            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
+            ProtectActive                             =             TRUE;
+            RT->SetVariable                           = gRTSetVariableEx;
+            gRT->SetVariable                          = gRTSetVariableEx;
+            SystemTable->RuntimeServices->SetVariable = gRTSetVariableEx;
+            gRT->Hdr.CRC32                            =                0;
+            REFIT_CALL_3_WRAPPER(
+                gBS->CalculateCrc32, gRT,
+                gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
+            );
         }
     }
     else {
         if (ProtectActive) {
-            ProtectActive                               =             FALSE;
-            RT->SetVariable                             = OrigSetVariableRT;
-            gRT->SetVariable                            = OrigSetVariableRT;
-            SystemTable->RuntimeServices->SetVariable   = OrigSetVariableRT;
-            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
+            ProtectActive                             =             FALSE;
+            RT->SetVariable                           = OrigSetVariableRT;
+            gRT->SetVariable                          = OrigSetVariableRT;
+            SystemTable->RuntimeServices->SetVariable = OrigSetVariableRT;
+            gRT->Hdr.CRC32                            =                 0;
+            REFIT_CALL_3_WRAPPER(
+                gBS->CalculateCrc32, gRT,
+                gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
+            );
         }
     }
 } // static VOID SetProtectNvram()
@@ -998,9 +1006,12 @@ VOID ReMapOpenProtocol (VOID) {
     }
 
     // Amend EFI_BOOT_SERVICES.OpenProtocol
-    gBS->OpenProtocol  =  OpenProtocolEx;
-    gBS->Hdr.CRC32     =  0;
-    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
+    gBS->OpenProtocol = OpenProtocolEx;
+    gBS->Hdr.CRC32    = 0;
+    REFIT_CALL_3_WRAPPER(
+        gBS->CalculateCrc32, gBS,
+        gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
+    );
 } // ReMapOpenProtocol()
 
 static
@@ -1344,10 +1355,10 @@ VOID InitializeLib (
     IN EFI_HANDLE         ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
-    gImageHandle  = ImageHandle;
-    gST           = SystemTable;
-    gBS           = SystemTable->BootServices;
-    gRT           = SystemTable->RuntimeServices;
+    gImageHandle = ImageHandle;
+    gST          = SystemTable;
+    gBS          = SystemTable->BootServices;
+    gRT          = SystemTable->RuntimeServices;
 
     EfiGetSystemConfigurationTable (
         &gEfiDxeServicesTableGuid,
@@ -1355,9 +1366,12 @@ VOID InitializeLib (
     );
 
     // Upgrade EFI_BOOT_SERVICES.HandleProtocol
-    gBS->HandleProtocol  = HandleProtocolEx;
-    gBS->Hdr.CRC32       = 0;
-    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
+    gBS->HandleProtocol = HandleProtocolEx;
+    gBS->Hdr.CRC32      = 0;
+    REFIT_CALL_3_WRAPPER(
+        gBS->CalculateCrc32, gBS,
+        gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
+    );
 } // static VOID InitializeLib()
 #endif
 
@@ -2116,9 +2130,18 @@ EFI_STATUS EFIAPI efi_main (
             gBS->Hdr.CRC32 = 0;
             gRT->Hdr.CRC32 = 0;
             gST->Hdr.CRC32 = 0;
-            gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
-            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
-            gBS->CalculateCrc32 (gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
+            REFIT_CALL_3_WRAPPER(
+                gBS->CalculateCrc32, gBS,
+                gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
+            );
+            REFIT_CALL_3_WRAPPER(
+                gBS->CalculateCrc32, gRT,
+                gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
+            );
+            REFIT_CALL_3_WRAPPER(
+                gBS->CalculateCrc32, gST,
+                gST->Hdr.HeaderSize, &gST->Hdr.CRC32
+            );
         }
 
         #if REFIT_DEBUG > 0

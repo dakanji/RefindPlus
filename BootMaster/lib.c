@@ -535,7 +535,7 @@ EFI_STATUS FindVarsDir (VOID) {
             }
             #endif
         }
-    }
+    } // if gVarsDir == NULL
 
     return Status;
 } // EFI_STATUS FindVarsDir()
