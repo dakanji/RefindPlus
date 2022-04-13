@@ -193,24 +193,24 @@
 #
 #decline_uefiemulate
 
-# Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
-# RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
-# System Integrity Protection (SIP), restricts application access to OS entitlements.
-# This setting only applies to MacOS. Note that this setting will create a MacOS
-# boot argument the first time it is triggered and that this will remain active
-# until explicitly cleared, even if this setting is subsequently disabled.
+# Disable Apple Mobile File Integrity (AMFI) checks when booting MacOS. When this option
+# is active, RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along
+# with System Integrity Protection (SIP), restricts application access to OS entitlements.
+# Note that this setting will create a MacOS boot argument the first time it is triggered
+# and that this boot argument will remain active until explicitly cleared, even if this
+# setting is subsequently disabled.
 #
 # Inactive when commented out (Allows AMFI checks)
 #
 #disable_amfi
 
-# Disable MacOS compatibility check when booting. Macs check whether the
-# current MacOS version is supported on the machine when booting and halts
+# Disable version compatibility checks when booting MacOS. Macs check whether
+# the current MacOS version is supported on the machine when booting and halts
 # if not. When this option is active, RefindPlus will set a "-no_compat_check"
-# boot argument which disables this check and allows boot to proceed on otherwise
-# unsupported Macs. This setting only applies to MacOS. Note that this setting will
-# create a MacOS boot argument the first time it is triggered and this will remain
-# active until explicitly cleared, even if this setting is subsequently disabled.
+# boot argument which disables this check to allow boot to proceed on otherwise
+# unsupported Macs. Note that this setting will create a MacOS boot argument the
+# first time it is triggered and this boot argument willl remain active until
+# explicitly cleared, even if this setting is subsequently disabled.
 #
 # Inactive when commented out (Allows MacOS compatibility checks)
 #
@@ -309,7 +309,7 @@
 #
 #pass_uga_through
 
-# Some computers, such as classic MacPros, may have multiple GOP instances:
+# Some computers, such as some classic MacPros, may have multiple GOP instances:
 #     - One installed on the Console Out handle
 #     - Others installed on GPU handles.
 # GOP on the Console Out Handle is what everything uses and is provided by

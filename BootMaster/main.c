@@ -690,7 +690,7 @@ VOID SetBootArgs (VOID) {
         return;
     }
 
-    if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way=1")) {
+    if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way")) {
         #if REFIT_DEBUG > 0
         if (GlobalConfig.DisableAMFI) {
             // Ensure Logging
@@ -717,7 +717,7 @@ VOID SetBootArgs (VOID) {
     if (GlobalConfig.DisableAMFI &&
         GlobalConfig.DisableCompatCheck
     ) {
-        // Combine Args with DisableAMFI and DisableAMFI
+        // Combine Args with DisableAMFI and DisableCompatCheck
         BootArg = PoolPrint (
             L"%s amfi_get_out_of_my_way=1 -no_compat_check",
             GlobalConfig.SetBootArgs
@@ -742,7 +742,7 @@ VOID SetBootArgs (VOID) {
         BootArg = StrDuplicate (GlobalConfig.SetBootArgs);
     }
 
-    DataNVRAM = AllocateZeroPool (
+    DataNVRAM = AllocatePool (
         (StrLen (BootArg) + 1) * sizeof (CHAR8)
     );
     if (!DataNVRAM) {
@@ -795,61 +795,61 @@ VOID SetBootArgs (VOID) {
 } // static VOID SetBootArgs()
 
 static
-EFI_STATUS NoCheckAMFI (VOID) {
-    if (!GlobalConfig.DisableAMFI) {
-        // Early Return
-        return EFI_NOT_STARTED;
-    }
-
-    EFI_GUID  AppleGUID = APPLE_GUID;
-    CHAR16   *NameNVRAM = L"boot-args";
-    CHAR8    *DataNVRAM = (GlobalConfig.DisableCompatCheck)
-        ? "amfi_get_out_of_my_way=1 -no_compat_check"
-        : "amfi_get_out_of_my_way=1";
-
-    EFI_STATUS Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
-        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-    );
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
-        L"Disable AMFI ... %r",
-        Status
-    );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
-
-    if (GlobalConfig.DisableCompatCheck) {
-        MsgStr = PoolPrint (
-            L"Disable Compat Check ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-    }
-    #endif
-
-    return Status;
-} // static EFI_STATUS NoCheckAMFI()
-
-static
 EFI_STATUS NoCheckCompat (VOID) {
     if (!GlobalConfig.DisableCompatCheck) {
         // Early Return
         return EFI_NOT_STARTED;
     }
 
+    EFI_STATUS   Status     = EFI_SUCCESS;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
-    CHAR8       *DataNVRAM  = "-no_compat_check";
+    CHAR16      *ArgData    = L"-no_compat_check";
+    CHAR16      *BootArg    = NULL;
+    CHAR8       *DataNVRAM  = NULL;
+    VOID        *VarData    = NULL;
 
-    EFI_STATUS Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
-        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
+    GetHardwareNvramVariable (
+        NameNVRAM, &AppleGUID,
+        &VarData, NULL
     );
+
+    if (!VarData) {
+        BootArg = StrDuplicate (ArgData);
+    }
+    else {
+        CHAR16 *BootArgCheck = PoolPrint (L"%s", VarData);
+        if (FoundSubStr (BootArgCheck, ArgData)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            BootArg = PoolPrint (
+                L"%s %s",
+                VarData, ArgData
+            );
+        }
+        MY_FREE_POOL(BootArgCheck);
+    }
+
+    if (!EFI_ERROR(Status)) {
+        DataNVRAM = AllocatePool (
+            (StrLen (BootArg) + 1) * sizeof (CHAR8)
+        );
+        if (!DataNVRAM) {
+            Status = EFI_OUT_OF_RESOURCES;
+        }
+
+        if (!EFI_ERROR(Status)) {
+            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+
+            Status = EfivarSetRaw (
+                &AppleGUID, NameNVRAM,
+                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
+            );
+        }
+    }
+    MY_FREE_POOL(BootArg);
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = PoolPrint (
@@ -863,6 +863,80 @@ EFI_STATUS NoCheckCompat (VOID) {
 
     return Status;
 } // static EFI_STATUS NoCheckCompat()
+
+static
+EFI_STATUS NoCheckAMFI (VOID) {
+    if (!GlobalConfig.DisableAMFI) {
+        // Early Return
+        return EFI_NOT_STARTED;
+    }
+
+    EFI_STATUS   Status     = EFI_SUCCESS;
+    EFI_GUID     AppleGUID  = APPLE_GUID;
+    CHAR16      *NameNVRAM  = L"boot-args";
+    CHAR16      *ArgData    = L"amfi_get_out_of_my_way";
+    CHAR16      *BootArg    = NULL;
+    CHAR8       *DataNVRAM  = NULL;
+    VOID        *VarData    = NULL;
+
+    GetHardwareNvramVariable (
+        NameNVRAM, &AppleGUID,
+        &VarData, NULL
+    );
+
+    if (!VarData) {
+        BootArg = StrDuplicate (ArgData);
+    }
+    else {
+        CHAR16 *BootArgCheck = PoolPrint (L"%s", VarData);
+        if (FoundSubStr (BootArgCheck, ArgData)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            BootArg = PoolPrint (
+                L"%s %s=1",
+                VarData, ArgData
+            );
+        }
+        MY_FREE_POOL(BootArgCheck);
+    }
+
+    if (!EFI_ERROR(Status)) {
+        DataNVRAM = AllocatePool (
+            (StrLen (BootArg) + 1) * sizeof (CHAR8)
+        );
+        if (!DataNVRAM) {
+            Status = EFI_OUT_OF_RESOURCES;
+        }
+
+        if (!EFI_ERROR(Status)) {
+            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+
+            Status = EfivarSetRaw (
+                &AppleGUID, NameNVRAM,
+                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
+            );
+        }
+    }
+    MY_FREE_POOL(BootArg);
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = PoolPrint (
+        L"Disable AMFI ... %r",
+        Status
+    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
+    if (GlobalConfig.DisableCompatCheck) {
+        NoCheckCompat();
+    }
+
+    return Status;
+} // static EFI_STATUS NoCheckAMFI()
 
 static
 EFI_STATUS TrimCoerce (VOID) {
