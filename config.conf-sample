@@ -101,7 +101,7 @@
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.
 #
-# Scans of other ESPs are allowed when commented out
+# Scans of other ESPs are not allowed when commented out
 #
 #decline_espfilter
 
@@ -197,20 +197,20 @@
 # is active, RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along
 # with System Integrity Protection (SIP), restricts application access to OS entitlements.
 # Note that this setting will create a MacOS boot argument the first time it is triggered
-# and that this boot argument will remain active until explicitly cleared, even if this
-# setting is subsequently disabled.
+# and that this boot argument will remain active until it is explicitly cleared, even if
+# this setting is subsequently deactivated.
 #
 # Inactive when commented out (Allows AMFI checks)
 #
 #disable_amfi
 
 # Disable version compatibility checks when booting MacOS. Macs check whether
-# the current MacOS version is supported on the machine when booting and halts
+# the current MacOS version is supported on the machine when booting and halt
 # if not. When this option is active, RefindPlus will set a "-no_compat_check"
 # boot argument which disables this check to allow boot to proceed on otherwise
 # unsupported Macs. Note that this setting will create a MacOS boot argument the
-# first time it is triggered and this boot argument willl remain active until
-# explicitly cleared, even if this setting is subsequently disabled.
+# first time it is triggered and that this boot argument will remain active until
+# it is explicitly cleared, even if this setting is subsequently deactivated.
 #
 # Inactive when commented out (Allows MacOS compatibility checks)
 #
@@ -388,13 +388,13 @@
 #
 #screen_rgb 250 150 50
 
-# Set arbitrary boot arguments on MacOS. When this option is active,
+# Set arbitrary boot arguments on MacOS boot. When this option is active,
 # RefindPlus will change the MacOS boot arguments to the specified string.
-# This setting only applies to MacOS and accounts for any arguments injected
+# This setting only applies to MacOS and it accounts for arguments injected
 # by the "disable_amfi" and "disable_compat_check" settings. Note that this
 # will create a MacOS boot argument the first time it is triggered and
 # that the boot argument will remain active until it is explicitly
-# cleared, even if the setting is subsequently disabled.
+# cleared, even if this setting is subsequently deactivated.
 #
 # Inactive when commented out (Does not change boot arguments)
 #

@@ -658,6 +658,21 @@ VOID AlignCSR (VOID) {
     #endif
 } // static VOID AlignCSR()
 
+#if REFIT_DEBUG > 0
+static
+VOID LogDisableCheck (
+    IN CHAR16     *TypStr,
+    IN EFI_STATUS  Result
+) {
+    CHAR16 *MsgStr = PoolPrint (
+        L"%s ... %r",
+        TypStr, Result
+    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+} // static VOID LogDisableCheck()
+#endif
 
 static
 VOID SetBootArgs (VOID) {
@@ -748,6 +763,44 @@ VOID SetBootArgs (VOID) {
     if (!DataNVRAM) {
         MY_FREE_POOL(BootArg);
 
+        #if REFIT_DEBUG > 0
+        Status = EFI_OUT_OF_RESOURCES;
+
+        MsgStr = PoolPrint (
+            L"Reset Boot Args ... %r",
+            Status
+        );
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
+
+        // Early Return
+        return;
+    }
+
+    VOID *VarData = NULL;
+    GetHardwareNvramVariable (
+        NameNVRAM, &AppleGUID,
+        &VarData, NULL
+    );
+
+    if (VarData && MyStriCmp (BootArg, VarData)) {
+        #if REFIT_DEBUG > 0
+        Status = EFI_ALREADY_STARTED;
+
+        MsgStr = PoolPrint (
+            L"%r When Setting Boot Args:- '%s'",
+            Status, BootArg
+        );
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
+
+        MY_FREE_POOL(VarData);
+        MY_FREE_POOL(BootArg);
+
         // Early Return
         return;
     }
@@ -762,13 +815,11 @@ VOID SetBootArgs (VOID) {
 
     #if REFIT_DEBUG > 0
     if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
-        MsgStr = PoolPrint (
-            L"Disable AMFI ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
+        LogDisableCheck (L"Disable AMFI Checks", Status);
+    }
+
+    if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
+        LogDisableCheck (L"Disable Compat Check", Status);
     }
 
     MsgStr = PoolPrint (
@@ -778,16 +829,6 @@ VOID SetBootArgs (VOID) {
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
-
-    if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
-        MsgStr = PoolPrint (
-            L"Disable Compat Check ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-    }
     #endif
 
     MY_FREE_POOL(BootArg);
@@ -796,11 +837,6 @@ VOID SetBootArgs (VOID) {
 
 static
 EFI_STATUS NoCheckCompat (VOID) {
-    if (!GlobalConfig.DisableCompatCheck) {
-        // Early Return
-        return EFI_NOT_STARTED;
-    }
-
     EFI_STATUS   Status     = EFI_SUCCESS;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
@@ -808,6 +844,11 @@ EFI_STATUS NoCheckCompat (VOID) {
     CHAR16      *BootArg    = NULL;
     CHAR8       *DataNVRAM  = NULL;
     VOID        *VarData    = NULL;
+
+    if (!GlobalConfig.DisableCompatCheck) {
+        // Early Return ... Do Not Log
+        return EFI_NOT_STARTED;
+    }
 
     GetHardwareNvramVariable (
         NameNVRAM, &AppleGUID,
@@ -852,13 +893,7 @@ EFI_STATUS NoCheckCompat (VOID) {
     MY_FREE_POOL(BootArg);
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
-        L"Disable Compat Check ... %r",
-        Status
-    );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
+    LogDisableCheck (L"Disable Compat Check", Status);
     #endif
 
     return Status;
@@ -866,11 +901,6 @@ EFI_STATUS NoCheckCompat (VOID) {
 
 static
 EFI_STATUS NoCheckAMFI (VOID) {
-    if (!GlobalConfig.DisableAMFI) {
-        // Early Return
-        return EFI_NOT_STARTED;
-    }
-
     EFI_STATUS   Status     = EFI_SUCCESS;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
@@ -878,6 +908,11 @@ EFI_STATUS NoCheckAMFI (VOID) {
     CHAR16      *BootArg    = NULL;
     CHAR8       *DataNVRAM  = NULL;
     VOID        *VarData    = NULL;
+
+    if (!GlobalConfig.DisableAMFI) {
+        // Early Return ... Do Not Log
+        return EFI_NOT_STARTED;
+    }
 
     GetHardwareNvramVariable (
         NameNVRAM, &AppleGUID,
@@ -922,18 +957,8 @@ EFI_STATUS NoCheckAMFI (VOID) {
     MY_FREE_POOL(BootArg);
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
-        L"Disable AMFI ... %r",
-        Status
-    );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
+    LogDisableCheck (L"Disable AMFI Checks", Status);
     #endif
-
-    if (GlobalConfig.DisableCompatCheck) {
-        NoCheckCompat();
-    }
 
     return Status;
 } // static EFI_STATUS NoCheckAMFI()
@@ -3021,7 +3046,6 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     // Disable AMFI if configured to and not previously disabled
-                    // Also disables MacOS compatibility check if this is configured
                     NoCheckAMFI();
 
                     // Disable MacOS compatibility check if configured to and not previously disabled

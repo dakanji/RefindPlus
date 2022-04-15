@@ -342,11 +342,10 @@ EFI_STATUS StartEFIImage (
     // Set load options
     if (LoadOptions != NULL) {
         FullLoadOptions = StrDuplicate (LoadOptions);
-        if (OSType == 'M') {
-            MergeStrings (&FullLoadOptions, L" ", 0);
-            // DA-TAG: The last space is also added by the EFI shell and is
-            //         significant when passing options to Apple's boot.efi
-        }
+
+        // DA-TAG: The last space is also added by the EFI shell and is
+        //         significant when passing options to Apple's boot.efi
+        if (OSType == 'M') MergeStrings (&FullLoadOptions, L" ", 0);
     }
 
     MsgStr = PoolPrint (
@@ -400,9 +399,7 @@ EFI_STATUS StartEFIImage (
     }
     else {
         // Store loader name if booting and set to do so
-        if (IsBoot && BootSelection) {
-            StoreLoaderName (BootSelection);
-        }
+        if (IsBoot && BootSelection) StoreLoaderName (BootSelection);
         BootSelection = NULL;
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
@@ -500,8 +497,10 @@ EFI_STATUS StartEFIImage (
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
         ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
 
+    // DA-TAG: Investigate This
+    //         Re-enable the EFI watchdog timer (optionally)
+    //
     // Turn control over to the image
-    // TODO: (optionally) re-enable the EFI watchdog timer!
     if ((GlobalConfig.WriteSystemdVars) &&
         ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
     ) {
@@ -539,24 +538,18 @@ EFI_STATUS StartEFIImage (
         MY_FREE_POOL(EspGUID);
     } // if write systemd UEFI variables
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *ConstMsgStr = L"Loading UEFI Driver";
-    #endif
-
-    if (!IsDriver) {
-        #if REFIT_DEBUG > 0
-        ConstMsgStr = L"Running Child Image";
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr , ImageTitle);
-        #endif
-
-        // DA-TAG: SyncAPFS infrastrcture is typically no longer required
-        //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
-        //         These may return to the RefindPlus screen but any issues will be trivial
-        FreeSyncVolumes();
-    }
+    // DA-TAG: SyncAPFS items are typically no longer required if not loading drivers
+    //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
+    //         These may return to the RefindPlus screen but any issues will be trivial
+    if (!IsDriver) FreeSyncVolumes();
 
     // Close open file handles
     UninitRefitLib();
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
+    if (!IsDriver) ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+    #endif
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
@@ -587,15 +580,15 @@ EFI_STATUS StartEFIImage (
 
     if (EFI_ERROR(ReturnStatus)) {
         CHAR16 *MsgStrEx = NULL;
-        if (IsDriver) {
+        if (!IsDriver) {
+            MsgStrEx = StrDuplicate (MsgStr);
+        }
+        else {
+            MsgStrEx = PoolPrint (L"%s:-", MsgStr, ImageTitle);
+
             #if REFIT_DEBUG > 0
             LOG_MSG("\n");
             #endif
-
-            MsgStrEx = PoolPrint (L"%s:-", MsgStr, ImageTitle);
-        }
-        else {
-            MsgStrEx = StrDuplicate (MsgStr);
         }
 
         CheckError (ReturnStatus, MsgStrEx);
@@ -618,16 +611,12 @@ EFI_STATUS StartEFIImage (
     ReinitRefitLib();
 
 bailout_unload:
-    // unload the image, we do not care if it works or not
-    if (!IsDriver) {
-        REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
-    }
+    // Unload the image, we do not care if it works or not
+    if (!IsDriver) REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MY_FREE_POOL(FullLoadOptions);
-    if (!IsDriver) {
-        FinishExternalScreen();
-    }
+    if (!IsDriver) FinishExternalScreen();
 
     return ReturnStatus;
 } // EFI_STATUS StartEFIImage()
