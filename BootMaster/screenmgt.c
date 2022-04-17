@@ -1189,7 +1189,7 @@ EG_PIXEL FontComplement (VOID) {
 
     if ((MaxRGB - MinRGB) <= 64) {
         // We have 'Grey' ... Determine if it is 'Mid Grey'
-        if (MaxRGB < 160 && MinRGB > 96) {
+        if (MaxRGB < 160 && MinRGB > 80) {
             // We have 'Mid Grey' ... Set base to 'Black'
             // Will be flipped to complementary 'White' later
             PixelR = PixelG = PixelB = 0;

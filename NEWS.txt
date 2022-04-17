@@ -61,6 +61,9 @@
     - The erasure was however also lost on the main screen when `IconRowMove` and/or `IconRowTune` is active
     - Now fixed for all screens but artefacts may result with some custom banners
 - Improves `ProtectNVRAM` Feature
+  * Adds `rEFIt Variant` to UEFI Loaders filtered for `ProtectNVRAM`
+    - Made up of `RefindPlus`, `rEFIt` and `rEFInd` files chain-loaded from named locations
+    - The ProtectNVRAM feature is not enabled for such loaders
   * Now checks new NVRAM write entries against existing entries
     - Only updates the entries when absent or different
     - Filtering these reduces NVRAM writes and associated wear and tear

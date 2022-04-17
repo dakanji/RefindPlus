@@ -3167,6 +3167,25 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
+                else if (ourLoaderEntry->OSType == 'R') {
+                    if (!ourLoaderEntry->UseGraphicsMode && AllowGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = TRUE;
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Run rEFIt Variant");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
                 else {
                     // Some UEFI Windows installers/updaters may not be in the standard path
                     // Activate ProtectNVRAM on any unidentified loaders
