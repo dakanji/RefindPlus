@@ -63,12 +63,13 @@ static fsw_ssize_t zstd_decompress(char *data_in, fsw_size_t srclen,
 
 	size_t workspace_size = ZSTD_DStreamWorkspaceBound(ZSTD_BTRFS_MAX_INPUT);
 	void * workspace;
-	
+
 	in_buf.src = data_in;
 	in_buf.pos = 0;
 	in_buf.size = srclen;
 
 	out_buf.dst = NULL;
+	out_buf.pos = 0;
 
 	workspace = AllocatePool(workspace_size);
 

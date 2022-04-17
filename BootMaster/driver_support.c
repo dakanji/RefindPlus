@@ -551,6 +551,7 @@ UINTN ScanDriverDir (
     EFI_STATUS                     XStatus;
     EFI_GUID                     **ProtocolGuidArray;
     BOOLEAN                        DriverBindingFlag;
+    BOOLEAN                        FirstLoop = TRUE;
     CHAR16                        *FileName;
     CHAR16                        *ErrMsg;
     UINTN                          NumFound          = 0;
@@ -607,8 +608,10 @@ UINTN ScanDriverDir (
                         break;
                     }
                 } // for
+
                 if (DriverBindingFlag) {
-                    if (DriversArrSize == 16) {
+                    if (FirstLoop) {
+                        FirstLoop = FALSE;
                         // New Array
                         DriversArr = AllocatePool (
                             sizeof (EFI_HANDLE) * DriversArrSize
@@ -629,6 +632,8 @@ UINTN ScanDriverDir (
                     DriversArrNum++;
                     DriversArr[DriversArrNum] = NULL; // Terminate Array
                 }
+
+                MY_FREE_POOL(ProtocolGuidArray);
             } // if !EFI_ERROR Status
         }
 
@@ -640,7 +645,6 @@ UINTN ScanDriverDir (
         #endif
 
         MY_FREE_POOL(FileName);
-        MY_FREE_POOL(ProtocolGuidArray);
     } // while
 
     Status = DirIterClose (&DirIter);
@@ -796,7 +800,7 @@ BOOLEAN LoadDrivers (VOID) {
             }
 
             for (k = 0; k < i; k++) {
-                if (!DriversListUser[k]) {
+                if (!DriversListProg[k]) {
                     // Safety valve to exclude NULL
                     // NULL Termination Added Later
                     continue;

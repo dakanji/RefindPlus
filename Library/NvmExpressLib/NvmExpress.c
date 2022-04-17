@@ -83,210 +83,221 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         return EFI_OUT_OF_RESOURCES;
     }
 
-    do {
-        ParentDevicePath = Private->ParentDevicePath;
+    ParentDevicePath = Private->ParentDevicePath;
 
-        // Identify Namespace
-        Status = NvmeIdentifyNamespace (
-            Private,
-            NamespaceId,
-            (VOID *) NamespaceData
+    // Identify Namespace
+    Status = NvmeIdentifyNamespace (
+        Private,
+        NamespaceId,
+        (VOID *) NamespaceData
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(NamespaceData);
+
+        return Status;
+    }
+
+    // Validate Namespace
+    if (NamespaceData->Ncap == 0) {
+        MY_FREE_POOL(NamespaceData);
+
+        return EFI_DEVICE_ERROR;
+    }
+
+    // allocate device private data for each discovered namespace
+    Device = AllocateZeroPool(sizeof (NVME_DEVICE_PRIVATE_DATA));
+    if (Device == NULL) {
+        MY_FREE_POOL(NamespaceData);
+
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Initialize SSD namespace instance data
+    Device->Signature           = NVME_DEVICE_PRIVATE_DATA_SIGNATURE;
+    Device->NamespaceId         = NamespaceId;
+    Device->NamespaceUuid       = NamespaceData->Eui64;
+
+    Device->ControllerHandle    = Private->ControllerHandle;
+    Device->DriverBindingHandle = Private->DriverBindingHandle;
+    Device->Controller          = Private;
+
+    // Build BlockIo media structure
+    Device->Media.MediaId        = 0;
+    Device->Media.RemovableMedia = FALSE;
+    Device->Media.MediaPresent   = TRUE;
+    Device->Media.LogicalPartition = FALSE;
+    Device->Media.ReadOnly       = FALSE;
+    Device->Media.WriteCaching   = FALSE;
+    Device->Media.IoAlign        = Private->PassThruMode.IoAlign;
+
+    Flbas     = NamespaceData->Flbas;
+    LbaFmtIdx = Flbas & 0xF;
+    Lbads     = NamespaceData->LbaFormat[LbaFmtIdx].Lbads;
+    Device->Media.BlockSize = (UINT32)1 << Lbads;
+
+    Device->Media.LastBlock                     = NamespaceData->Nsze - 1;
+    Device->Media.LogicalBlocksPerPhysicalBlock = 1;
+    Device->Media.LowestAlignedLba              = 1;
+
+    // Create BlockIo Protocol instance
+    Device->BlockIo.Revision     = EFI_BLOCK_IO_PROTOCOL_REVISION2;
+    Device->BlockIo.Media        = &Device->Media;
+    Device->BlockIo.Reset        = NvmeBlockIoReset;
+    Device->BlockIo.ReadBlocks   = NvmeBlockIoReadBlocks;
+    Device->BlockIo.WriteBlocks  = NvmeBlockIoWriteBlocks;
+    Device->BlockIo.FlushBlocks  = NvmeBlockIoFlushBlocks;
+
+    // Create BlockIo2 Protocol instance
+    Device->BlockIo2.Media          = &Device->Media;
+    Device->BlockIo2.Reset          = NvmeBlockIoResetEx;
+    Device->BlockIo2.ReadBlocksEx   = NvmeBlockIoReadBlocksEx;
+    Device->BlockIo2.WriteBlocksEx  = NvmeBlockIoWriteBlocksEx;
+    Device->BlockIo2.FlushBlocksEx  = NvmeBlockIoFlushBlocksEx;
+    InitializeListHead (&Device->AsyncQueue);
+
+    // Create StorageSecurityProtocol Instance
+    Device->StorageSecurity.ReceiveData = NvmeStorageSecurityReceiveData;
+    Device->StorageSecurity.SendData    = NvmeStorageSecuritySendData;
+
+    // Create DiskInfo Protocol instance
+    CopyMem (
+        &Device->NamespaceData,
+        NamespaceData,
+        sizeof (NVME_ADMIN_NAMESPACE_DATA)
+    );
+    InitializeDiskInfo (Device);
+
+    // Create a Nvm Express Namespace Device Path Node
+    Status = Private->Passthru.BuildDevicePath (
+        &Private->Passthru,
+        Device->NamespaceId,
+        &NewDevicePathNode
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(NamespaceData);
+        MY_FREE_POOL(Device);
+
+        return Status;
+    }
+
+    // Append the SSD node to the controller's device path
+    DevicePath = AppendDevicePathNode (ParentDevicePath, NewDevicePathNode);
+    if (DevicePath == NULL) {
+        MY_FREE_POOL(NamespaceData);
+        MY_FREE_POOL(NewDevicePathNode);
+        MY_FREE_POOL(Device);
+
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    DeviceHandle = NULL;
+    RemainingDevicePath = DevicePath;
+
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateDevicePath, &gEfiDevicePathProtocolGuid,
+        &RemainingDevicePath, &DeviceHandle
+    );
+    if (!EFI_ERROR(Status)
+        && (DeviceHandle != NULL)
+        && IsDevicePathEnd (RemainingDevicePath)
+    ) {
+        MY_FREE_POOL(DevicePath);
+        MY_FREE_POOL(NamespaceData);
+        MY_FREE_POOL(NewDevicePathNode);
+        MY_FREE_POOL(Device);
+
+        return EFI_ALREADY_STARTED;
+    }
+
+    Device->DevicePath = DevicePath;
+
+    // Make sure the handle is NULL so we create a new handle
+    Device->DeviceHandle = NULL;
+
+    Status = REFIT_CALL_10_WRAPPER(
+        gBS->InstallMultipleProtocolInterfaces, &Device->DeviceHandle,
+        &gEfiDevicePathProtocolGuid, Device->DevicePath,
+        &gEfiBlockIoProtocolGuid, &Device->BlockIo,
+        &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
+        &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(NamespaceData);
+        MY_FREE_POOL(NewDevicePathNode);
+        MY_FREE_POOL(Device->DevicePath);
+        MY_FREE_POOL(Device);
+
+        return Status;
+    }
+
+    // Check if the NVMe controller supports the Security Send and Security Receive commands
+    if ((Private->ControllerData->Oacs & SECURITY_SEND_RECEIVE_SUPPORTED) != 0) {
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallProtocolInterface, &Device->DeviceHandle,
+            &gEfiStorageSecurityCommandProtocolGuid, EFI_NATIVE_INTERFACE, &Device->StorageSecurity
         );
         if (EFI_ERROR(Status)) {
-            break;
-        }
-
-        // Validate Namespace
-        if (NamespaceData->Ncap == 0) {
-            Status = EFI_DEVICE_ERROR;
-        }
-        else {
-            // allocate device private data for each discovered namespace
-            Device = AllocateZeroPool(sizeof (NVME_DEVICE_PRIVATE_DATA));
-            if (Device == NULL) {
-                Status = EFI_OUT_OF_RESOURCES;
-
-                break;
-            }
-
-            // Initialize SSD namespace instance data
-            Device->Signature           = NVME_DEVICE_PRIVATE_DATA_SIGNATURE;
-            Device->NamespaceId         = NamespaceId;
-            Device->NamespaceUuid       = NamespaceData->Eui64;
-
-            Device->ControllerHandle    = Private->ControllerHandle;
-            Device->DriverBindingHandle = Private->DriverBindingHandle;
-            Device->Controller          = Private;
-
-            // Build BlockIo media structure
-            Device->Media.MediaId        = 0;
-            Device->Media.RemovableMedia = FALSE;
-            Device->Media.MediaPresent   = TRUE;
-            Device->Media.LogicalPartition = FALSE;
-            Device->Media.ReadOnly       = FALSE;
-            Device->Media.WriteCaching   = FALSE;
-            Device->Media.IoAlign        = Private->PassThruMode.IoAlign;
-
-            Flbas     = NamespaceData->Flbas;
-            LbaFmtIdx = Flbas & 0xF;
-            Lbads     = NamespaceData->LbaFormat[LbaFmtIdx].Lbads;
-            Device->Media.BlockSize = (UINT32)1 << Lbads;
-
-            Device->Media.LastBlock                     = NamespaceData->Nsze - 1;
-            Device->Media.LogicalBlocksPerPhysicalBlock = 1;
-            Device->Media.LowestAlignedLba              = 1;
-
-            // Create BlockIo Protocol instance
-            Device->BlockIo.Revision     = EFI_BLOCK_IO_PROTOCOL_REVISION2;
-            Device->BlockIo.Media        = &Device->Media;
-            Device->BlockIo.Reset        = NvmeBlockIoReset;
-            Device->BlockIo.ReadBlocks   = NvmeBlockIoReadBlocks;
-            Device->BlockIo.WriteBlocks  = NvmeBlockIoWriteBlocks;
-            Device->BlockIo.FlushBlocks  = NvmeBlockIoFlushBlocks;
-
-            // Create BlockIo2 Protocol instance
-            Device->BlockIo2.Media          = &Device->Media;
-            Device->BlockIo2.Reset          = NvmeBlockIoResetEx;
-            Device->BlockIo2.ReadBlocksEx   = NvmeBlockIoReadBlocksEx;
-            Device->BlockIo2.WriteBlocksEx  = NvmeBlockIoWriteBlocksEx;
-            Device->BlockIo2.FlushBlocksEx  = NvmeBlockIoFlushBlocksEx;
-            InitializeListHead (&Device->AsyncQueue);
-
-            // Create StorageSecurityProtocol Instance
-            Device->StorageSecurity.ReceiveData = NvmeStorageSecurityReceiveData;
-            Device->StorageSecurity.SendData    = NvmeStorageSecuritySendData;
-
-            // Create DiskInfo Protocol instance
-            CopyMem (
-                &Device->NamespaceData,
-                NamespaceData,
-                sizeof (NVME_ADMIN_NAMESPACE_DATA)
-            );
-            InitializeDiskInfo (Device);
-
-            // Create a Nvm Express Namespace Device Path Node
-            Status = Private->Passthru.BuildDevicePath (
-                &Private->Passthru,
-                Device->NamespaceId,
-                &NewDevicePathNode
-            );
-            if (EFI_ERROR(Status)) {
-                break;
-            }
-
-            // Append the SSD node to the controller's device path
-            DevicePath = AppendDevicePathNode (ParentDevicePath, NewDevicePathNode);
-            if (DevicePath == NULL) {
-                Status = EFI_OUT_OF_RESOURCES;
-                break;
-            }
-
-            DeviceHandle = NULL;
-            RemainingDevicePath = DevicePath;
-
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath, &gEfiDevicePathProtocolGuid,
-                &RemainingDevicePath, &DeviceHandle
-            );
-            if (!EFI_ERROR(Status)
-                && (DeviceHandle != NULL)
-                && IsDevicePathEnd (RemainingDevicePath)
-            ) {
-                Status = EFI_ALREADY_STARTED;
-                MY_FREE_POOL(DevicePath);
-
-                break;
-            }
-
-            Device->DevicePath = DevicePath;
-
-            // Make sure the handle is NULL so we create a new handle
-            Device->DeviceHandle = NULL;
-
-            Status = REFIT_CALL_10_WRAPPER(
-                gBS->InstallMultipleProtocolInterfaces, &Device->DeviceHandle,
+            REFIT_CALL_10_WRAPPER(
+                gBS->UninstallMultipleProtocolInterfaces, Device->DeviceHandle,
                 &gEfiDevicePathProtocolGuid, Device->DevicePath,
                 &gEfiBlockIoProtocolGuid, &Device->BlockIo,
                 &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
                 &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
             );
-            if (EFI_ERROR(Status)) {
-                break;
-            }
 
-            // Check if the NVMe controller supports the Security Send and Security Receive commands
-            if ((Private->ControllerData->Oacs & SECURITY_SEND_RECEIVE_SUPPORTED) != 0) {
-                Status = REFIT_CALL_4_WRAPPER(
-                    gBS->InstallProtocolInterface, &Device->DeviceHandle,
-                    &gEfiStorageSecurityCommandProtocolGuid, EFI_NATIVE_INTERFACE, &Device->StorageSecurity
-                );
-                if (EFI_ERROR(Status)) {
-                    REFIT_CALL_10_WRAPPER(
-                        gBS->UninstallMultipleProtocolInterfaces, Device->DeviceHandle,
-                        &gEfiDevicePathProtocolGuid, Device->DevicePath,
-                        &gEfiBlockIoProtocolGuid, &Device->BlockIo,
-                        &gEfiBlockIo2ProtocolGuid, &Device->BlockIo2,
-                        &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
-                    );
+            MY_FREE_POOL(NamespaceData);
+            MY_FREE_POOL(NewDevicePathNode);
+            MY_FREE_POOL(Device->DevicePath);
+            MY_FREE_POOL(Device);
 
-                    break;
-                }
-            }
-
-            REFIT_CALL_6_WRAPPER(
-                gBS->OpenProtocol, Private->ControllerHandle,
-                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &DummyInterface,
-                Private->DriverBindingHandle, Device->DeviceHandle, EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
-            );
-
-            // Build controller name for Component Name (2) protocol.
-            CopyMem (
-                Sn,
-                Private->ControllerData->Sn,
-                sizeof (Private->ControllerData->Sn)
-            );
-            Sn[20] = 0;
-
-            CopyMem (
-                Mn,
-                Private->ControllerData->Mn,
-                sizeof (Private->ControllerData->Mn)
-            );
-            Mn[40] = 0;
-
-            UnicodeSPrintAsciiFormat (
-                Device->ModelName,
-                sizeof (Device->ModelName),
-                "%a-%a-%x",
-                Sn, Mn,
-                NamespaceData->Eui64
-            );
-
-            AddUnicodeString2 (
-                "eng",
-                gNvmExpressComponentName.SupportedLanguages,
-                &Device->ControllerNameTable,
-                Device->ModelName,
-                TRUE
-            );
-
-            AddUnicodeString2 (
-                "en",
-                gNvmExpressComponentName2.SupportedLanguages,
-                &Device->ControllerNameTable,
-                Device->ModelName,
-                FALSE
-            );
+            return Status;
         }
-    } while (0);
-
-    MY_FREE_POOL(NamespaceData);
-    MY_FREE_POOL(NewDevicePathNode);
-
-    if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(Device->DevicePath);
-        MY_FREE_POOL(Device);
     }
+
+    REFIT_CALL_6_WRAPPER(
+        gBS->OpenProtocol, Private->ControllerHandle,
+        &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &DummyInterface,
+        Private->DriverBindingHandle, Device->DeviceHandle, EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+    );
+
+    // Build controller name for Component Name (2) protocol.
+    CopyMem (
+        Sn,
+        Private->ControllerData->Sn,
+        sizeof (Private->ControllerData->Sn)
+    );
+    Sn[20] = 0;
+
+    CopyMem (
+        Mn,
+        Private->ControllerData->Mn,
+        sizeof (Private->ControllerData->Mn)
+    );
+    Mn[40] = 0;
+
+    UnicodeSPrintAsciiFormat (
+        Device->ModelName,
+        sizeof (Device->ModelName),
+        "%a-%a-%x",
+        Sn, Mn,
+        NamespaceData->Eui64
+    );
+
+    AddUnicodeString2 (
+        "eng",
+        gNvmExpressComponentName.SupportedLanguages,
+        &Device->ControllerNameTable,
+        Device->ModelName,
+        TRUE
+    );
+
+    AddUnicodeString2 (
+        "en",
+        gNvmExpressComponentName2.SupportedLanguages,
+        &Device->ControllerNameTable,
+        Device->ModelName,
+        FALSE
+    );
 
     return Status;
 }

@@ -549,15 +549,14 @@ EFI_STATUS EfivarGetRaw (
     OUT VOID     **VariableData,
     OUT UINTN     *VariableSize  OPTIONAL
 ) {
-    VOID        *TmpBuffer    = NULL;
-    UINTN        BufferSize   = 0;
     EFI_STATUS   Status       = EFI_LOAD_ERROR;
-    BOOLEAN      HybridLogger = FALSE;
-
-    MY_HYBRIDLOGGER_SET;
+    UINTN        BufferSize   = 0;
+    VOID        *TmpBuffer    = NULL;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
+    BOOLEAN  HybridLogger;
+    MY_HYBRIDLOGGER_SET;
     #endif
 
     if (!GlobalConfig.UseNvram &&
@@ -672,7 +671,9 @@ EFI_STATUS EfivarGetRaw (
         #endif
     }
 
+    #if REFIT_DEBUG > 0
     MY_HYBRIDLOGGER_OFF;
+    #endif
 
     return Status;
 } // EFI_STATUS EfivarGetRaw()
@@ -695,11 +696,8 @@ EFI_STATUS EfivarSetRaw (
     BOOLEAN      SettingMatch;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute    = FALSE;
-    BOOLEAN HybridLogger = FALSE;
-    #endif
-
-    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
+    BOOLEAN HybridLogger;
     MY_HYBRIDLOGGER_SET;
     #endif
 
@@ -1729,14 +1727,13 @@ VOID ScanVolume (
     EFI_HANDLE        WholeDiskHandle;
     UINTN             PartialLength;
     BOOLEAN           Bootable;
-    BOOLEAN           HybridLogger = FALSE;
 
     #if REFIT_DEBUG > 0
-    UINTN   LogLineType;
-    CHAR16 *StrSpacer = NULL;
-    #endif
-
+    UINTN    LogLineType;
+    CHAR16  *StrSpacer = NULL;
+    BOOLEAN  HybridLogger;
     MY_HYBRIDLOGGER_SET;
+    #endif
 
     // Get device path
     Volume->DevicePath = DuplicateDevicePath (
@@ -1924,7 +1921,9 @@ VOID ScanVolume (
         }
     }
 
+    #if REFIT_DEBUG > 0
     MY_HYBRIDLOGGER_OFF;
+    #endif
 
     // Open the root directory of the volume
     Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
@@ -2332,7 +2331,6 @@ VOID ScanVolumes (VOID) {
     CHAR16  *PartGUID      = NULL;
     CHAR16  *PartTypeGUID  = NULL;
     CHAR16  *VolumeUUID    = NULL;
-    BOOLEAN  CheckMute     = FALSE;
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
@@ -2340,10 +2338,6 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLD = L"VOLUME UUID";
     const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
     const CHAR16 *ITEMVOLF = L"VOLUME NAME";
-
-    if (!SelfVolRun) {
-        MY_MUTELOGGER_SET;
-    }
 
     MsgStr = StrDuplicate (L"E X A M I N E   A V A I L A B L E   V O L U M E S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
@@ -2370,7 +2364,6 @@ VOID ScanVolumes (VOID) {
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
         MsgStr = PoolPrint (
             L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)",
             Status
@@ -2395,7 +2388,6 @@ VOID ScanVolumes (VOID) {
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
         #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
         Status = EFI_BUFFER_TOO_SMALL;
 
         MsgStr = PoolPrint (
@@ -2431,7 +2423,6 @@ VOID ScanVolumes (VOID) {
             MY_FREE_POOL(UuidList);
 
             #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
             Status = EFI_BUFFER_TOO_SMALL;
 
             MsgStr = PoolPrint (
@@ -2727,43 +2718,22 @@ VOID ScanVolumes (VOID) {
     MY_FREE_POOL(Handles);
 
     if (!SelfVolSet || !SelfVolRun) {
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        if (!SelfVolSet) {
-            MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
-            ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-            LOG_MSG("** WARN: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-        }
-        else {
-            CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
-            CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-            LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
-            LOG_MSG("%s      Install Dir:- '%s'", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(SelfGUID);
-            MY_FREE_POOL(SelfUUID);
-        }
-        #endif
-
         SelfVolRun = TRUE;
 
         return;
     }
-    else {
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"%-41s%-41s%-20s%-41s%-22s%s",
-            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s", OffsetNext);
-        LOG_MSG("%s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"%-41s%-41s%-20s%-41s%-22s%s",
+        ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
+    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s", OffsetNext);
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n\n");
+    MY_FREE_POOL(MsgStr);
+    #endif
 
     // Second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -2874,7 +2844,7 @@ VOID ScanVolumes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
+    MuteLogger = FALSE; /* Explicit For FB Infer */
     #endif
 } // VOID ScanVolumes()
 

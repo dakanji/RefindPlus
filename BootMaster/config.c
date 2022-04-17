@@ -686,7 +686,7 @@ VOID ReadConfig (
 
     #if REFIT_DEBUG > 0
     // Silence functions called from this
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     MY_MUTELOGGER_SET;
     #endif
 
@@ -763,7 +763,7 @@ VOID ReadConfig (
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         LOG_MSG("\n");
-        MY_MUTELOGGER_SET;
+        MuteLogger = TRUE; /* Explicit For FB Infer */
         #endif
 
         PauseForKey();
@@ -777,7 +777,7 @@ VOID ReadConfig (
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         LOG_MSG("\n");
-        MY_MUTELOGGER_SET;
+        MuteLogger = TRUE; /* Explicit For FB Infer */
         #endif
 
         return;
@@ -980,7 +980,7 @@ VOID ReadConfig (
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_OFF;
                 LOG_MSG("%s%s", OffsetNext, MsgStr);
-                MY_MUTELOGGER_OFF;
+                MY_MUTELOGGER_SET;
                 #endif
 
                 PauseForKey();
@@ -1112,7 +1112,7 @@ VOID ReadConfig (
                 MY_MUTELOGGER_OFF;
                 LOG_MSG("\n");
                 LOG_MSG("Detected Overrides File - L O A D   O V E R R I D E S");
-                MY_MUTELOGGER_SET;
+                MuteLogger = TRUE; /* Explicit For FB Infer */
                 #endif
 
                 // Set 'AllowIncludes' to 'false' to break any 'include' chains
@@ -1122,7 +1122,8 @@ VOID ReadConfig (
                 // Reset 'AllowIncludes' to accomodate multiple instances in main file
 
                 #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET; // Just in case
+                // Failsafe
+                MuteLogger = TRUE; /* Explicit For FB Infer */
                 #endif
             }
         }
@@ -1350,9 +1351,7 @@ VOID ReadConfig (
 
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
-    #endif
 
-    #if REFIT_DEBUG > 0
     // Skip this on inner loops
     if (AllowIncludes) {
         // Disable 'AllowIncludes' on exiting the outer loop
@@ -1577,18 +1576,20 @@ LOADER_ENTRY * AddStanzaEntries (
                     #endif
                 }
                 else {
-                    #if REFIT_DEBUG > 0
-                    if (Entry->me.Image == NULL) {
-                        MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
-                    }
-                    else {
+                    if (Entry->me.Image != NULL) {
+                        FreePool (Entry->me.Image);
+                        #if REFIT_DEBUG > 0
                         MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
                     }
+                    else {
+                        MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
+                        #endif
+                    }
+                    #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    MY_FREE_IMAGE(Entry->me.Image);
                     Entry->me.Image = egLoadIcon (
                         CurrentVolume->RootDir,
                         TokenList[1],

@@ -266,8 +266,7 @@ EFI_STATUS RenameFile (
 
     NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize (NewName);
     NewInfo = (EFI_FILE_INFO *) AllocateZeroPool (NewInfoSize);
-
-    if (NewInfo != NULL) {
+    if (NewInfo == NULL) {
         REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
 
         // Early Return

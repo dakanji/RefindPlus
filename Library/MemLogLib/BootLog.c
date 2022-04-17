@@ -251,13 +251,16 @@ VOID EFIAPI DeepLoggger (
     CHAR16 *Tmp       = NULL;
     CHAR16 *StoreMsg  = NULL;
 
+    // Assess *Msg here to silence Coverity
+    if (!(*Msg)) {
+        return;
+    }
 
     // Make sure we are able to write
     BOOLEAN EarlyReturn = (
         DebugMode <= MINLOGLEVEL
         || GlobalConfig.LogLevel < level
         || GlobalConfig.LogLevel <= MINLOGLEVEL
-        || !(*Msg)
     );
     if (DebugMode > MAXLOGLEVEL && type == LOG_BLOCK_SEP && !MuteLogger) {
         EarlyReturn = FALSE;

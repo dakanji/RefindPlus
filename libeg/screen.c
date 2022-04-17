@@ -2169,7 +2169,7 @@ VOID egScreenShot (VOID) {
     EG_PIXEL      BGColorGood = COLOR_LIGHTBLUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     #if REFIT_DEBUG > 0

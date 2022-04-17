@@ -562,8 +562,8 @@ VOID BeginExternalScreen (
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr    =  NULL;
-    BOOLEAN  CheckMute = FALSE;
+    CHAR16  *MsgStr = NULL;
+    BOOLEAN  CheckMute;
     #endif
 
     if (!AllowGraphicsMode) {
@@ -765,8 +765,8 @@ VOID PauseForKey (VOID) {
     BOOLEAN Breakout  = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr    =  NULL;
-    BOOLEAN  CheckMute = FALSE;
+    CHAR16  *MsgStr = NULL;
+    BOOLEAN  CheckMute;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -884,7 +884,7 @@ VOID PauseSeconds (
     BOOLEAN Breakout  = FALSE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -946,7 +946,7 @@ VOID HaltSeconds (
     UINTN   i;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -990,7 +990,7 @@ VOID RefitDeadLoop (VOID) {
     UINTN   index;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
 
     MY_MUTELOGGER_SET;
     #endif

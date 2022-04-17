@@ -244,6 +244,8 @@ extern EFI_GUID                      AppleGuid;
 extern EFI_FILE                     *gVarsDir;
 
 extern BOOLEAN                       ForceRescanDXE;
+extern BOOLEAN                       SelfVolSet;
+extern BOOLEAN                       SelfVolRun;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -276,9 +278,9 @@ EFI_STATUS GetHardwareNvramVariable (
     OUT VOID     **VariableData,
     OUT UINTN     *VariableSize  OPTIONAL
 ) {
-    VOID        *TmpBuffer    = NULL;
+    EFI_STATUS   Status;
     UINTN        BufferSize   = 0;
-    EFI_STATUS   Status       = EFI_LOAD_ERROR;
+    VOID        *TmpBuffer    = NULL;
 
     // Pass in a zero-size buffer to find the required buffer size.
     // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
@@ -421,8 +423,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute   = FALSE;
-    BOOLEAN ForceNative = FALSE;
+    BOOLEAN CheckMute;
+    BOOLEAN ForceNative;
 
     MY_MUTELOGGER_SET;
     #endif
@@ -467,21 +469,17 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     );
 
     #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-
-    /* Enable Forced Native Logging */
-    MY_NATIVELOGGER_SET;
-
     // Log Outcome
     CHAR16 *LogStatus = PoolPrint (
         L"%r",
         (BlockCert || BlockMore || BlockAppleKP)
             ? EFI_ACCESS_DENIED : Status
     );
-
-    MY_MUTELOGGER_SET;
     LimitStringLength (LogStatus, 13);
+
     MY_MUTELOGGER_OFF;
+    /* Enable Forced Native Logging */
+    MY_NATIVELOGGER_SET;
 
     // Do not free LogName
     CHAR16 *LogName = NULL;
@@ -1179,7 +1177,7 @@ BOOLEAN ShowCleanNvramInfo (
     //
     // Clear Emulated NVRAM
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     MY_MUTELOGGER_SET;
     #endif
     EfivarSetRaw (
@@ -1408,17 +1406,13 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    BOOLEAN ForceNative = FALSE;
-    #endif
+    BOOLEAN ForceNative;
 
-    #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = L"R E S C A N   A L L   I T E M S";
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("I N F O :   %s", MsgStr);
     LOG_MSG("\n\n");
-    #endif
 
-    #if REFIT_DEBUG > 0
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
     #endif
@@ -1509,7 +1503,7 @@ BOOLEAN SecureBootUninstall (VOID) {
     BOOLEAN     Success   =  TRUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     if (secure_mode()) {
@@ -1564,7 +1558,7 @@ VOID SetConfigFilename (
     EFI_LOADED_IMAGE  *Info;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1921,11 +1915,6 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN  MainLoopRunning =  TRUE;
     BOOLEAN  MokProtocol     = FALSE;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute   = FALSE;
-    BOOLEAN ForceNative = FALSE;
-    #endif
-
     REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     LOADER_ENTRY      *ourLoaderEntry = NULL;
     LEGACY_ENTRY      *ourLegacyEntry = NULL;
@@ -1937,6 +1926,11 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16    *MsgStr             = NULL;
     CHAR16    *SelectionName      = NULL;
     EG_PIXEL   BGColor = COLOR_LIGHTBLUE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
+    BOOLEAN ForceNative;
+    #endif
 
     /* Init Bootstrap */
     InitializeLib (ImageHandle, SystemTable);
@@ -2073,7 +2067,29 @@ EFI_STATUS EFIAPI efi_main (
     //    SelfVolume is required by LoadDrivers() and ReadConfig();
     // A second call is needed later to enumerate volumes as well as
     //    to register new filesystem(s) accessed by drivers.
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
     ScanVolumes();
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    if (!SelfVolSet) {
+        MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+        LOG_MSG("** WARN: %s", MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+    }
+    else {
+        CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
+        CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
+        LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
+        LOG_MSG("%s      Install Dir:- '%s'", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(SelfGUID);
+        MY_FREE_POOL(SelfUUID);
+    }
+    #endif
 
     /* Get/Set Config File ... Prefer RefindPlus Configuration File Naame */
     if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
@@ -2504,7 +2520,7 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L"                                                          ", NEXTLINE);
         PauseForKey();
         #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
+        MY_MUTELOGGER_OFF;
         #endif
         GlobalConfig.ContinueOnWarning = ForceContinue;
         ForceContinue = FALSE;

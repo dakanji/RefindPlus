@@ -170,7 +170,7 @@ VOID RecordgCsrStatus (
         #endif
 
         #if REFIT_DEBUG > 0
-        BOOLEAN CheckMute = FALSE;
+        BOOLEAN CheckMute;
         MY_MUTELOGGER_SET;
         #endif
         egDisplayMessage (
@@ -289,7 +289,7 @@ EFI_STATUS NormaliseCSR (VOID) {
     UINT32      OurCSR;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     MY_MUTELOGGER_SET;
     #endif
     Status = GetCsrStatus (&OurCSR);  // Get csr-active-config value
@@ -707,8 +707,6 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
             NULL
         );
         if (*ContainerInfo == NULL) {
-            MY_FREE_POOL(*VolumeInfo);
-
             // Early Return ... Return Error
             return EFI_NOT_FOUND;
         }

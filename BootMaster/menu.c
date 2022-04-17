@@ -1226,7 +1226,7 @@ VOID TextMenuStyle (
     UINTN   MenuHeight;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     static UINTN    MenuPosY;
@@ -2115,7 +2115,7 @@ VOID PaintArrows (
     static BOOLEAN   LoadedArrows    = FALSE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    BOOLEAN CheckMute;
     #endif
 
     UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;

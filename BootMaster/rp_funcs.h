@@ -9,16 +9,41 @@
 #define _RP_FUNCS_H
 
 // Control NativeLogger ... Especially Nested Instances
-#define MY_NATIVELOGGER_SET if (!NativeLogger) ForceNative = NativeLogger = TRUE
-#define MY_NATIVELOGGER_OFF if (ForceNative) ForceNative = NativeLogger = FALSE
+#define MY_NATIVELOGGER_SET                   \
+    do {                                      \
+        ForceNative = FALSE;                  \
+        if (!MuteLogger) {                    \
+            ForceNative  = TRUE;              \
+            NativeLogger = TRUE;              \
+        }                                     \
+    } while (0)
+#define MY_NATIVELOGGER_OFF                   \
+    do {                                      \
+        if (ForceNative) {                    \
+            NativeLogger = FALSE;             \
+        }                                     \
+    } while (0)
 
 // Control MuteLogger ... Especially Nested Instances
-#define MY_MUTELOGGER_SET if (!MuteLogger) CheckMute = MuteLogger = TRUE
-#define MY_MUTELOGGER_OFF if (CheckMute) CheckMute = MuteLogger = FALSE
+#define MY_MUTELOGGER_SET                     \
+    do {                                      \
+        CheckMute = FALSE;                    \
+        if (!MuteLogger) {                    \
+            CheckMute  = TRUE;                \
+            MuteLogger = TRUE;                \
+        }                                     \
+    } while (0)
+#define MY_MUTELOGGER_OFF                     \
+    do {                                      \
+        if (CheckMute) {                      \
+            MuteLogger = FALSE;               \
+        }                                     \
+    } while (0)
 
 // Control HybridLogger ... Especially Nested Instances
 #define MY_HYBRIDLOGGER_SET                   \
     do {                                      \
+        HybridLogger = FALSE;                 \
         if (NativeLogger) {                   \
             HybridLogger =  TRUE;             \
             NativeLogger = FALSE;             \
