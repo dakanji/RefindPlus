@@ -333,6 +333,7 @@ EFI_STATUS LibScanHandleDatabase (
                     MY_FREE_POOL(OpenInfo);
                 }
             }
+
             MY_FREE_POOL(ProtocolGuidArray);
         }
     }
@@ -575,7 +576,7 @@ UINTN ScanDriverDir (
 
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
-            // skip this
+            // Skip this
             MY_FREE_POOL(DirEntry);
             continue;
         }

@@ -347,7 +347,7 @@ VOID GenerateSubScreen (
 
     BREAD_CRUMB(L"In %s ... A - START MAIN", FuncTag);
 
-    // create the submenu
+    // Create the submenu
     if (StrLen (Entry->Title) == 0) {
         MY_FREE_POOL(Entry->Title);
     }
@@ -356,7 +356,7 @@ VOID GenerateSubScreen (
 
     // InitializeSubScreen cannot return NULL but guard against this regardless
     if (SubScreen != NULL) {
-        // loader-specific submenu entries
+        // Loader specific submenu entries
         if (Entry->OSType == 'M') {          // Entries for MacOS
 
 #if defined (EFIX64)
@@ -421,9 +421,9 @@ VOID GenerateSubScreen (
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
-            } // safe mode allowed
+            } // Safe mode allowed
 
-            // check for Apple hardware diagnostics
+            // Check for Apple hardware diagnostics
             StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
             if (FileExists (Volume->RootDir, DiagsFileName) &&
                 !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
@@ -439,7 +439,7 @@ VOID GenerateSubScreen (
                 }
             }
         }
-        else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
+        else if (Entry->OSType == 'L') {   // Entries for Linux kernels with EFI stub loaders
             LOG_SEP(L"X");
             BREAD_CRUMB(L"In %s ... 1 - START for OSType L", FuncTag);
             File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
@@ -459,7 +459,7 @@ VOID GenerateSubScreen (
                 ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
 
                 BREAD_CRUMB(L"In %s ... 2a 5", FuncTag);
-                // first entry requires special processing, since it was initially set
+                // First entry requires special processing, since it was initially set
                 // up with a default title but correct options by InitializeSubScreen(),
                 // earlier.
                 if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
@@ -517,7 +517,7 @@ VOID GenerateSubScreen (
             } // if File
             BREAD_CRUMB(L"In %s ... 3 END for OSType L", FuncTag);
         }
-        else if (Entry->OSType == 'E') {   // entries for ELILO
+        else if (Entry->OSType == 'E') {   // Entries for ELILO
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
                 SubEntry->me.Title        = StrDuplicate (L"Run ELILO in interactive mode");
@@ -554,8 +554,8 @@ VOID GenerateSubScreen (
             AddMenuInfoLine (SubScreen, L"marked with (*) may not work.");
 
         }
-        else if (Entry->OSType == 'X') {   // entries for xom.efi
-            // by default, skip the built-in selection and boot from hard disk only
+        else if (Entry->OSType == 'X') {   // Entries for xom.efi
+            // Skip the built-in selection and boot from hard disk only by default
             Entry->LoadOptions = L"-s -h";
 
             SubEntry = InitializeLoaderEntry (Entry);
@@ -581,7 +581,7 @@ VOID GenerateSubScreen (
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
-        } // entries for xom.efi
+        } // Entries for xom.efi
 
         LOG_SEP(L"X");
         BREAD_CRUMB(L"In %s ... Z 1 - START", FuncTag);

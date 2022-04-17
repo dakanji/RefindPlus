@@ -1336,7 +1336,10 @@ VOID ReadConfig (
     if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
-        LOG_MSG("%s  - WARN: Cannot Find Icons Directory ... Activating Text Only Mode", OffsetNext);
+        LOG_MSG(
+            "%s  - WARN: Cannot Find Icons Directory ... Activating Text Only Mode",
+            OffsetNext
+        );
         MY_MUTELOGGER_SET;
         #endif
 

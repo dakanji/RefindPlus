@@ -1,0 +1,73 @@
+name: 'Issue Helper Access'
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        description: Issue Action
+        options:
+        - 'Issue - Close'
+        - 'Issue - Comment - Delete'
+        - 'Issue - Thread - Lock'
+        - 'Issue - Thread - Unlock'
+      item_id:
+        description: 'Item ID'
+        required: true
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_close:
+    name: Issue - Close
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Close'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_comment_delete:
+    name: Issue - Comment - Delete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Comment - Delete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'delete-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.inputs.item_id }}
+
+  issue_thread_lock:
+    name: Issue - Thread - Lock
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Thread - Lock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_thread_unlock:
+    name: Issue - Thread - Unlock
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Thread - Unlock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}

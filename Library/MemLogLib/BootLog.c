@@ -41,15 +41,15 @@ CHAR16 * GetAltMonth (VOID) {
     CHAR16 *AltMonth = NULL;
 
     switch (NowMonth) {
-        case 1:  AltMonth = L"b";  break;
-        case 2:  AltMonth = L"d";  break;
-        case 3:  AltMonth = L"f";  break;
-        case 4:  AltMonth = L"h";  break;
-        case 5:  AltMonth = L"j";  break;
-        case 6:  AltMonth = L"k";  break;
-        case 7:  AltMonth = L"n";  break;
-        case 8:  AltMonth = L"p";  break;
-        case 9:  AltMonth = L"r";  break;
+        case  1: AltMonth = L"b";  break;
+        case  2: AltMonth = L"d";  break;
+        case  3: AltMonth = L"f";  break;
+        case  4: AltMonth = L"h";  break;
+        case  5: AltMonth = L"j";  break;
+        case  6: AltMonth = L"k";  break;
+        case  7: AltMonth = L"n";  break;
+        case  8: AltMonth = L"p";  break;
+        case  9: AltMonth = L"r";  break;
         case 10: AltMonth = L"t";  break;
         case 11: AltMonth = L"v";  break;
         default: AltMonth = L"x";  break;
@@ -63,16 +63,16 @@ CHAR16 * GetAltHour (VOID) {
     CHAR16 *AltHour = NULL;
 
     switch (NowHour) {
-        case 0:  AltHour = L"a";  break;
-        case 1:  AltHour = L"b";  break;
-        case 2:  AltHour = L"c";  break;
-        case 3:  AltHour = L"d";  break;
-        case 4:  AltHour = L"e";  break;
-        case 5:  AltHour = L"f";  break;
-        case 6:  AltHour = L"g";  break;
-        case 7:  AltHour = L"h";  break;
-        case 8:  AltHour = L"i";  break;
-        case 9:  AltHour = L"j";  break;
+        case  0: AltHour = L"a";  break;
+        case  1: AltHour = L"b";  break;
+        case  2: AltHour = L"c";  break;
+        case  3: AltHour = L"d";  break;
+        case  4: AltHour = L"e";  break;
+        case  5: AltHour = L"f";  break;
+        case  6: AltHour = L"g";  break;
+        case  7: AltHour = L"h";  break;
+        case  8: AltHour = L"i";  break;
+        case  9: AltHour = L"j";  break;
         case 10: AltHour = L"k";  break;
         case 11: AltHour = L"m";  break;
         case 12: AltHour = L"n";  break;
@@ -100,7 +100,7 @@ CHAR16 * GetDateString (VOID) {
         return DateStr;
     }
 
-    INT16   ourYear    = (NowYear % 100);
+    INT16    ourYear   = (NowYear % 100);
     CHAR16  *ourMonth  = GetAltMonth();
     CHAR16  *ourHour   = GetAltHour();
     DateStr = PoolPrint(
@@ -115,7 +115,7 @@ CHAR16 * GetDateString (VOID) {
 
 static
 EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
-    EFI_STATUS          Status;
+    EFI_STATUS           Status;
     EFI_LOADED_IMAGE    *LoadedImage;
     EFI_FILE_PROTOCOL   *RootDir;
     EFI_FILE_PROTOCOL   *LogFile;
@@ -155,7 +155,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
     );
 
-    // If the log file is not found try to create it
+    // Try to create log file if not found
     if (Status == EFI_NOT_FOUND) {
         REFIT_CALL_5_WRAPPER(
             RootDir->Open, RootDir,
@@ -178,7 +178,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
             );
 
-            // If log file is not found, try to create it
+            // Try to create log file if not found
             if (Status == EFI_NOT_FOUND) {
                 REFIT_CALL_5_WRAPPER(
                     RootDir->Open, RootDir,
@@ -330,7 +330,7 @@ VOID EFIAPI DeepLoggger (
 } // VOID EFIAPI DeepLoggger()
 
 VOID EFIAPI DebugLog (
-    IN INTN DebugMode,
+    IN       INTN   DebugMode,
     IN const CHAR8 *FormatString,
     ...
 ) {
@@ -367,7 +367,7 @@ VOID EFIAPI DebugLog (
 // DA-TAG: Allow REL Build to access this ... without output
 static
 VOID EFIAPI MemLogCallback (
-    IN INTN DebugMode,
+    IN INTN   DebugMode,
     IN CHAR8 *LastMessage
 ) {
     #if REFIT_DEBUG > 0

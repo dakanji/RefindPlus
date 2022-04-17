@@ -34,7 +34,7 @@
 
 #define MY_FAKE_FREE(Pointer)                 \
     do {                                      \
-        if (Pointer) {                        \
+        if (Pointer != NULL) {                \
             Pointer = NULL;                   \
         }                                     \
     } while (0)
@@ -42,14 +42,14 @@
 // Dereference to NULL When Actually Needed
 #define MY_SOFT_FREE(Pointer)                 \
     do {                                      \
-        if (Pointer) {                        \
-            MY_FAKE_FREE(Pointer);            \
+        if (Pointer != NULL) {                \
+            Pointer = NULL;                   \
         }                                     \
     } while (0)
 
 #define MY_FREE_POOL(Pointer)                 \
     do {                                      \
-        if (Pointer) {                        \
+        if (Pointer != NULL) {                \
             FreePool (Pointer);               \
             Pointer = NULL;                   \
         }                                     \
@@ -57,17 +57,25 @@
 
 #define MY_FREE_IMAGE(Image)                  \
     do {                                      \
-        if (Image) {                          \
-            MY_FREE_POOL(Image->PixelData);   \
-            MY_FREE_POOL(Image);              \
+        if (Image != NULL) {                  \
+            if (Image->PixelData != NULL) {   \
+                FreePool (Image->PixelData);  \
+                Image->PixelData = NULL;      \
+            }                                 \
+            FreePool (Image);                 \
+            Image = NULL;                     \
         }                                     \
     } while (0)
 
 #define MY_FREE_FILE(File)                    \
     do {                                      \
-        if (File) {                           \
-            MY_FREE_POOL(File->Buffer);       \
-            MY_FREE_POOL(File);               \
+        if (File != NULL) {                   \
+            if (File->Buffer != NULL) {       \
+                FreePool (File->Buffer);      \
+                File->Buffer = NULL;          \
+            }                                 \
+            FreePool (File);                  \
+            File = NULL;                      \
         }                                     \
     } while (0)
 

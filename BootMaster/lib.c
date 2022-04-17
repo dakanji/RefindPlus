@@ -927,35 +927,12 @@ VOID FreeSyncVolumes (VOID) {
         return;
     }
 
-    FreeVolumes (
-        &PreBootVolumes,
-        &PreBootVolumesCount
-    );
-
-    FreeVolumes (
-        &SystemVolumes,
-        &SystemVolumesCount
-    );
-
-    FreeVolumes (
-        &DataVolumes,
-        &DataVolumesCount
-    );
-
-    FreeVolumes (
-        &RecoveryVolumes,
-        &RecoveryVolumesCount
-    );
-
-    FreeVolumes (
-        &SkipApfsVolumes,
-        &SkipApfsVolumesCount
-    );
-
-    FreeVolumes (
-        &HfsRecovery,
-        &HfsRecoveryCount
-    );
+    FreeVolumes (&RecoveryVolumes, &RecoveryVolumesCount);
+    FreeVolumes (&SkipApfsVolumes, &SkipApfsVolumesCount);
+    FreeVolumes (&PreBootVolumes,  &PreBootVolumesCount );
+    FreeVolumes (&SystemVolumes,   &SystemVolumesCount  );
+    FreeVolumes (&HfsRecovery,     &HfsRecoveryCount    );
+    FreeVolumes (&DataVolumes,     &DataVolumesCount    );
 } // VOID FreeSyncVolumes()
 
 VOID FreeVolumes (

@@ -1152,11 +1152,11 @@ UINTN RunGenericMenu (
                 MenuExitGate = MenuExitNumb * 5;
             }
             #endif
+        }
 
-            if (FoundExternalDisk) {
-                // Extend threshold when external disks are detected
-                MenuExitGate += (MenuExitNumb * 2);
-            }
+        if (FoundExternalDisk) {
+            // Double threshold when external disks are detected
+            MenuExitGate += (MenuExitGate * 3);
         }
 
         if (MenuExitDiff < MenuExitGate) {

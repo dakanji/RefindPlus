@@ -73,6 +73,10 @@
     - These are not certificates but work in concert with the certificates
     - Hence, not required once certificates are filtered
     - Filtering these reduces NVRAM writes and associated wear and tear
+  * Filters out the Current OEM Policy from post-block clean up
+    - Removal may have negative impact on UEFI-PC
+    - Not strictly needed as ProtectNVRAM is currently limited to Apple Firmware
+    - Considered best to add a filter now in case that changes in future
 - Improves Identification of Linux Instances
   * `vmlinuz`, `bzImage`, and `kernel` loaders are now accounted for as Linux loaders
   * The `ProtectNVRAM` feature is now not applied to such loaders
@@ -84,7 +88,7 @@
 - Improves Time Bound Primed Buffer Mitigation
   * Mitigates against RefindPlus spontaneously running default items
   * Intervention is based on a rising threshold based on build type and presence of Apple firmware
-  * Also extends threshold by 1.00 seconds when external disks are detected
+  * Also doubles threshold time when external disks are detected
     - The issue appears to be worse when such disks are connected
 - Removes `BootKicker` feature
   * The feature was added as part of attempts to provide the RefindPlus screen on MacPro5,1

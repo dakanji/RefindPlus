@@ -83,6 +83,7 @@ CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"NOT SET";
 
 extern BOOLEAN  IsBoot;
+extern EFI_GUID AppleGuid;
 
 static
 VOID WarnSecureBootError(
@@ -897,14 +898,13 @@ EFI_STATUS ApfsRecoveryBoot (
     EFI_STATUS  Status;
     CHAR16     *NameNVRAM = NULL;
     CHAR8      *DataNVRAM = NULL;
-    EFI_GUID    AppleGUID = APPLE_GUID;
 
     // Set Relevant NVRAM Variable
     CHAR16 *InitNVRAM = L"RecoveryModeDisk";
     NameNVRAM = L"internet-recovery-mode";
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
+        &AppleGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -917,7 +917,7 @@ EFI_STATUS ApfsRecoveryBoot (
     // Set Recovery Initiator
     NameNVRAM = L"RecoveryBootInitiator";
     Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
+        &AppleGuid, NameNVRAM,
         (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
     );
     MY_FREE_POOL(NameNVRAM);

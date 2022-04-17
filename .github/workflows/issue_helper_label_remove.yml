@@ -1,0 +1,175 @@
+name: 'Issue Helper Label Remove'
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        description: Issue Action
+        options:
+        - 'Label - Remove - Abandoned'
+        - 'Label - Remove - Cancelled'
+        - 'Label - Remove - Cannot-Replicate'
+        - 'Label - Remove - Incomplete'
+        - 'Label - Remove - Invalid'
+        - 'Label - Remove - Parked'
+        - 'Label - Remove - Prorogued'
+        - 'Label - Remove - Resolved'
+        - 'Label - Remove - Tagged'
+        - 'Label - Remove - Queries'
+        - 'Label - Remove - Upstream'
+      item_id:
+        description: 'Item ID'
+        required: true
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  label_remove_abandoned:
+    name: Label - Remove - Abandoned
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Abandoned'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Abandoned'
+
+  label_remove_cancelled:
+    name: Label - Remove - Cancelled
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Cancelled'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cancelled'
+
+  label_remove_cannot-replicate:
+    name: Label - Remove - Cannot-Replicate
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cannot-Replicate'
+
+  label_remove_incomplete:
+    name: Label - Remove - Incomplete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Incomplete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Incomplete'
+
+  label_remove_invalid:
+    name: Label - Remove - Invalid
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Invalid'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Invalid'
+
+  label_remove_parked:
+    name: Label - Remove - Parked
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Parked'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Parked'
+
+  label_remove_prorogued:
+    name: Label - Remove - Prorogued
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Prorogued'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Prorogued'
+
+  label_remove_resolved:
+    name: Label - Remove - Resolved
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Resolved'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Resolved'
+
+  label_remove_tagged:
+    name: Label - Remove - Tagged
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Tagged'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Tagged'
+
+  label_remove_queries:
+    name: Label - Remove - Queries
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Queries'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Queries'
+
+  label_remove_upstream:
+    name: Label - Remove - Upstream
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Upstream'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Upstream'

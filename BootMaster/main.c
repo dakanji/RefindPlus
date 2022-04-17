@@ -239,6 +239,7 @@ extern EFI_GUID                      X509_GUID;
 extern EFI_GUID                      RSA2048_GUID;
 extern EFI_GUID                      PKCS7_GUID;
 extern EFI_GUID                      EFI_CERT_SHA256_GUID;
+extern EFI_GUID                      AppleGuid;
 
 extern EFI_FILE                     *gVarsDir;
 
@@ -393,25 +394,31 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
+    BOOLEAN UsingWinGuid = (GuidsAreEqual (VendorGuid, &WinGuid));
+    BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
     BOOLEAN BlockAppleKP = FALSE;
     BOOLEAN BlockMore = FALSE;
-    BOOLEAN BlockCert = (
-        AppleFirmware &&
-        (
-            GuidsAreEqual (VendorGuid, &WinGuid) ||
-            GuidsAreEqual (VendorGuid, &X509Guid) ||
-            GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
-            GuidsAreEqual (VendorGuid, &Sha001Guid) ||
-            GuidsAreEqual (VendorGuid, &Sha224Guid) ||
-            GuidsAreEqual (VendorGuid, &Sha256Guid) ||
-            GuidsAreEqual (VendorGuid, &Sha384Guid) ||
-            GuidsAreEqual (VendorGuid, &Sha512Guid) ||
-            GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
-            GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
-            GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
-            GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
-        )
-    );
+    BOOLEAN BlockCert = FALSE;
+
+    if (!CurPolicyOEM) {
+        BlockCert = (
+            AppleFirmware &&
+            (
+                UsingWinGuid ||
+                GuidsAreEqual (VendorGuid, &X509Guid) ||
+                GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
+                GuidsAreEqual (VendorGuid, &Sha001Guid) ||
+                GuidsAreEqual (VendorGuid, &Sha224Guid) ||
+                GuidsAreEqual (VendorGuid, &Sha256Guid) ||
+                GuidsAreEqual (VendorGuid, &Sha384Guid) ||
+                GuidsAreEqual (VendorGuid, &Sha512Guid) ||
+                GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
+                GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
+                GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
+                GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
+            )
+        );
+    }
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute   = FALSE;
@@ -444,10 +451,9 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
 
         if (!BlockMore && GlobalConfig.PanicFilter) {
-            EFI_GUID AppleGUID = APPLE_GUID;
             BlockAppleKP = (
                 AppleFirmware &&
-                CompareGuid (VendorGuid, &AppleGUID) &&
+                CompareGuid (VendorGuid, &AppleGuid) &&
                 FoundSubStr (VariableName, L"AAPL,PanicInfo")
             );
         }
@@ -511,7 +517,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     /* Clear any previously saved instance of blocked variable */
     /* BlockAppleKP is excluded as has dynamic naming */
-    if (BlockCert || BlockMore) {
+    // DA-TAG: Do not remove Current OEM Policy
+    //         ProtectNVRAM is currently limited to Apple Firmware, so not strictly needed
+    //         However, best to add filter now in case that changes in future
+    if (!CurPolicyOEM && (BlockCert || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
             Attributes, 0, NULL
@@ -677,7 +686,6 @@ VOID LogDisableCheck (
 static
 VOID SetBootArgs (VOID) {
     EFI_STATUS   Status;
-    EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *BootArg    = NULL;
     CHAR8       *DataNVRAM  = NULL;
@@ -781,7 +789,7 @@ VOID SetBootArgs (VOID) {
 
     VOID *VarData = NULL;
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGUID,
+        NameNVRAM, &AppleGuid,
         &VarData, NULL
     );
 
@@ -809,7 +817,7 @@ VOID SetBootArgs (VOID) {
     UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
     Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
+        &AppleGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
 
@@ -838,7 +846,6 @@ VOID SetBootArgs (VOID) {
 static
 EFI_STATUS NoCheckCompat (VOID) {
     EFI_STATUS   Status     = EFI_SUCCESS;
-    EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *ArgData    = L"-no_compat_check";
     CHAR16      *BootArg    = NULL;
@@ -851,7 +858,7 @@ EFI_STATUS NoCheckCompat (VOID) {
     }
 
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGUID,
+        NameNVRAM, &AppleGuid,
         &VarData, NULL
     );
 
@@ -885,7 +892,7 @@ EFI_STATUS NoCheckCompat (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleGUID, NameNVRAM,
+                &AppleGuid, NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -902,7 +909,6 @@ EFI_STATUS NoCheckCompat (VOID) {
 static
 EFI_STATUS NoCheckAMFI (VOID) {
     EFI_STATUS   Status     = EFI_SUCCESS;
-    EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *ArgData    = L"amfi_get_out_of_my_way";
     CHAR16      *BootArg    = NULL;
@@ -915,7 +921,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
     }
 
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGUID,
+        NameNVRAM, &AppleGuid,
         &VarData, NULL
     );
 
@@ -949,7 +955,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleGUID, NameNVRAM,
+                &AppleGuid, NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -965,16 +971,17 @@ EFI_STATUS NoCheckAMFI (VOID) {
 
 static
 EFI_STATUS TrimCoerce (VOID) {
+    EFI_STATUS Status;
+    CHAR16    *NameNVRAM    = L"EnableTRIM";
+    CHAR8      DataNVRAM[1] = {0x01};
+
     if (!GlobalConfig.ForceTRIM) {
         // Early Return
         return EFI_NOT_STARTED;
     }
 
-    EFI_GUID   AppleGUID    = APPLE_GUID;
-    CHAR16    *NameNVRAM    = L"EnableTRIM";
-    CHAR8      DataNVRAM[1] = {0x01};
-    EFI_STATUS Status = EfivarSetRaw (
-        &AppleGUID, NameNVRAM,
+    Status = EfivarSetRaw (
+        &AppleGuid, NameNVRAM,
         DataNVRAM, sizeof (DataNVRAM), TRUE
     );
 
@@ -2985,9 +2992,14 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")
-                    || ourLoaderEntry->OSType == 'M'
+                else if (ourLoaderEntry->OSType == 'M'
+                    || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
+                    if (GlobalConfig.PanicFilter) {
+                        // Protect Mac NVRAM from KP Dumps
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
+
                     // Set CSR if required
                     AlignCSR();
 
@@ -3039,8 +3051,8 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     // Set Mac boot args if configured to
-                    // Also disables AMFI if this is configured
-                    // Also disables MacOS compatibility check if this is configured
+                    // Disables AMFI if DisableAMFI is active
+                    // Disables MacOS compatibility check if DisableCompatCheck is active
                     if (GlobalConfig.SetBootArgs && GlobalConfig.SetBootArgs[0] != L'\0') {
                         SetBootArgs();
                     }
@@ -3059,14 +3071,9 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
-
-                    if (GlobalConfig.PanicFilter) {
-                        // Protect Mac NVRAM from KP Dumps
-                        SetProtectNvram (SystemTable, TRUE);
-                    }
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Windows")
-                    || ourLoaderEntry->OSType == 'W'
+                else if (ourLoaderEntry->OSType == 'W'
+                    || FoundSubStr (ourLoaderEntry->Title, L"Windows")
                 ) {
                     // Protect Mac NVRAM from UEFI Windows
                     SetProtectNvram (SystemTable, TRUE);
@@ -3089,8 +3096,8 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Grub")
-                    || ourLoaderEntry->OSType == 'G'
+                else if (ourLoaderEntry->OSType == 'G'
+                    || FoundSubStr (ourLoaderEntry->Title, L"Grub")
                 ) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
@@ -3151,8 +3158,8 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Linux")
-                    || ourLoaderEntry->OSType == 'L'
+                else if (ourLoaderEntry->OSType == 'L'
+                    || FoundSubStr (ourLoaderEntry->Title, L"Linux")
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received Input:'
@@ -3188,7 +3195,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     // Some UEFI Windows installers/updaters may not be in the standard path
-                    // Activate ProtectNVRAM on any unidentified loaders
+                    // Therefore, activate ProtectNVRAM (if set) on any unidentified loaders
                     SetProtectNvram (SystemTable, TRUE);
 
                     #if REFIT_DEBUG > 0

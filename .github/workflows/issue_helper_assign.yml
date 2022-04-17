@@ -1,0 +1,49 @@
+name: 'Issue Helper Assign'
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        description: Issue Action
+        options:
+        - 'Assignment - Self - Add'
+        - 'Assignment - Self - Remove'
+      item_id:
+        description: 'Item ID'
+        required: true
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  add_assignees:
+    name: Assignment - Self - Add
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Assignment - Self - Add'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-assignees'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          assignees: ${{ github.actor }}
+
+  remove_assignees:
+    name: Assignment - Self - Remove
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Assignment - Self - Remove'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-assignees'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          assignees: ${{ github.actor }}

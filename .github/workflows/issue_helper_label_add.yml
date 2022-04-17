@@ -1,0 +1,175 @@
+name: 'Issue Helper Label Add'
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        type: choice
+        description: Issue Action
+        options:
+        - 'Label - Add - Abandoned'
+        - 'Label - Add - Cancelled'
+        - 'Label - Add - Cannot-Replicate'
+        - 'Label - Add - Incomplete'
+        - 'Label - Add - Invalid'
+        - 'Label - Add - Parked'
+        - 'Label - Add - Prorogued'
+        - 'Label - Add - Resolved'
+        - 'Label - Add - Tagged'
+        - 'Label - Add - Queries'
+        - 'Label - Add - Upstream'
+      item_id:
+        description: 'Item ID'
+        required: true
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  label_add_abandoned:
+    name: Label - Add - Abandoned
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Abandoned'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Abandoned'
+
+  label_add_cannot-cancelled:
+    name: Label - Add - Cancelled
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Cancelled'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cancelled'
+
+  label_add_cannot-replicate:
+    name: Label - Add - Cannot-Replicate
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Cannot-Replicate'
+
+  label_add_incomplete:
+    name: Label - Add - Incomplete
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Incomplete'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Incomplete'
+
+  label_add_invalid:
+    name: Label - Add - Invalid
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Invalid'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Invalid'
+
+  label_add_parked:
+    name: Label - Add - Parked
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Parked'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Parked'
+
+  label_add_prorogued:
+    name: Label - Add - Prorogued
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Prorogued'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Prorogued'
+
+  label_add_resolved:
+    name: Label - Add - Resolved
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Resolved'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Resolved'
+
+  label_add_tagged:
+    name: Label - Add - Tagged
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Tagged'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Tagged'
+
+  label_add_queries:
+    name: Label - Add - Queries
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Queries'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Queries'
+
+  label_add_upstream:
+    name: Label - Add - Upstream
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Upstream'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Upstream'

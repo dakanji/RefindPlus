@@ -36,6 +36,7 @@
 CHAR16    *gCsrStatus     = NULL;
 BOOLEAN    MuteLogger     = FALSE;
 BOOLEAN    MsgNormalised  = FALSE;
+EFI_GUID   AppleGuid      = APPLE_GUID;
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
@@ -47,10 +48,9 @@ EFI_STATUS GetCsrStatus (
     EFI_STATUS  Status;
     UINTN       CsrLength;
     UINT32     *ReturnValue  = NULL;
-    EFI_GUID    CsrGuid      = APPLE_GUID;
 
     Status = EfivarGetRaw (
-        &CsrGuid, L"csr-active-config",
+        &AppleGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
@@ -192,7 +192,6 @@ VOID RotateCsrValue (VOID) {
     EFI_STATUS    Status;
     UINT32        CurrentValue, TargetCsr;
     UINT32        StorageFlags = APPLE_FLAGS;
-    EFI_GUID      CsrGuid      = APPLE_GUID;
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
@@ -250,12 +249,12 @@ VOID RotateCsrValue (VOID) {
 
     Status = (TargetCsr != 0)
         ? EfivarSetRaw (
-            &CsrGuid, L"csr-active-config",
+            &AppleGuid, L"csr-active-config",
             &TargetCsr, 4, TRUE
         )
         : REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, L"csr-active-config",
-            &CsrGuid, StorageFlags, 0, NULL
+            &AppleGuid, StorageFlags, 0, NULL
         );
     if (EFI_ERROR(Status)) {
         gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
@@ -683,6 +682,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
     EFI_GUID AppleApfsContainerInfoGuid = APPLE_APFS_CONTAINER_INFO_GUID;
 
     if (ContainerInfo == NULL && VolumeInfo == NULL) {
+        // Early Return ... Return Error
         return EFI_INVALID_PARAMETER;
     }
 
@@ -693,7 +693,6 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
             sizeof (**VolumeInfo),
             NULL
         );
-
         if (*VolumeInfo == NULL) {
             // Early Return ... Return Error
             return EFI_NOT_FOUND;
@@ -707,7 +706,6 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
             sizeof (**ContainerInfo),
             NULL
         );
-
         if (*ContainerInfo == NULL) {
             MY_FREE_POOL(*VolumeInfo);
 
@@ -943,7 +941,6 @@ VOID ClearRecoveryBootFlag (VOID) {
     VOID       *TmpBuffer    = NULL;
     CHAR16     *VariableName = NULL;
     UINT32      StorageFlags = APPLE_FLAGS;
-    EFI_GUID    AppleGuid    = APPLE_GUID;
 
     BufferSize   = 0;
     VariableName = L"recovery-boot-mode";
