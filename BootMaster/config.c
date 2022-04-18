@@ -867,7 +867,7 @@ VOID ReadConfig (
             // Sanitise levels
             UINTN MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
             if (0);
-            else if (GlobalConfig.LogLevel < MINLOGLEVEL) GlobalConfig.LogLevel = MINLOGLEVEL;
+            else if (GlobalConfig.LogLevel < LOGLEVELOFF) GlobalConfig.LogLevel = LOGLEVELOFF;
             else if (GlobalConfig.LogLevel > MaxLogLevel) GlobalConfig.LogLevel = MaxLogLevel;
         }
         else if (MyStriCmp (TokenList[0], L"icon_row_move") && (TokenCount == 2)) {

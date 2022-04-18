@@ -41,8 +41,8 @@ jobs:
           github_token: ${{ github.token }}
           labels: Pending
 
-  add_label_user_open:
-    name: Default Issue Label
+  add_label_user_reopen:
+    name: Reopen Issue Label
     runs-on: ubuntu-latest
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'

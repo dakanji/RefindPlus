@@ -295,8 +295,9 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE Mode);
 #endif
 
 
-#define MINLOGLEVEL (0)
-#define MAXLOGLEVEL (1)
+#define LOGLEVELOFF (-1)
+#define MINLOGLEVEL  (0)
+#define MAXLOGLEVEL  (1)
 
 
 //
