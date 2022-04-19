@@ -1,6 +1,9 @@
 0.13.3.AA (Pre-Release):
 -----------------------
 - Synced with Upstream 0.13.3
+- Fixes `DisableAMFI` Feature
+  * The feature had been disabled under some circumstances
+  * This bug was introduced in v0.13.2.AP (Commit 8705fdb)
 
 
 0.13.2.AP (19 Apr 2022):
@@ -31,7 +34,7 @@
   * This option is currently always disabled on Apple firmware
 - Adds `RescanDXE` Feature
   * Controls scanning for newly revealed DXE drivers when connecting handles
-    - Switch on or off with a new `disable_rescan_dxe` configuration token
+    - Switch ON or OFF with a new `disable_rescan_dxe` configuration token
   * This was previously done by default but may negatively impact loading speed
   * Typically only required when running non-native filesystems
 - Adds `DriverPriority` Feature

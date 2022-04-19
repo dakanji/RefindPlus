@@ -924,21 +924,18 @@ EFI_STATUS NoCheckAMFI (VOID) {
     );
 
     if (!VarData) {
-        BootArg = StrDuplicate (ArgData);
+        BootArg = PoolPrint (L"%s=1", ArgData);
     }
     else {
+        BootArg = PoolPrint (L"%s %s=1", VarData, ArgData);
+
         CHAR16 *BootArgCheck = PoolPrint (L"%s", VarData);
         if (FoundSubStr (BootArgCheck, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
-        else {
-            BootArg = PoolPrint (
-                L"%s %s=1",
-                VarData, ArgData
-            );
-        }
         MY_FREE_POOL(BootArgCheck);
     }
+
 
     if (!EFI_ERROR(Status)) {
         DataNVRAM = AllocatePool (
@@ -997,21 +994,36 @@ EFI_STATUS TrimCoerce (VOID) {
 } // static EFI_STATUS TrimCoerce()
 
 static
-VOID NvramGarbageCollectionMac (IN BOOLEAN Activate) {
-    CHAR8  DataNVRAM[1] = {0x01};
-    UINT32 StorageFlags = APPLE_FLAGS;
+VOID NvramGarbageCollectionMac (
+    IN BOOLEAN Activate
+) {
+    EFI_STATUS Status    = EFI_SUCCESS;
+    CHAR16 *BaseData     =        L"1";
+    UINT32  StorageFlags = APPLE_FLAGS;
 
     if (!AppleFirmware) {
         // Early Return
         return;
     }
 
-    REFIT_CALL_5_WRAPPER(
-        gRT->SetVariable, L"ResetNVRam",
-        &AppleGuid, StorageFlags,
-        (Activate) ? sizeof (DataNVRAM) : 0,
-        (Activate) ? DataNVRAM : NULL
+    CHAR8 *DataNVRAM = AllocatePool (
+        (StrLen (BaseData) + 1) * sizeof (CHAR8)
     );
+    if (!DataNVRAM) {
+        Status = EFI_OUT_OF_RESOURCES;
+    }
+
+    if (!EFI_ERROR(Status)) {
+        // Convert Unicode String 'BaseData' to Ascii String 'DataNVRAM'
+        UnicodeStrToAsciiStr (BaseData, DataNVRAM);
+
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, L"ResetNVRam",
+            &AppleGuid, StorageFlags,
+            (Activate) ? sizeof (DataNVRAM) : 0,
+            (Activate) ? DataNVRAM : NULL
+        );
+    }
 } // static VOID NvramGarbageCollectionMac()
 
 

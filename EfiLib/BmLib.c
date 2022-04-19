@@ -79,11 +79,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
     );
     if (!EFI_ERROR(Status)) {
         // Open the root directory of the volume
-        Status = Volume->OpenVolume (
-            Volume,
-            &File
-        );
-
+        Status = REFIT_CALL_2_WRAPPER(Volume->OpenVolume, Volume, &File);
         CheckError (Status, L"While Opening the Root Directory of the Volume");
     }
 

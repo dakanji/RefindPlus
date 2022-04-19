@@ -53,7 +53,7 @@
 # MacOS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# APFS filesystem capability is supplied (if required) when commented out
+# APFS filesystem capability is provided when commented out
 #
 #decline_apfsload
 
@@ -64,7 +64,7 @@
 # this option if such negative effects are observed. This setting only applies to MacOS.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Verbose APFS text is allowed (if generated) when commented out
+# Verbose APFS text is suppressed (if generated) when commented out
 #
 #decline_apfsmute
 
@@ -83,7 +83,7 @@
 # names to alphanumeric characters. Dashes, underscores and/or spaces can
 # be used in combination with alphanumeric characters without issue.
 #
-# APFS partition synchronisation is allowed when commented out
+# APFS partition synchronisation is provided (if required) when commented out
 #
 #decline_apfssync
 
@@ -93,7 +93,7 @@
 # protocol is available and it is typically inactive when running a UGA protocol GPU.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Apple FramebufferInfo protocol is installed (if required) when commented out
+# Apple FramebufferInfo protocol is provided (if required) when commented out
 #
 #decline_applefb
 
@@ -101,7 +101,7 @@
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.
 #
-# Scans of other ESPs are not allowed when commented out
+# Scans of other ESPs are prevented when commented out
 #
 #decline_espfilter
 
@@ -163,7 +163,7 @@
 # setup will be deactivated, and the ability to unhide items will be solely based on
 # whether "hidden_tags" has been explicitly defined in the "showtools" list or not.
 #
-# The "hidden_tags" tool is always available when commented out
+# The "hidden_tags" tool is always made available when commented out
 #
 #decline_tagshelp
 
@@ -189,7 +189,7 @@
 # as Legacy Macs as several such tools only require CreateEventEx to work.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# UEFI 2.x emulation is provided when commented out
+# UEFI 2.x emulation is enabled when commented out
 #
 #decline_uefiemulate
 
