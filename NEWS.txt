@@ -1,4 +1,4 @@
-0.13.2.AP (PRE-RELEASE):
+0.13.2.AP (19 Apr 2022):
 -----------------------
 - Adds `PanicFilter` Feature
   * RefindPlus now discards NVRAM write attempts of kernel panic information by default
