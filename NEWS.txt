@@ -1,3 +1,8 @@
+0.13.3.AA (Pre-Release):
+-----------------------
+- Synced with Upstream 0.13.3
+
+
 0.13.2.AP (19 Apr 2022):
 -----------------------
 - Adds `PanicFilter` Feature
@@ -40,7 +45,7 @@
   * Previously simply selected the first instance found (Inherited)
   * This should allow proper support for languages using unicode text
 - Improves UEFI Runtime Function Wrapping
-  * The wrapped UEFI Runtime `SetVariable` function is not managed better
+  * The wrapped UEFI Runtime `SetVariable` function is now better managed
 - Improves `TransientBoot` Feature
   * Now removes pre-existing `PreviousBoot` instances when booting with this option set
 - Improves `DirectBoot` Feature
@@ -61,8 +66,9 @@
     - The erasure was however also lost on the main screen when `IconRowMove` and/or `IconRowTune` is active
     - Now fixed for all screens but artefacts may result with some custom banners
 - Improves `CleanNvram` Feature
+  * The Emulated NVRAM on the filesystem is now also cleared
   * Now triggers NVRAM garbage collection on Macs when run
-  * This is an equivalent of manually setting `nvram ResetNVRam=1`
+    - This is an equivalent of manually setting `nvram ResetNVRam=1`
 - Improves `ProtectNVRAM` Feature
   * Adds `rEFIt Variant` to UEFI Loaders filtered for `ProtectNVRAM`
     - Made up of `RefindPlus`, `rEFIt` and `rEFInd` files chain-loaded from named locations
@@ -115,8 +121,6 @@
   * Other recent changes to RefindPlus may have also affected booting 'FileVault' encrypted volumes
 - Amends 'HandleProtocol' Stashing
   * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
-- Amends 'CleanNvram' Feature
-  * The Emulated NVRAM on the filesystem is now also cleared
 - Renames the `SilentBoot` Feature as `DirectBoot`
   * This more accurately describes the feature.
 - Renames Misc Tokens to Permit Grouping of Related Tokens

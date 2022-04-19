@@ -47,7 +47,7 @@ Users may also want to replace filesystem drivers with those packaged with Refin
 
 RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
 
-Note that if you run RefindPlus without activating the additonal options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
+Note that if you run RefindPlus without activating the additonal options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
 
 ## Additional Functionality
 RefindPlus-Specific funtionality can be configured by adding the tokens below to the upstream configuration file. Additional information is provided in the sample RefindPlus configuration file.
@@ -112,7 +112,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 
 ## Divergence
-Implementation differences with the upstream base version v0.13.2 are:
+Implementation differences with the upstream base version v0.13.3 are:
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_tagshelp` configuration token to switch it off.
