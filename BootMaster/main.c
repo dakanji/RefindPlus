@@ -996,6 +996,24 @@ EFI_STATUS TrimCoerce (VOID) {
     return Status;
 } // static EFI_STATUS TrimCoerce()
 
+static
+VOID NvramGarbageCollectionMac (IN BOOLEAN Activate) {
+    CHAR8  DataNVRAM[1] = {0x01};
+    UINT32 StorageFlags = APPLE_FLAGS;
+
+    if (!AppleFirmware) {
+        // Early Return
+        return;
+    }
+
+    REFIT_CALL_5_WRAPPER(
+        gRT->SetVariable, L"ResetNVRam",
+        &AppleGuid, StorageFlags,
+        (Activate) ? sizeof (DataNVRAM) : 0,
+        (Activate) ? DataNVRAM : NULL
+    );
+} // static VOID NvramGarbageCollectionMac()
+
 
 // Extended 'OpenProtocol'
 // Ensures GOP Interface for Boot Loading Screen
@@ -1949,6 +1967,9 @@ EFI_STATUS EFIAPI efi_main (
     /* Remove any recovery boot flags */
     ClearRecoveryBootFlag();
 
+    // Deactivate forced nvram garbage collection on Macs (if present)
+    NvramGarbageCollectionMac(FALSE);
+
     /* Other Preambles */
     EFI_TIME Now;
     REFIT_CALL_2_WRAPPER(gRT->GetTime, &Now, NULL);
@@ -2822,6 +2843,9 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("INFO: Cleaned NVRAM");
                 LOG_MSG("\n\n");
                 #endif
+
+                // Try to force nvram garbage collection on Macs
+                NvramGarbageCollectionMac(TRUE);
 
             // No Break
             case TAG_REBOOT:    // Reboot

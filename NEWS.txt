@@ -60,6 +60,9 @@
     - Previously only properly erased when called on the main screen
     - The erasure was however also lost on the main screen when `IconRowMove` and/or `IconRowTune` is active
     - Now fixed for all screens but artefacts may result with some custom banners
+- Improves `CleanNvram` Feature
+  * Now triggers NVRAM garbage collection on Macs when run
+  * This is an equivalent of manually setting `nvram ResetNVRam=1`
 - Improves `ProtectNVRAM` Feature
   * Adds `rEFIt Variant` to UEFI Loaders filtered for `ProtectNVRAM`
     - Made up of `RefindPlus`, `rEFIt` and `rEFInd` files chain-loaded from named locations
