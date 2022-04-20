@@ -114,7 +114,6 @@ REFIT_CONFIG GlobalConfig = {
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ TRUE,
-    /* PanicFilter = */ TRUE,
     /* ScanAllESP = */ FALSE,
     /* TagsHelp = */ TRUE,
     /* TextHelp = */ TRUE,
@@ -398,7 +397,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     BOOLEAN UsingWinGuid = (GuidsAreEqual (VendorGuid, &WinGuid));
     BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
-    BOOLEAN BlockAppleKP = FALSE;
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
 
@@ -451,17 +449,9 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 )
             )
         );
-
-        if (!BlockMore && GlobalConfig.PanicFilter) {
-            BlockAppleKP = (
-                AppleFirmware &&
-                CompareGuid (VendorGuid, &AppleGuid) &&
-                FoundSubStr (VariableName, L"AAPL,PanicInfo")
-            );
-        }
     }
 
-    Status = (BlockCert || BlockMore || BlockAppleKP)
+    Status = (BlockCert || BlockMore)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -514,7 +504,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     #endif
 
     /* Clear any previously saved instance of blocked variable */
-    /* BlockAppleKP is excluded as has dynamic naming */
     // DA-TAG: Do not remove Current OEM Policy
     //         ProtectNVRAM is currently limited to Apple Firmware, so not strictly needed
     //         However, best to add filter now in case that changes in future
@@ -2193,10 +2182,6 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
-    LOG_MSG("%s      PanicFilter:- ",      OffsetNext);
-    (!AppleFirmware                                                          )
-        ? LOG_MSG("'Disabled'"                                               )
-        : LOG_MSG("'%s'", GlobalConfig.PanicFilter ? L"Active" : L"Inactive" );
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     (!AppleFirmware                                                          )
         ? LOG_MSG("'Disabled'"                                               )
@@ -3047,11 +3032,6 @@ EFI_STATUS EFIAPI efi_main (
                 else if (ourLoaderEntry->OSType == 'M'
                     || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
-                    if (GlobalConfig.PanicFilter) {
-                        // Protect Mac NVRAM from KP Dumps
-                        SetProtectNvram (SystemTable, TRUE);
-                    }
-
                     // Set CSR if required
                     AlignCSR();
 

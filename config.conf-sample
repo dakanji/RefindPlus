@@ -118,25 +118,10 @@
 # By default, RefindPlus will prevent UEFI Windows Secure Boot from writing security
 # certificates to the NVRAM on Apple Macs as this can result in an inability to boot.
 # This setting is only activated when Apple Firmware is detected on UEFI Windows boot.
-# NB: The "ProtectNVRAM" feature must be active to activate this "PanicFilter" feature.
 #
 # The "ProtectNVRAM" feature is enabled when commented out
 #
 #decline_nvramprotect
-
-# MacOS 11 (Big Sur) and later write kernel panic information to the NVRAM,
-# particularly during updates. This increases wear and tear of the NVRAM,
-# particularly on legacy Macs. RefindPlus now defaults to block such
-# NVRAM write attempts unless this token is active, whereupon such
-# NVRAM write attempts will be permitted. NB: This setting only
-# works when the "ProtectNVRAM" functionality is also active.
-#
-# This feature is currently limited to when
-# directly booting MacOS on Apple Firmware.
-#
-# The "PanicFilter" feature is enabled when commented out
-#
-#decline_panicfilter
 
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
