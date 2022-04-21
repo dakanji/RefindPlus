@@ -399,12 +399,17 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
+    BOOLEAN BlockGuid = FALSE;
 
     if (!CurPolicyOEM) {
-        BlockCert = (
+        BlockGuid = (
+            AppleFirmware && UsingWinGuid
+        );
+
+        if (!BlockGuid) {
+            BlockCert = (
             AppleFirmware &&
             (
-                UsingWinGuid ||
                 GuidsAreEqual (VendorGuid, &X509Guid) ||
                 GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
                 GuidsAreEqual (VendorGuid, &Sha001Guid) ||
@@ -418,15 +423,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
             )
         );
+        }
     }
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
-    BOOLEAN ForceNative;
-
-    MY_MUTELOGGER_SET;
-    #endif
-    if (!BlockCert) {
+    if (!BlockGuid && !BlockCert) {
         BlockMore = (
             AppleFirmware &&
             (
@@ -451,63 +451,18 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
     }
 
-    Status = (BlockCert || BlockMore)
+    Status = (BlockGuid || BlockCert || BlockMore)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
         Attributes, VariableSize, VariableData
     );
 
-    #if REFIT_DEBUG > 0
-    // Log Outcome
-    CHAR16 *LogStatus = PoolPrint (
-        L"%r",
-        (BlockCert || BlockMore || BlockAppleKP)
-            ? EFI_ACCESS_DENIED : Status
-    );
-    LimitStringLength (LogStatus, 13);
-
-    MY_MUTELOGGER_OFF;
-    /* Enable Forced Native Logging */
-    MY_NATIVELOGGER_SET;
-
-    // Do not free LogName
-    CHAR16 *LogName = NULL;
-    if (0);
-    else if (StrCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE0";
-    else if (StrCmp (VariableName, L"dbx"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE1";
-    else if (StrCmp (VariableName, L"dbt"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE2";
-    else if (StrCmp (VariableName, L"dbr"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE3";
-    else if (StrCmp (VariableName, L"KEK"))   LogName = L"EFI_KEY_EXCHANGE_KEY_NAME"   ;
-    else if (StrCmp (VariableName, L"PK") )   LogName = L"EFI_PLATFORM_KEY_NAME"       ;
-
-    CHAR16 *MsgStr = PoolPrint (
-        L"In Hardware NVRAM ... %13s %s:- '%s%s'",
-        LogStatus,
-        NVRAM_LOG_SET,
-        (BlockCert)
-            ? L"Certificate  :::  "
-            : (BlockMore)
-                ? L"SecurityTag  :::  "
-                : (BlockAppleKP)
-                    ? L"KernelPanic  :::  "
-                    : L"",
-        (LogName) ? LogName : VariableName
-    );
-    LOG_MSG("%s", MsgStr);
-    LOG_MSG("\n");
-    MY_FREE_POOL(MsgStr);
-    MY_FREE_POOL(LogStatus);
-
-    /* Disable Forced Native Logging */
-    MY_NATIVELOGGER_OFF;
-    #endif
-
     /* Clear any previously saved instance of blocked variable */
     // DA-TAG: Do not remove Current OEM Policy
     //         ProtectNVRAM is currently limited to Apple Firmware, so not strictly needed
     //         However, best to add filter now in case that changes in future
-    if (!CurPolicyOEM && (BlockCert || BlockMore)) {
+    if (!CurPolicyOEM && (BlockGuid || BlockCert || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
             Attributes, 0, NULL
