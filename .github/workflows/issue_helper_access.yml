@@ -7,6 +7,7 @@ on:
         type: choice
         description: Issue Action
         options:
+        - 'Issue - Open'
         - 'Issue - Close'
         - 'Issue - Comment - Delete'
         - 'Issue - Thread - Lock'
@@ -24,6 +25,18 @@ concurrency:
 jobs:
 
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_open:
+    name: Issue - Open
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Issue - Open'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'open-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
   issue_close:
     name: Issue - Close
     runs-on: ubuntu-latest

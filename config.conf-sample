@@ -131,14 +131,14 @@
 # do not activate on classic MacPros for instance, as these are not actually
 # UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
 # all of, the UEFI 2.x capabilities. RefindPlus is configred by default to
-# amend a device's EFI Revision to v2.x and then try einstalling a copy of
-# the GPU's Option ROM whenever it detects that GOP is not available. The
+# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
+# of the GPU's Option ROM whenever it detects that GOP is not available.
 # This permits running modern GPUs on some legacy units when they would
 # otherwise fail to work. The change is reverted automatically once it
 # is longer required to allow GPU activation except when the related
-# "decline_uefiemulate" token is inactive and this is not reverted.
+# "decline_uefiemulate" token is deactivated (overrides reverting).
 #
-# GOP drivers are reloaded (if required) when commented out
+# GPU Option ROMs are reinstalled (if required) when commented out
 #
 #decline_reloadgop
 

@@ -12,7 +12,30 @@ concurrency:
 
 jobs:
 
-  # Add Labels - https://github.com/actions-cool/issues-similarity-analysis
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  # Add  Labels  - https://github.com/actions-ecosystem/action-add-labels
+  add_label_user_close:
+    name: Close Issue Label
+    runs-on: ubuntu-latest
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+
+      - name: Check Present Labels
+        uses: mheap/github-action-required-labels@v1
+        with:
+          mode: exactly
+          count: 0
+          labels: "Bug, Enhancement"
+
+      - name: Add Cancelled Label
+        uses: actions/checkout@v2
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Cancelled
+
+  # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
   similarity_analysis:
     name: Check Similarity
     runs-on: ubuntu-latest
@@ -65,18 +88,6 @@ jobs:
         with:
           github_token: ${{ github.token }}
           labels: Enhancement
-
-  add_label_user_close:
-    name: Close Issue Label
-    runs-on: ubuntu-latest
-
-    if: github.actor != 'dakanji' && github.event.action == 'closed'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ github.token }}
-          labels: Cancelled
 
   # Del Labels - https://github.com/dessant/label-actions
   del_label_user_reopen:

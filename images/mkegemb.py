@@ -52,7 +52,7 @@ def encode_plane(rawdata, planename):
     rawlen = len(rawdata)
     compdata = compress_rle(rawdata)
     complen = len(compdata)
-    print ("  plane %s: compressed %d to %d (%.1f%%)" % (planename, rawlen, complen, float(complen) / float(rawlen) * 100.0))
+    print ("  Plane %s: Compressed %d to %d (%.1f%%)" % (planename, rawlen, complen, float(complen) / float(rawlen) * 100.0))
 
     return compdata
 
@@ -62,6 +62,7 @@ def encode_plane(rawdata, planename):
 print ("mkegemb 0.1a, Copyright (c) 2006 Christoph Pfisterer")
 print ("              Modified 2020 for Python 3 by Dayo Akanji")
 print ("              Modified 2021 for Path Independence by Dayo Akanji")
+print ("              Modified 2022 for Formating by Dayo Akanji")
 
 planenames = ( "blue", "green", "red", "alpha", "grey" )
 
@@ -113,16 +114,16 @@ for filename in sys.argv[1:]:
             planes[2].append(pixeldata[0])
             planes[3].append(pixeldata[1])
     else:
-        print (" Error: Mode '%s' is not supported!!" % mode)
+        print (" Error: Mode '%s' is Not Supported!!" % mode)
         continue
 
     # special treatment for fonts
 
     if basename[0:4] == "font":
         if planes[0] != planes[1] or planes[0] != planes[2]:
-            print (" Error: Font detected, but it is not greyscale!!")
+            print (" Error: Non Greyscale Font Detected!!")
             continue
-        print (" font detected, encoding as alpha-only")
+        print (" Font Detected ... Encoding as Alpha Only")
         # invert greyscale values for use as alpha
         planes[3] = map(lambda x: 255-x, planes[0])
         planes[0] = []
@@ -135,12 +136,12 @@ for filename in sys.argv[1:]:
     pixelformat = "EG_EIPIXELMODE"
 
     if len(planes[0]) > 0 and planes[0] == planes[1] and planes[0] == planes[2]:
-        print (" encoding as greyscale")
+        print (" Encoding as Greyscale")
         imagedata.extend(encode_plane(planes[0], planenames[4]))
         pixelformat = pixelformat + "_GRAY"
 
     elif len(planes[0]) > 0:
-        print (" encoding as true color")
+        print (" Encoding as True Colour")
         imagedata.extend(encode_plane(planes[0], planenames[0]))
         imagedata.extend(encode_plane(planes[1], planenames[1]))
         imagedata.extend(encode_plane(planes[2], planenames[2]))
@@ -148,7 +149,7 @@ for filename in sys.argv[1:]:
 
     if len(planes[3]) > 0:
         if reduce(lambda x,y: x+y, planes[3]) == 0:
-            print (" skipping alpha plane because it is empty")
+            print (" Skipping Empty Alpha Plane")
         else:
             imagedata.extend(encode_plane(planes[3], planenames[3]))
             pixelformat = pixelformat + "_ALPHA"
@@ -157,11 +158,19 @@ for filename in sys.argv[1:]:
 
     output = "static const UINT8 egemb_%s_data[%d] = {\n" % (identname, len(imagedata))
     for i in range(0, len(imagedata)):
+        LineEnd = "false"
         output = output + " 0x%02x," % imagedata[i]
         if (i % 12) == 11:
+            LineEnd = "true"
             output = output + "\n"
-    output = output + "\n};\n"
-    output = output + "static EG_EMBEDDED_IMAGE egemb_%s = { %d, %d, %s, EG_EICOMPMODE_RLE, egemb_%s_data, %d };\n" % (identname, width, height, pixelformat, identname, len(imagedata))
+    if LineEnd == "false":
+        output = output + "\n"
+    output = output + "};\n"
+    output = output + "static EG_EMBEDDED_IMAGE egemb_%s = {\n"
+    output = output + "    %d, %d, %s, EG_EICOMPMODE_RLE,\n"
+    output = output + "    egemb_%s_data, %d\n"
+    output = output + "};\n"
+    output = output % (identname, width, height, pixelformat, identname, len(imagedata))
 
     f = open("egemb_%s.h" % identname, mode='w')
     f.write(output)
