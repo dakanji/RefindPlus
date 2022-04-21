@@ -20,7 +20,7 @@
 # and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
 # token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
 # RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
-# "Toggle CSR" tool after RefindPlus is loaded.
+# "Toggle CSR" tool after RefindPlus is loaded. NB: This option is only active on Apple Firmware.
 # The following options are available:
 #   1    - Always Enable SIP (and SSV on MacOS 11.x or later)
 #   0    - Take no Action
@@ -40,6 +40,7 @@
 # When this token is set, RefindPlus will remove this bit from the saved CSR bits
 # when booting into MacOS, OpenCore or Clover similar to the process undertaken
 # in MacOS 11.x and later. This setting can also be used with older versions.
+# NB: This option is only active on Apple Firmware.
 #
 # Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
 #

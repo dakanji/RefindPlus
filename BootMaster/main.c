@@ -541,6 +541,11 @@ VOID AlignCSR (VOID) {
     UINT32  CsrStatus;
     BOOLEAN RotateCsr = FALSE;
 
+    if (!AppleFirmware) {
+        // Early Return
+        return;
+    }
+
     if ((GlobalConfig.DynamicCSR == 0) ||
         (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1)
     ) {
@@ -2138,27 +2143,26 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
-    (!AppleFirmware                                                          )
-        ? LOG_MSG("'Disabled'"                                               )
-        : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
+    (!AppleFirmware                                                                )
+        ? LOG_MSG("'Disabled'"                                                     )
+        : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive"      );
     LOG_MSG(
         "%s      TextRenderer:- '%s'",
         OffsetNext,
-        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
+        GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
     );
-    LOG_MSG(
-        "%s      NormaliseCSR:- '%s'",
-        OffsetNext,
-        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
-    );
+    LOG_MSG("%s      NormaliseCSR:- ",     OffsetNext);
+    (!AppleFirmware                                                                )
+        ? LOG_MSG("'Disabled'"                                                     )
+        : LOG_MSG("'%s'", GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"      );
     LOG_MSG("%s      RansomDrives:- ",  OffsetNext);
-    (AppleFirmware                                                           )
-        ? LOG_MSG("'Disabled'"                                               )
-        : LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
+    (AppleFirmware                                                                 )
+        ? LOG_MSG("'Disabled'"                                                     )
+        : LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"      );
     LOG_MSG("%s      SupplyAppleFB:- ",     OffsetNext);
-    (!AppleFirmware                                                          )
-        ? LOG_MSG("'Disabled'"                                               )
-        : LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
+    (!AppleFirmware                                                                )
+        ? LOG_MSG("'Disabled'"                                                     )
+        : LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"     );
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,

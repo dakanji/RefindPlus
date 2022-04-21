@@ -1251,7 +1251,9 @@ VOID ReadConfig (
             ||  MyStriCmp  (TokenList[0], L"normalise_csr")
         ) {
             // DA_TAG: Accomodate Deprecation
-            GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.NormaliseCSR = (!AppleFirmware)
+                ? FALSE
+                : HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
             // DA-TAG: Signed integer as can have negative value
