@@ -431,6 +431,7 @@ typedef struct {
     BOOLEAN           SilenceAPFS;
     BOOLEAN           SyncAPFS;
     BOOLEAN           ProtectNVRAM;
+    BOOLEAN           PanicFilter;
     BOOLEAN           ScanAllESP;
     BOOLEAN           TagsHelp;
     BOOLEAN           TextHelp;

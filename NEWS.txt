@@ -9,8 +9,6 @@
 - Improves `FindMenuShortcutEntry` Function
   * Now initially tries a exact match of the stored string against available entries
   * A match against substrings is only tried if an exact match is not found
-- Removes `PanicFilter` Feature
-  * The feature is not used by the target unsupported units in RefindPlus and creates issues on supported units
 - Limits CSR Operations to Apple Firmware
   * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
 

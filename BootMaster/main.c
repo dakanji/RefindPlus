@@ -114,6 +114,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ TRUE,
+    /* PanicFilter = */ TRUE,
     /* ScanAllESP = */ FALSE,
     /* TagsHelp = */ TRUE,
     /* TextHelp = */ TRUE,
@@ -389,6 +390,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     BOOLEAN UsingWinGuid = GuidsAreEqual (VendorGuid, &WinGuid);
     BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
+    BOOLEAN BlockMacKP = FALSE;
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockGuid = FALSE;
@@ -449,9 +451,17 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 )
             )
         );
+
+        if (!BlockMore && GlobalConfig.PanicFilter) {
+            BlockMacKP = (
+                AppleFirmware &&
+                GuidsAreEqual (VendorGuid, &AppleGuid) &&
+                FoundSubStr (VariableName, L"AAPL,PanicInfo")
+            );
+        }
     }
 
-    Status = (BlockGuid || BlockCert || BlockMore)
+    Status = (BlockGuid || BlockCert || BlockMore || BlockMacKP)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -464,7 +474,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (BlockGuid || BlockCert || BlockMore)
+            (BlockGuid || BlockCert || BlockMore || BlockMacKP)
                 ? EFI_ACCESS_DENIED : Status
         );
         LimitStringLength (LogStatus, 13);
@@ -495,9 +505,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 ? L"Certificate"
                 : (BlockMore)
                     ? L"SecurityTag"
-                    : (CurPolicyOEM)
-                        ? L" PolicyOEM "
-                        : L"RegularItem",
+                    : (BlockMacKP)
+                        ? L"KernelPanic"
+                        : (CurPolicyOEM)
+                            ? L" PolicyOEM "
+                            : L"RegularItem",
             (LogName) ? LogName : VariableName,
             VariableSize,
             (VariableSize == 1)
@@ -525,6 +537,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     //         However, best to add filter now in case that changes in future
     //
     // Clear previously saved instances of blocked variable
+    // BlockMacKP is excluded as has dynamic naming
     if (!CurPolicyOEM && (BlockGuid || BlockCert || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
@@ -2307,6 +2320,13 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
+    LOG_MSG("%s      PanicFilter:- ",      OffsetNext);
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.PanicFilter ? L"Active" : L"Inactive");
+    }
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     if (!AppleFirmware) {
         LOG_MSG("'Disabled'");
@@ -3166,6 +3186,11 @@ EFI_STATUS EFIAPI efi_main (
                 else if (ourLoaderEntry->OSType == 'M'
                     || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
+                    if (GlobalConfig.PanicFilter) {
+                        // Protect Mac NVRAM from KP Dumps
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
+
                     // Set CSR if required
                     AlignCSR();
 
