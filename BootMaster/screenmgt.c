@@ -392,9 +392,12 @@ VOID SetupScreen (VOID) {
             BannerLoaded = TRUE;
 
             #if REFIT_DEBUG > 0
-            (NativeLogger && GlobalConfig.LogLevel > 0)
-                ? LOG_MSG("\n")
-                : LOG_MSG("\n\n");
+            if (NativeLogger && GlobalConfig.LogLevel > 0) {
+                LOG_MSG("\n");
+            }
+            else {
+                LOG_MSG("\n\n");
+            }
             #endif
         }
     }

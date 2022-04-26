@@ -684,6 +684,10 @@ BOOLEAN LimitStringLength (
     CHAR16 *TheString,
     UINTN    Limit
 ) {
+    if (TheString == NULL) {
+        return FALSE;
+    }
+
     UINTN     i;
     CHAR16   *SubString, *TempString;
     BOOLEAN   HasChanged = FALSE;

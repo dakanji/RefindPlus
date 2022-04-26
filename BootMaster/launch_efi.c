@@ -572,7 +572,7 @@ EFI_STATUS StartEFIImage (
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
 
         if (Verbose) {
-            LOG_MSG("Received Input:");
+            LOG_MSG("Received User Input:");
             LOG_MSG("%s  - Exit Child Image Loader:- '%s'", OffsetNext, ImageTitle);
             LOG_MSG("\n\n");
         }

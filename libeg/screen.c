@@ -2173,7 +2173,7 @@ VOID egScreenShot (VOID) {
     #endif
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Received Input:");
+    LOG_MSG("Received User Input:");
     LOG_MSG("%s  - Take Screenshot", OffsetNext);
     #endif
 

@@ -199,6 +199,8 @@ REFIT_CONFIG GlobalConfig = {
 UINTN                  AppleFramebuffers    = 0;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
+BOOLEAN                KernelNotStarted     = TRUE;
+BOOLEAN                KernelNowRunning     = FALSE;
 BOOLEAN                IsBoot               = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
@@ -329,38 +331,28 @@ EFI_STATUS SetHardwareNvramVariable (
     EFI_STATUS   Status;
     VOID        *OldBuf;
     UINTN        OldSize;
-    BOOLEAN      SettingMatch;
 
     Status = GetHardwareNvramVariable (
         VariableName, VendorGuid,
         &OldBuf, &OldSize
     );
-    if (EFI_ERROR(Status)) {
-        SettingMatch = FALSE;
+    if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
+        // Early Return
+        return Status;
     }
-    else {
-        // Check for settings match
-        SettingMatch = (
+
+    if (!EFI_ERROR(Status)) {
+        // Check for match
+        BOOLEAN SettingMatch = (
             VariableSize == OldSize &&
             CompareMem (VariableData, OldBuf, VariableSize) == 0
         );
-    }
-    MY_FREE_POOL(OldBuf);
+        MY_FREE_POOL(OldBuf);
 
-    if (Status == EFI_OUT_OF_RESOURCES) {
-        return Status;
-    }
-    if (SettingMatch) {
-        // Early Return
-        return EFI_ALREADY_STARTED;
-    }
-
-    if (Status != EFI_NOT_FOUND) {
-        // Clear the current value
-        OrigSetVariableRT (
-            VariableName, VendorGuid,
-            Attributes, 0, NULL
-        );
+        if (SettingMatch) {
+            // Early Return
+            return EFI_ALREADY_STARTED;
+        }
     }
 
     // Store the new value
@@ -395,51 +387,59 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
-    BOOLEAN UsingWinGuid = (GuidsAreEqual (VendorGuid, &WinGuid));
+    BOOLEAN UsingWinGuid = GuidsAreEqual (VendorGuid, &WinGuid);
     BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockGuid = FALSE;
+    BOOLEAN RevokeVar = (!VariableData && VariableSize == 0);
 
-    if (!CurPolicyOEM) {
+    if (!CurPolicyOEM && !RevokeVar) {
         BlockGuid = (
             AppleFirmware && UsingWinGuid
         );
 
         if (!BlockGuid) {
             BlockCert = (
-            AppleFirmware &&
-            (
-                GuidsAreEqual (VendorGuid, &X509Guid) ||
-                GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
-                GuidsAreEqual (VendorGuid, &Sha001Guid) ||
-                GuidsAreEqual (VendorGuid, &Sha224Guid) ||
-                GuidsAreEqual (VendorGuid, &Sha256Guid) ||
-                GuidsAreEqual (VendorGuid, &Sha384Guid) ||
-                GuidsAreEqual (VendorGuid, &Sha512Guid) ||
-                GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
-                GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
-                GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
-                GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
-            )
-        );
+                AppleFirmware &&
+                (
+                    GuidsAreEqual (VendorGuid, &X509Guid) ||
+                    GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
+                    GuidsAreEqual (VendorGuid, &Sha001Guid) ||
+                    GuidsAreEqual (VendorGuid, &Sha224Guid) ||
+                    GuidsAreEqual (VendorGuid, &Sha256Guid) ||
+                    GuidsAreEqual (VendorGuid, &Sha384Guid) ||
+                    GuidsAreEqual (VendorGuid, &Sha512Guid) ||
+                    GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
+                    GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
+                    GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
+                    GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
+                )
+            );
         }
     }
 
-    if (!BlockGuid && !BlockCert) {
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
+    BOOLEAN ForceNative;
+
+    MY_MUTELOGGER_SET;
+    #endif
+
+    if (!BlockGuid && !BlockCert && !CurPolicyOEM && !RevokeVar) {
         BlockMore = (
             AppleFirmware &&
             (
                 (
                     FoundSubStr (VariableName, L"UnlockID")
                 ) || (
-                    CompareGuid (VendorGuid, &gEfiGlobalVariableGuid) &&
+                    GuidsAreEqual (VendorGuid, &gEfiGlobalVariableGuid) &&
                     (
                         MyStriCmp (VariableName, L"PK")  || /* EFI_PLATFORM_KEY_NAME     */
                         MyStriCmp (VariableName, L"KEK")    /* EFI_KEY_EXCHANGE_KEY_NAME */
                     )
                 ) || (
-                    CompareGuid (VendorGuid, &gEfiImageSecurityDatabaseGuid) &&
+                    GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid) &&
                     (
                         MyStriCmp (VariableName, L"db")  || /* EFI_IMAGE_SECURITY_DATABASE0 */
                         MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
@@ -458,10 +458,73 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         Attributes, VariableSize, VariableData
     );
 
-    /* Clear any previously saved instance of blocked variable */
+    #if REFIT_DEBUG > 0
+    CHAR16 *LogStatus = NULL;
+    if (!KernelNowRunning) {
+        // Log Outcome
+        LogStatus = PoolPrint (
+            L"%r",
+            (BlockGuid || BlockCert || BlockMore)
+                ? EFI_ACCESS_DENIED : Status
+        );
+        LimitStringLength (LogStatus, 13);
+    }
+
+    MY_MUTELOGGER_OFF;
+    /* Enable Forced Native Logging */
+    MY_NATIVELOGGER_SET;
+
+    if (!KernelNowRunning) {
+        // Do not free LogName
+        CHAR16 *LogName = NULL;
+        if (GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid)) {
+            if (0);
+            else if (MyStriCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE0";
+            else if (MyStriCmp (VariableName, L"dbx"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE1";
+            else if (MyStriCmp (VariableName, L"dbt"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE2";
+            else if (MyStriCmp (VariableName, L"dbr"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE3";
+            else if (MyStriCmp (VariableName, L"KEK"))   LogName = L"EFI_KEY_EXCHANGE_KEY_NAME"   ;
+            else if (MyStriCmp (VariableName, L"PK") )   LogName = L"EFI_PLATFORM_KEY_NAME"       ;
+        }
+
+        CHAR16 *MsgStr = PoolPrint (
+            L"In Hardware NVRAM ... %16s %s:- %s  :::  %-32s  ****  Size: %5d byte%s%s",
+            LogStatus,
+            NVRAM_LOG_SET,
+            (BlockCert)
+                ? L"Certificate"
+                : (BlockMore)
+                    ? L"SecurityTag"
+                    : (CurPolicyOEM)
+                        ? L" PolicyOEM "
+                        : L"RegularItem",
+            (LogName) ? LogName : VariableName,
+            VariableSize,
+            (VariableSize == 1)
+                ? L" "
+                : (RevokeVar)
+                    ? L"s  ---  Invalidated"
+                    : L"s",
+            (Attributes & EFI_VARIABLE_NON_VOLATILE)
+                ? L"  ***  NonVolatile"
+                : L""
+        );
+
+        LOG_MSG("%s", MsgStr);
+        LOG_MSG("\n");
+        MY_FREE_POOL(MsgStr);
+        MY_FREE_POOL(LogStatus);
+    }
+
+    /* Disable Forced Native Logging */
+    MY_NATIVELOGGER_OFF;
+    #endif
+
     // DA-TAG: Do not remove Current OEM Policy
     //         ProtectNVRAM is currently limited to Apple Firmware, so not strictly needed
     //         However, best to add filter now in case that changes in future
+    //
+    // Clear previously saved instances of blocked variable
     if (!CurPolicyOEM && (BlockGuid || BlockCert || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
@@ -469,45 +532,139 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
     }
 
+    if (Status == EFI_ALREADY_STARTED) {
+        Status = EFI_SUCCESS;
+    }
+
     return Status;
-} // VOID gRTSetVariableEx()
+} // EFI_STATUS EFIAPI gRTSetVariableEx()
+
+static
+VOID ConvertAddress (
+    IN UINTN       Type
+) {
+    if (KernelNowRunning) {
+        // Early Return
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    switch (Type) {
+        case  0:  MsgStr = L"ExitBootServices"    ;   break;
+        case  1:  MsgStr = L"VirtualAddressChange";   break;
+        default:  MsgStr = L"ExitBootServices"    ;   break; // Just in case and for expansion
+    }
+
+    // DA-TAG: Embellished placebo log entries
+    //         To flag logging and memory access halt
+    LOG_MSG("INFO: Received OS Loader Input");
+    LOG_MSG("%s        - '%s' Event Signal", OffsetNext, MsgStr);
+    LOG_MSG("%s          * Translate SetVariable Hook for Kernel ... Success", OffsetNext);
+    LOG_MSG("%s          * Indicate Local 'Kernel Started' State ... Success", OffsetNext);
+    LOG_MSG("\n\n");
+    LOG_MSG("Terminating RefindPlus Memory and Filesystem Activity");
+    LOG_MSG("\n ----->> * <<-----\n\n");
+    #endif
+
+    gRT->ConvertPointer (0, (VOID **) &OrigSetVariableRT);
+
+    // DA-TAG: Flag that the kernel has started
+    //         To disable post-boot memory access
+    //         Two flags to pass static analysis
+    //         'KernelNotStarted' used globally
+    //         'KernelNowRunning' used only in this file
+    KernelNotStarted = FALSE;
+    KernelNowRunning = TRUE;
+} // static VOID ConvertAddress()
+
+static
+VOID EFIAPI HandleExitBootServicesEvent (
+    IN EFI_EVENT   Event,
+    IN VOID       *Context
+) {
+    ConvertAddress (0);
+} // static VOID EFIAPI HandleExitBootServicesEvent()
+
+static
+VOID EFIAPI HandleVirtualAddressChangeEvent (
+    IN EFI_EVENT   Event,
+    IN VOID       *Context
+) {
+    ConvertAddress (1);
+} // static VOID EFIAPI HandleExitBootServicesEvent()
 
 static
 VOID SetProtectNvram (
     IN EFI_SYSTEM_TABLE *SystemTable,
     IN BOOLEAN           Activate
 ) {
-    static BOOLEAN ProtectActive = FALSE;
-
     if (!GlobalConfig.ProtectNVRAM) {
         // Early Return
         return;
     }
 
+    EFI_STATUS        Status;
+    static BOOLEAN    ProtectActive        = FALSE;
+    static EFI_EVENT  OurBootServicesEvent  = NULL;
+    static EFI_EVENT  OurAddressChangeEvent = NULL;
+
     if (Activate) {
         if (!ProtectActive) {
-            ProtectActive                             =             TRUE;
-            RT->SetVariable                           = gRTSetVariableEx;
-            gRT->SetVariable                          = gRTSetVariableEx;
-            SystemTable->RuntimeServices->SetVariable = gRTSetVariableEx;
-            gRT->Hdr.CRC32                            =                0;
+            ProtectActive    =             TRUE;
+            gRT->SetVariable = gRTSetVariableEx;
+            gRT->Hdr.CRC32   =                0;
             REFIT_CALL_3_WRAPPER(
                 gBS->CalculateCrc32, gRT,
                 gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
             );
+
+            Status = (OurBootServicesEvent)
+                ? REFIT_CALL_1_WRAPPER(gBS->CheckEvent, OurBootServicesEvent)
+                : EFI_NOT_FOUND;
+            if (EFI_ERROR(Status)) {
+                REFIT_CALL_5_WRAPPER(
+                    gBS->CreateEvent, EVT_SIGNAL_EXIT_BOOT_SERVICES,
+                    TPL_CALLBACK, HandleExitBootServicesEvent,
+                    NULL, &OurBootServicesEvent
+                );
+            }
+
+            Status = (OurAddressChangeEvent)
+                ? REFIT_CALL_1_WRAPPER(gBS->CheckEvent, OurAddressChangeEvent)
+                : EFI_NOT_FOUND;
+            if (EFI_ERROR(Status)) {
+                REFIT_CALL_5_WRAPPER(
+                    gBS->CreateEvent, EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE,
+                    TPL_CALLBACK, HandleVirtualAddressChangeEvent,
+                    NULL, &OurAddressChangeEvent
+                );
+            }
         }
     }
     else {
         if (ProtectActive) {
-            ProtectActive                             =             FALSE;
-            RT->SetVariable                           = OrigSetVariableRT;
-            gRT->SetVariable                          = OrigSetVariableRT;
-            SystemTable->RuntimeServices->SetVariable = OrigSetVariableRT;
-            gRT->Hdr.CRC32                            =                 0;
+            ProtectActive    =             FALSE;
+            gRT->SetVariable = OrigSetVariableRT;
+            gRT->Hdr.CRC32   =                 0;
             REFIT_CALL_3_WRAPPER(
                 gBS->CalculateCrc32, gRT,
                 gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
             );
+
+            Status = (OurBootServicesEvent)
+                ? REFIT_CALL_1_WRAPPER(gBS->CheckEvent, OurBootServicesEvent)
+                : EFI_NOT_FOUND;
+            if (!EFI_ERROR(Status)) {
+                REFIT_CALL_1_WRAPPER(gBS->CloseEvent, OurBootServicesEvent);
+            }
+
+            Status = (OurAddressChangeEvent)
+                ? REFIT_CALL_1_WRAPPER(gBS->CheckEvent, OurAddressChangeEvent)
+                : EFI_NOT_FOUND;
+            if (!EFI_ERROR(Status)) {
+                REFIT_CALL_1_WRAPPER(gBS->CloseEvent, OurAddressChangeEvent);
+            }
         }
     }
 } // static VOID SetProtectNvram()
@@ -1215,7 +1372,7 @@ BOOLEAN ShowCleanNvramInfo (
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
-    LOG_MSG("Received Input:");
+    LOG_MSG("Received User Input:");
     LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
     #endif
 
@@ -1699,7 +1856,12 @@ VOID LogRevisionInfo (
 ) {
     static BOOLEAN FirstRun = TRUE;
 
-    (FirstRun) ? LOG_MSG("\n\n") : LOG_MSG("\n");
+    if (FirstRun) {
+        LOG_MSG("\n\n");
+    }
+    else {
+        LOG_MSG("\n");
+    }
     FirstRun = FALSE;
 
     LOG_MSG(
@@ -1710,9 +1872,12 @@ VOID LogRevisionInfo (
         Hdr->Revision & 0xffff
     );
 
-    (Hdr->HeaderSize == CompileSize)
-        ? LOG_MSG(" (HeaderSize %d)", Hdr->HeaderSize)
-        : LOG_MSG(" (HeaderSize %d ... %d CompileSize)", Hdr->HeaderSize, CompileSize);
+    if (Hdr->HeaderSize == CompileSize) {
+        LOG_MSG(" (HeaderSize %d)", Hdr->HeaderSize);
+    }
+    else {
+        LOG_MSG(" (HeaderSize %d ... %d CompileSize)", Hdr->HeaderSize, CompileSize);
+    }
 } // static VOID LogRevisionInfo()
 #endif
 
@@ -2143,26 +2308,36 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
-    (!AppleFirmware                                                                )
-        ? LOG_MSG("'Disabled'"                                                     )
-        : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive"      );
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
+    }
     LOG_MSG(
         "%s      TextRenderer:- '%s'",
         OffsetNext,
-        GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
+        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      NormaliseCSR:- ",     OffsetNext);
-    (!AppleFirmware                                                                )
-        ? LOG_MSG("'Disabled'"                                                     )
-        : LOG_MSG("'%s'", GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"      );
-    LOG_MSG("%s      RansomDrives:- ",  OffsetNext);
-    (AppleFirmware                                                                 )
-        ? LOG_MSG("'Disabled'"                                                     )
-        : LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"      );
-    LOG_MSG("%s      SupplyAppleFB:- ",     OffsetNext);
-    (!AppleFirmware                                                                )
-        ? LOG_MSG("'Disabled'"                                                     )
-        : LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"     );
+    LOG_MSG(
+        "%s      NormaliseCSR:- '%s'",
+        OffsetNext,
+        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
+    );
+    LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
+    }
+    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext);
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
+    }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,
@@ -2686,7 +2861,7 @@ EFI_STATUS EFIAPI efi_main (
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("Received Input:");
+            LOG_MSG("Received User Input:");
             LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
             LOG_MSG("\n\n");
             #endif
@@ -2728,7 +2903,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating '%s Info' Screen", TypeStr);
 
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
                 LOG_MSG("\n\n");
                 #endif
@@ -2900,7 +3075,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_ABOUT:    // About RefindPlus
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Show 'About RefindPlus' Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2909,7 +3084,7 @@ EFI_STATUS EFIAPI efi_main (
                 AboutRefindPlus();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit 'About RefindPlus' Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2945,8 +3120,8 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load OpenCore Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -2972,8 +3147,8 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load Clover Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -2995,8 +3170,8 @@ EFI_STATUS EFIAPI efi_main (
                     AlignCSR();
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load MacOS Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -3070,8 +3245,8 @@ EFI_STATUS EFIAPI efi_main (
                     SetProtectNvram (SystemTable, TRUE);
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load Windows (UEFI) Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -3093,8 +3268,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3108,8 +3283,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via VMLinuz Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3123,8 +3298,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via BZImage Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3138,8 +3313,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Kernel Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3153,15 +3328,17 @@ EFI_STATUS EFIAPI efi_main (
                     || FoundSubStr (ourLoaderEntry->Title, L"Linux")
                 ) {
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load Linux Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                    (ourLoaderEntry->Volume->VolName)
-                        ? LOG_MSG(" from '%s'", ourLoaderEntry->Volume->VolName)
-                        : LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
-
+                    if (ourLoaderEntry->Volume->VolName) {
+                        LOG_MSG(" from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
+                    }
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -3173,8 +3350,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Run rEFIt Variant");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3192,8 +3369,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Run UEFI File");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'Received Input:'
-                    LOG_MSG("Received Input:");
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -3212,7 +3389,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 #endif
 
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
@@ -3249,7 +3426,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Load 'UEFI-Style' Legacy (BIOS) OS");
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG(
                     "%s  - %s:- '%s'",
                     OffsetNext, MsgStr,
@@ -3268,7 +3445,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Start UEFI Tool");
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -3281,7 +3458,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Reboot into Firmware Defined Loader", OffsetNext);
                 #endif
 
@@ -3292,7 +3469,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_HIDDEN:  // Manage hidden tag entries
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Manage Hidden Tag Entries", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -3301,7 +3478,7 @@ EFI_STATUS EFIAPI efi_main (
                 ManageHiddenTags();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit Hidden Tags Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -3309,7 +3486,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_EXIT:    // Exit RefindPlus
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit RefindPlus", OffsetNext);
                 LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
@@ -3326,7 +3503,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_FIRMWARE: // Reboot into firmware's user interface
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Reboot into Firmware", OffsetNext);
                 #endif
 
@@ -3336,7 +3513,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_CSR_ROTATE:
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Toggle Mac SIP", OffsetNext);
                 LOG_MSG("\n");
                 #endif
@@ -3347,7 +3524,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_INSTALL:
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Install RefindPlus", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -3358,7 +3535,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_BOOTORDER:
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Manage Firmware Boot Order", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -3367,7 +3544,7 @@ EFI_STATUS EFIAPI efi_main (
                 ManageBootorder();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received Input:");
+                LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit Manage Firmware Boot Order Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
