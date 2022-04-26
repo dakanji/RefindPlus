@@ -14,7 +14,6 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 // NVM Express Driver Binding Protocol Instance
@@ -92,14 +91,14 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         (VOID *) NamespaceData
     );
     if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(NamespaceData);
+        FREE_NVME_POOL(NamespaceData);
 
         return Status;
     }
 
     // Validate Namespace
     if (NamespaceData->Ncap == 0) {
-        MY_FREE_POOL(NamespaceData);
+        FREE_NVME_POOL(NamespaceData);
 
         return EFI_DEVICE_ERROR;
     }
@@ -107,7 +106,7 @@ EFI_STATUS EnumerateNvmeDevNamespace (
     // allocate device private data for each discovered namespace
     Device = AllocateZeroPool(sizeof (NVME_DEVICE_PRIVATE_DATA));
     if (Device == NULL) {
-        MY_FREE_POOL(NamespaceData);
+        FREE_NVME_POOL(NamespaceData);
 
         return EFI_OUT_OF_RESOURCES;
     }
@@ -174,8 +173,8 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         &NewDevicePathNode
     );
     if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(NamespaceData);
-        MY_FREE_POOL(Device);
+        FREE_NVME_POOL(NamespaceData);
+        FREE_NVME_POOL(Device);
 
         return Status;
     }
@@ -183,9 +182,9 @@ EFI_STATUS EnumerateNvmeDevNamespace (
     // Append the SSD node to the controller's device path
     DevicePath = AppendDevicePathNode (ParentDevicePath, NewDevicePathNode);
     if (DevicePath == NULL) {
-        MY_FREE_POOL(NamespaceData);
-        MY_FREE_POOL(NewDevicePathNode);
-        MY_FREE_POOL(Device);
+        FREE_NVME_POOL(NamespaceData);
+        FREE_NVME_POOL(NewDevicePathNode);
+        FREE_NVME_POOL(Device);
 
         return EFI_OUT_OF_RESOURCES;
     }
@@ -201,10 +200,10 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         && (DeviceHandle != NULL)
         && IsDevicePathEnd (RemainingDevicePath)
     ) {
-        MY_FREE_POOL(DevicePath);
-        MY_FREE_POOL(NamespaceData);
-        MY_FREE_POOL(NewDevicePathNode);
-        MY_FREE_POOL(Device);
+        FREE_NVME_POOL(DevicePath);
+        FREE_NVME_POOL(NamespaceData);
+        FREE_NVME_POOL(NewDevicePathNode);
+        FREE_NVME_POOL(Device);
 
         return EFI_ALREADY_STARTED;
     }
@@ -222,10 +221,10 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
     );
     if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(NamespaceData);
-        MY_FREE_POOL(NewDevicePathNode);
-        MY_FREE_POOL(Device->DevicePath);
-        MY_FREE_POOL(Device);
+        FREE_NVME_POOL(NamespaceData);
+        FREE_NVME_POOL(NewDevicePathNode);
+        FREE_NVME_POOL(Device->DevicePath);
+        FREE_NVME_POOL(Device);
 
         return Status;
     }
@@ -245,10 +244,10 @@ EFI_STATUS EnumerateNvmeDevNamespace (
                 &gEfiDiskInfoProtocolGuid, &Device->DiskInfo, NULL
             );
 
-            MY_FREE_POOL(NamespaceData);
-            MY_FREE_POOL(NewDevicePathNode);
-            MY_FREE_POOL(Device->DevicePath);
-            MY_FREE_POOL(Device);
+            FREE_NVME_POOL(NamespaceData);
+            FREE_NVME_POOL(NewDevicePathNode);
+            FREE_NVME_POOL(Device->DevicePath);
+            FREE_NVME_POOL(Device);
 
             return Status;
         }
@@ -447,8 +446,8 @@ EFI_STATUS UnregisterNvmeNamespace (
         FreeUnicodeStringTable (Device->ControllerNameTable);
     }
 
-    MY_FREE_POOL(Device->DevicePath);
-    MY_FREE_POOL(Device);
+    FREE_NVME_POOL(Device->DevicePath);
+    FREE_NVME_POOL(Device);
 
     return EFI_SUCCESS;
 }
@@ -505,14 +504,14 @@ VOID EFIAPI ProcessAsyncTaskList (
             ) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Request->Link);
-                MY_FREE_POOL(BlkIo2Request);
+                FREE_NVME_POOL(BlkIo2Request);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Token->Event);
             }
 
-            MY_FREE_POOL(Subtask->CommandPacket->NvmeCmd);
-            MY_FREE_POOL(Subtask->CommandPacket->NvmeCompletion);
-            MY_FREE_POOL(Subtask->CommandPacket);
-            MY_FREE_POOL(Subtask);
+            FREE_NVME_POOL(Subtask->CommandPacket->NvmeCmd);
+            FREE_NVME_POOL(Subtask->CommandPacket->NvmeCompletion);
+            FREE_NVME_POOL(Subtask->CommandPacket);
+            FREE_NVME_POOL(Subtask);
 
             continue;
         }
@@ -535,14 +534,14 @@ VOID EFIAPI ProcessAsyncTaskList (
             if (IsListEmpty (&BlkIo2Request->SubtasksQueue) && Subtask->IsLast) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Request->Link);
-                MY_FREE_POOL(BlkIo2Request);
+                FREE_NVME_POOL(BlkIo2Request);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Token->Event);
             }
 
-            MY_FREE_POOL(Subtask->CommandPacket->NvmeCmd);
-            MY_FREE_POOL(Subtask->CommandPacket->NvmeCompletion);
-            MY_FREE_POOL(Subtask->CommandPacket);
-            MY_FREE_POOL(Subtask);
+            FREE_NVME_POOL(Subtask->CommandPacket->NvmeCmd);
+            FREE_NVME_POOL(Subtask->CommandPacket->NvmeCompletion);
+            FREE_NVME_POOL(Subtask->CommandPacket);
+            FREE_NVME_POOL(Subtask);
         }
         else {
             InsertTailList (&BlkIo2Request->SubtasksQueue, Link);
@@ -599,7 +598,7 @@ VOID EFIAPI ProcessAsyncTaskList (
 
                 RemoveEntryList (Link);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, AsyncRequest->CallerEvent);
-                MY_FREE_POOL(AsyncRequest);
+                FREE_NVME_POOL(AsyncRequest);
 
                 // Update submission queue head.
                 Private->AsyncSqHead = Cq->Sqhd;
@@ -982,7 +981,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
     }
 
     if (Private != NULL) {
-        MY_FREE_POOL(Private->ControllerData);
+        FREE_NVME_POOL(Private->ControllerData);
     }
 
     if (Private != NULL) {
@@ -990,7 +989,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
             REFIT_CALL_1_WRAPPER(gBS->CloseEvent, Private->TimerEvent);
         }
 
-        MY_FREE_POOL(Private);
+        FREE_NVME_POOL(Private);
     }
 
     REFIT_CALL_4_WRAPPER(
@@ -1087,8 +1086,8 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStop (
                 Private->PciIo->FreeBuffer (Private->PciIo, 6, Private->Buffer);
             }
 
-            MY_FREE_POOL(Private->ControllerData);
-            MY_FREE_POOL(Private);
+            FREE_NVME_POOL(Private->ControllerData);
+            FREE_NVME_POOL(Private);
         }
 
         REFIT_CALL_4_WRAPPER(
@@ -1216,7 +1215,7 @@ EFI_STATUS EFIAPI NvmExpressUnload (
     } while (0);
 
     // Free the buffer containing the list of handles from the handle database
-    MY_FREE_POOL(DeviceHandleBuffer);
+    FREE_NVME_POOL(DeviceHandleBuffer);
 
     return Status;
 }

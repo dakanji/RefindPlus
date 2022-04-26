@@ -14,7 +14,6 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 #define NVME_SHUTDOWN_PROCESS_TIMEOUT 45
@@ -831,7 +830,7 @@ EFI_STATUS NvmeControllerInit (
     // Get current Identify Controller Data
     Status = NvmeIdentifyController (Private, Private->ControllerData);
     if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(Private->ControllerData);
+        FREE_NVME_POOL(Private->ControllerData);
         Private->ControllerData = NULL;
         return EFI_NOT_FOUND;
     }

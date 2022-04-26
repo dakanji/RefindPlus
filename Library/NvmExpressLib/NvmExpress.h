@@ -89,6 +89,14 @@ extern EFI_DRIVER_SUPPORTED_EFI_VERSION_PROTOCOL  gNvmExpressDriverSupportedEfiV
 // Unique signature for private data structure.
 #define NVME_CONTROLLER_PRIVATE_DATA_SIGNATURE    SIGNATURE_32 ('N','V','M','E')
 
+#define FREE_NVME_POOL(Pointer)                         \
+    do {                                                \
+        if (Pointer != NULL) {                          \
+            FreePool (Pointer);                         \
+            Pointer = NULL;                             \
+        }                                               \
+    } while (0)
+
 // Nvme private data structure.
 struct _NVME_CONTROLLER_PRIVATE_DATA {
     UINT32                              Signature;

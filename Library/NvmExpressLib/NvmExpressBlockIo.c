@@ -14,7 +14,6 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 /**
@@ -363,14 +362,14 @@ VOID EFIAPI AsyncIoCallback (
     if (IsListEmpty (&Request->SubtasksQueue) && Request->LastSubtaskSubmitted) {
         // Remove the BlockIo2 request from the device asynchronous queue.
         RemoveEntryList (&Request->Link);
-        MY_FREE_POOL(Request);
+        FREE_NVME_POOL(Request);
         REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Token->Event);
     }
 
-    MY_FREE_POOL(Subtask->CommandPacket->NvmeCmd);
-    MY_FREE_POOL(Subtask->CommandPacket->NvmeCompletion);
-    MY_FREE_POOL(Subtask->CommandPacket);
-    MY_FREE_POOL(Subtask);
+    FREE_NVME_POOL(Subtask->CommandPacket->NvmeCmd);
+    FREE_NVME_POOL(Subtask->CommandPacket->NvmeCompletion);
+    FREE_NVME_POOL(Subtask->CommandPacket);
+    FREE_NVME_POOL(Subtask);
 }
 
 /**
@@ -482,16 +481,16 @@ EFI_STATUS AsyncReadSectors (
     } while (0);
 
     // Resource cleanup if asynchronous read request has not been queued.
-    MY_FREE_POOL(Completion);
-    MY_FREE_POOL(Command);
-    MY_FREE_POOL(CommandPacket);
+    FREE_NVME_POOL(Completion);
+    FREE_NVME_POOL(Command);
+    FREE_NVME_POOL(CommandPacket);
 
     if (Subtask != NULL) {
         if (Subtask->Event != NULL) {
             REFIT_CALL_1_WRAPPER(gBS->CloseEvent, Subtask->Event);
         }
 
-        MY_FREE_POOL(Subtask);
+        FREE_NVME_POOL(Subtask);
     }
 
     return Status;
@@ -609,16 +608,16 @@ EFI_STATUS AsyncWriteSectors (
     } while (0);
 
     // Resource cleanup if asynchronous read request has not been queued.
-        MY_FREE_POOL(Completion);
-        MY_FREE_POOL(Command);
-        MY_FREE_POOL(CommandPacket);
+        FREE_NVME_POOL(Completion);
+        FREE_NVME_POOL(Command);
+        FREE_NVME_POOL(CommandPacket);
 
     if (Subtask != NULL) {
         if (Subtask->Event != NULL) {
             REFIT_CALL_1_WRAPPER(gBS->CloseEvent, Subtask->Event);
         }
 
-        MY_FREE_POOL(Subtask);
+        FREE_NVME_POOL(Subtask);
     }
 
     return Status;
@@ -715,7 +714,7 @@ NvmeAsyncRead (
             if (IsEmpty) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Req->Link);
-                MY_FREE_POOL(BlkIo2Req);
+                FREE_NVME_POOL(BlkIo2Req);
                 Status = EFI_DEVICE_ERROR;
             }
             else {
@@ -828,7 +827,7 @@ EFI_STATUS NvmeAsyncWrite (
             if (IsEmpty) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Req->Link);
-                MY_FREE_POOL(BlkIo2Req);
+                FREE_NVME_POOL(BlkIo2Req);
                 Status = EFI_DEVICE_ERROR;
             }
             else {

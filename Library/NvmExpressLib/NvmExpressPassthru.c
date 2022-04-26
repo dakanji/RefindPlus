@@ -15,7 +15,6 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 /**
@@ -205,7 +204,7 @@ EFI_STATUS AbortAsyncPassThruTasks (
 
         RemoveEntryList (Link);
         REFIT_CALL_1_WRAPPER(gBS->SignalEvent, AsyncRequest->CallerEvent);
-        MY_FREE_POOL(AsyncRequest);
+        FREE_NVME_POOL(AsyncRequest);
     }
 
     if (IsListEmpty (&Private->AsyncPassThruQueue) &&
@@ -798,7 +797,7 @@ EFI_STATUS EFIAPI NvmExpressGetNextNamespace (
     }
 
 Done:
-    MY_FREE_POOL(NamespaceData);
+    FREE_NVME_POOL(NamespaceData);
 
     return Status;
 }
@@ -956,11 +955,11 @@ EFI_STATUS EFIAPI NvmExpressBuildDevicePath (
     } while (0);
 
     if (NamespaceData != NULL) {
-        MY_FREE_POOL(NamespaceData);
+        FREE_NVME_POOL(NamespaceData);
     }
 
     if (EFI_ERROR (Status)) {
-        MY_FREE_POOL(Node);
+        FREE_NVME_POOL(Node);
     }
 
     return Status;
