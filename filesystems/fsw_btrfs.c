@@ -1287,8 +1287,7 @@ begin_direct_read:
         size -= csize;
         buf = (uint8_t *) buf + csize;
         addr += csize;
-        if (challoc && chunk)
-            FreePool (chunk);
+        if (challoc) FreePool (chunk);
         challoc = 0;
 	if(stripe_table)
 	    fsw_free(stripe_table);
@@ -1299,10 +1298,7 @@ begin_direct_read:
 volume_corrupted:
     err = FSW_VOLUME_CORRUPTED;
 io_error:
-    if(challoc && chunk)
-	FreePool (chunk);
-    if(stripe_table)
-	FreePool(stripe_table);
+    if(stripe_table) FreePool(stripe_table);
     return err;
 }
 
@@ -2167,8 +2163,7 @@ static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode
                     cdirel->key.object_id, cdirel->key.type, cdirel->key.offset, cdirel->type, s.size);
             if(!err) {
                 fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
-                if(direl)
-                    FreePool (direl);
+                FreePool (direl);
                 free_iterator (&desc);
                 shand->pos = key_out.offset;
                 return FSW_SUCCESS;
