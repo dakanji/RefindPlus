@@ -6,10 +6,13 @@
   * This bug was introduced in v0.13.2.AP (Commit 8705fdb)
 - Improves `ProtectNVRAM` Feature
   * Eliminates post-boot logging as this may have negative impacts
+- Improves `FindMenuShortcutEntry` Function
+  * Now initially tries a exact match of the stored string against available entries
+  * A match against substrings is only tried if an exact match is not found
 - Removes `PanicFilter` Feature
   * The feature is not used by the target unsupported units in RefindPlus and creates issues on supported units
 - Limits CSR Operations to Apple Firmware
-  * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability 
+  * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
 
 
 0.13.2.AP (19 Apr 2022):
