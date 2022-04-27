@@ -164,7 +164,6 @@ BOOLEAN IsValidLoader (
     if (IsBoot) {
         LOG_MSG("\n");
         LOG_MSG("%s ... Loading", ValidText);
-        LOG_MSG("\n <<----- * ----->>\n\n");
     }
     #endif
 
@@ -191,13 +190,13 @@ BOOLEAN IsValidLoader (
         if (IsBoot) {
             LOG_MSG("\n");
             LOG_MSG("%s ... Loading", ValidText);
-            LOG_MSG("\n <<----- * ----->>\n\n");
         }
         #endif
 
         return TRUE;
     }
-    else if (!FileExists (RootDir, FileName)) {
+
+    if (!FileExists (RootDir, FileName)) {
         #if REFIT_DEBUG > 0
         ValidText = L"EFI File *NOT* Found";
         ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -288,7 +287,6 @@ BOOLEAN IsValidLoader (
         else {
             LOG_MSG("\n");
             LOG_MSG("%s ... Loading", ValidText);
-            LOG_MSG("\n <<----- * ----->>\n\n");
         }
         #endif
     }
@@ -549,53 +547,43 @@ EFI_STATUS StartEFIImage (
 
     #if REFIT_DEBUG > 0
     CHAR16 *ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
-    if (!IsDriver) ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+    if (!IsDriver) {
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+        END_TAG(L"<<----- * ----->>");
+    }
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
         NULL, NULL
     );
-    ReturnStatus = Status;
 
+    // Control returns here if the child image calls 'Exit()'
+    ReturnStatus = Status;
     NewImageHandle = ChildImageHandle;
 
-    // Control returns here when the child image calls Exit()
+    CHAR16 *MsgStrEx = NULL;
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, ConstMsgStr);
-    #endif
-
-    MsgStr = StrDuplicate (L"Returned from Child Image");
-
-    #if REFIT_DEBUG > 0
+    MsgStrEx = PoolPrint (L"'%r' When %s", ReturnStatus, ConstMsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
     if (!IsDriver) {
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-
-        if (Verbose) {
-            LOG_MSG("Received User Input:");
-            LOG_MSG("%s  - Exit Child Image Loader:- '%s'", OffsetNext, ImageTitle);
-            LOG_MSG("\n\n");
-        }
+        LOG_MSG("%s", MsgStrEx);
+        END_TAG(L"----->> * <<-----");
     }
+    MY_FREE_POOL(MsgStrEx);
     #endif
 
     if (EFI_ERROR(ReturnStatus)) {
-        CHAR16 *MsgStrEx = NULL;
+        CHAR16 *MsgStrTmp = L"Returned from Child Image";
         if (!IsDriver) {
-            MsgStrEx = StrDuplicate (MsgStr);
+            MsgStrEx = StrDuplicate (MsgStrTmp);
         }
         else {
-            MsgStrEx = PoolPrint (L"%s:-", MsgStr, ImageTitle);
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            #endif
+            MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
         }
-
         CheckError (ReturnStatus, MsgStrEx);
         MY_FREE_POOL(MsgStrEx);
     }
-    MY_FREE_POOL(MsgStr);
 
     // DA-TAG: Exclude TianoCore - START
     #ifndef __MAKEWITH_TIANO
@@ -724,7 +712,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n <<----- * ----->>\n\n");
+    END_TAG(L"<<----- * ----->>");
     #endif
 
     REFIT_CALL_4_WRAPPER(
@@ -824,7 +812,7 @@ VOID RebootIntoLoader (
     StoreLoaderName(Entry->me.Title);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n <<----- * ----->>\n\n");
+    END_TAG(L"<<----- * ----->>");
     #endif
 
     REFIT_CALL_4_WRAPPER(

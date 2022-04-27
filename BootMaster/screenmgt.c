@@ -482,10 +482,9 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "  Could Not Get Text Console Size ... Using Default:- '%d x %d'",
+                "Could Not Get Text Console Size ... Using Default:- '%d x %d'",
                 ConHeight, ConWidth
             );
-            LOG_MSG("\n\n");
         }
         #endif
     }
@@ -493,21 +492,26 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "  Text Console Size:- '%d x %d'",
+                "Text Console Size:- '%d x %d'",
                 ConWidth, ConHeight
             );
-            LOG_MSG("\n\n");
         }
         #endif
     }
+
+    #if REFIT_DEBUG > 0
+    if (TextModeOnEntry) {
+        LOG_MSG("\n\n");
+    }
+    #endif
 
     PrepareBlankLine();
 
     #if REFIT_DEBUG > 0
     if (TextModeOnEntry) {
         LOG_MSG("INFO: Switched to Text Mode");
+        LOG_MSG("\n\n");
     }
-    LOG_MSG("\n\n");
     #endif
 } // VOID SwitchToText()
 

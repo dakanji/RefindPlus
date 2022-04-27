@@ -1109,6 +1109,14 @@ VOID ReadConfig (
         ) {
             if (!MyStriCmp (TokenList[1], FileName)) {
                 #if REFIT_DEBUG > 0
+                // DA-TAG: Always log this in case LogLevel is overriden
+                INTN  RealLogLevel;
+                UINTN HighLogLevel = MAXLOGLEVEL * 2;
+                if (GlobalConfig.LogLevel < MINLOGLEVEL) {
+                    RealLogLevel = GlobalConfig.LogLevel;
+                    GlobalConfig.LogLevel = HighLogLevel;
+                }
+
                 MY_MUTELOGGER_OFF;
                 LOG_MSG("\n");
                 LOG_MSG("Detected Overrides File - L O A D   O V E R R I D E S");
@@ -1122,6 +1130,11 @@ VOID ReadConfig (
                 // Reset 'AllowIncludes' to accomodate multiple instances in main file
 
                 #if REFIT_DEBUG > 0
+                // DA-TAG: Restore the RealLogLevel
+                if (GlobalConfig.LogLevel == HighLogLevel) {
+                    GlobalConfig.LogLevel = RealLogLevel;
+                }
+
                 // Failsafe
                 MuteLogger = TRUE; /* Explicit For FB Infer */
                 #endif

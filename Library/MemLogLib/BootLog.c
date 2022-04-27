@@ -302,6 +302,7 @@ VOID EFIAPI DeepLoggger (
         case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---[ %s\n",                          *Msg); break;
         case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                            *Msg); break;
         case LOG_LINE_SAME:      Tmp = PoolPrint (L"%s",                                                 *Msg); break;
+        case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n %s\n\n",                                          *Msg); break;
         default:                 Tmp = PoolPrint (L"%s\n",                                               *Msg);
             // Should be 'LOG_LINE_NORMAL', but use 'default' so as to also catch coding errors
             // Enable Timestamp for this

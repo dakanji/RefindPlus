@@ -577,6 +577,7 @@ VOID DeepLoggger (
 
 // NB: 'gLogTemp' is handled in 'DeepLoggger'
 extern CHAR16 *gLogTemp;
+extern INTN    LogLevelTemp;
 
 #if REFIT_DEBUG > 0
 #   define ALT_LOG(level, type, ...)                                                           \
@@ -592,6 +593,15 @@ do {                                                                            
         DebugLog (REFIT_DEBUG, __VA_ARGS__);                                                   \
     }                                                                                          \
 } while (0)
+#   define END_TAG(x)                                                                          \
+        do {                                                                                   \
+            if (KernelNotStarted) {                                                            \
+                LogLevelTemp = GlobalConfig.LogLevel;                                          \
+                GlobalConfig.LogLevel = 1;                                                     \
+                gLogTemp = StrDuplicate (x);                                                   \
+                DeepLoggger (REFIT_DEBUG, GlobalConfig.LogLevel, LOG_LINE_EXIT, &gLogTemp);    \
+                GlobalConfig.LogLevel = LogLevelTemp;                                          \
+            }                                                                                  \
         } while (0)
 #else
 #   define LOG_MSG(...)

@@ -197,6 +197,7 @@ REFIT_CONFIG GlobalConfig = {
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
+INTN                   LogLevelTemp;
 UINTN                  AppleFramebuffers    = 0;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
@@ -375,7 +376,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  VOID      *VariableData
 ) {
     EFI_STATUS     Status;
-    EFI_GUID       WinGuid               = MICROSOFT_VENDOR_GUID;
+    EFI_GUID       VendorMS              = MICROSOFT_VENDOR_GUID;
     EFI_GUID       X509Guid              = X509_GUID;
     EFI_GUID       PKCS7Guid             = PKCS7_GUID;
     EFI_GUID       Sha001Guid            = EFI_CERT_SHA1_GUID;
@@ -388,20 +389,20 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
-    BOOLEAN UsingWinGuid = GuidsAreEqual (VendorGuid, &WinGuid);
-    BOOLEAN CurPolicyOEM = (UsingWinGuid && MyStriCmp (VariableName, L"CurrentPolicy"));
+    BOOLEAN IsVendorMS = GuidsAreEqual (VendorGuid, &VendorMS);
+    BOOLEAN CurPolicyOEM = (IsVendorMS && MyStriCmp (VariableName, L"CurrentPolicy"));
     BOOLEAN BlockMacKP = FALSE;
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
-    BOOLEAN BlockGuid = FALSE;
+    BOOLEAN BlockVend = FALSE;
     BOOLEAN RevokeVar = (!VariableData && VariableSize == 0);
 
     if (!CurPolicyOEM && !RevokeVar) {
-        BlockGuid = (
-            AppleFirmware && UsingWinGuid
+        BlockVend = (
+            AppleFirmware && IsVendorMS
         );
 
-        if (!BlockGuid) {
+        if (!BlockVend) {
             BlockCert = (
                 AppleFirmware &&
                 (
@@ -428,7 +429,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_MUTELOGGER_SET;
     #endif
 
-    if (!BlockGuid && !BlockCert && !CurPolicyOEM && !RevokeVar) {
+    if (!BlockVend && !BlockCert && !CurPolicyOEM && !RevokeVar) {
         BlockMore = (
             AppleFirmware &&
             (
@@ -461,7 +462,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         }
     }
 
-    Status = (BlockGuid || BlockCert || BlockMore || BlockMacKP)
+    Status = (BlockVend || BlockCert || BlockMore || BlockMacKP)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -474,10 +475,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (BlockGuid || BlockCert || BlockMore || BlockMacKP)
+            (BlockVend || BlockCert || BlockMore || BlockMacKP)
                 ? EFI_ACCESS_DENIED : Status
         );
-        LimitStringLength (LogStatus, 13);
+        LimitStringLength (LogStatus, 18);
     }
 
     MY_MUTELOGGER_OFF;
@@ -485,20 +486,25 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_NATIVELOGGER_SET;
 
     if (!KernelNowRunning) {
-        // Do not free LogName
-        CHAR16 *LogName = NULL;
+        // Do not free LogNameTmp
+        CHAR16 *LogNameTmp = NULL;
         if (GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid)) {
             if (0);
-            else if (MyStriCmp (VariableName, L"db") )   LogName = L"EFI_IMAGE_SECURITY_DATABASE0";
-            else if (MyStriCmp (VariableName, L"dbx"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE1";
-            else if (MyStriCmp (VariableName, L"dbt"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE2";
-            else if (MyStriCmp (VariableName, L"dbr"))   LogName = L"EFI_IMAGE_SECURITY_DATABASE3";
-            else if (MyStriCmp (VariableName, L"KEK"))   LogName = L"EFI_KEY_EXCHANGE_KEY_NAME"   ;
-            else if (MyStriCmp (VariableName, L"PK") )   LogName = L"EFI_PLATFORM_KEY_NAME"       ;
+            else if (MyStriCmp (VariableName, L"db") )   LogNameTmp = L"EFI_IMAGE_SECURITY_DATABASE0";
+            else if (MyStriCmp (VariableName, L"dbx"))   LogNameTmp = L"EFI_IMAGE_SECURITY_DATABASE1";
+            else if (MyStriCmp (VariableName, L"dbt"))   LogNameTmp = L"EFI_IMAGE_SECURITY_DATABASE2";
+            else if (MyStriCmp (VariableName, L"dbr"))   LogNameTmp = L"EFI_IMAGE_SECURITY_DATABASE3";
+            else if (MyStriCmp (VariableName, L"KEK"))   LogNameTmp = L"EFI_KEY_EXCHANGE_KEY_NAME"   ;
+            else if (MyStriCmp (VariableName, L"PK") )   LogNameTmp = L"EFI_PLATFORM_KEY_NAME"       ;
         }
 
+        CHAR16 *LogNameFull = StrDuplicate (
+            (LogNameTmp) ? LogNameTmp : VariableName
+        );
+        LimitStringLength (LogNameFull, 32);
+
         CHAR16 *MsgStr = PoolPrint (
-            L"In Hardware NVRAM ... %16s %s:- %s  :::  %-32s  ****  Size: %5d byte%s%s",
+            L"In Hardware NVRAM ... %18s %s:- %s  :::  %-32s  ****  Size: %5d byte%s%s",
             LogStatus,
             NVRAM_LOG_SET,
             (BlockCert)
@@ -507,10 +513,12 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                     ? L"SecurityTag"
                     : (BlockMacKP)
                         ? L"KernelPanic"
-                        : (CurPolicyOEM)
-                            ? L" PolicyOEM "
-                            : L"RegularItem",
-            (LogName) ? LogName : VariableName,
+                        : (BlockVend)
+                            ? L"WindowsVend"
+                            : (CurPolicyOEM)
+                                ? L" PolicyOEM "
+                                : L"RegularItem",
+            LogNameFull,
             VariableSize,
             (VariableSize == 1)
                 ? L" "
@@ -526,6 +534,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         LOG_MSG("\n");
         MY_FREE_POOL(MsgStr);
         MY_FREE_POOL(LogStatus);
+        MY_FREE_POOL(LogNameFull);
     }
 
     /* Disable Forced Native Logging */
@@ -538,7 +547,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     //
     // Clear previously saved instances of blocked variable
     // BlockMacKP is excluded as has dynamic naming
-    if (!CurPolicyOEM && (BlockGuid || BlockCert || BlockMore)) {
+    if (!CurPolicyOEM && (BlockVend || BlockCert || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
             Attributes, 0, NULL
@@ -577,7 +586,7 @@ VOID ConvertAddress (
     LOG_MSG("%s          * Indicate Local 'Kernel Started' State ... Success", OffsetNext);
     LOG_MSG("\n\n");
     LOG_MSG("Terminating RefindPlus Memory and Filesystem Activity");
-    LOG_MSG("\n ----->> * <<-----\n\n");
+    END_TAG(L"<<<<<  ***  >>>>>");
     #endif
 
     gRT->ConvertPointer (0, (VOID **) &OrigSetVariableRT);
@@ -1665,7 +1674,7 @@ BOOLEAN SecureBootUninstall (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n <<----- * ----->>\n\n");
+            END_TAG(L"<<----- * ----->>");
 
             #endif
 
@@ -2345,7 +2354,7 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
-    if (!AppleFirmware) {
+    if (AppleFirmware) {
         LOG_MSG("'Disabled'");
     }
     else {
@@ -3016,7 +3025,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                LOG_MSG("\n <<----- * ----->>\n\n");
+                END_TAG(L"<<----- * ----->>");
                 #endif
 
                 #if REFIT_DEBUG > 0
@@ -3063,7 +3072,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                LOG_MSG("\n <<----- * ----->>\n\n");
+                END_TAG(L"<<----- * ----->>");
                 #endif
 
                 #if REFIT_DEBUG > 0
@@ -3283,7 +3292,13 @@ EFI_STATUS EFIAPI efi_main (
                         (ourLoaderEntry->Volume->VolName)
                             ? ourLoaderEntry->Volume->VolName : ourLoaderEntry->LoaderPath
                     );
+                    MY_FREE_POOL(MsgStr);
 
+                    MsgStr = PoolPrint (
+                        L"NVRAM Filter:- '%s'",
+                        (GlobalConfig.ProtectNVRAM) ? L"Active" : L"Inactive"
+                    );
+                    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -3439,7 +3454,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("\n <<----- * ----->>\n\n");
+                END_TAG(L"<<----- * ----->>");
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
@@ -3458,7 +3473,7 @@ EFI_STATUS EFIAPI efi_main (
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 MY_FREE_POOL(MsgStr);
-                LOG_MSG("\n <<----- * ----->>\n\n");
+                END_TAG(L"<<----- * ----->>");
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
@@ -3513,7 +3528,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit RefindPlus", OffsetNext);
-                LOG_MSG("\n <<----- * ----->>\n\n");
+                END_TAG(L"<<----- * ----->>");
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
@@ -3630,7 +3645,7 @@ EFI_STATUS EFIAPI efi_main (
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
-    LOG_MSG("\n <<----- * ----->>\n\n");
+    END_TAG(L"<<----- * ----->>");
     #endif
 
     MY_FREE_POOL(MsgStr);
