@@ -4,6 +4,9 @@
 - Fixes `DisableAMFI` Feature
   * The feature had been disabled under some circumstances
   * This bug was introduced in v0.13.2.AP (Commit 8705fdb)
+- Fixes `HandleSignedInt` Function
+  * The function always returned a positive value
+  * This bug was introduced in v0.13.2.AP (Commit 0e10faf)
 - Improves `ProtectNVRAM` Feature
   * Eliminates post-boot logging as this may have negative impacts
 - Improves `FindMenuShortcutEntry` Function

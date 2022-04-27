@@ -449,8 +449,8 @@ VOID HandleSignedInt (
 ) {
     if (TokenCount == 2) {
         *Value = (TokenList[1][0] == '-')
-            ? -Atoi(TokenList[1]+1)
-            :  Atoi(TokenList[1]);
+            ? Atoi(TokenList[1]+1) * -1
+            : Atoi(TokenList[1]);
     }
 } // static VOID HandleSignedInt()
 
