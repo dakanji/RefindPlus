@@ -202,7 +202,7 @@ EFI_STATUS ReloadOptionROM (
   @retval EFI_VOLUME_CORRUPTED      Inconsistent signatures.
   @retval EFI_PROTOCOL_ERROR        PciIoProtocolGuid not found.
   @retval EFI_LOAD_ERROR            Failed to get PciIoProtocolGuid handle.
-  @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNU-EFI compiled version.
+  @retval EFI_INCOMPATIBLE_VERSION  Not running on compatible TianoCore compiled version.
   @retval EFI_NO_MAPPING            Invalid Binding Handle Count.
   @retval EFI_NOT_FOUND             Failed to Locate Suitable Option ROM.
   @retval Other value               Unknown error.
