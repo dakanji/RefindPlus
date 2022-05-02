@@ -1044,30 +1044,6 @@ VOID egInitScreen (VOID) {
                 Status = RefitCheckGOP();
 
                 if (!EFI_ERROR(Status)) {
-                    if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
-                        EFI_STATUS                    StatusFB;
-                        EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutputFB;
-                        StatusFB = REFIT_CALL_3_WRAPPER(
-                            gBS->HandleProtocol, gST->ConsoleOutHandle,
-                            &gEfiGraphicsOutputProtocolGuid, (VOID **) &GraphicsOutputFB
-                        );
-                        if (EFI_ERROR (StatusFB)) {
-                            StatusFB = EFI_UNSUPPORTED;
-                        }
-
-                        if (GraphicsOutputFB->Mode->Info == NULL) {
-                            StatusFB = EFI_NOT_FOUND;
-                        }
-
-                        // DA-TAG: Limit to TianoCore Builds
-                        #ifdef __MAKEWITH_TIANO
-                        if (!EFI_ERROR(StatusFB)) {
-                            // SupplyAppleFB Feature ... Install AppleFramebuffers
-                            RP_AppleFbInfoInstallProtocol (TRUE);
-                        }
-                        #endif
-                    }
-
                     // Run OpenCore Function
                     Status = OcProvideConsoleGop (TRUE);
                     if (!EFI_ERROR(Status)) {
@@ -1166,26 +1142,6 @@ VOID egInitScreen (VOID) {
     // Get Screen Size
     egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
-        if (AppleFirmware && ReinstalledGOP) {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Initial:- '%d'", AppleFramebuffers);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-            #endif
-
-            // Update AppleFramebuffer Count
-            AppleFramebuffers = egCountAppleFramebuffers();
-
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Updated:- '%d'", AppleFramebuffers);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
-        }
-
         Status = egDumpGOPVideoModes();
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
@@ -1222,24 +1178,6 @@ VOID egInitScreen (VOID) {
             }
             #endif
         }
-
-        #if REFIT_DEBUG > 0
-        if (GOPDraw && ReinstalledGOP) {
-            MsgStr = PoolPrint (L"BasicFramebuffer Count ... Initial:- '%d'", SizeFB);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-
-            SizeFB = (GOPDraw->Mode->FrameBufferSize == 0) ? 0 : 1;
-
-            MsgStr = PoolPrint (L"BasicFramebuffer Count ... Updated:- '%d'", SizeFB);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
-            MY_FREE_POOL(MsgStr);
-            LOG_MSG("\n\n");
-        }
-        #endif
-
     } // if GOPDraw != NULL
 
     if (UGADraw != NULL) {
@@ -1277,7 +1215,21 @@ VOID egInitScreen (VOID) {
                 &Width, &Height,
                 &Depth, &RefreshRate
             );
-            if (!EFI_ERROR(Status)) {
+            if (EFI_ERROR(Status)) {
+                // Graphics not available
+                UGADraw               = NULL;
+                GlobalConfig.TextOnly = TRUE;
+
+                #if REFIT_DEBUG > 0
+                MsgStr = StrDuplicate (L"Graphics Not Available ... Fall Back on Text Mode");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("INFO: %s", MsgStr);
+                MY_FREE_POOL(MsgStr);
+
+                PrevFlag = TRUE;
+                #endif
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"GOP Not Available ... Fall Back on UGA");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1292,20 +1244,6 @@ VOID egInitScreen (VOID) {
                 egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
                 egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
             }
-            else {
-                // Graphics not available
-                UGADraw               = NULL;
-                GlobalConfig.TextOnly = TRUE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Graphics Not Available ... Fall Back on Text Mode");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("INFO: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-
-                PrevFlag = TRUE;
-                #endif
-            }
         } // if GOPDraw == NULL
     } // if UGADraw != NULL
 
@@ -1313,17 +1251,46 @@ VOID egInitScreen (VOID) {
     Status = EFI_NOT_STARTED;
     #endif
 
-#ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
-    if ((GOPDraw != NULL) &&
-        (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly)
-    ) {
-        // Implement Text Renderer
-        Status = OcUseBuiltinTextOutput (
-            (egHasGraphics)
-                ? EfiConsoleControlScreenGraphics
-                : EfiConsoleControlScreenText
-        );
+#ifdef __MAKEWITH_TIANO
+    if (GOPDraw != NULL) {
+        if (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly) {
+            // Implement Text Renderer
+            Status = OcUseBuiltinTextOutput (
+                (egHasGraphics)
+                    ? EfiConsoleControlScreenGraphics
+                    : EfiConsoleControlScreenText
+            );
+        }
+    }
+    else if (UGADraw != NULL) {
+        if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
+            #if REFIT_DEBUG > 0
+            PrevFlag = FALSE;
+            LOG_MSG("\n\n");
+            #endif
+
+            // SupplyAppleFB Feature ... Install AppleFramebuffers
+            RP_AppleFbInfoInstallProtocol (TRUE);
+
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Initial:- '%d'", AppleFramebuffers);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+            #endif
+
+            // Update AppleFramebuffer Count
+            AppleFramebuffers = egCountAppleFramebuffers();
+
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"AppleFramebuffer Count ... Updated:- '%d'", AppleFramebuffers);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
+        }
     }
 #endif
 

@@ -633,7 +633,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                LOG_MSG("INFO: Could Not Find Path to GOP on Any Device Handle");
+                LOG_MSG("INFO: Could Not Find Path to GOP on any Device Handle");
             }
         }
         else {
