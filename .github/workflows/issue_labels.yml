@@ -13,24 +13,28 @@ concurrency:
 jobs:
 
   # Check Labels - https://github.com/mheap/github-action-required-labels
-  # Add  Labels  - https://github.com/actions-ecosystem/action-add-labels
-  add_label_user_close:
-    name: Close Issue Label
+  add_label_user_close_check:
+    name: Close Issue Label - Check
     runs-on: ubuntu-latest
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
-
-      - name: Check Present Labels
-        uses: mheap/github-action-required-labels@v1
+      - uses: mheap/github-action-required-labels@v1
         with:
           mode: exactly
           count: 0
           labels: "Bug, Enhancement"
 
-      - name: Add Cancelled Label
-        uses: actions/checkout@v2
-        uses: actions-ecosystem/action-add-labels@v1
+  # Add  Labels  - https://github.com/actions-ecosystem/action-add-labels
+  add_label_user_close_act:
+    name: Close Issue Label - Act
+    needs: add_label_user_close_check
+    runs-on: ubuntu-latest
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ github.token }}
           labels: Cancelled
