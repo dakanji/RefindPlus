@@ -549,7 +549,7 @@ EFI_STATUS StartEFIImage (
     CHAR16 *ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
     if (!IsDriver) {
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
-        END_TAG(L"<<----- * ----->>");
+        OUT_TAG();
     }
     #endif
 
@@ -568,7 +568,7 @@ EFI_STATUS StartEFIImage (
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
     if (!IsDriver) {
         LOG_MSG("%s", MsgStrEx);
-        END_TAG(L"----->> * <<-----");
+        RET_TAG();
     }
     MY_FREE_POOL(MsgStrEx);
     #endif
@@ -712,7 +712,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    END_TAG(L"<<----- * ----->>");
+    OUT_TAG();
     #endif
 
     REFIT_CALL_4_WRAPPER(
@@ -812,7 +812,7 @@ VOID RebootIntoLoader (
     StoreLoaderName(Entry->me.Title);
 
     #if REFIT_DEBUG > 0
-    END_TAG(L"<<----- * ----->>");
+    OUT_TAG();
     #endif
 
     REFIT_CALL_4_WRAPPER(

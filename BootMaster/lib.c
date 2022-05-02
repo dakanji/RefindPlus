@@ -1037,7 +1037,7 @@ CHAR16 * FSTypeName (
         case FS_TYPE_FAT:       retval = L"FAT";         break;
         case FS_TYPE_XFS:       retval = L"XFS";         break;
         case FS_TYPE_JFS:       retval = L"JFS";         break;
-        case FS_TYPE_BTRFS:     retval = L"Btrfs";       break;
+        case FS_TYPE_BTRFS:     retval = L"BtrFS";       break;
         case FS_TYPE_ISO9660:   retval = L"ISO-9660";    break;
         case FS_TYPE_REISERFS:  retval = L"ReiserFS";    break;
         default:                retval = L"Unknown";     break;

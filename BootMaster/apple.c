@@ -799,10 +799,6 @@ EFI_STATUS RP_UninstallAllProtocolInstances (
         &NoHandles, &Handles
     );
     if (EFI_ERROR (Status)) {
-        if (Status == EFI_NOT_FOUND) {
-            return EFI_SUCCESS;
-        }
-
         return Status;
     }
 
@@ -892,10 +888,26 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
       RP_AppleFramebufferGetInfo
     };
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = StrDuplicate (L"Attempt AppleFramebuffer Install");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG(" ... ");
+    MY_FREE_POOL(MsgStr);
+    #endif
+
     if (Reinstall) {
         Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
         if (EFI_ERROR (Status)) {
-            return NULL;
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Uninstall Exiting:- '%r'", Status);
+            LOG_MSG("Uninstall Exiting:- '%r'", Status);
+            LOG_MSG("\n\n");
+            #endif
+
+            if (Status != EFI_NOT_FOUND) {
+                return NULL;
+            }
         }
     }
     else {
@@ -904,6 +916,12 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
             NULL, (VOID *) &Protocol
         );
         if (!EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Locate Exiting:- '%r'", Status);
+            LOG_MSG("Locate Exiting:- '%r'", Status);
+            LOG_MSG("\n\n");
+            #endif
+
             return Protocol;
         }
     }
@@ -912,19 +930,14 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
         &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
     );
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Install Status:- '%r'", Status);
+    LOG_MSG("%r", Status);
+    LOG_MSG("\n\n");
+    #endif
     if (EFI_ERROR (Status)) {
         return NULL;
     }
-
-    #if REFIT_DEBUG > 0
-    if (Reinstall) {
-        CHAR16 *MsgStr = PoolPrint (L"Install AppleFramebuffers ... %r", Status);
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-    }
-    #endif
 
     return &OurAppleFramebufferInfo;
 } // APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol()

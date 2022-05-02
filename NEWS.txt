@@ -4,19 +4,15 @@
 - Fixes `DisableAMFI` Feature
   * The feature had been disabled under some circumstances
   * This bug was introduced in v0.13.2.AP (Commit 8705fdb)
-- Fixes `HandleSignedInt` Function
-  * The function always returned a positive value
-  * This bug was introduced in v0.13.2.AP (Commit 0e10faf)
-- Improves `ProtectNVRAM` Feature
-  * Eliminates post-boot logging as this may have negative impacts
+- Improves `HandleSignedInt` Function
+  * Ensures the function always returns a negative value when required
 - Improves `FindMenuShortcutEntry` Function
   * Now initially tries a exact match of the stored string against available entries
   * A match against substrings is only tried if an exact match is not found
 - Improves `SupplyUEFI` Feature
   * The `QueryVariableInfo` Runtime service is now also emulated
   * Avoid crashes from unavailability if called on emulated UEFI 2.x
-  * The UEFI 2.x emulation returns an `EFI_UNSUPPORTED` error
-  * Callers are expected to react appropriately to error
+  * The UEFI 2.x emulation now returns an `EFI_UNSUPPORTED` error instead
 - Limits CSR Operations to Apple Firmware
   * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
 

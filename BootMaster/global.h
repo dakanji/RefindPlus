@@ -577,7 +577,6 @@ VOID DeepLoggger (
 
 // NB: 'gLogTemp' is handled in 'DeepLoggger'
 extern CHAR16 *gLogTemp;
-extern INTN    LogLevelTemp;
 
 #if REFIT_DEBUG > 0
 #   define ALT_LOG(level, type, ...)                                                           \
@@ -588,22 +587,36 @@ extern INTN    LogLevelTemp;
             }                                                                                  \
         } while (0)
 #   define LOG_MSG(...)                                                                        \
-do {                                                                                           \
-    if (KernelNotStarted) {                                                                    \
-        DebugLog (REFIT_DEBUG, __VA_ARGS__);                                                   \
-    }                                                                                          \
-} while (0)
-#   define END_TAG(x)                                                                          \
         do {                                                                                   \
             if (KernelNotStarted) {                                                            \
-                LogLevelTemp = GlobalConfig.LogLevel;                                          \
-                GlobalConfig.LogLevel = 1;                                                     \
-                gLogTemp = StrDuplicate (x);                                                   \
-                DeepLoggger (REFIT_DEBUG, GlobalConfig.LogLevel, LOG_LINE_EXIT, &gLogTemp);    \
-                GlobalConfig.LogLevel = LogLevelTemp;                                          \
+                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
+            }                                                                                  \
+        } while (0)
+#   define OUT_TAG()                                                                           \
+        do {                                                                                   \
+            if (KernelNotStarted) {                                                            \
+                gLogTemp = StrDuplicate (L"<<----- * ----->>");                                \
+                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
+            }                                                                                  \
+        } while (0)
+#   define RET_TAG()                                                                           \
+        do {                                                                                   \
+            if (KernelNotStarted) {                                                            \
+                gLogTemp = StrDuplicate (L"----->> * <<-----");                                \
+                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
+            }                                                                                  \
+        } while (0)
+#   define END_TAG()                                                                           \
+        do {                                                                                   \
+            if (KernelNotStarted) {                                                            \
+                gLogTemp = StrDuplicate (L"<<<   * X *   >>>");                                \
+                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
             }                                                                                  \
         } while (0)
 #else
+#   define END_TAG()
+#   define RET_TAG()
+#   define OUT_TAG()
 #   define LOG_MSG(...)
 #   define ALT_LOG(...)
 #endif

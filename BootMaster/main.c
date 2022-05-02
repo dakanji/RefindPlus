@@ -197,7 +197,6 @@ REFIT_CONFIG GlobalConfig = {
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-INTN                   LogLevelTemp;
 UINTN                  AppleFramebuffers    = 0;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
@@ -586,7 +585,7 @@ VOID ConvertAddress (
     LOG_MSG("%s          * Indicate Local 'Kernel Started' State ... Success", OffsetNext);
     LOG_MSG("\n\n");
     LOG_MSG("Terminating RefindPlus Memory and Filesystem Activity");
-    END_TAG(L"<<<<<  ***  >>>>>");
+    END_TAG();
     #endif
 
     gRT->ConvertPointer (0, (VOID **) &OrigSetVariableRT);
@@ -1286,17 +1285,17 @@ BOOLEAN ShowCleanNvramInfo (
         return FALSE;
     }
 
-    CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-    CleanNvramInfoMenu->Title      = StrDuplicate (L"CleanNvram");
+    CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN                                     );
+    CleanNvramInfoMenu->Title      = StrDuplicate (L"CleanNvram"                                                   );
     CleanNvramInfoMenu->Hint1      = StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu");
-    CleanNvramInfoMenu->Hint2      = StrDuplicate (L"");
+    CleanNvramInfoMenu->Hint2      = StrDuplicate (L""                                                             );
 
-    AddMenuInfoLineAlt (CleanNvramInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose));
-    AddMenuInfoLine (CleanNvramInfoMenu, L"");
-    AddMenuInfoLine (CleanNvramInfoMenu, L"The binary must be placed in one of the paths below");
+    AddMenuInfoLineAlt (CleanNvramInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose)                );
+    AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
+    AddMenuInfoLine (CleanNvramInfoMenu, L"The binary must be placed in one of the paths below"     );
     AddMenuInfoLine (CleanNvramInfoMenu, L" - The first file found in the order listed will be used");
-    AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found");
-    AddMenuInfoLine (CleanNvramInfoMenu, L"");
+    AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found"   );
+    AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
 
     UINTN k = 0;
     CHAR16 *FilePath = NULL;
@@ -1426,10 +1425,10 @@ VOID AboutRefindPlus (VOID) {
     // More than ~65 causes empty info page on 800x600 display
     LimitStringLength (VendorString, MAX_LINE_LENGTH);
 
-    AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-    AboutMenu->Title      = StrDuplicate (L"About RefindPlus");
+    AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT                 );
+    AboutMenu->Title      = StrDuplicate (L"About RefindPlus"                    );
     AboutMenu->Hint1      = StrDuplicate (L"Press 'Enter' to Return to Main Menu");
-    AboutMenu->Hint2      = StrDuplicate (L"");
+    AboutMenu->Hint2      = StrDuplicate (L""                                    );
 
     AboutMenu->InfoLines  = (CHAR16 **) AllocateZeroPool (sizeof (CHAR16 *));
     if (AboutMenu->InfoLines == NULL) {
@@ -1448,21 +1447,20 @@ VOID AboutRefindPlus (VOID) {
         )
     );
 
-    AddMenuInfoLine (AboutMenu, L"");
-    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2022 Dayo Akanji and Others");
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
+    AddMenuInfoLine (AboutMenu, L""                                                       );
+    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2022 Dayo Akanji and Others"         );
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith"     );
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer"   );
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others");
-    AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
-    AddMenuInfoLine (AboutMenu, L"");
+    AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license"   );
+    AddMenuInfoLine (AboutMenu, L""                                                       );
 
 #if defined (__MAKEWITH_GNUEFI)
-    AddMenuInfoLine (AboutMenu, L"Built with GNU-EFI");
+    AddMenuInfoLine (AboutMenu, L"Built with GNU-EFI"         );
 #else
     AddMenuInfoLine (AboutMenu, L"Built with TianoCore EDK II");
 #endif
-
-    AddMenuInfoLine (AboutMenu, L"");
+    AddMenuInfoLine (AboutMenu, L""                           );
 
     AddMenuInfoLineAlt (
         AboutMenu,
@@ -1473,13 +1471,13 @@ VOID AboutRefindPlus (VOID) {
     );
 
 #if defined (EFI32)
-    AddMenuInfoLine (AboutMenu, L"Platform: x86 (32 bit)");
+    AddMenuInfoLine (AboutMenu, L"Platform: x86 (32 bit)"   );
 #elif defined (EFIX64)
     AddMenuInfoLine (AboutMenu, L"Platform: x86_64 (64 bit)");
 #elif defined (EFIAARCH64)
-    AddMenuInfoLine (AboutMenu, L"Platform: ARM (64 bit)");
+    AddMenuInfoLine (AboutMenu, L"Platform: ARM (64 bit)"   );
 #else
-    AddMenuInfoLine (AboutMenu, L"Platform: Unknown");
+    AddMenuInfoLine (AboutMenu, L"Platform: Unknown"        );
 #endif
 
     AddMenuInfoLineAlt (
@@ -1512,12 +1510,12 @@ VOID AboutRefindPlus (VOID) {
         )
     );
 
-    AddMenuInfoLine (AboutMenu, L"");
-    AddMenuInfoLine (AboutMenu, L"RefindPlus is a variant of rEFInd");
+    AddMenuInfoLine (AboutMenu, L""                                     );
+    AddMenuInfoLine (AboutMenu, L"RefindPlus is a variant of rEFInd"    );
     AddMenuInfoLine (AboutMenu, L"https://github.com/dakanji/RefindPlus");
-    AddMenuInfoLine (AboutMenu, L"");
-    AddMenuInfoLine (AboutMenu, L"For information on rEFInd, visit:");
-    AddMenuInfoLine (AboutMenu, L"http://www.rodsbooks.com/refind");
+    AddMenuInfoLine (AboutMenu, L""                                     );
+    AddMenuInfoLine (AboutMenu, L"For information on rEFInd, visit:"    );
+    AddMenuInfoLine (AboutMenu, L"http://www.rodsbooks.com/refind"      );
 
     BOOLEAN RetVal = GetReturnMenuEntry (&AboutMenu);
     if (!RetVal) {
@@ -1674,7 +1672,7 @@ BOOLEAN SecureBootUninstall (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s", MsgStr);
-            END_TAG(L"<<----- * ----->>");
+            OUT_TAG();
 
             #endif
 
@@ -2018,8 +2016,9 @@ VOID LogBasicInfo (VOID) {
 
 #if REFIT_DEBUG > 0
     if (!QVInfoSupport) {
-        // QueryVariableInfo is not supported on Apple or EFI 1.x Firmware
-        LOG_MSG("%s*** QueryVariableInfo is Unavailable ***", OffsetNext);
+        // QueryVariableInfo is not supported EFI 1.x Firmware
+        // Apparently also not on Apple firmware
+        LOG_MSG("%s*** Skipped QueryVariableInfo ***", OffsetNext);
     }
     LOG_MSG("\n\n");
 
@@ -3025,7 +3024,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                END_TAG(L"<<----- * ----->>");
+                OUT_TAG();
                 #endif
 
                 #if REFIT_DEBUG > 0
@@ -3072,7 +3071,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                END_TAG(L"<<----- * ----->>");
+                OUT_TAG();
                 #endif
 
                 #if REFIT_DEBUG > 0
@@ -3454,7 +3453,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 #if REFIT_DEBUG > 0
-                END_TAG(L"<<----- * ----->>");
+                OUT_TAG();
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
@@ -3473,7 +3472,7 @@ EFI_STATUS EFIAPI efi_main (
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 MY_FREE_POOL(MsgStr);
-                END_TAG(L"<<----- * ----->>");
+                OUT_TAG();
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
@@ -3528,7 +3527,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Exit RefindPlus", OffsetNext);
-                END_TAG(L"<<----- * ----->>");
+                OUT_TAG();
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
@@ -3645,7 +3644,7 @@ EFI_STATUS EFIAPI efi_main (
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
-    END_TAG(L"<<----- * ----->>");
+    OUT_TAG();
     #endif
 
     MY_FREE_POOL(MsgStr);

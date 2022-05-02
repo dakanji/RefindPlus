@@ -411,10 +411,10 @@ UINTN ReadTokenLine (
                 &TokenCount,
                 (VOID *) StrDuplicate (Token)
             );
-        } // while
+        } // while !LineFinished
 
         MY_FREE_POOL(Line);
-    }
+    } // while TokenCount == 0
 
     return TokenCount;
 } // UINTN ReadTokenLine()
@@ -427,18 +427,6 @@ VOID FreeTokenLine (
     //         Also free the items
     FreeList ((VOID ***) TokenList, TokenCount);
 } // VOID FreeTokenLine()
-
-// Handle a parameter with a single integer argument (unsigned)
-static
-VOID HandleInt (
-    IN  CHAR16 **TokenList,
-    IN  UINTN    TokenCount,
-    OUT UINTN   *Value
-) {
-    if (TokenCount == 2) {
-        *Value = Atoi(TokenList[1]);
-    }
-} // static VOID HandleInt()
 
 // Handle a parameter with a single integer argument (signed)
 static
@@ -454,6 +442,18 @@ VOID HandleSignedInt (
     }
 } // static VOID HandleSignedInt()
 
+// Handle a parameter with a single integer argument (unsigned)
+static
+VOID HandleUnsignedInt (
+    IN  CHAR16 **TokenList,
+    IN  UINTN    TokenCount,
+    OUT UINTN   *Value
+) {
+    if (TokenCount == 2) {
+        *Value = Atoi(TokenList[1]);
+    }
+} // static VOID HandleUnsignedInt()
+
 // Handle a parameter with a single string argument
 static
 VOID HandleString (
@@ -464,7 +464,7 @@ VOID HandleString (
     if ((TokenCount == 2) && Target) {
         MY_FREE_POOL(*Target);
         *Target = StrDuplicate (TokenList[1]);
-    } // if
+    }
 } // static VOID HandleString()
 
 // Handle a parameter with a series of string arguments, to replace or be added to a
@@ -513,7 +513,8 @@ VOID HandleHexes (
     IN  UINTN          MaxValue,
     OUT UINT32_LIST  **Target
 ) {
-    UINTN        InputIndex = 1, i;
+    UINTN        i;
+    UINTN        InputIndex = 1;
     UINT32       Value;
     UINT32_LIST *EndOfList  = NULL;
     UINT32_LIST *NewEntry;
@@ -530,24 +531,30 @@ VOID HandleHexes (
     }
 
     for (i = InputIndex; i < TokenCount; i++) {
-        if (IsValidHex (TokenList[i])) {
-            Value = (UINT32) StrToHex (TokenList[i], 0, 8);
-            if (Value <= MaxValue) {
-                NewEntry = AllocatePool (sizeof (UINT32_LIST));
-                if (NewEntry) {
-                    NewEntry->Value = Value;
-                    NewEntry->Next = NULL;
-                    if (EndOfList == NULL) {
-                        EndOfList = NewEntry;
-                        *Target = NewEntry;
-                    }
-                    else {
-                        EndOfList->Next = NewEntry;
-                        EndOfList = NewEntry;
-                    }
-                }
-            } // if (Value < MaxValue)
-        } // if is valid hex value
+        if (!IsValidHex (TokenList[i])) {
+            continue;
+        }
+
+        Value = (UINT32) StrToHex (TokenList[i], 0, 8);
+        if (Value > MaxValue) {
+            continue;
+        }
+
+        NewEntry = AllocatePool (sizeof (UINT32_LIST));
+        if (NewEntry == NULL) {
+            return;
+        }
+
+        NewEntry->Value = Value;
+        NewEntry->Next = NULL;
+        if (EndOfList == NULL) {
+            EndOfList = NewEntry;
+            *Target = NewEntry;
+        }
+        else {
+            EndOfList->Next = NewEntry;
+            EndOfList = NewEntry;
+        }
     } // for
 } // static VOID HandleHexes()
 
@@ -681,6 +688,7 @@ VOID ReadConfig (
     CHAR16           *TempStr  = NULL;
     CHAR16           *MsgStr   = NULL;
     UINTN             TokenCount, i;
+    INTN              MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
 
     static BOOLEAN    AllowIncludes = TRUE;
 
@@ -859,13 +867,12 @@ VOID ReadConfig (
             GlobalConfig.RansomDrives = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scan_delay") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
+            HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
             // DA-TAG: Signed integer as *MAY* have negative value input
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
             // Sanitise levels
-            UINTN MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
             if (0);
             else if (GlobalConfig.LogLevel < LOGLEVELOFF) GlobalConfig.LogLevel = LOGLEVELOFF;
             else if (GlobalConfig.LogLevel > MaxLogLevel) GlobalConfig.LogLevel = MaxLogLevel;
@@ -988,20 +995,20 @@ VOID ReadConfig (
             } // if/else MyStriCmp TokenList[0]
         }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &i);
+            HandleUnsignedInt (TokenList, TokenCount, &i);
             if (i >= 32) {
                 GlobalConfig.IconSizes[ICON_SIZE_SMALL] = i;
             }
         }
         else if (MyStriCmp (TokenList[0], L"big_icon_size") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &i);
+            HandleUnsignedInt (TokenList, TokenCount, &i);
             if (i >= 32) {
                 GlobalConfig.IconSizes[ICON_SIZE_BIG] = i;
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] = i / 4;
             }
         }
         else if (MyStriCmp (TokenList[0], L"mouse_size") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &i);
+            HandleUnsignedInt (TokenList, TokenCount, &i);
             if (i >= DEFAULT_MOUSE_SIZE) {
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = i;
             }
@@ -1024,7 +1031,7 @@ VOID ReadConfig (
             GlobalConfig.TextOnly = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"textmode")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
+            HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
@@ -1077,7 +1084,7 @@ VOID ReadConfig (
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
         }
         else if (MyStriCmp (TokenList[0], L"max_tags")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.MaxTags));
+            HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.MaxTags));
         }
         else if (MyStriCmp (TokenList[0], L"enable_and_lock_vmx")) {
             GlobalConfig.EnableAndLockVMX = HandleBoolean (TokenList, TokenCount);
@@ -1110,8 +1117,8 @@ VOID ReadConfig (
             if (!MyStriCmp (TokenList[1], FileName)) {
                 #if REFIT_DEBUG > 0
                 // DA-TAG: Always log this in case LogLevel is overriden
-                INTN  RealLogLevel;
-                UINTN HighLogLevel = MAXLOGLEVEL * 2;
+                INTN RealLogLevel;
+                INTN HighLogLevel = MaxLogLevel * 10;
                 if (GlobalConfig.LogLevel < MINLOGLEVEL) {
                     RealLogLevel = GlobalConfig.LogLevel;
                     GlobalConfig.LogLevel = HighLogLevel;
@@ -1280,7 +1287,7 @@ VOID ReadConfig (
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.DynamicCSR));
         }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &i);
+            HandleUnsignedInt (TokenList, TokenCount, &i);
             if (i < 1)  i = 1;
             if (i > 32) i = 32;
             GlobalConfig.MouseSpeed = i;
