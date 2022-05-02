@@ -83,7 +83,7 @@ EFI_GUID gMyEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_IN
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the UEFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"RefindPlus 0.13.3 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"RefindPlus " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 
