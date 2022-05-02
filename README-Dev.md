@@ -69,6 +69,7 @@ decline_reloadgop     |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.
 decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden
 decline_texthelp      |Disables complementary text colours if not required
 decline_uefiemulate   |Disables feature that emulates UEFI 2.x support on EFI 1.x units
+decouple_f10          |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
 disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles

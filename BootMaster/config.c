@@ -1219,6 +1219,9 @@ VOID ReadConfig (
             // DA_TAG: Accomodate Deprecation
             GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"decouple_f10")) {
+            GlobalConfig.DecoupleF10 = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"disable_compat_check")) {
             GlobalConfig.DisableCompatCheck = HandleBoolean (TokenList, TokenCount);
         }

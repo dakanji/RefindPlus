@@ -1054,13 +1054,17 @@ UINTN RunGenericMenu (
             }
 
             if (MenuExit == MENU_EXIT_SCREENSHOT) {
-                MenuExit = 0;
-                egScreenShot();
-                State.PaintAll = TRUE;
-                WaitForRelease = TRUE;
+                BOOLEAN TakeScreenShot = (!GlobalConfig.DecoupleF10 || key.ScanCode != SCAN_F10);
+                if (TakeScreenShot) {
+                    egScreenShot();
 
-                // Unblock Rescan and Refresh Screen
-                BlockRescan = FALSE;
+                    // Unblock Rescan and Refresh Screen
+                    BlockRescan = FALSE;
+                    State.PaintAll = TRUE;
+                    WaitForRelease = TRUE;
+                }
+
+                MenuExit = 0;
                 continue;
             }
         }

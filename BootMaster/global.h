@@ -424,6 +424,7 @@ typedef struct {
     BOOLEAN           ContinueOnWarning;
     BOOLEAN           ForceTRIM;
     BOOLEAN           DisableCompatCheck;
+    BOOLEAN           DecoupleF10;
     BOOLEAN           DisableAMFI;
     BOOLEAN           SupplyNVME;
     BOOLEAN           SupplyAPFS;

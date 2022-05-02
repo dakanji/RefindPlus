@@ -107,6 +107,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ContinueOnWarning = */ FALSE,
     /* ForceTRIM = */ FALSE,
     /* DisableCompatCheck = */ FALSE,
+    /* DecoupleF10 = */ FALSE,
     /* DisableAMFI = */ FALSE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
