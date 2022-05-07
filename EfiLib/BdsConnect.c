@@ -33,7 +33,6 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
 BOOLEAN ForceRescanDXE  = FALSE;
-BOOLEAN ReinstalledGOP  = FALSE;
 BOOLEAN AcquireErrorGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
 BOOLEAN DevicePresence  = FALSE;
@@ -681,27 +680,24 @@ EFI_STATUS ApplyGOPFix (VOID) {
 
     // Update Boot Services to permit reloading OptionROM
     Status = AmendSysTable();
-
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-
     MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
     MY_FREE_POOL(MsgStr);
-
+    #endif
     if (Status == EFI_ALREADY_STARTED && SetSysTab == TRUE) {
         // Set to success if previously changed
         Status = EFI_SUCCESS;
     }
-
     if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
+        #endif
     }
-    #endif
-
-    if (!EFI_ERROR(Status)) {
+    else {
         Status = AcquireGOP();
 
         #if REFIT_DEBUG > 0
@@ -711,11 +707,11 @@ EFI_STATUS ApplyGOPFix (VOID) {
         MY_FREE_POOL(MsgStr);
         #endif
 
-        // Connect all devices if no error
         if (EFI_ERROR(Status)) {
             AcquireErrorGOP = TRUE;
         }
         else {
+            // Connect all devices if no error
             #if REFIT_DEBUG > 0
             LOG_MSG("\n\n");
             #endif
@@ -752,7 +748,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR(Status) && ResetGOP && !ReLoaded && DetectedDevices) {
-            ReLoaded = ReinstalledGOP = TRUE;
+            ReLoaded = TRUE;
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
