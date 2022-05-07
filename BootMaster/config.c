@@ -1155,15 +1155,9 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"enable_mouse")) {
             GlobalConfig.EnableMouse = HandleBoolean (TokenList, TokenCount);
-            if (GlobalConfig.EnableMouse) {
-                GlobalConfig.EnableTouch = FALSE;
-            }
         }
         else if (MyStriCmp (TokenList[0], L"enable_touch")) {
             GlobalConfig.EnableTouch = HandleBoolean (TokenList, TokenCount);
-            if (GlobalConfig.EnableTouch) {
-                GlobalConfig.EnableMouse = FALSE;
-            }
         }
         else if (MyStriCmp (TokenList[0], L"transient_boot")
             ||  MyStriCmp  (TokenList[0], L"ignore_previous_boot")
@@ -1299,6 +1293,11 @@ VOID ReadConfig (
         FreeTokenLine (&TokenList, &TokenCount);
     } // for ;;
     FreeTokenLine (&TokenList, &TokenCount);
+
+    // Prioritise EnableMouse
+    if (GlobalConfig.EnableMouse) {
+        GlobalConfig.EnableTouch = FALSE;
+    }
 
     if (GlobalConfig.TagsHelp) {
         // "TagHelp" feature is active ... Set "found" flag to false

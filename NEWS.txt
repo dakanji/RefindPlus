@@ -17,8 +17,11 @@
   * The `QueryVariableInfo` Runtime service is now also emulated
   * Avoid crashes from unavailability if called on emulated UEFI 2.x
   * The UEFI 2.x emulation now returns an `EFI_UNSUPPORTED` error instead
-- Limits CSR Operations to Apple Firmware
+- Amends CSR Operation Coverage
   * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
+- Amends Pointer Token Priority
+  * The `enable_mouse` setting now always takes precedence over the `enable_touch` setting
+  * Changes inherited upstream implementation based on order of appearance in the config file
 
 
 0.13.2.AP (19 Apr 2022):
