@@ -457,7 +457,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             BlockMacKP = (
                 AppleFirmware &&
                 GuidsAreEqual (VendorGuid, &AppleGuid) &&
-                FoundSubStr (VariableName, L"AAPL,PanicInfo")
+                StrnCmp (VariableName, L"AAPL,PanicInfo", StrLen (L"AAPL,PanicInfo")) == 0
             );
         }
     }
@@ -1537,6 +1537,11 @@ VOID AboutRefindPlus (VOID) {
 VOID StoreLoaderName (
     IN CHAR16 *Name
 ) {
+    if (!Name) {
+        // Early Return
+        return;
+    }
+
     // Clear current PreviousBoot if TransientBoot is active
     if (GlobalConfig.TransientBoot) {
         EfivarSetRaw (
@@ -1544,11 +1549,6 @@ VOID StoreLoaderName (
             NULL, 0, TRUE
         );
 
-        return;
-    }
-
-    if (!Name) {
-        // Early Return
         return;
     }
 

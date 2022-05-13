@@ -35,7 +35,7 @@
 
 CHAR16    *gCsrStatus     = NULL;
 BOOLEAN    MuteLogger     = FALSE;
-BOOLEAN    MsgNormalised  = FALSE;
+BOOLEAN    NormaliseCall  = FALSE;
 EFI_GUID   AppleGuid      = APPLE_GUID;
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
@@ -54,15 +54,17 @@ EFI_STATUS GetCsrStatus (
         (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
-        if (Status == EFI_NOT_FOUND) {
-            *CsrStatus = SIP_ENABLED_EX;
-            gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
-
-            // Treat as Success
-            Status = EFI_SUCCESS;
+        if (Status != EFI_NOT_FOUND) {
+            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Status");
         }
         else {
-            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Status");
+            gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
+            *CsrStatus = SIP_ENABLED_EX;
+
+            if (!NormaliseCall) {
+                // Return 'Success' if not called from NormaliseCSR
+                Status = EFI_SUCCESS;
+            }
         }
 
         // Early Return ... Return Status
@@ -156,16 +158,16 @@ VOID RecordgCsrStatus (
     } // switch
 
     if (DisplayMessage) {
-        MsgStr = (MsgNormalised)
+        MsgStr = (NormaliseCall)
             ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
             : PoolPrint (L"%s", gCsrStatus);
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
             "%s    * %s%s",
-            (MsgNormalised) ? OffsetNext : L"",
+            (NormaliseCall) ? OffsetNext : L"",
             MsgStr,
-            (MsgNormalised) ? L"" : L"\n\n"
+            (NormaliseCall) ? L"" : L"\n\n"
         );
         #endif
 
@@ -273,7 +275,16 @@ VOID RotateCsrValue (VOID) {
         return;
     }
 
+    if ((TargetCsr & CSR_ALLOW_APPLE_INTERNAL) != 0) {
+        TargetCsr &= ~CSR_ALLOW_APPLE_INTERNAL;
+        NormaliseCall = TRUE;
+    }
+
     RecordgCsrStatus (TargetCsr, TRUE);
+
+    if (NormaliseCall) {
+        NormaliseCall = FALSE;
+    }
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -287,6 +298,9 @@ VOID RotateCsrValue (VOID) {
 EFI_STATUS NormaliseCSR (VOID) {
     EFI_STATUS  Status;
     UINT32      OurCSR;
+
+    // Normalisd Flag - Enable
+    NormaliseCall = TRUE;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute;
@@ -313,10 +327,11 @@ EFI_STATUS NormaliseCSR (VOID) {
     }
 
     // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
-    MsgNormalised = TRUE;
     OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
     RecordgCsrStatus (OurCSR, TRUE);
-    MsgNormalised = FALSE;
+
+    // Normalisd Flag - Disable
+    NormaliseCall = FALSE;
 
     return EFI_SUCCESS;
 } // EFI_STATUS NormaliseCSR()

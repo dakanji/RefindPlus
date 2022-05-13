@@ -80,7 +80,7 @@
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
 CHAR16         *BootSelection = NULL;
-CHAR16         *ValidText     = L"NOT SET";
+CHAR16         *ValidText     = L"Invalid Loader";
 
 extern BOOLEAN  IsBoot;
 extern EFI_GUID AppleGuid;
@@ -155,7 +155,7 @@ BOOLEAN IsValidLoader (
     //
     // Return TRUE
     #if REFIT_DEBUG > 0
-    ValidText = L"EFI File is *TAKEN* as Valid";
+    ValidText = L"EFI File is *CONSIDERED* Valid";
     ALT_LOG(1, LOG_THREE_STAR_MID,
         L"%s:- '%s'",
         ValidText,
@@ -197,8 +197,11 @@ BOOLEAN IsValidLoader (
     }
 
     if (!FileExists (RootDir, FileName)) {
-        #if REFIT_DEBUG > 0
+        // DA-TAG: Set ValidText in REL for 'FALSE' outcome
+        //         Allows accurate screen message
         ValidText = L"EFI File *NOT* Found";
+
+        #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"%s:- '%s'",
             ValidText,
@@ -222,8 +225,11 @@ BOOLEAN IsValidLoader (
     );
 
     if (EFI_ERROR(Status)) {
-        #if REFIT_DEBUG > 0
+        // DA-TAG: Set ValidText in REL for 'FALSE' outcome
+        //         Allows accurate screen message
         ValidText = L"EFI File is *NOT* Readable";
+
+        #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"%s:- '%s'",
             ValidText,
@@ -263,10 +269,13 @@ BOOLEAN IsValidLoader (
         )
     );
 
-    #if REFIT_DEBUG > 0
+    // DA-TAG: Set ValidText in REL for 'FALSE' outcome
+    //         Allows accurate screen message
     ValidText = (IsValid)
         ? L"EFI File is Valid"
         : L"EFI File is *NOT* Valid";
+
+    #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID,
         L"%s:- '%s'",
         ValidText,
@@ -390,7 +399,7 @@ EFI_STATUS StartEFIImage (
             ImageTitle,
             ValidText
         );
-        ValidText = L"NOT SET";
+        ValidText = L"Invalid Loader";
         CheckError (Status, MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -398,8 +407,12 @@ EFI_STATUS StartEFIImage (
     }
     else {
         // Store loader name if booting and set to do so
-        if (IsBoot && BootSelection) StoreLoaderName (BootSelection);
-        BootSelection = NULL;
+        if (BootSelection != NULL) {
+            if (IsBoot) {
+                StoreLoaderName (BootSelection);
+            }
+            BootSelection = NULL;
+        }
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
@@ -410,17 +423,20 @@ EFI_STATUS StartEFIImage (
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
         }
 
-        // NOTE: Commented-out lines below could be more efficient if file were read ahead of
-        // time and passed as a pre-loaded image to LoadImage(), but it does not work on my
-        // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel.
-        // The kernel returns a "Failed to handle fs_proto" error message.
-        // TODO: Track down the cause of this error and fix it, if possible.
+        // DA-TAG: Investigate This
+        //         Commented-out lines below could be more efficient if file were read ahead of
+        //         time and passed as a pre-loaded image to LoadImage(), but it does not work on my
+        //         32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel.
+        //         The kernel returns a "Failed to handle fs_proto" error message.
+        //
+        //         Track down the cause of this error and fix it, if possible.
         /*
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
@@ -446,6 +462,7 @@ EFI_STATUS StartEFIImage (
             // here, to keep it smaller than a kernel) works around this problem. See the
             // replacements.c file in Shim, and especially its start_image() function, for
             // the source of the problem.
+            //
             // NOTE: This does not check the return status or handle errors. It could
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
