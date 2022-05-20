@@ -50,7 +50,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           since-days: 360
-          filter-threshold: 0.5
+          filter-threshold: 0.4
           comment-title: '### Similarity Analysis'
           show-footer: false
 
@@ -110,7 +110,7 @@ jobs:
     name: Remove Pending Label
     runs-on: ubuntu-latest
 
-    if: github.event.action == 'closed'
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-remove-labels@v1.3.0

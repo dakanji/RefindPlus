@@ -12,12 +12,14 @@ on:
         - 'Label - Remove - Cannot-Replicate'
         - 'Label - Remove - Incomplete'
         - 'Label - Remove - Invalid'
+        - 'Label - Remove - Pending'
         - 'Label - Remove - Parked'
         - 'Label - Remove - Prorogued'
         - 'Label - Remove - Resolved'
         - 'Label - Remove - Tagged'
         - 'Label - Remove - Queries'
         - 'Label - Remove - Upstream'
+        - 'Label - Remove - WontFix'
       item_id:
         description: 'Item ID'
         required: true
@@ -96,6 +98,19 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Invalid'
 
+  label_remove_pending:
+    name: Label - Remove - Pending
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - Pending'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Pending'
+
   label_remove_parked:
     name: Label - Remove - Parked
     runs-on: ubuntu-latest
@@ -173,3 +188,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Upstream'
+
+  label_remove_wontfix:
+    name: Label - Remove - WontFix
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Remove - WontFix'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'WontFix'

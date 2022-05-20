@@ -12,12 +12,14 @@ on:
         - 'Label - Add - Cannot-Replicate'
         - 'Label - Add - Incomplete'
         - 'Label - Add - Invalid'
+        - 'Label - Add - Pending'
         - 'Label - Add - Parked'
         - 'Label - Add - Prorogued'
         - 'Label - Add - Resolved'
         - 'Label - Add - Tagged'
         - 'Label - Add - Queries'
         - 'Label - Add - Upstream'
+        - 'Label - Add - WontFix'
       item_id:
         description: 'Item ID'
         required: true
@@ -96,6 +98,19 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Invalid'
 
+  label_add_pending:
+    name: Label - Add - Pending
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - Pending'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Pending'
+
   label_add_parked:
     name: Label - Add - Parked
     runs-on: ubuntu-latest
@@ -173,3 +188,16 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Upstream'
+
+  label_add_wontfix:
+    name: Label - Add - WontFix
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Label - Add - WontFix'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'WontFix'

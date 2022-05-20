@@ -77,7 +77,7 @@ jobs:
           close-issue-message: >
             This item is being closed due to inactivity.
           days-before-stale: 20
-          days-before-close: 8
+          days-before-close: 28
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           remove-issue-stale-when-updated: true
@@ -92,13 +92,13 @@ jobs:
           close-issue-message: >
             This item is being closed due to inactivity.
           days-before-stale: 60
-          days-before-close: 28
+          days-before-close: 88
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Parked'
 
-      - name: Flag or Close Parked Issues
+      - name: Flag or Close Help-Wanted Issues
         uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
@@ -107,7 +107,7 @@ jobs:
           close-issue-message: >
             This item is being closed due to inactivity.
           days-before-stale: 120
-          days-before-close: 60
+          days-before-close: 180
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
