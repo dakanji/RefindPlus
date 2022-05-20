@@ -565,18 +565,20 @@ LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 #define LOG_LINE_EXIT        (14)
 
 VOID DebugLog (
-    IN        INTN  DebugMode,
     IN  const CHAR8 *FormatString, ...
 );
 
 VOID DeepLoggger (
-    IN  INTN     DebugMode,
     IN  INTN     level,
     IN  INTN     type,
     IN  CHAR16 **Msg
 );
 
-// NB: 'gLogTemp' is handled in 'DeepLoggger'
+VOID WayPointer (
+    IN CHAR16  *Msg
+);
+
+// NB: 'gLogTemp' is freed in 'DeepLoggger'
 extern CHAR16 *gLogTemp;
 
 #if REFIT_DEBUG > 0
@@ -584,36 +586,13 @@ extern CHAR16 *gLogTemp;
         do {                                                                                   \
             if (KernelNotStarted) {                                                            \
                 gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (REFIT_DEBUG, level, type, &gLogTemp);                             \
+                DeepLoggger (level, type, &gLogTemp);                                          \
             }                                                                                  \
         } while (0)
-#   define LOG_MSG(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
-            }                                                                                  \
-        } while (0)
-#   define OUT_TAG()                                                                           \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                gLogTemp = StrDuplicate (L"<<----- * ----->>");                                \
-                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
-            }                                                                                  \
-        } while (0)
-#   define RET_TAG()                                                                           \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                gLogTemp = StrDuplicate (L"----->> * <<-----");                                \
-                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
-            }                                                                                  \
-        } while (0)
-#   define END_TAG()                                                                           \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                gLogTemp = StrDuplicate (L"<<<   * X *   >>>");                                \
-                DeepLoggger (REFIT_DEBUG, 1, LOG_LINE_EXIT, &gLogTemp);                        \
-            }                                                                                  \
-        } while (0)
+#   define LOG_MSG(...) DebugLog (__VA_ARGS__);
+#   define OUT_TAG() WayPointer (L"<<----- * ----->>");
+#   define RET_TAG() WayPointer (L"----->> * <<-----");
+#   define END_TAG() WayPointer (L"<<<   * X *   >>>");
 #else
 #   define END_TAG()
 #   define RET_TAG()
@@ -624,57 +603,52 @@ extern CHAR16 *gLogTemp;
 
 #if REFIT_DEBUG < 1
 #   define BREAD_CRUMB(...)
-#   define BRK_MIN(...)
+#   define LOG_SEP(...)
+#   define BRK_MAX(...)
 #   define BRK_MOD(...)
-#   define BRK_MAX(...)
-#   define LOG_SEP(...)
+#   define BRK_MIN(...)
 #elif REFIT_DEBUG < 2
-#   define LOG_SEP(...)
-#   define BRK_MAX(...)
-#   define BRK_MOD(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
-            }                                                                                  \
-        } while (0)
 #   define BRK_MIN(...)                                                                        \
         do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {                    \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
+            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                                        \
+                DebugLog (__VA_ARGS__);                                                        \
             }                                                                                  \
         } while (0)
+#   define BRK_MOD(...) DebugLog (__VA_ARGS__);
+#   define BRK_MAX(...)
+#   define LOG_SEP(...)
 #   define BREAD_CRUMB(...)
 #else
 #   define BREAD_CRUMB(...)                                                                    \
         do {                                                                                   \
             if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \
                 gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (REFIT_DEBUG, 2, LOG_LINE_FORENSIC, &gLogTemp);                    \
-            }                                                                                  \
-        } while (0)
-#   define BRK_MIN(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {                    \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
-            }                                                                                  \
-        } while (0)
-#   define BRK_MOD(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel <= MAXLOGLEVEL) {                    \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
-            }                                                                                  \
-        } while (0)
-#   define BRK_MAX(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \
-                DebugLog (REFIT_DEBUG, __VA_ARGS__);                                           \
+                DeepLoggger (2, LOG_LINE_FORENSIC, &gLogTemp);                                 \
             }                                                                                  \
         } while (0)
 #   define LOG_SEP(...)                                                                        \
         do {                                                                                   \
             if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \
                 gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (REFIT_DEBUG, 2, LOG_BLOCK_SEP, &gLogTemp);                        \
+                DeepLoggger (2, LOG_BLOCK_SEP, &gLogTemp);                                     \
+            }                                                                                  \
+        } while (0)
+#   define BRK_MAX(...)                                                                        \
+        do {                                                                                   \
+            if (GlobalConfig.LogLevel > MAXLOGLEVEL) {                                         \
+                DebugLog (__VA_ARGS__);                                                        \
+            }                                                                                  \
+        } while (0)
+#   define BRK_MOD(...)                                                                        \
+        do {                                                                                   \
+            if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {                                        \
+                DebugLog (__VA_ARGS__);                                                        \
+            }                                                                                  \
+        } while (0)
+#   define BRK_MIN(...)                                                                        \
+        do {                                                                                   \
+            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                                        \
+                DebugLog (__VA_ARGS__);                                                        \
             }                                                                                  \
         } while (0)
 #endif

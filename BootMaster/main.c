@@ -223,6 +223,8 @@ EFI_GUID               RefindGuid           = REFIND_GUID_VALUE;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
+#define BOOT_FIX_STR_01            L"Disable AMFI Checks"
+#define BOOT_FIX_STR_02            L"Disable Compat Checks"
 
 extern VOID              InitBooterLog (VOID);
 
@@ -252,10 +254,10 @@ extern BOOLEAN                       SelfVolRun;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
+
 //
 // Misc functions
 //
-
 
 static
 VOID InitMainMenu (VOID) {
@@ -949,11 +951,11 @@ VOID SetBootArgs (VOID) {
 
     #if REFIT_DEBUG > 0
     if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
-        LogDisableCheck (L"Disable AMFI Checks", Status);
+        LogDisableCheck (BOOT_FIX_STR_01, Status);
     }
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
-        LogDisableCheck (L"Disable Compat Check", Status);
+        LogDisableCheck (BOOT_FIX_STR_02, Status);
     }
 
     MsgStr = PoolPrint (
@@ -1026,7 +1028,7 @@ EFI_STATUS NoCheckCompat (VOID) {
     MY_FREE_POOL(BootArg);
 
     #if REFIT_DEBUG > 0
-    LogDisableCheck (L"Disable Compat Check", Status);
+    LogDisableCheck (BOOT_FIX_STR_02, Status);
     #endif
 
     return Status;
@@ -1086,7 +1088,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
     MY_FREE_POOL(BootArg);
 
     #if REFIT_DEBUG > 0
-    LogDisableCheck (L"Disable AMFI Checks", Status);
+    LogDisableCheck (BOOT_FIX_STR_01, Status);
     #endif
 
     return Status;

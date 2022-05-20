@@ -261,31 +261,57 @@ VOID SaveMessageToDebugLogFile (
     LogFile->Close (LogFile);
 } // static VOID SaveMessageToDebugLogFile()
 
-VOID EFIAPI DeepLoggger (
-    IN INTN     DebugMode,
+VOID WayPointer (
+    IN CHAR16 *Msg
+) {
+    if (!KernelNotStarted) {
+        // Early Return
+        return;
+    }
+
+    if (!Msg) {
+        // Early Return
+        return;
+    }
+
+    // Stash and swap LogLevel
+    // Needed to force DeepLogger on LogLevel 0
+    UINTN TmpLogLevelStore = GlobalConfig.LogLevel;
+    if (GlobalConfig.LogLevel < 1) GlobalConfig.LogLevel = 1;
+
+    // Call DeepLogger
+    gLogTemp = StrDuplicate (Msg);
+    DeepLoggger (1, LOG_LINE_EXIT, &gLogTemp);
+
+    // Restore LogLevel if changed
+    GlobalConfig.LogLevel = TmpLogLevelStore;
+} // VOID WayPointer()
+
+VOID DeepLoggger (
     IN INTN     level,
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN   Limit     = 210;
-    CHAR8  *FormatMsg = NULL;
-    CHAR16 *Tmp       = NULL;
-    CHAR16 *StoreMsg  = NULL;
+    UINTN    Limit     = 210;
+    CHAR8   *FormatMsg = NULL;
+    CHAR16  *StoreMsg  = NULL;
+    CHAR16  *Tmp       = NULL;
 
-    // Assess *Msg here to silence Coverity
     if (!(*Msg)) {
+        // Early Return
         return;
     }
 
     // Make sure we are able to write
-    BOOLEAN EarlyReturn = (
-        DebugMode <= MINLOGLEVEL
+    BOOLEAN  EarlyReturn = (
+        REFIT_DEBUG <= MINLOGLEVEL
         || GlobalConfig.LogLevel < level
         || GlobalConfig.LogLevel == MINLOGLEVEL
         || (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL)
         || ((type != LOG_LINE_FORENSIC) && (NativeLogger || MuteLogger))
     );
-    if (DebugMode > MAXLOGLEVEL && type == LOG_BLOCK_SEP && !MuteLogger) {
+
+    if (REFIT_DEBUG > MAXLOGLEVEL && type == LOG_BLOCK_SEP && !MuteLogger) {
         EarlyReturn = FALSE;
     }
     if (EarlyReturn) {
@@ -339,7 +365,7 @@ VOID EFIAPI DeepLoggger (
 
             // Write the Message String to File
             UnicodeStrToAsciiStr (Tmp, FormatMsg);
-            DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
+            DebugLog ((const CHAR8 *) FormatMsg);
 
             // Disable Native Logging
             UseMsgLog = FALSE;
@@ -350,16 +376,18 @@ VOID EFIAPI DeepLoggger (
     MY_FREE_POOL(*Msg);
     MY_FREE_POOL(StoreMsg);
     MY_FREE_POOL(FormatMsg);
-} // VOID EFIAPI DeepLoggger()
+} // VOID DeepLoggger()
 
 VOID EFIAPI DebugLog (
-    IN       INTN   DebugMode,
     IN const CHAR8 *FormatString,
     ...
 ) {
+    // Abort if Kernel has started
+    if(!KernelNotStarted) return;
+
     // Make sure writing is allowed/possible
     if (MuteLogger
-        || DebugMode < 1
+        || REFIT_DEBUG < 1
         || FormatString == NULL
         || (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL)
     ) {
@@ -377,7 +405,7 @@ VOID EFIAPI DebugLog (
     // Print message to log buffer
     VA_LIST Marker;
     VA_START(Marker, FormatString);
-    MemLogVA (TimeStamp, DebugMode, FormatString, Marker);
+    MemLogVA (TimeStamp, REFIT_DEBUG, FormatString, Marker);
     VA_END(Marker);
 
     TimeStamp = TRUE;

@@ -34,12 +34,12 @@ EFI_STATUS AmendSysTable (VOID) {
 #define EFI_FIELD_OFFSET(TYPE, Field) ((UINTN) (&(((TYPE *) 0)->Field)))
 #define TARGET_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
 
-EFI_CPU_ARCH_PROTOCOL   *gCpu       = NULL;
-EFI_SMM_BASE2_PROTOCOL  *gSmmBase2  = NULL;
+EFI_CPU_ARCH_PROTOCOL   *zCpu       = NULL;
+EFI_SMM_BASE2_PROTOCOL  *zSmmBase2  = NULL;
 
-EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
-    INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.ImageHead),
-    INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.EventHead),
+EFI_RUNTIME_ARCH_PROTOCOL zRuntimeTemplate = {
+    INITIALIZE_LIST_HEAD_VARIABLE (zRuntimeTemplate.ImageHead),
+    INITIALIZE_LIST_HEAD_VARIABLE (zRuntimeTemplate.EventHead),
     sizeof (EFI_MEMORY_DESCRIPTOR) +
         sizeof (UINT64) -
         (sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)),
@@ -47,14 +47,14 @@ EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
     NULL, NULL, FALSE, FALSE
 };
 
-UINTN                       gEventPending      = 0;
-EFI_TPL                     gEfiCurrentTpl     = TPL_APPLICATION;
-EFI_LOCK                    gEventQueueLock    = EFI_INITIALIZE_LOCK_VARIABLE (TPL_HIGH_LEVEL);
-EFI_RUNTIME_ARCH_PROTOCOL  *gRuntime           = &gRuntimeTemplate;
-LIST_ENTRY                  gEventSignalQueue  = INITIALIZE_LIST_HEAD_VARIABLE (gEventSignalQueue);
-LIST_ENTRY                  gEventQueue[TPL_HIGH_LEVEL + 1];
+UINTN                       zEventPending      = 0;
+EFI_TPL                     zEfiCurrentTpl     = TPL_APPLICATION;
+EFI_LOCK                    zEventQueueLock    = EFI_INITIALIZE_LOCK_VARIABLE (TPL_HIGH_LEVEL);
+EFI_RUNTIME_ARCH_PROTOCOL  *zRuntime           = &zRuntimeTemplate;
+LIST_ENTRY                  zEventSignalQueue  = INITIALIZE_LIST_HEAD_VARIABLE (zEventSignalQueue);
+LIST_ENTRY                  zEventQueue[TPL_HIGH_LEVEL + 1];
 
-UINT32 mEventTable[] = {
+UINT32 rEventTable[] = {
     EVT_TIMER|EVT_NOTIFY_SIGNAL,
     EVT_TIMER, EVT_NOTIFY_WAIT, EVT_NOTIFY_SIGNAL,
     EVT_SIGNAL_EXIT_BOOT_SERVICES,
@@ -87,23 +87,23 @@ VOID OurSetInterruptState (
     EFI_STATUS  Status;
     BOOLEAN     InSmm;
 
-    if (gCpu == NULL) {
+    if (zCpu == NULL) {
         return;
     }
 
     if (!Enable) {
-        gCpu->DisableInterrupt (gCpu);
+        zCpu->DisableInterrupt (zCpu);
         return;
     }
 
-    if (gSmmBase2 == NULL) {
-        gCpu->EnableInterrupt (gCpu);
+    if (zSmmBase2 == NULL) {
+        zCpu->EnableInterrupt (zCpu);
         return;
     }
 
-    Status = gSmmBase2->InSmm (gSmmBase2, &InSmm);
+    Status = zSmmBase2->InSmm (zSmmBase2, &InSmm);
     if (!EFI_ERROR(Status) && !InSmm) {
-        gCpu->EnableInterrupt (gCpu);
+        zCpu->EnableInterrupt (zCpu);
     }
 } // VOID OurSetInterruptState()
 
@@ -117,9 +117,9 @@ VOID OurDispatchEventNotifies (
     IEVENT        *Event;
     LIST_ENTRY    *Head;
 
-    OurAcquireLock (&gEventQueueLock);
-    ASSERT (gEventQueueLock.OwnerTpl == Priority);
-    Head = &gEventQueue[Priority];
+    OurAcquireLock (&zEventQueueLock);
+    ASSERT (zEventQueueLock.OwnerTpl == Priority);
+    Head = &zEventQueue[Priority];
 
     // Dispatch pending notifications
     while (!IsListEmpty (Head)) {
@@ -136,7 +136,7 @@ VOID OurDispatchEventNotifies (
             Event->SignalCount = 0;
         }
 
-        OurReleaseLock (&gEventQueueLock);
+        OurReleaseLock (&zEventQueueLock);
 
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
@@ -144,11 +144,11 @@ VOID OurDispatchEventNotifies (
         REFIT_CALL_2_WRAPPER(Event->NotifyFunction, Event, Event->NotifyContext);
 
         // Check for next pending event
-        OurAcquireLock (&gEventQueueLock);
+        OurAcquireLock (&zEventQueueLock);
     } // while
 
-    gEventPending &= ~((UINTN) (1) << Priority);
-    OurReleaseLock (&gEventQueueLock);
+    zEventPending &= ~((UINTN) (1) << Priority);
+    OurReleaseLock (&zEventQueueLock);
 } // VOID OurDispatchEventNotifies()
 
 /**
@@ -162,7 +162,7 @@ EFI_TPL EFIAPI OurRaiseTpl (
 ) {
     EFI_TPL     OldTpl;
 
-    OldTpl = gEfiCurrentTpl;
+    OldTpl = zEfiCurrentTpl;
     if (OldTpl > NewTpl) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
@@ -183,7 +183,7 @@ EFI_TPL EFIAPI OurRaiseTpl (
     }
 
     // Set the new value
-    gEfiCurrentTpl = NewTpl;
+    zEfiCurrentTpl = NewTpl;
 
     return OldTpl;
 } // EFI_TPL EFIAPI OurRaiseTpl()
@@ -199,7 +199,7 @@ VOID EFIAPI OurRestoreTpl (
     EFI_TPL    OldTpl;
     EFI_TPL    PendingTpl;
 
-    OldTpl = gEfiCurrentTpl;
+    OldTpl = zEfiCurrentTpl;
     if (NewTpl > OldTpl) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
@@ -216,28 +216,28 @@ VOID EFIAPI OurRestoreTpl (
 
     // Ensure interrupts are enabled if lowering below HIGH_LEVEL
     if (OldTpl >= TPL_HIGH_LEVEL  &&  NewTpl < TPL_HIGH_LEVEL) {
-        gEfiCurrentTpl = TPL_HIGH_LEVEL;
+        zEfiCurrentTpl = TPL_HIGH_LEVEL;
     }
 
     // Dispatch pending events
-    while (gEventPending != 0) {
-        PendingTpl = (UINTN) HighBitSet64 (gEventPending);
+    while (zEventPending != 0) {
+        PendingTpl = (UINTN) HighBitSet64 (zEventPending);
         if (PendingTpl <= NewTpl) {
             break;
         }
 
-        gEfiCurrentTpl = PendingTpl;
-        if (gEfiCurrentTpl < TPL_HIGH_LEVEL) {
+        zEfiCurrentTpl = PendingTpl;
+        if (zEfiCurrentTpl < TPL_HIGH_LEVEL) {
             OurSetInterruptState (TRUE);
         }
-        OurDispatchEventNotifies (gEfiCurrentTpl);
+        OurDispatchEventNotifies (zEfiCurrentTpl);
     } // while
 
     // Set new value
-    gEfiCurrentTpl = NewTpl;
+    zEfiCurrentTpl = NewTpl;
 
     // Ensure interrupts are enabled if lowering below HIGH_LEVEL
-    if (gEfiCurrentTpl < TPL_HIGH_LEVEL) {
+    if (zEfiCurrentTpl < TPL_HIGH_LEVEL) {
         OurSetInterruptState (TRUE);
     }
 } // VOID EFIAPI OurRestoreTpl()
@@ -309,8 +309,8 @@ EFI_STATUS OurCreateEventEx (
 
     // Ensure no reserved flags are set
     Status = EFI_INVALID_PARAMETER;
-    for (Index = 0; Index < (sizeof (mEventTable) / sizeof (UINT32)); Index++) {
-        if (Type == mEventTable[Index]) {
+    for (Index = 0; Index < (sizeof (rEventTable) / sizeof (UINT32)); Index++) {
+        if (Type == rEventTable[Index]) {
             Status = EFI_SUCCESS;
             break;
         }
@@ -337,7 +337,7 @@ EFI_STATUS OurCreateEventEx (
         }
     }
     else {
-        // Convert EFI 1.10 Events to their UEFI 2.0 CreateEventEx mapping
+        // Convert EFI 1.x Events to their UEFI 2.x CreateEventEx mapping
         if (Type == EVT_SIGNAL_EXIT_BOOT_SERVICES) {
             EventGroup = &gEfiEventExitBootServicesGuid;
         }
@@ -357,7 +357,7 @@ EFI_STATUS OurCreateEventEx (
         }
     }
     else {
-        // No notification needed. Zero out ignored values
+        // No notification needed ... Zero out ignored values
         NotifyTpl      = 0;
         NotifyFunction = NULL;
         NotifyContext  = NULL;
@@ -392,17 +392,17 @@ EFI_STATUS OurCreateEventEx (
         IEvent->RuntimeData.NotifyFunction = NotifyFunction;
         IEvent->RuntimeData.NotifyContext  = (VOID *) NotifyContext;
         IEvent->RuntimeData.Event          = (EFI_EVENT *) IEvent;
-        InsertTailList (&gRuntime->EventHead, &IEvent->RuntimeData.Link);
+        InsertTailList (&zRuntime->EventHead, &IEvent->RuntimeData.Link);
     }
 
-    OurAcquireLock (&gEventQueueLock);
+    OurAcquireLock (&zEventQueueLock);
 
     if ((Type & EVT_NOTIFY_SIGNAL) != 0x00000000) {
         // The Event's NotifyFunction must be queued whenever the event is signaled
-        InsertHeadList (&gEventSignalQueue, &IEvent->SignalLink);
+        InsertHeadList (&zEventSignalQueue, &IEvent->SignalLink);
     }
 
-    OurReleaseLock (&gEventQueueLock);
+    OurReleaseLock (&zEventQueueLock);
 
     // Done
     return EFI_SUCCESS;
@@ -435,7 +435,10 @@ EFI_STATUS AmendSysTable (VOID) {
     EFI_RUNTIME_SERVICES *uRT;
 
     /* Check EFI Revision */
-    if (gST->Hdr.Revision >= TARGET_EFI_REVISION) {
+    if (gBS->Hdr.Revision >= TARGET_EFI_REVISION ||
+        gRT->Hdr.Revision >= TARGET_EFI_REVISION ||
+        gST->Hdr.Revision >= TARGET_EFI_REVISION
+    ) {
         // Early Return
         return EFI_ALREADY_STARTED;
     }
