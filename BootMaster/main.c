@@ -240,10 +240,6 @@ extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
 // Link to Cert GUIDs in mok/guid.c
-extern EFI_GUID                      X509_GUID;
-extern EFI_GUID                      RSA2048_GUID;
-extern EFI_GUID                      PKCS7_GUID;
-extern EFI_GUID                      EFI_CERT_SHA256_GUID;
 extern EFI_GUID                      AppleGuid;
 
 extern EFI_FILE                     *gVarsDir;
@@ -378,24 +374,12 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  VOID      *VariableData
 ) {
     EFI_STATUS     Status;
-    EFI_GUID       VendorMS              = MICROSOFT_VENDOR_GUID;
-    EFI_GUID       X509Guid              = X509_GUID;
-    EFI_GUID       PKCS7Guid             = PKCS7_GUID;
-    EFI_GUID       Sha001Guid            = EFI_CERT_SHA1_GUID;
-    EFI_GUID       Sha224Guid            = EFI_CERT_SHA224_GUID;
-    EFI_GUID       Sha256Guid            = EFI_CERT_SHA256_GUID;
-    EFI_GUID       Sha384Guid            = EFI_CERT_SHA384_GUID;
-    EFI_GUID       Sha512Guid            = EFI_CERT_SHA512_GUID;
-    EFI_GUID       RSA2048Guid           = RSA2048_GUID;
-    EFI_GUID       RSA2048Sha1Guid       = EFI_CERT_RSA2048_SHA1_GUID;
-    EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
-    EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
+    EFI_GUID       VendorMS = MICROSOFT_VENDOR_GUID;
 
     BOOLEAN IsVendorMS = GuidsAreEqual (VendorGuid, &VendorMS);
     BOOLEAN CurPolicyOEM = (IsVendorMS && MyStriCmp (VariableName, L"CurrentPolicy"));
     BOOLEAN BlockMacKP = FALSE;
     BOOLEAN BlockMore = FALSE;
-    BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockVend = FALSE;
     BOOLEAN RevokeVar = (!VariableData && VariableSize == 0);
 
@@ -403,25 +387,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         BlockVend = (
             AppleFirmware && IsVendorMS
         );
-
-        if (!BlockVend) {
-            BlockCert = (
-                AppleFirmware &&
-                (
-                    GuidsAreEqual (VendorGuid, &X509Guid) ||
-                    GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
-                    GuidsAreEqual (VendorGuid, &Sha001Guid) ||
-                    GuidsAreEqual (VendorGuid, &Sha224Guid) ||
-                    GuidsAreEqual (VendorGuid, &Sha256Guid) ||
-                    GuidsAreEqual (VendorGuid, &Sha384Guid) ||
-                    GuidsAreEqual (VendorGuid, &Sha512Guid) ||
-                    GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
-                    GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
-                    GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
-                    GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
-                )
-            );
-        }
     }
 
     #if REFIT_DEBUG > 0
@@ -431,7 +396,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_MUTELOGGER_SET;
     #endif
 
-    if (!BlockVend && !BlockCert && !CurPolicyOEM && !RevokeVar) {
+    if (!BlockVend && !CurPolicyOEM && !RevokeVar) {
         BlockMore = (
             AppleFirmware &&
             (
@@ -464,7 +429,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         }
     }
 
-    Status = (BlockVend || BlockCert || BlockMore || BlockMacKP)
+    Status = (BlockVend || BlockMore || BlockMacKP)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -477,7 +442,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (BlockVend || BlockCert || BlockMore || BlockMacKP)
+            (BlockVend || BlockMore || BlockMacKP)
                 ? EFI_ACCESS_DENIED : Status
         );
         LimitStringLength (LogStatus, 18);
@@ -509,17 +474,15 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             L"In Hardware NVRAM ... %18s %s:- %s  :::  %-32s  ****  Size: %5d byte%s%s",
             LogStatus,
             NVRAM_LOG_SET,
-            (BlockCert)
-                ? L"Certificate"
+            (BlockVend)
+                ? L"WindowsVend"
                 : (BlockMore)
                     ? L"SecurityTag"
                     : (BlockMacKP)
                         ? L"KernelPanic"
-                        : (BlockVend)
-                            ? L"WindowsVend"
-                            : (CurPolicyOEM)
-                                ? L" PolicyOEM "
-                                : L"RegularItem",
+                        : (CurPolicyOEM)
+                            ? L" PolicyOEM "
+                            : L"RegularItem",
             LogNameFull,
             VariableSize,
             (VariableSize == 1)
@@ -549,7 +512,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     //
     // Clear previously saved instances of blocked variable
     // BlockMacKP is excluded as has dynamic naming
-    if (!CurPolicyOEM && (BlockVend || BlockCert || BlockMore)) {
+    if (!CurPolicyOEM && (BlockVend || BlockMore)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
             Attributes, 0, NULL
