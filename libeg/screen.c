@@ -123,144 +123,163 @@ EFI_STATUS RefitCheckGOP (VOID) {
     UINTN                          i;
     UINTN                          HandleCount;
     EFI_HANDLE                    *HandleBuffer;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *Gop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop = NULL;
 
-    OrigGop = NULL;
-    Status  = REFIT_CALL_3_WRAPPER(
+    // Search for GOP on ConsoleOut handle
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &GOPDrawProtocolGuid, (VOID **) &OrigGop
     );
-
-    if (EFI_ERROR(Status)) {
-        REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol, &GOPDrawProtocolGuid,
-            NULL, (VOID **) &Gop
-        );
+    if (!OrigGop || EFI_ERROR(Status)) {
+        // Early Return on Failure ... Proceed to Try to Provide
+        // Need to return 'Success' to trigger provision
+        return EFI_SUCCESS;
     }
-    else {
-        if (OrigGop && OrigGop->Mode->MaxMode > 0) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: Usable GOP Exists on ConsoleOut Handle");
-            LOG_MSG("\n\n");
-            #endif
 
-            GOPDraw = OrigGop;
-
-            return EFI_ALREADY_STARTED;
-        }
-
+    // Search for avaliable modes on ConsoleOut GOP
+    if (OrigGop->Mode->MaxMode > 0) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("Seek Replacement GOP Candidates:");
-        #endif
-
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &GOPDrawProtocolGuid, NULL,
-            &HandleCount, &HandleBuffer
-        );
-        if (EFI_ERROR(Status)) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Could Not Find Any GOP Instance", OffsetNext);
-            LOG_MSG("\n\n");
-            #endif
-
-            return EFI_NOT_FOUND;
-        }
-
-        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info = NULL;
-
-        UINTN   SizeOfInfo;
-        UINT32  MaxMode;
-        UINT32  Mode;
-        UINT32  Width       = 0;
-        UINT32  Height      = 0;
-        BOOLEAN OurValidGOP = FALSE;
-
-        #if REFIT_DEBUG > 0
-        UINTN   IndexGPU = 0;
-        #endif
-
-        for (i = 0; i < HandleCount; i++) {
-            OurValidGOP = FALSE;
-            if (HandleBuffer[i] == gST->ConsoleOutHandle) {
-                continue;
-            }
-
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->HandleProtocol, HandleBuffer[i],
-                &GOPDrawProtocolGuid, (VOID **) &Gop
-            );
-            if (EFI_ERROR(Status)) {
-                continue;
-            }
-
-            #if REFIT_DEBUG > 0
-            ++IndexGPU;
-            LOG_MSG("%s  - Found Replacement Candidate on GPU %02d", OffsetNext, IndexGPU);
-            LOG_MSG("%s    * Evaluate Candidate", OffsetNext);
-            #endif
-
-            Width = Height = 0;
-            MaxMode = Gop->Mode->MaxMode;
-
-            for (Mode = 0; Mode < MaxMode; Mode++) {
-                Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
-                if (EFI_ERROR(Status)) {
-                    continue;
-                }
-
-                if (Width  > Info->HorizontalResolution ||
-                    Height > Info->VerticalResolution
-                ) {
-                    continue;
-                }
-
-                if (Width  == Info->HorizontalResolution &&
-                    Height == Info->VerticalResolution
-                ) {
-                    continue;
-                }
-
-                Width  = Info->HorizontalResolution;
-                Height = Info->VerticalResolution;
-
-                MY_FREE_POOL(Info);
-            } // for
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG(
-                "%s    ** %s Candidate : %5d x %-5d",
-                OffsetNext,
-                (Width == 0 || Height == 0)
-                    ? L"Invalid"
-                    : L"Valid",
-                Width, Height
-            );
-            #endif
-
-            if (Width != 0 && Height != 0) {
-                OurValidGOP = TRUE;
-                break;
-            }
-        } // for i = 0
-
-        MY_FREE_POOL(HandleBuffer);
-
-        #if REFIT_DEBUG > 0
+        LOG_MSG("INFO: Usable GOP Found on ConsoleOut Handle");
         LOG_MSG("\n\n");
         #endif
 
-        if (!OurValidGOP || EFI_ERROR(Status)) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: Could Not Find Usable Replacement GOP");
-            LOG_MSG("\n\n");
-            #endif
+        GOPDraw = OrigGop;
 
-            return EFI_UNSUPPORTED;
+        // Early Return ... Skip Provision
+        return EFI_ALREADY_STARTED;
+    }
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("Seek Replacement GOP Candidates:");
+    #endif
+
+    // Search for GOP on handle buffer
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &GOPDrawProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (EFI_ERROR(Status) || HandleCount == 1) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("%s  - Could Not Find GOP Candidates", OffsetNext);
+        LOG_MSG("\n\n");
+        #endif
+
+        MY_FREE_POOL(HandleBuffer);
+
+        // Early Return ... Skip Provision
+        return EFI_NOT_FOUND;
+    }
+
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info = NULL;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL         *Gop;
+
+    UINTN   SizeOfInfo;
+    UINT32  Mode;
+    UINT32  Width;
+    UINT32  Height;
+    BOOLEAN DoneLoop;
+    BOOLEAN OurValidGOP = FALSE;
+
+    #if REFIT_DEBUG > 0
+    UINTN   IndexGPU = 0;
+    #endif
+
+    // Assess GOP instances on handle buffer
+    for (i = 0; i < HandleCount; i++) {
+        if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+            // Skip ConsoleOut GOP
+            continue;
         }
-    } // if !EFI_ERROR(Status)
 
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[i],
+            &GOPDrawProtocolGuid, (VOID **) &Gop
+        );
+        if (EFI_ERROR(Status)) {
+            // Skip handle on error
+            continue;
+        }
+
+        #if REFIT_DEBUG > 0
+        ++IndexGPU;
+        LOG_MSG("%s  - Found Replacement Candidate on GPU %02d", OffsetNext, IndexGPU);
+        LOG_MSG("%s    * Evaluate Candidate", OffsetNext);
+        #endif
+
+        Width = Height = 0;
+        DoneLoop = FALSE;
+
+        for (Mode = 0; Mode < Gop->Mode->MaxMode; Mode++) {
+            if (DoneLoop) {
+                MY_FREE_POOL(Info);
+            }
+
+            Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
+            if (EFI_ERROR(Status)) {
+                DoneLoop = FALSE;
+
+                // Skip handle
+                continue;
+            }
+            DoneLoop = TRUE;
+
+            if (Width  > Info->HorizontalResolution ||
+                Height > Info->VerticalResolution
+            ) {
+                // Skip handle
+                continue;
+            }
+
+            if (Width  == Info->HorizontalResolution &&
+                Height == Info->VerticalResolution
+            ) {
+                // Skip handle
+                continue;
+            }
+
+            Width  = Info->HorizontalResolution;
+            Height = Info->VerticalResolution;
+        } // for Mode = 0
+
+        MY_FREE_POOL(Info);
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG(
+            "%s    ** %s Candidate : %5d x %-5d",
+            OffsetNext,
+            (Width == 0 || Height == 0)
+                ? L"Invalid"
+                : L"Valid",
+            Width, Height
+        );
+        #endif
+
+        if (Width != 0 && Height != 0) {
+            OurValidGOP = TRUE;
+
+            // Found valid candiadte ... Break out of loop
+            break;
+        }
+    } // for i = 0
+
+    MY_FREE_POOL(HandleBuffer);
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n\n");
+    #endif
+
+    if (!OurValidGOP || EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("INFO: Could Not Find Usable Replacement GOP");
+        LOG_MSG("\n\n");
+        #endif
+
+        // Early Return ... Skip Provision
+        return EFI_UNSUPPORTED;
+    }
+
+    // Return 'Success' to trigger provision
     return EFI_SUCCESS;
 } // static EFI_STATUS RefitCheckGOP()
 
@@ -1043,7 +1062,6 @@ VOID egInitScreen (VOID) {
                 // DA-TAG: Limit to TianoCore
                 if (GlobalConfig.ProvideConsoleGOP) {
                     Status = RefitCheckGOP();
-
                     if (!EFI_ERROR(Status)) {
                         // Run OpenCore Function
                         Status = OcProvideConsoleGop (TRUE);
@@ -1132,10 +1150,12 @@ VOID egInitScreen (VOID) {
             }
         }
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
+        if (MsgStr) {
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            FreePool (MsgStr);
+        }
         #endif
     } // if/else FoundHandleUGA && AcquireErrorGOP
 
@@ -1284,23 +1304,42 @@ VOID egInitScreen (VOID) {
     }
     LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
+    #endif
 
     if (!egHasGraphics) {
+        #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"No");
+        #endif
+    }
+    else if (!FlagUGA || !AppleFirmware || AppleFramebuffers > 0) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Yes");
+        #endif
     }
     else {
-        if (!FlagUGA) {
-            MsgStr = StrDuplicate (L"Yes");
+        // Force Text Mode ... AppleFramebuffers Missing on Mac with UGA
+        UGADraw               =  NULL;
+        GOPDraw               =  NULL;
+        egHasGraphics         = FALSE;
+        GlobalConfig.TextOnly =  TRUE;
+
+        Status = EFI_ALREADY_STARTED;
+        if (!GlobalConfig.UseTextRenderer) {
+            // Force Text Renderer
+            Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
         }
-        else {
-            MsgStr = StrDuplicate (
-                (AppleFirmware && AppleFramebuffers == 0)
-                    ? L"Yes (Without Display ... AppleFramebuffers are Missing)"
-                    : L"Yes"
-            );
-        }
+
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"Yes (Without Display ... Force Text Mode%s)",
+            (Status == EFI_ALREADY_STARTED)
+                ? L""
+                : L" and Renderer"
+        );
+        #endif
     }
 
+    #if REFIT_DEBUG > 0
     LOG_MSG("%s      Graphics Available:- '%s'", OffsetNext, MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
@@ -1701,7 +1740,7 @@ CHAR16 * egScreenDescription (VOID) {
             );
         }
         else {
-            GraphicsInfo = StrDuplicate (L"Could not Get Graphics Details");
+            GraphicsInfo = StrDuplicate (L"Could Not Get Graphics Details");
         }
 
         if (!AllowGraphicsMode) {
