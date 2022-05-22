@@ -313,6 +313,19 @@
 #
 #icon_row_tune -20
 
+# Allow/Prevent saving NVRAM variables based on an allowable variable size limit.
+# NVRAM variables larger than the specified limit will be discard. This setting
+# should only be used on Legacy Apple Macs where the built in feature for this
+# may not be operational and should be set to match the specific allowed size
+# for such units. Given the dificulty involved in finding this allowed size,
+# this setting should not be set by most users. Note that this setting is
+# only active on Apple firmware, requires the "ProtectNVRAM" feature and
+# that it is disabled if it is set to a value lower than 1024 bytes.
+#
+# Inactive when commented out (Does not filter NVRAM writes by size)
+#
+#nvram_variable_limit 2048
+
 # Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
 # display when using modern GPUs on units with only EFIBoot capability.
 # NB: This functionality is only available on TianoCore Builds.

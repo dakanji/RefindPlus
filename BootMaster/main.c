@@ -142,6 +142,7 @@ REFIT_CONFIG GlobalConfig = {
         DEFAULT_MOUSE_SIZE
     },
     /* BannerScale = */ BANNER_NOSCALE,
+    /* NvramVariableLimit = */ 0,
     /* ScreensaverTime = */ 0,
     /* Timeout = */ 0,
     /* ScaleUI = */ 0,
@@ -381,6 +382,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     BOOLEAN BlockMacKP = FALSE;
     BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockVend = FALSE;
+    BOOLEAN BlockSize = FALSE;
     BOOLEAN RevokeVar = (!VariableData && VariableSize == 0);
 
     if (!CurPolicyOEM && !RevokeVar) {
@@ -429,7 +431,15 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         }
     }
 
-    Status = (BlockVend || BlockMore || BlockMacKP)
+    if (!BlockVend && !BlockMore && !BlockMacKP) {
+        BlockSize = (
+            AppleFirmware &&
+            GlobalConfig.NvramVariableLimit > 1023 &&
+            VariableSize > GlobalConfig.NvramVariableLimit
+        );
+    }
+
+    Status = (BlockVend || BlockMore || BlockSize || BlockMacKP)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -442,7 +452,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (BlockVend || BlockMore || BlockMacKP)
+            (BlockVend || BlockMore || BlockSize || BlockMacKP)
                 ? EFI_ACCESS_DENIED : Status
         );
         LimitStringLength (LogStatus, 18);
@@ -480,9 +490,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                     ? L"SecurityTag"
                     : (BlockMacKP)
                         ? L"KernelPanic"
-                        : (CurPolicyOEM)
-                            ? L" PolicyOEM "
-                            : L"RegularItem",
+                            : (BlockSize)
+                            ? L"OversizeItem"
+                            : (CurPolicyOEM)
+                                ? L"MyPolicyOEM"
+                                : L"RegularItem",
             LogNameFull,
             VariableSize,
             (VariableSize == 1)

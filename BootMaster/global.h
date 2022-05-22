@@ -445,6 +445,7 @@ typedef struct {
     UINTN             MouseSpeed;
     UINTN             IconSizes[4];
     UINTN             BannerScale;
+    INTN              NvramVariableLimit;
     INTN              ScreensaverTime;
     INTN              Timeout;
     INTN              ScaleUI;

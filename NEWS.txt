@@ -1,6 +1,10 @@
 0.13.3.AA (Pre-Release):
 -----------------------
 - Synced with Upstream v0.13.3
+- Adds `NvramVariableLimit` Feature
+  * Filters NVRAM variable write attempts
+  * Variables larger than a specified size are discarded
+  * This is activated by a new `nvram_variable_limit` configuration token
 - Adds `DecoupleF10` Feature
   * Unlinks the `F10` key from the built in screenshot feature
   * Allows the use of 3rd party screenshot tools that also map the `F10` key

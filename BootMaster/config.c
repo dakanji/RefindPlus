@@ -994,6 +994,9 @@ VOID ReadConfig (
                 MY_FREE_POOL(MsgStr);
             } // if/else MyStriCmp TokenList[0]
         }
+        else if (MyStriCmp (TokenList[0], L"nvram_variable_limit") && (TokenCount == 2)) {
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.NvramVariableLimit));
+        }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {
             HandleUnsignedInt (TokenList, TokenCount, &i);
             if (i >= 32) {
