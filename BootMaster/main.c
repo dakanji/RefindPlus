@@ -3126,9 +3126,6 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
-
-                    // Filter out the 'APPLE_INTERNAL' CSR bit if required
-                    FilterCSR();
                 }
                 else if (FoundSubStr (ourLoaderEntry->Title, L"Clover") ||
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
@@ -3153,9 +3150,6 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
-
-                    // Filter out the 'APPLE_INTERNAL' CSR bit if required
-                    FilterCSR();
                 }
                 else if (ourLoaderEntry->OSType == 'M'
                     || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
