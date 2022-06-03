@@ -46,12 +46,13 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
-      - uses: actions-cool/issues-similarity-analysis@v1.0.0
+      - uses: actions-cool/issues-similarity-analysis@v1.1.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          since-days: 360
-          filter-threshold: 0.4
+          since-days: 270
+          filter-threshold: 0.6
           comment-title: '### Similarity Analysis'
+          comment-body: '[Score: ${similarity}] #${number}'
           show-footer: false
 
   # Add Labels - https://github.com/actions-ecosystem/action-add-labels
@@ -60,7 +61,7 @@ jobs:
     needs: similarity_analysis
     runs-on: ubuntu-latest
 
-    if: github.actor != 'dakanji' && github.event.action == 'opened'
+    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.comment.body, 'RefindPlus Version') && contains(github.event.comment.body, 'Device Type') && contains(github.event.comment.body, 'Problem Description') && contains(github.event.comment.body, 'Problem Point') && contains(github.event.comment.body, 'Affected Items') && contains(github.event.comment.body, 'Debug Log') && contains(github.event.comment.body, 'Additional Context')
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1
