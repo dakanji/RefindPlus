@@ -3310,7 +3310,15 @@ UINTN RunMainMenu (
             MenuExit = 0;
         }
 
-        BREAD_CRUMB(L"In %s ... 9a 5 END DO LOOP", FuncTag);
+        BREAD_CRUMB(L"In %s ... 9a 5", FuncTag);
+        if (GlobalConfig.EnableTouch && MenuExit == 0) {
+            BREAD_CRUMB(L"In %s ... 9a 5a 1", FuncTag);
+            // Break out of loop and reload page
+            // Reload happens in 'main.c -> MainLoopRunning'
+            break;
+        }
+
+        BREAD_CRUMB(L"In %s ... 9a 6 END DO LOOP", FuncTag);
         LOG_SEP(L"X");
     } while (MenuExit == 0);
     BREAD_CRUMB(L"In %s ... 10", FuncTag);

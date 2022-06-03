@@ -799,20 +799,20 @@
 # not always work. If it does work, an OS or tool can be launched
 # by clicking it with the computer's mouse. Note that this feature
 # is mutually exclusive with the "enable_touch" feature and if both
-# settinga are active, the "enable_mouse" token will take precedence.
+# settings are active, the "enable_touch" token will take precedence.
 #
 # Inactive when commented out (Does not enable mouse support)
 #
 #enable_mouse
 
-# Enable touch screen support. If active, this feature enables the use
-# of touch screen controls (as on tablets). Note, however, that not all
+# Enable touch screen support. If active, this option enables the use
+# of touch screen controls (as on tablets). Note however, that not all
 # tablet EFIs provide the necessary underlying support, so this feature
 # may not always work. If it does work, an OS or tool can be launched by
 # touching it. In a submenu, touching anywhere launches the current item
 # selected. There is currently no way to select a specific submenu item.
 # This option is mutually exclusive with the "enable_mouse" feature and
-# the "enable_mouse" setting will take precedence when both are active.
+# the "enable_touch" option will take precedence when both are active.
 #
 # Inactive when commented out (Does not enable touch screen support)
 #

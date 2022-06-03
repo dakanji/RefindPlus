@@ -1297,9 +1297,9 @@ VOID ReadConfig (
     } // for ;;
     FreeTokenLine (&TokenList, &TokenCount);
 
-    // Prioritise EnableMouse
-    if (GlobalConfig.EnableMouse) {
-        GlobalConfig.EnableTouch = FALSE;
+    // Prioritise EnableTouch
+    if (GlobalConfig.EnableTouch) {
+        GlobalConfig.EnableMouse = FALSE;
     }
 
     if (GlobalConfig.TagsHelp) {

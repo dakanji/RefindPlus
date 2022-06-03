@@ -51,102 +51,115 @@ POINTER_STATE                   State;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Initialize all pointer devices
+// Initialise Pointer Devices
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdInitialize() {
+VOID pdInitialize(VOID) {
     #if REFIT_DEBUG > 0
     LOG_MSG("I N I T I A L I S E   P O I N T E R   D E V I C E S");
     LOG_MSG("\n");
     #endif
 
-    pdCleanup(); // just in case
+    pdCleanup(); // Just in case
 
-    if (! (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
+    if (!GlobalConfig.EnableMouse && !GlobalConfig.EnableTouch) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s  - Detected Touch Mode or 'No Mouse' Mode", OffsetNext);
+        LOG_MSG("%s  - Detected Keyboard-Only Mode", OffsetNext);
+        LOG_MSG("\n\n");
         #endif
+
+        // Early Return
+        return;
+    }
+
+    // Get all handles that support absolute pointer protocol
+    // Usually touchscreens but sometimes mice
+    UINTN NumPointerHandles = 0;
+    EFI_STATUS handlestatus = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &APointerGuid, NULL,
+        &NumPointerHandles, &HandleA
+    );
+
+    if (EFI_ERROR(handlestatus)) {
+        #if REFIT_DEBUG > 0
+        if (GlobalConfig.EnableTouch) {
+            LOG_MSG("%s  - Could Not Enable Touch", OffsetNext);
+        }
+        #endif
+
+        GlobalConfig.EnableTouch = FALSE;
     }
     else {
-        // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
-        UINTN NumPointerHandles = 0;
-        EFI_STATUS handlestatus = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &APointerGuid, NULL,
-            &NumPointerHandles, &HandleA
-        );
-
-        if (!EFI_ERROR(handlestatus)) {
-            ProtocolA = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
-            UINTN Index;
-            for (Index = 0; Index < NumPointerHandles; Index++) {
-                // Open the protocol on the handle
-                EFI_STATUS status = REFIT_CALL_6_WRAPPER(
-                    gBS->OpenProtocol, HandleA[Index],
-                    &APointerGuid, (VOID **) &ProtocolA[NumAPointerDevices],
-                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
-                );
-                if (status == EFI_SUCCESS) {
-                    #if REFIT_DEBUG > 0
-                    LOG_MSG("%s  - Enable Touch", OffsetNext);
-                    #endif
-
-                    NumAPointerDevices++;
+        ProtocolA = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
+        UINTN Index;
+        for (Index = 0; Index < NumPointerHandles; Index++) {
+            // Open the protocol on the handle
+            EFI_STATUS status = REFIT_CALL_6_WRAPPER(
+                gBS->OpenProtocol, HandleA[Index],
+                &APointerGuid, (VOID **) &ProtocolA[NumAPointerDevices],
+                SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+            );
+            if (status == EFI_SUCCESS) {
+                #if REFIT_DEBUG > 0
+                if (GlobalConfig.EnableTouch) {
+                    LOG_MSG("%s  - Enabled Touch", OffsetNext);
                 }
+                #endif
+
+                NumAPointerDevices++;
             }
         }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Disable Touch", OffsetNext);
-            #endif
+    }
 
-            GlobalConfig.EnableTouch = FALSE;
+    // Get all handles that support simple pointer protocol (mice)
+    NumPointerHandles = 0;
+    handlestatus = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &SPointerGuid, NULL,
+        &NumPointerHandles, &HandleS
+    );
+
+    if (EFI_ERROR(handlestatus)) {
+        #if REFIT_DEBUG > 0
+        if (GlobalConfig.EnableMouse) {
+            LOG_MSG("%s  - Could Not Enable Mouse", OffsetNext);
         }
+        #endif
 
-        // Get all handles that support simple pointer protocol (mice)
-        NumPointerHandles = 0;
-        handlestatus = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &SPointerGuid, NULL,
-            &NumPointerHandles, &HandleS
-        );
-
-        if (!EFI_ERROR(handlestatus)) {
-            ProtocolS = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
-            UINTN Index;
-            BOOLEAN GotMouse = FALSE;
-            for (Index = 0; Index < NumPointerHandles; Index++) {
-                // Open the protocol on the handle
-                EFI_STATUS status = REFIT_CALL_6_WRAPPER(
-                    gBS->OpenProtocol, HandleS[Index],
-                    &SPointerGuid, (VOID **) &ProtocolS[NumSPointerDevices],
-                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
-                );
-                if (status == EFI_SUCCESS) {
+        GlobalConfig.EnableMouse = FALSE;
+    }
+    else {
+        ProtocolS = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
+        UINTN Index;
+        BOOLEAN GotMouse = FALSE;
+        for (Index = 0; Index < NumPointerHandles; Index++) {
+            // Open the protocol on the handle
+            EFI_STATUS status = REFIT_CALL_6_WRAPPER(
+                gBS->OpenProtocol, HandleS[Index],
+                &SPointerGuid, (VOID **) &ProtocolS[NumSPointerDevices],
+                SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+            );
+            if (status == EFI_SUCCESS) {
+                if (GlobalConfig.EnableMouse) {
                     GotMouse = TRUE;
-                    NumSPointerDevices++;
                 }
-            } // for
 
-            #if REFIT_DEBUG > 0
-            if (GotMouse) {
-                LOG_MSG("%s  - Enabled Mouse", OffsetNext);
+                NumSPointerDevices++;
             }
-            #endif
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Disable Mouse", OffsetNext);
-            #endif
+        } // for
 
-            GlobalConfig.EnableMouse = FALSE;
+        #if REFIT_DEBUG > 0
+        if (GotMouse) {
+            LOG_MSG("%s  - Enabled Mouse", OffsetNext);
         }
+        #endif
+    }
 
-        PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
+    PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
 
-        // load mouse icon
-        if (PointerAvailable && GlobalConfig.EnableMouse) {
-            MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
-        }
+    // Load mouse icon
+    if (PointerAvailable && GlobalConfig.EnableMouse) {
+        MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
     }
 
     #if REFIT_DEBUG > 0
@@ -159,7 +172,7 @@ VOID pdInitialize() {
 ////////////////////////////////////////////////////////////////////////////////
 // Frees allocated memory and closes pointer protocols
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdCleanup() {
+VOID pdCleanup(VOID) {
     UINTN Index;
 
     #if REFIT_DEBUG > 0
@@ -208,14 +221,14 @@ VOID pdCleanup() {
 ////////////////////////////////////////////////////////////////////////////////
 // Returns whether or not any pointer devices are available
 ////////////////////////////////////////////////////////////////////////////////
-BOOLEAN pdAvailable() {
+BOOLEAN pdAvailable(VOID) {
     return PointerAvailable;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Returns the number of pointer devices available
 ////////////////////////////////////////////////////////////////////////////////
-UINTN pdCount() {
+UINTN pdCount(VOID) {
     return NumAPointerDevices + NumSPointerDevices;
 }
 
@@ -237,7 +250,7 @@ EFI_EVENT pdWaitEvent (UINTN Index) {
 // Gets the current state of all pointer devices and assigns State to
 // the first available device's state
 ////////////////////////////////////////////////////////////////////////////////
-EFI_STATUS pdUpdateState() {
+EFI_STATUS pdUpdateState(VOID) {
 #if defined (EFI32) && defined (__MAKEWITH_GNUEFI)
     return EFI_NOT_READY;
 #else
@@ -338,14 +351,14 @@ EFI_STATUS pdUpdateState() {
 ////////////////////////////////////////////////////////////////////////////////
 // Returns the current pointer state
 ////////////////////////////////////////////////////////////////////////////////
-POINTER_STATE pdGetState() {
+POINTER_STATE pdGetState(VOID) {
     return State;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Draw the mouse at the current coordinates
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdDraw() {
+VOID pdDraw(VOID) {
     MY_FREE_IMAGE(Background);
     if (MouseImage) {
         UINTN Width = MouseImage->Width;
@@ -370,7 +383,7 @@ VOID pdDraw() {
 ////////////////////////////////////////////////////////////////////////////////
 // Restores the background at the position the mouse was last drawn
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdClear() {
+VOID pdClear(VOID) {
     if (Background) {
         egDrawImage (Background, LastXPos, LastYPos);
         MY_FREE_IMAGE(Background);
