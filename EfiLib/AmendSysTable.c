@@ -408,21 +408,6 @@ EFI_STATUS OurCreateEventEx (
     return EFI_SUCCESS;
 } // EFI_STATUS OurCreateEventEx()
 
-// DA-TAG: Return error on QueryVariableInfo calls
-//         Avoids crashes on UEFI 2.x spoof
-//         Assumes caller has error checking
-//
-//         TODO: Fully Emulate QueryVariableInfo
-EFI_STATUS EFIAPI OurQueryVariableInfo (
-    IN  UINT32  Attributes,
-    OUT UINT64 *MaximumVariableStorageSize,
-    OUT UINT64 *RemainingVariableStorageSize,
-    OUT UINT64 *MaximumVariableSize
-) {
-    // Always return error
-    return EFI_UNSUPPORTED;
-} // EFI_STATUS EFIAPI OurQueryVariableInfo()
-
 /**
   @retval EFI_SUCCESS               The command completed successfully.
   @retval EFI_OUT_OF_RESOURCES      Out of memory.
@@ -430,9 +415,7 @@ EFI_STATUS EFIAPI OurQueryVariableInfo (
   @retval EFI_PROTOCOL_ERROR        Unexpected Field Offset.
 **/
 EFI_STATUS AmendSysTable (VOID) {
-    UINTN                 FieldOffeset;
-    EFI_BOOT_SERVICES    *uBS;
-    EFI_RUNTIME_SERVICES *uRT;
+    EFI_BOOT_SERVICES *uBS;
 
     /* Check EFI Revision */
     if (gBS->Hdr.Revision >= TARGET_EFI_REVISION ||
@@ -443,30 +426,13 @@ EFI_STATUS AmendSysTable (VOID) {
         return EFI_ALREADY_STARTED;
     }
 
-    /* Check BootServices */
-    FieldOffeset = EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx);
-    if (gBS->Hdr.HeaderSize > FieldOffeset) {
+    if (gBS->Hdr.HeaderSize > EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)) {
         // Early Return
         return EFI_PROTOCOL_ERROR;
     }
+
     uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (EFI_BOOT_SERVICES), gBS);
     if (uBS == NULL) {
-        // Early Return
-        return EFI_OUT_OF_RESOURCES;
-    }
-
-    /* Check RuntimeServices */
-    FieldOffeset = EFI_FIELD_OFFSET(EFI_RUNTIME_SERVICES, QueryVariableInfo);
-    if (gRT->Hdr.HeaderSize > FieldOffeset) {
-        FreePool (uBS);
-
-        // Early Return
-        return EFI_PROTOCOL_ERROR;
-    }
-    uRT = (EFI_RUNTIME_SERVICES *) AllocateCopyPool (sizeof (EFI_RUNTIME_SERVICES), gRT);
-    if (uRT == NULL) {
-        FreePool (uBS);
-
         // Early Return
         return EFI_OUT_OF_RESOURCES;
     }
@@ -483,17 +449,15 @@ EFI_STATUS AmendSysTable (VOID) {
     gBS = uBS;
 
     /* Amend RuntimeServices */
-    uRT->QueryVariableInfo   = OurQueryVariableInfo;
-    uRT->Hdr.HeaderSize      = sizeof (EFI_RUNTIME_SERVICES);
-    uRT->Hdr.Revision        = TARGET_EFI_REVISION;
-    uRT->Hdr.CRC32           = 0;
+    gRT->Hdr.HeaderSize  = sizeof (EFI_RUNTIME_SERVICES);
+    gRT->Hdr.Revision    = TARGET_EFI_REVISION;
+    gRT->Hdr.CRC32       = 0;
     REFIT_CALL_3_WRAPPER(
-        gBS->CalculateCrc32, uRT,
-        uRT->Hdr.HeaderSize, &uRT->Hdr.CRC32
+        gBS->CalculateCrc32, gRT,
+        gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
     );
-    gRT = uRT;
 
-    /* Amend SystemTable  */
+    /* Amend SystemTable */
     gST->BootServices    = gBS;
     gST->RuntimeServices = gRT;
     gST->Hdr.HeaderSize  = sizeof (EFI_SYSTEM_TABLE);
