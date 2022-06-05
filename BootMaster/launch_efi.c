@@ -362,7 +362,7 @@ EFI_STATUS StartEFIImage (
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
     if (Verbose) {

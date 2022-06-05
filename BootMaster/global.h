@@ -175,26 +175,29 @@
 
 #define DEFAULT_ICONS_DIR           L"icons"
 
+// NVRAM ACCESS FLAGS
+#define FULL_ACCESS_FLAGS   EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
+
 // Names of binaries that can manage MOKs
 #if defined (EFIX64)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
 #elif defined(EFI32)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
 #else
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
 #endif
 
 // Names of binaries that can update firmware
 #if defined (EFIX64)
-    #define FWUPDATE_NAMES          L"fwupx64.efi"
+#   define FWUPDATE_NAMES          L"fwupx64.efi"
 #elif defined(EFI32)
-    #define FWUPDATE_NAMES          L"fwupia32.efi"
+#   define FWUPDATE_NAMES          L"fwupia32.efi"
 #elif defined(EFIAARCH64)
-    #define FWUPDATE_NAMES          L"fwupaa64.efi"
+#   define FWUPDATE_NAMES          L"fwupaa64.efi"
 #else
-    #define FWUPDATE_NAMES          L"fwup.efi"
+#   define FWUPDATE_NAMES          L"fwup.efi"
 #endif
 
 // Directories to search for these MOK-managing programs.
@@ -209,19 +212,19 @@ L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest,
 
 // Files that may be Windows recovery files
 #if defined (EFIX64)
-    #define WINDOWS_RECOVERY_FILES \
+#   define WINDOWS_RECOVERY_FILES \
 L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\
 Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 #elif defined(EFI32)
-    #define WINDOWS_RECOVERY_FILES \
+#   define WINDOWS_RECOVERY_FILES \
 L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\
 Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 #elif defined(EFIAARCH64)
-    #define WINDOWS_RECOVERY_FILES \
+#   define WINDOWS_RECOVERY_FILES \
 L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootaa64.efi,\
 Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 #else
-    #define WINDOWS_RECOVERY_FILES \
+#   define WINDOWS_RECOVERY_FILES \
 L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 \\EFI\\OEM\\Boot\\bootmgfw.efi"
 #endif
@@ -258,8 +261,8 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to Return to Main Menu"
 
 #define NULL_GUID_VALUE              {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
-#define REFIND_GUID_VALUE            {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
-#define REFINDPLUS_GUID              {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
+#define REFINDPLUS_GUID              {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
+#define REFINDPLUS_OLD_GUID          {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
 #define ESP_GUID_VALUE               {0xC12A7328, 0xF81F, 0x11D2, {0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B}};
 #define HFS_GUID_VALUE               {0x48465300, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
 #define APFS_GUID_VALUE              {0x7C3457EF, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
@@ -415,7 +418,8 @@ typedef struct {
     BOOLEAN           ContinueOnWarning;
     BOOLEAN           ForceTRIM;
     BOOLEAN           DisableCompatCheck;
-    BOOLEAN           DecoupleF10;
+    BOOLEAN           DisableNvramPanicLog;
+    BOOLEAN           DecoupleKeyF10;
     BOOLEAN           DisableAMFI;
     BOOLEAN           SupplyNVME;
     BOOLEAN           SupplyAPFS;
@@ -423,7 +427,6 @@ typedef struct {
     BOOLEAN           SilenceAPFS;
     BOOLEAN           SyncAPFS;
     BOOLEAN           ProtectNVRAM;
-    BOOLEAN           PanicFilter;
     BOOLEAN           ScanAllESP;
     BOOLEAN           TagsHelp;
     BOOLEAN           TextHelp;
@@ -445,7 +448,7 @@ typedef struct {
     UINTN             MouseSpeed;
     UINTN             IconSizes[4];
     UINTN             BannerScale;
-    INTN              NvramVariableLimit;
+    UINTN             NvramVariableLimit;
     INTN              ScreensaverTime;
     INTN              Timeout;
     INTN              ScaleUI;
@@ -584,7 +587,7 @@ extern CHAR16 *gLogTemp;
 #   define LOG_MSG(...) DebugLog (__VA_ARGS__);
 #   define OUT_TAG() WayPointer (L"<<----- * ----->>");
 #   define RET_TAG() WayPointer (L"----->> * <<-----");
-#   define END_TAG() WayPointer (L"<<<   * X *   >>>");
+#   define END_TAG() WayPointer (L"<<<     *     >>>");
 #else
 #   define END_TAG()
 #   define RET_TAG()

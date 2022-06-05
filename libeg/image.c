@@ -79,14 +79,14 @@
 // seen some minor artifacts at this level, so give it a bit more precision
 // on 64-bit systems.
 #if defined(EFIX64) | defined(EFIAARCH64)
-    #define FP_MULTIPLIER (UINTN) 65536
+#   define FP_MULTIPLIER (UINTN) 65536
 #else
-    #define FP_MULTIPLIER (UINTN) 4096
+#   define FP_MULTIPLIER (UINTN) 4096
 #endif
 
 #ifndef __MAKEWITH_GNUEFI
-    #define LibLocateHandle gBS->LocateHandleBuffer
-    #define LibOpenRoot EfiLibOpenRoot
+#   define LibLocateHandle gBS->LocateHandleBuffer
+#   define LibOpenRoot EfiLibOpenRoot
 #endif
 
 #if REFIT_DEBUG > 0

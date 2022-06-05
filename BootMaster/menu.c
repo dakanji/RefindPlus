@@ -100,7 +100,7 @@ UINTN      WaitListLength    = 0;
 // Pointer variables
 BOOLEAN PointerEnabled       = FALSE;
 BOOLEAN PointerActive        = FALSE;
-BOOLEAN DrawSelection        = TRUE;
+BOOLEAN DrawSelection        =  TRUE;
 
 REFIT_MENU_ENTRY MenuEntryNo = {
     L"No",
@@ -412,13 +412,13 @@ CHAR16 * MenuExitInfo (
     CHAR16 *MenuExitData = NULL;
 
     switch (MenuExit) {
-        case 1:  MenuExitData = L"ENTER";   break;
-        case 2:  MenuExitData = L"ESCAPE";  break;
-        case 3:  MenuExitData = L"DETAILS"; break;
-        case 4:  MenuExitData = L"TIMEOUT"; break;
-        case 5:  MenuExitData = L"EJECT";   break;
-        case 6:  MenuExitData = L"REMOVE";  break;
-        default: MenuExitData = L"RETURN";  // Actually '99'
+        case  1:  MenuExitData = L"ENTER";   break;
+        case  2:  MenuExitData = L"ESCAPE";  break;
+        case  3:  MenuExitData = L"DETAILS"; break;
+        case  4:  MenuExitData = L"TIMEOUT"; break;
+        case  5:  MenuExitData = L"EJECT";   break;
+        case  6:  MenuExitData = L"REMOVE";  break;
+        default:  MenuExitData = L"RETURN";  // Actually '99'
     } // switch
 
     return MenuExitData;
@@ -620,7 +620,7 @@ VOID SaveScreen (VOID) {
     EG_PIXEL COLOUR_29 = { 204, 255,  51,  0 };
     EG_PIXEL COLOUR_30 = { 255,   0,   0,  0 };
 
-    // Start with COLOUR_01
+    // Start with COLOUR_01 ... ColourIndex 0 will be incremented to 1
     ColourIndex = 0;
 
     // Start with BaseTimeWait
@@ -630,8 +630,8 @@ VOID SaveScreen (VOID) {
 
         if (ColourIndex < 1 || ColourIndex > 30) {
             ColourIndex = 1;
-            TimeWait    = TimeWait * 2;
 
+            TimeWait = TimeWait * 2;
             if (TimeWait > 120000) {
                 // Reset TimeWait if greater than 2 minutes
                 TimeWait = BaseTimeWait;
@@ -645,6 +645,7 @@ VOID SaveScreen (VOID) {
                 LoopChange = L"Extend";
                 #endif
             }
+
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%d Timeout Loop - %d", LoopChange, TimeWait);
             ALT_LOG(1, LOG_THREE_STAR_MID,  L"Running Screensaver");
@@ -652,15 +653,15 @@ VOID SaveScreen (VOID) {
         }
 
         switch (ColourIndex) {
-            case 1:  OUR_COLOUR = COLOUR_01; break;
-            case 2:  OUR_COLOUR = COLOUR_02; break;
-            case 3:  OUR_COLOUR = COLOUR_03; break;
-            case 4:  OUR_COLOUR = COLOUR_04; break;
-            case 5:  OUR_COLOUR = COLOUR_05; break;
-            case 6:  OUR_COLOUR = COLOUR_06; break;
-            case 7:  OUR_COLOUR = COLOUR_07; break;
-            case 8:  OUR_COLOUR = COLOUR_08; break;
-            case 9:  OUR_COLOUR = COLOUR_09; break;
+            case  1: OUR_COLOUR = COLOUR_01; break;
+            case  2: OUR_COLOUR = COLOUR_02; break;
+            case  3: OUR_COLOUR = COLOUR_03; break;
+            case  4: OUR_COLOUR = COLOUR_04; break;
+            case  5: OUR_COLOUR = COLOUR_05; break;
+            case  6: OUR_COLOUR = COLOUR_06; break;
+            case  7: OUR_COLOUR = COLOUR_07; break;
+            case  8: OUR_COLOUR = COLOUR_08; break;
+            case  9: OUR_COLOUR = COLOUR_09; break;
             case 10: OUR_COLOUR = COLOUR_10; break;
             case 11: OUR_COLOUR = COLOUR_11; break;
             case 12: OUR_COLOUR = COLOUR_12; break;
@@ -685,6 +686,7 @@ VOID SaveScreen (VOID) {
         }
 
         egClearScreen (&OUR_COLOUR);
+
         retval = WaitForInput (TimeWait);
         if (retval == INPUT_KEY || retval == INPUT_TIMER_ERROR) {
             break;
@@ -850,7 +852,7 @@ UINTN RunGenericMenu (
         // DA-TAG: Investigate This
         //         Toggle the selection once to work around failure to
         //         display the default selection on load in text mode.
-        //         This is a Workaround ... 'Proper' solution needed.
+        //         This is a Workaround ... Proper solution needed.
         if (!Toggled) {
             Toggled = TRUE;
             if (State.ScrollMode == SCROLL_MODE_TEXT) {
@@ -903,7 +905,7 @@ UINTN RunGenericMenu (
         else if (PointerStatus == EFI_SUCCESS) {
             if (StyleFunc != MainMenuStyle && pdGetState().Press) {
                 // Prevent user from getting stuck on submenus
-                // (Only the 'About' screen is currently reachable without a keyboard)
+                // Only the 'About' screen is currently reachable without a keyboard
                 MenuExit = MENU_EXIT_ENTER;
                 break;
             }
@@ -1054,8 +1056,7 @@ UINTN RunGenericMenu (
             }
 
             if (MenuExit == MENU_EXIT_SCREENSHOT) {
-                BOOLEAN TakeScreenShot = (!GlobalConfig.DecoupleF10 || key.ScanCode != SCAN_F10);
-                if (TakeScreenShot) {
+                if (!GlobalConfig.DecoupleKeyF10 || key.ScanCode != SCAN_F10) {
                     egScreenShot();
 
                     // Unblock Rescan and Refresh Screen
@@ -1923,7 +1924,7 @@ VOID PaintAll (
     }
 
     if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) &&
-        (!PointerActive || (PointerActive && DrawSelection))
+        (!PointerActive || DrawSelection)
     ) {
         DrawTextWithTransparency (L"", 0, textPosY);
         DrawTextWithTransparency (
@@ -2010,7 +2011,7 @@ VOID PaintSelection (
     );
 
     if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) &&
-        (!PointerActive || (PointerActive && DrawSelection))
+        (!PointerActive || DrawSelection)
     ) {
         DrawTextWithTransparency (L"", 0, textPosY);
         DrawTextWithTransparency (

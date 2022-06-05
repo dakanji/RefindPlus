@@ -56,7 +56,7 @@
 #
 # APFS filesystem capability is provided (if required) when commented out
 #
-#decline_apfsload
+#decline_apfs_load
 
 # Suppress verbose APFS loading text output. By default, RefindPlus is configured to always
 # suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
@@ -67,7 +67,7 @@
 #
 # Verbose APFS text is suppressed (if generated) when commented out
 #
-#decline_apfsmute
+#decline_apfs_mute
 
 # Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partition
 # of APFS volumes by requiring this to run the Mac Boot Loader, starting with MacOS v11.0, when
@@ -86,7 +86,7 @@
 #
 # APFS partition synchronisation is provided (if required) when commented out
 #
-#decline_apfssync
+#decline_apfs_sync
 
 # Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
@@ -96,7 +96,7 @@
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
 #
-#decline_applefb
+#decline_apple_fb
 
 # Allow scans of multiple ESPs. When this option is active, RefindPlus
 # will make other ESPs, separate from that containing RefindPlus,
@@ -104,7 +104,7 @@
 #
 # Scans of other ESPs are prevented when commented out
 #
-#decline_espfilter
+#decline_esp_filter
 
 # Supply NVME driver. By default, RefindPlus is set up to always load
 # a built in version of the NvmExpressDxe driver which provides NVMe
@@ -113,31 +113,17 @@
 #
 # NVMe support is provided (if required) when commented out
 #
-#decline_nvmeload
+#decline_nvme_load
 
-# Allow/Prevent saving UEFI Windows "Secure Boot" certificates to the NVRAM on Macs.
-# By default, RefindPlus will prevent UEFI Windows Secure Boot from writing security
-# certificates to the NVRAM on Apple Macs as this can result in an inability to boot.
-# This setting is only activated when Apple Firmware is detected on UEFI Windows boot.
-# NB: This "ProtectNVRAM" feature must be active to activate the "PanicFilter" feature.
+# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
+# By default, RefindPlus will prevent writes of certain items by processes such as
+# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
+# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
+# results in an inability to boot. This token is only activated on Apple Firmware.
 #
 # The "ProtectNVRAM" feature is enabled when commented out
 #
-#decline_nvramprotect
-
-# MacOS 11 (Big Sur) and later write kernel panic information to the NVRAM,
-# particularly during updates. This increases wear and tear of the NVRAM,
-# particularly on legacy Macs. RefindPlus now defaults to block such
-# NVRAM write attempts unless this token is active, whereupon such
-# NVRAM write attempts will be permitted. NB: This setting only
-# works when the "ProtectNVRAM" functionality is also active.
-#
-# This feature is currently limited to when
-# directly booting MacOS on Apple Firmware.
-#
-# The "PanicFilter" feature is enabled when commented out
-#
-#decline_panicfilter
+#decline_nvram_protect
 
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
@@ -151,11 +137,11 @@
 # This permits running modern GPUs on some legacy units when they would
 # otherwise fail to work. The change is reverted automatically once it
 # is longer required to allow GPU activation except when the related
-# "decline_uefiemulate" token is deactivated (overrides reverting).
+# "decline_uefi_emulate" token is deactivated (overrides reverts).
 #
 # GPU Option ROMs are reinstalled (if required) when commented out
 #
-#decline_reloadgop
+#decline_reload_gop
 
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
@@ -166,7 +152,7 @@
 #
 # The "hidden_tags" tool is always made available when commented out
 #
-#decline_tagshelp
+#decline_tags_help
 
 # RefindPlus defaults to using complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
@@ -181,7 +167,7 @@
 #
 # The "TextHelp" feature is enabled when commented out
 #
-#decline_texthelp
+#decline_text_help
 
 # Emulate UEFI 2.x support. By default, RefindPlus is set up to always
 # emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
@@ -192,7 +178,7 @@
 #
 # UEFI 2.x emulation is enabled when commented out
 #
-#decline_uefiemulate
+#decline_uefi_emulate
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -203,7 +189,7 @@
 #
 # Inactive when commented out (Does not decouple the F10 key)
 #
-#decouple_f10
+#decouple_key_f10
 
 # Disable Apple Mobile File Integrity (AMFI) checks when booting MacOS. When this option
 # is active, RefindPlus will add the "amfi_get_out_of_my_way=1" boot argument which along
@@ -227,6 +213,18 @@
 # Inactive when commented out (Does not disable MacOS compatibility checks)
 #
 #disable_compat_check
+
+# Disable kernel panic logging to the NVRAM. MacOS writes kernel panic logs to
+# the NVRAM by default which can increase wear and tear on the NVRAM of legacy
+# Macs. When this option is active, RefindPlus will add "nvram_paniclog=0" to
+# the boot arguments. This disables panic log writes to the NVRAM for writes
+# the filesystem instead. Note that this setting will create a MacOS boot
+# argument the first time it is triggered which will remain active until
+# explicitly cleared, even if this setting is subsequently deactivated.
+#
+# Inactive when commented out (Does not disable MacOS kernel panic log writes to NVRAM)
+#
+#disable_nvram_paniclog
 
 # Check to see if it is possible to dispatch additional DXE drivers.
 # The Controller/Handle connection exercise may sometimes reveal new
@@ -311,7 +309,7 @@
 #
 # Defaults to zero when commented out (Does not adjust the icon rows)
 #
-#icon_row_tune -20
+#icon_row_tune 5
 
 # Allow/Prevent saving NVRAM variables based on an allowable variable size limit.
 # NVRAM variables larger than the specified limit will be discard. This setting
@@ -321,6 +319,7 @@
 # this setting should not be set by most users. Note that this setting is
 # only active on Apple firmware, requires the "ProtectNVRAM" feature and
 # that it is disabled if it is set to a value lower than 1024 bytes.
+# Additionally, the token is only active on direct Mac OS boots.
 #
 # Inactive when commented out (Does not filter NVRAM writes by size)
 #
@@ -564,7 +563,9 @@
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 #
 # The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate
-# Setting "showtools" alone, with no options, disables scanning for tools.
+#
+# Setting "showtools" alone, with no options, completely disables scanning for tools.
+# Scans for default tools when commented out
 #
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 

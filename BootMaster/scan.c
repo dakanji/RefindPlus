@@ -1522,7 +1522,7 @@ BOOLEAN DuplicatesFallback (
     CleanUpPathNameSlashes (FileName);
 
     if (MyStriCmp (FileName, FALLBACK_FULLNAME)) {
-        // identical filenames, so not a duplicate.
+        // Identical filenames ... so not a duplicate
         return FALSE;
     }
 
@@ -1531,15 +1531,12 @@ BOOLEAN DuplicatesFallback (
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
     );
-
-    if (Status == EFI_SUCCESS) {
-        FileInfo = LibFileInfo (FileHandle);
-        FileSize = FileInfo->FileSize;
-    }
-    else {
+    if (Status != EFI_SUCCESS) {
         return FALSE;
     }
 
+    FileInfo = LibFileInfo (FileHandle);
+    FileSize = FileInfo->FileSize;
     MY_FREE_POOL(FileInfo);
 
     Status = REFIT_CALL_5_WRAPPER(
@@ -1547,16 +1544,13 @@ BOOLEAN DuplicatesFallback (
         &FallbackHandle, FALLBACK_FULLNAME,
         EFI_FILE_MODE_READ, 0
     );
-
-    if (Status == EFI_SUCCESS) {
-        FallbackInfo = LibFileInfo (FallbackHandle);
-        FallbackSize = FallbackInfo->FileSize;
-    }
-    else {
+    if (Status != EFI_SUCCESS) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         return FALSE;
     }
 
+    FallbackInfo = LibFileInfo (FallbackHandle);
+    FallbackSize = FallbackInfo->FileSize;
     MY_FREE_POOL(FallbackInfo);
 
     if (FallbackSize == FileSize) { // could be identical; do full check.
@@ -1619,7 +1613,6 @@ BOOLEAN IsSymbolicLink (
         &FileHandle, FullName,
         EFI_FILE_MODE_READ, 0
     );
-
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo (FileHandle);
         if (FileInfo != NULL) {
@@ -1953,8 +1946,8 @@ VOID ScanEfiFiles (
     #endif
 
     if (!EFI_ERROR(Status)) {
-        if (VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
-            VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
+        if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
+            VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
             VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
         ) {
             // Early Return on APFS Support Volume
@@ -1965,8 +1958,8 @@ VOID ScanEfiFiles (
     if (GlobalConfig.SyncAPFS) {
         if (!EFI_ERROR(Status) && SingleAPFS &&
             (
-                VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT ||
                 VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM  ||
+                VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT ||
                 VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
             )
         ) {
@@ -1987,14 +1980,8 @@ VOID ScanEfiFiles (
     }
 
     #if REFIT_DEBUG > 0
-    if (FirstLoaderScan) {
-        LogLineType = LOG_THREE_STAR_MID;
-    }
-    else {
-        LogLineType = LOG_THREE_STAR_SEP;
-    }
-
     /* Exception for LOG_THREE_STAR_SEP */
+    LogLineType = (FirstLoaderScan) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
     ALT_LOG(1, LogLineType,
         L"Scanning Volume '%s' for UEFI Loaders",
         Volume->VolName ? Volume->VolName : L"** No Name **"
@@ -2077,20 +2064,11 @@ VOID ScanEfiFiles (
                 GlobalConfig.DontScanFiles
             )
         ) {
-            if (FoundBRBackup) {
-                AddLoaderEntry (
-                    FileName,
-                    L"Assumed UEFI Windows (Potentially GRUB)",
-                    Volume, TRUE
-                );
-            }
-            else {
-                AddLoaderEntry (
-                    FileName,
-                    L"Windows (UEFI)",
-                    Volume, TRUE
-                );
-            }
+            AddLoaderEntry (
+                FileName,
+                (FoundBRBackup) ? L"Assumed UEFI Windows (Potentially GRUB)" : L"Windows (UEFI)",
+                Volume, TRUE
+            );
 
             if (DuplicatesFallback (Volume, FileName)) {
                 ScanFallbackLoader = FALSE;
@@ -3808,7 +3786,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (
                         L"%s:- '%s'",
-                        (!GlobalConfig.CsrValues) ? L"Did Not Enable Tool" : L"Could Not Find Tool",
+                        (!GlobalConfig.CsrValues) ? L"Did Not Enable Tool" : L"Aborted Tool Search",
                         ToolName
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);

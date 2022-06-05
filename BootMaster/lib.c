@@ -192,6 +192,50 @@ extern BOOLEAN     LogNewLine;
 
 BOOLEAN egIsGraphicsModeEnabled (VOID);
 
+
+// DA-TAG: Stash here for later use
+//         Allows getting user input
+// NOTE: Currently Disabled by 'if 0'
+#if 0
+static
+UINTN GetUserInput (
+    IN  CHAR16   *prompt,
+    OUT BOOLEAN  *bool_out
+) {
+    EFI_STATUS          Status;
+    UINTN               Index;
+    EFI_INPUT_KEY       Key;
+
+    ReadAllKeyStrokes(); // Remove buffered key strokes
+
+    Print(prompt);
+
+    do {
+        REFIT_CALL_3_WRAPPER(
+            gBS->WaitForEvent, 1,
+            &gST->ConIn->WaitForKey, &Index
+        );
+
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &Key);
+        if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
+            return 1;
+        }
+    } while (Status != EFI_SUCCESS);
+
+    if (Key.UnicodeChar == 'y' || Key.UnicodeChar == 'Y') {
+        Print(L"Yes\n");
+        *bool_out = TRUE;
+    }
+    else {
+        Print(L"No\n");
+        *bool_out = FALSE;
+    }
+
+    ReadAllKeyStrokes();
+    return 0;
+} // UINTN GetUserInput()
+#endif
+
 //
 // Pathname manipulations
 //
@@ -787,13 +831,6 @@ EFI_STATUS EfivarSetRaw (
         if (Persistent) {
             StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
         }
-
-        // Clear the current value
-        REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable, VariableName,
-            VendorGUID, StorageFlags,
-            0, NULL
-        );
 
         // Store the new value
         Status = REFIT_CALL_5_WRAPPER(
@@ -1597,7 +1634,12 @@ CHAR16 * GetVolumeName (
 
     if (FoundName == NULL) {
         if (Volume->DiskKind == DISK_KIND_OPTICAL) {
-            FoundName = StrDuplicate (L"Optical Disc Drive");
+            if (Volume->FSType == FS_TYPE_ISO9660) {
+                FoundName = StrDuplicate (L"Optical ISO-9660 Image");
+            }
+            else {
+                FoundName = StrDuplicate (L"Optical Disc Drive");
+            }
         }
         else if (MediaCheck) {
             FoundName = StrDuplicate (L"Network Volume (Assumed)");
@@ -2532,7 +2574,7 @@ VOID ScanVolumes (VOID) {
 
             if (!DoneHeadings) {
                 LOG_MSG(
-                    "%-41s%-41s%-20s%-41s%-22s%s",
+                    "%-39s%-39s%-18s%-39s%-20s%s",
                     ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
                 );
                 LOG_MSG("\n");
@@ -2556,14 +2598,14 @@ VOID ScanVolumes (VOID) {
             }
             #endif
 
-            RoleStr = L"";
+            RoleStr = NULL;
             VolumeRole = 0;
             if (0);
             else if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
             else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * HFS Recovery";
-            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
-            else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
-            else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
+            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Win Data";
+            else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * MS Reserved";
+            else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Win Reserved";
             else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
             else {
 // DA-TAG: Limit to TianoCore
@@ -2670,6 +2712,15 @@ VOID ScanVolumes (VOID) {
                 } // if !EFI_ERROR(Status)
             } // if MyStriCmp Volume->VolName
 
+            if (!RoleStr && Volume->FSType == FS_TYPE_HFSPLUS) {
+                if (FileExists (Volume->RootDir, L"System\\Library\\CoreServices\\boot.efi")) {
+                    RoleStr = L" * HFS MacOS";
+                }
+                else {
+                    RoleStr = L" * HFS Other";
+                }
+            }
+
             if (FoundSubStr (RoleStr, L"HFS Recovery")) {
                 // Create or add to a list of bootable HFS+ volumes
                 AddListElement (
@@ -2689,8 +2740,12 @@ VOID ScanVolumes (VOID) {
             // Control PartName Length
             LimitStringLength (PartName, 15);
 
+            if (!RoleStr) {
+                RoleStr = L"";
+            }
+
             MsgStr = PoolPrint (
-                L"%-36s  :  %-36s  :  %-15s  :  %-36s  :  %-17s  :  %s",
+                L"%-36s : %-36s : %-15s : %-36s : %-17s : %s",
                 PartTypeGUID, PartGUID, PartType,
                 VolumeUUID, RoleStr, Volume->VolName
             );
@@ -2725,7 +2780,7 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"%-41s%-41s%-20s%-41s%-22s%s",
+        L"%-39s%-39s%-18s%-39s%-20s%s",
         ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

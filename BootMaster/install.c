@@ -1067,7 +1067,7 @@ VOID InstallRefindPlus (VOID) {
     REFIT_VOLUME  *SelectedESP; // Do not free
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
     AllESPs     = FindAllESPs();
@@ -1089,7 +1089,7 @@ VOID InstallRefindPlus (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
@@ -1103,7 +1103,7 @@ VOID InstallRefindPlus (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     LOG_MSG("\n\n");
     #endif

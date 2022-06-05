@@ -205,7 +205,7 @@ VOID RotateCsrValue (VOID) {
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
         EG_PIXEL BGColor = COLOR_LIGHTBLUE;
@@ -262,7 +262,7 @@ VOID RotateCsrValue (VOID) {
         gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
         EG_PIXEL BGColor = COLOR_LIGHTBLUE;

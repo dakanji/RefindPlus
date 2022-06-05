@@ -1,15 +1,18 @@
 0.13.3.AA (Pre-Release):
 -----------------------
 - Synced with Upstream v0.13.3
+- Adds `DisableNvramPanicLog` Feature
+  * Sets a MacOS `nvram_paniclog=0` boot argument to disable kernel panic logging to NVRAM
+  * Replaces the `PanicFilter` feature which has been removed
 - Adds `NvramVariableLimit` Feature
   * Filters NVRAM variable write attempts
   * Variables larger than a specified size are discarded
   * This is activated by a new `nvram_variable_limit` configuration token
-- Adds `DecoupleF10` Feature
+- Adds `DecoupleKeyF10` Feature
   * Unlinks the `F10` key from the built in screenshot feature
   * Allows the use of 3rd party screenshot tools that also map the `F10` key
   * The `\` (forward slash) key remains linked to the built in screenshot feature
-  * This is activated by a new `decouple_f10` configuration token
+  * This is activated by a new `decouple_key_f10` configuration token
 - Fixes `DisableAMFI` Feature
   * The feature had been disabled under some circumstances
   * This bug was introduced in v0.13.2.AP (Commit 8705fdb)
@@ -21,7 +24,7 @@
 - Improves `SupplyUEFI` Feature
   * The `QueryVariableInfo` Runtime service is now also emulated
   * Avoid crashes from unavailability if called on emulated UEFI 2.x
-  * The UEFI 2.x emulation now returns an `EFI_UNSUPPORTED` error instead
+  * Now returns an `EFI_UNSUPPORTED` error instead
 - Improves Pointer Device Handling
   * Applies workaround for touch mode failure
     - Ref: https://sf.net/p/refind/discussion/general/thread/86f80fa8ef
@@ -29,9 +32,17 @@
     - Previously depended on order of appearance in configuration file
 - Amends CSR Operation Coverage
   * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
-- Amends Pointer Token Priority
-  * The `enable_mouse` setting now always takes precedence over the `enable_touch` setting
-  * Changes inherited upstream implementation based on order of appearance in the config file
+- Renames Misc Configuration Tokens
+  * `decline_nvramprotect`       to       `decline_nvram_protect`
+  * `decline_uefiemulate`        to        `decline_uefi_emulate`
+  * `decline_espfilter`          to          `decline_esp_filter`
+  * `decline_apfsload`           to           `decline_apfs_load`
+  * `decline_apfsmute`           to           `decline_apfs_mute`
+  * `decline_apfssync`           to           `decline_apfs_sync`
+  * `decline_nvmeload`           to           `decline_nvme_load`
+  * `decline_tagshelp`           to           `decline_tags_help`
+  * `decline_texthelp`           to           `decline_text_help`
+  * `decline_applefb`            to            `decline_apple_fb`
 
 
 0.13.2.AP (19 Apr 2022):

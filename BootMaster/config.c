@@ -995,7 +995,7 @@ VOID ReadConfig (
             } // if/else MyStriCmp TokenList[0]
         }
         else if (MyStriCmp (TokenList[0], L"nvram_variable_limit") && (TokenCount == 2)) {
-            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.NvramVariableLimit));
+            HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.NvramVariableLimit));
         }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {
             HandleUnsignedInt (TokenList, TokenCount, &i);
@@ -1216,8 +1216,11 @@ VOID ReadConfig (
             // DA_TAG: Accomodate Deprecation
             GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"decouple_f10")) {
-            GlobalConfig.DecoupleF10 = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decouple_key_f10")) {
+            GlobalConfig.DecoupleKeyF10 = HandleBoolean (TokenList, TokenCount);
+        }
+        else if (MyStriCmp (TokenList[0], L"disable_nvram_paniclog")) {
+            GlobalConfig.DisableNvramPanicLog = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_compat_check")) {
             GlobalConfig.DisableCompatCheck = HandleBoolean (TokenList, TokenCount);
@@ -1225,47 +1228,86 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"decline_reloadgop")) {
+        else if (MyStriCmp (TokenList[0], L"decline_reload_gop")
+            ||  MyStriCmp  (TokenList[0], L"decline_reloadgop")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ReloadGOP = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_nvmeload")) {
+        else if (MyStriCmp (TokenList[0], L"decline_nvme_load")
+            ||  MyStriCmp  (TokenList[0], L"decline_nvmeload")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyNVME = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_apfsload")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apfs_load")
+            ||  MyStriCmp  (TokenList[0], L"decline_apfsload")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyAPFS = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_uefiemulate")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apfs_mute")
+            ||  MyStriCmp  (TokenList[0], L"decline_apfsmute")
+        ) {
+            // DA_TAG: Accomodate Deprecation
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SilenceAPFS = (DeclineSetting) ? FALSE : TRUE;
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_apfs_sync")
+            ||  MyStriCmp  (TokenList[0], L"decline_apfssync")
+        ) {
+            // DA_TAG: Accomodate Deprecation
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SyncAPFS = (DeclineSetting) ? FALSE : TRUE;
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_uefi_emulate")
+            ||  MyStriCmp  (TokenList[0], L"decline_uefiemulate")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyUEFI = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_applefb")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apple_fb")
+            ||  MyStriCmp  (TokenList[0], L"decline_applefb")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyAppleFB = (!AppleFirmware)
                 ? FALSE
                 : (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_apfssync")) {
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SyncAPFS = (DeclineSetting) ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
+        else if (MyStriCmp (TokenList[0], L"decline_nvram_protect")
+            ||  MyStriCmp  (TokenList[0], L"decline_nvramprotect")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ProtectNVRAM = (!AppleFirmware)
                 ? FALSE
                 : (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
+        else if (MyStriCmp (TokenList[0], L"decline_esp_filter")
+            ||  MyStriCmp  (TokenList[0], L"decline_espfilter")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
+        else if (MyStriCmp (TokenList[0], L"decline_tags_help")
+            ||  MyStriCmp  (TokenList[0], L"decline_tagshelp")
+        ) {
+            // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.TagsHelp = (DeclineSetting) ? FALSE : TRUE;
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_text_help")
+            ||  MyStriCmp  (TokenList[0], L"decline_texthelp")
+        ) {
+            // DA_TAG: Accomodate Deprecation
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.TextHelp = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"csr_normalise")
             ||  MyStriCmp  (TokenList[0], L"normalise_csr")

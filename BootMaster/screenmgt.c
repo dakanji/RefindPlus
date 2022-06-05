@@ -1093,10 +1093,12 @@ BOOLEAN CheckError (
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a Key to Continue" in debug mode
+    // Override this if volume is full
     haveError = (
         MyStrStr (where, L"While Reading Boot Sector") ||
         MyStrStr (where, L"in ReadHiddenTags")
     ) ? FALSE : TRUE;
+    haveError = (!haveError && (Status == EFI_VOLUME_FULL)) ? TRUE : FALSE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);

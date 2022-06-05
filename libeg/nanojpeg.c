@@ -186,19 +186,19 @@ void njDone(void);
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef NJ_USE_LIBC
-    #define NJ_USE_LIBC 1
+#   define NJ_USE_LIBC 1
 #endif
 
 #ifndef NJ_USE_WIN32
-  #ifdef _MSC_VER
-    #define NJ_USE_WIN32 (!NJ_USE_LIBC)
-  #else
-    #define NJ_USE_WIN32 0
-  #endif
+#   ifdef _MSC_VER
+#       define NJ_USE_WIN32 (!NJ_USE_LIBC)
+#   else
+#       define NJ_USE_WIN32 0
+#   endif
 #endif
 
 #ifndef NJ_CHROMA_FILTER
-    #define NJ_CHROMA_FILTER 1
+#   define NJ_CHROMA_FILTER 1
 #endif
 
 
@@ -265,24 +265,24 @@ int main(int argc, char* argv[]) {
 #ifndef _NJ_INCLUDE_HEADER_ONLY
 
 #ifdef _MSC_VER
-    #define NJ_INLINE static __inline
-    #define NJ_FORCE_INLINE static __forceinline
+#   define NJ_INLINE static __inline
+#   define NJ_FORCE_INLINE static __forceinline
 #else
-    #define NJ_INLINE static inline
-    #define NJ_FORCE_INLINE static inline
+#   define NJ_INLINE static inline
+#   define NJ_FORCE_INLINE static inline
 #endif
 
 #if NJ_USE_LIBC
-    #include <stdlib.h>
-    #include <string.h>
-    #define njAllocMem malloc
-    #define njFreeMem  free
-    #define njFillMem  memset
-    #define njCopyMem  memcpy
+#   include <stdlib.h>
+#   include <string.h>
+#   define njAllocMem malloc
+#   define njFreeMem  free
+#   define njFillMem  memset
+#   define njCopyMem  memcpy
 #elif NJ_USE_WIN32
-    #include <windows.h>
-    #define njAllocMem(size) ((void*) LocalAlloc(LMEM_FIXED, (SIZE_T)(size)))
-    #define njFreeMem(block) ((void) LocalFree((HLOCAL) block))
+#   include <windows.h>
+#   define njAllocMem(size) ((void*) LocalAlloc(LMEM_FIXED, (SIZE_T)(size)))
+#   define njFreeMem(block) ((void) LocalFree((HLOCAL) block))
     NJ_INLINE void njFillMem(void* block, unsigned char value, int count) { __asm {
         mov edi, block
         mov al, value

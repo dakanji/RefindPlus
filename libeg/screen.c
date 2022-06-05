@@ -1549,7 +1549,7 @@ BOOLEAN egSetScreenSize (
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
-                    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("  - %s", MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -1563,7 +1563,7 @@ BOOLEAN egSetScreenSize (
                     MsgStr = StrDuplicate (L"Error : Could Not Query GOP Mode");
 
                     #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("  - %s", MsgStr);
                     #endif
 
@@ -1614,7 +1614,7 @@ BOOLEAN egSetScreenSize (
             PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             LOG_MSG("\n");
 
@@ -1689,7 +1689,7 @@ BOOLEAN egSetTextMode (
                     PrintUglyText (MsgStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("%s", MsgStr);
                     LOG_MSG("\n");
                     #endif
@@ -1702,7 +1702,7 @@ BOOLEAN egSetTextMode (
             PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             LOG_MSG("\n");
             #endif
@@ -2173,7 +2173,7 @@ VOID egScreenShot (VOID) {
         #endif
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
@@ -2217,7 +2217,7 @@ VOID egScreenShot (VOID) {
         #endif
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif

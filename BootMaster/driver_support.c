@@ -67,13 +67,13 @@
 #include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)
-    #define DRIVER_DIRS             L"drivers,drivers_x64"
+#   define DRIVER_DIRS             L"drivers,drivers_x64"
 #elif defined (EFI32)
-    #define DRIVER_DIRS             L"drivers,drivers_ia32"
+#   define DRIVER_DIRS             L"drivers,drivers_ia32"
 #elif defined (EFIAARCH64)
-    #define DRIVER_DIRS             L"drivers,drivers_aa64"
+#   define DRIVER_DIRS             L"drivers,drivers_aa64"
 #else
-    #define DRIVER_DIRS             L"drivers"
+#   define DRIVER_DIRS             L"drivers"
 #endif
 
 #ifdef __MAKEWITH_GNUEFI
