@@ -110,6 +110,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableNvramPanicLog = */ FALSE,
     /* DecoupleKeyF10 = */ FALSE,
     /* DisableAMFI = */ FALSE,
+    /* EnableMacosFilter = */ TRUE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ TRUE,
@@ -227,6 +228,8 @@ EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_GUID               RefindPlusOldGuid    = REFINDPLUS_OLD_GUID;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
+
+#define NVRAM_SIZE_THRESHOLD       (1023)
 
 #define BOOT_FIX_STR_01            L"Disable AMFI Checks"
 #define BOOT_FIX_STR_02            L"Disable Compatibility Checks"
@@ -452,8 +455,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     if (!BlockCert && !BlockMore) {
         BlockSize = (
             AppleFirmware && HardNVRAM &&
-            GlobalConfig.NvramVariableLimit > 1023 &&
-            VariableSize > GlobalConfig.NvramVariableLimit
+            VariableSize > GlobalConfig.NvramVariableLimit &&
+            GlobalConfig.NvramVariableLimit > NVRAM_SIZE_THRESHOLD
         );
     }
 
@@ -2469,7 +2472,10 @@ EFI_STATUS EFIAPI efi_main (
 
     // Restore SystemTable if previously amended and not emulating UEFI 2.x
     if (SetSysTab) {
-        if (!GlobalConfig.SupplyUEFI) {
+        if (GlobalConfig.SupplyUEFI) {
+            OrigSetVariableRT = gRT->SetVariable;
+        }
+        else {
             SetSysTab =  FALSE;
             gBS       = OrigBS;
             gRT       = OrigRT;
@@ -3363,8 +3369,10 @@ EFI_STATUS EFIAPI efi_main (
 
                     RunMacBootSupportFuncs();
 
-                    // Start ProtectNVRAM
-                    SetProtectNvram (SystemTable, TRUE);
+                    if (GlobalConfig.EnableMacosFilter) {
+                        // Start ProtectNVRAM
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
                 }
                 else if (ourLoaderEntry->OSType == 'W'
                     || FoundSubStr (ourLoaderEntry->Title, L"Windows")

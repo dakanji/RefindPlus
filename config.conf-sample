@@ -106,6 +106,14 @@
 #
 #decline_esp_filter
 
+# When this option is activated, the "ProtectNVRAM" feature will be
+# deactivated, if set, when booting into MacOS. ProtectNVRAM will be
+# active, if set, when booting into other relevant operating systems.
+#
+# Inactive when commented out (Does not stop ProtectNVRAM on MacOS boot)
+#
+#decline_macos_filter
+
 # Supply NVME driver. By default, RefindPlus is set up to always load
 # a built in version of the NvmExpressDxe driver which provides NVMe
 # support when unavailable. This is disabled when this token is on.
@@ -198,7 +206,7 @@
 # and that this boot argument will remain active until it is explicitly cleared, even if
 # this setting is subsequently deactivated.
 #
-# Inactive when commented out (Does not disable AMFI checks)
+# Inactive when commented out (Does not stop AMFI checks)
 #
 #disable_amfi
 
@@ -210,7 +218,7 @@
 # first time it is triggered and that this boot argument will remain active until
 # it is explicitly cleared, even if this setting is subsequently deactivated.
 #
-# Inactive when commented out (Does not disable MacOS compatibility checks)
+# Inactive when commented out (Does not stop MacOS compatibility checks)
 #
 #disable_compat_check
 
@@ -222,7 +230,7 @@
 # argument the first time it is triggered which will remain active until
 # explicitly cleared, even if this setting is subsequently deactivated.
 #
-# Inactive when commented out (Does not disable MacOS kernel panic log writes to NVRAM)
+# Inactive when commented out (Does not stop MacOS paniclog writes to NVRAM)
 #
 #disable_nvram_paniclog
 
@@ -235,7 +243,7 @@
 # while not being required on most types of firmware. Hence, an option
 # to skip this process is desirable when running most types of firmware
 #
-# Inactive when commented out (Does not disable rescans for DXE drivers)
+# Inactive when commented out (Does not stop rescans for DXE drivers)
 #
 #disable_rescan_dxe
 

@@ -1,6 +1,10 @@
 0.13.3.AA (Pre-Release):
 -----------------------
 - Synced with Upstream v0.13.3
+- Adds `EnableMacosFilter` Feature
+  * This feature is active by default and it enables the `ProtectNVRAM` feature (if set) on MacOS boots
+  * The `ProtectNVRAM` feature remains active for other OS types regardless (if set)
+  * The `EnableMacosFilter` feature can be disabled using a new `decline_macos_filter` configuration token
 - Adds `DisableNvramPanicLog` Feature
   * Sets a MacOS `nvram_paniclog=0` boot argument to disable kernel panic logging to NVRAM
   * Replaces the `PanicFilter` feature which has been removed

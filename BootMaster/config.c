@@ -1228,6 +1228,10 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"decline_macos_filter")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.EnableMacosFilter = (DeclineSetting) ? FALSE : TRUE;
+        }
         else if (MyStriCmp (TokenList[0], L"decline_reload_gop")
             ||  MyStriCmp  (TokenList[0], L"decline_reloadgop")
         ) {
