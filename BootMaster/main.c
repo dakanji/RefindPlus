@@ -199,7 +199,11 @@ REFIT_CONFIG GlobalConfig = {
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
+#define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware"
+
+
 UINTN                  AppleFramebuffers    = 0;
+UINT32                 StorageFlags         = FULL_ACCESS_FLAGS;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                KernelNotStarted     = TRUE;
@@ -220,7 +224,7 @@ BOOLEAN                WarnRevisionUEFI     = FALSE;
 BOOLEAN                WarnMissingQVInfo    = FALSE;
 BOOLEAN                SecureBootFailure    = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
-EFI_GUID               RefindGuid           = REFIND_GUID_VALUE;
+EFI_GUID               RefindPlusOldGuid    = REFINDPLUS_OLD_GUID;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
@@ -241,7 +245,6 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
-// Link to Cert GUIDs in mok/guid.c
 extern EFI_GUID                      AppleGuid;
 
 extern EFI_FILE                     *gVarsDir;
@@ -322,7 +325,7 @@ EFI_STATUS GetHardwareNvramVariable (
         VendorGuid, NULL,
         &BufferSize, TmpBuffer
     );
-    if (EFI_ERROR(Status)) {
+    if (Status != EFI_SUCCESS) {
         MY_FREE_POOL(TmpBuffer);
         *VariableData = NULL;
         *VariableSize = 0;
@@ -348,16 +351,19 @@ EFI_STATUS SetHardwareNvramVariable (
     VOID        *OldBuf;
     UINTN        OldSize;
 
-    Status = GetHardwareNvramVariable (
-        VariableName, VendorGuid,
-        &OldBuf, &OldSize
-    );
-    if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
-        // Early Return
-        return Status;
+    Status = EFI_LOAD_ERROR;
+    if (VariableData || VariableSize != 0) {
+        Status = GetHardwareNvramVariable (
+            VariableName, VendorGuid,
+            &OldBuf, &OldSize
+        );
+        if (Status != EFI_SUCCESS && Status != EFI_NOT_FOUND) {
+            // Early Return
+            return Status;
+        }
     }
 
-    if (!EFI_ERROR(Status)) {
+    if (Status == EFI_SUCCESS) {
         // Check for match
         BOOLEAN SettingMatch = (
             VariableSize == OldSize &&
@@ -1231,40 +1237,6 @@ EFI_STATUS TrimCoerce (VOID) {
     return Status;
 } // static EFI_STATUS TrimCoerce()
 
-static
-VOID NvramGarbageCollectionMac (
-    IN BOOLEAN Activate
-) {
-    EFI_STATUS Status    = EFI_SUCCESS;
-    CHAR16 *BaseData     =        L"1";
-    UINT32  StorageFlags = APPLE_FLAGS;
-
-    if (!AppleFirmware) {
-        // Early Return
-        return;
-    }
-
-    CHAR8 *DataNVRAM = AllocatePool (
-        (StrLen (BaseData) + 1) * sizeof (CHAR8)
-    );
-    if (!DataNVRAM) {
-        Status = EFI_OUT_OF_RESOURCES;
-    }
-
-    if (!EFI_ERROR(Status)) {
-        // Convert Unicode String 'BaseData' to Ascii String 'DataNVRAM'
-        UnicodeStrToAsciiStr (BaseData, DataNVRAM);
-
-        REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable, L"ResetNVRam",
-            &AppleGuid, StorageFlags,
-            (Activate) ? sizeof (DataNVRAM) : 0,
-            (Activate) ? DataNVRAM : NULL
-        );
-    }
-} // static VOID NvramGarbageCollectionMac()
-
-
 // Extended 'OpenProtocol'
 // Ensures GOP Interface for Boot Loading Screen
 static
@@ -1465,63 +1437,6 @@ BOOLEAN ShowCleanNvramInfo (
         // Early Return
         return FALSE;
     }
-
-    // DA_TAG: Investigate This
-    //         Delete the directory tree instead?
-    //         Hook into Shell for 'rm -fr' if so?
-    //         Initial Assessment: Not worth bloat
-    //         Find native way to achieve same??
-    //
-    // Clear Emulated NVRAM
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
-    MY_MUTELOGGER_SET;
-    #endif
-    EfivarSetRaw (
-        &RefindPlusGuid, L"PreviousBoot",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindPlusGuid, L"HiddenTags",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindPlusGuid, L"HiddenTools",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindPlusGuid, L"HiddenLegacy",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindPlusGuid, L"HiddenFirmware",
-        NULL, 0, TRUE
-    );
-
-    // Try to handle rEFInd as well
-    EfivarSetRaw (
-        &RefindGuid, L"PreviousBoot",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindGuid, L"HiddenTags",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindGuid, L"HiddenTools",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindGuid, L"HiddenLegacy",
-        NULL, 0, TRUE
-    );
-    EfivarSetRaw (
-        &RefindGuid, L"HiddenFirmware",
-        NULL, 0, TRUE
-    );
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
 
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
@@ -2253,9 +2168,6 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Remove any recovery boot flags */
     ClearRecoveryBootFlag();
-
-    // Deactivate forced nvram garbage collection on Macs (if present)
-    NvramGarbageCollectionMac(FALSE);
 
     /* Other Preambles */
     EFI_TIME Now;
@@ -3169,12 +3081,63 @@ EFI_STATUS EFIAPI efi_main (
                 StartTool (ourLoaderEntry);
 
                 #if REFIT_DEBUG > 0
+                BOOLEAN CheckMute;
+                MY_MUTELOGGER_SET;
+                #endif
+
+                i = 0;
+                CHAR16 *VarNVRAM = NULL;
+                Status = (gVarsDir) ? EFI_SUCCESS : FindVarsDir();
+                while ((VarNVRAM = FindCommaDelimited (
+                    RP_NVRAM_VARIABLES, i++
+                )) != NULL) {
+                    // Clear Emulated NVRAM
+                    if (!EFI_ERROR(Status)) {
+                        egSaveFile (
+                            gVarsDir, VarNVRAM,
+                            NULL, 0
+                        );
+                    }
+
+                    // Clear Hardware NVRAM (RefindPlusGuid)
+                    SetHardwareNvramVariable (
+                        VarNVRAM, &RefindPlusGuid,
+                        StorageFlags, 0, NULL
+                    );
+
+                    // Clear Hardware NVRAM (RefindPlusOldGuid)
+                    SetHardwareNvramVariable (
+                        VarNVRAM, &RefindPlusOldGuid,
+                        StorageFlags, 0, NULL
+                    );
+
+                    FreePool (VarNVRAM);
+                } // while
+
+                // Force nvram garbage collection on Macs
+                if (AppleFirmware) {
+                    CHAR16 *BaseData = L"1";
+                    CHAR8 *DataNVRAM = AllocatePool (
+                        (StrLen (BaseData) + 1) * sizeof (CHAR8)
+                    );
+                    if (DataNVRAM) {
+                        // Convert Unicode String 'BaseData' to Ascii String 'DataNVRAM'
+                        UnicodeStrToAsciiStr (BaseData, DataNVRAM);
+
+                        REFIT_CALL_5_WRAPPER(
+                            gRT->SetVariable, L"ResetNVRam",
+                            &AppleGuid, StorageFlags,
+                            sizeof (DataNVRAM), DataNVRAM
+                        );
+                    }
+                }
+
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+
                 LOG_MSG("INFO: Cleaned NVRAM");
                 LOG_MSG("\n\n");
                 #endif
-
-                // Try to force nvram garbage collection on Macs
-                NvramGarbageCollectionMac(TRUE);
 
             // No Break
             case TAG_REBOOT:    // Reboot

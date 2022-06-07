@@ -169,7 +169,7 @@ EFI_GUID           GuidCoreStorage     =   CORE_STORAGE_GUID_VALUE;
 EFI_GUID           GuidAppleTvRec      =    APPLE_TV_RECOVERY_GUID;
 
 
-extern EFI_GUID    RefindGuid;
+extern EFI_GUID    RefindPlusOldGuid;
 extern EFI_GUID    RefindPlusGuid;
 extern BOOLEAN     ScanningLoaders;
 
@@ -538,48 +538,52 @@ EFI_STATUS ReinitRefitLib (VOID) {
 // be used, the variable is not stored. Sets the pointer to the directory in the
 // file-global gVarsDir variable and returns the status of the operation.
 EFI_STATUS FindVarsDir (VOID) {
-    EFI_STATUS       Status = EFI_SUCCESS;
+    EFI_STATUS       Status;
+    CHAR16          *VarsFolder = L"refind-vars";
     EFI_FILE_HANDLE  EspRootDir;
 
-    if (gVarsDir == NULL) {
-        Status = REFIT_CALL_5_WRAPPER(
-            SelfDir->Open, SelfDir,
-            &gVarsDir, L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
-        );
+    if (gVarsDir != NULL) {
+        // Early Return
+        return EFI_SUCCESS;
+    }
+
+    Status = REFIT_CALL_5_WRAPPER(
+        SelfDir->Open, SelfDir,
+        &gVarsDir, VarsFolder,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+    );
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+        Status
+    );
+    #endif
+
+    if (EFI_ERROR(Status)) {
+        Status = egFindESP (&EspRootDir);
+        if (!EFI_ERROR(Status)) {
+            Status = REFIT_CALL_5_WRAPPER(
+                EspRootDir->Open, EspRootDir,
+                &gVarsDir, VarsFolder,
+                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+            );
+        }
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
             Status
         );
-        #endif
 
         if (EFI_ERROR(Status)) {
-            Status = egFindESP (&EspRootDir);
-            if (!EFI_ERROR(Status)) {
-                Status = REFIT_CALL_5_WRAPPER(
-                    EspRootDir->Open, EspRootDir,
-                    &gVarsDir, L"refind-vars",
-                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
-                );
-            }
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
-                Status
+            ALT_LOG(1, LOG_THREE_STAR_MID,
+                L"Activate the 'use_nvram' Config Token to Use Hardware NVRAM Instead"
             );
-
-            if (EFI_ERROR(Status)) {
-                ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Activate the 'use_nvram' Config Token to Use Hardware NVRAM Instead"
-                );
-            }
-            #endif
         }
-    } // if gVarsDir == NULL
+        #endif
+    }
 
     return Status;
 } // EFI_STATUS FindVarsDir()
@@ -606,7 +610,7 @@ EFI_STATUS EfivarGetRaw (
     if (!GlobalConfig.UseNvram &&
         (
             GuidsAreEqual (VendorGUID, &RefindPlusGuid) ||
-            GuidsAreEqual (VendorGUID, &RefindGuid)
+            GuidsAreEqual (VendorGUID, &RefindPlusOldGuid)
         )
     ) {
         Status = FindVarsDir();
@@ -790,7 +794,7 @@ EFI_STATUS EfivarSetRaw (
     if (!GlobalConfig.UseNvram &&
         (
             GuidsAreEqual (VendorGUID, &RefindPlusGuid) ||
-            GuidsAreEqual (VendorGUID, &RefindGuid)
+            GuidsAreEqual (VendorGUID, &RefindPlusOldGuid)
         )
     ) {
         Status = FindVarsDir();

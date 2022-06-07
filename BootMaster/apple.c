@@ -193,7 +193,7 @@ VOID RecordgCsrStatus (
 VOID RotateCsrValue (VOID) {
     EFI_STATUS    Status;
     UINT32        CurrentValue, TargetCsr;
-    UINT32        StorageFlags = APPLE_FLAGS;
+    UINT32        StorageFlags = FULL_ACCESS_FLAGS;
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
@@ -966,7 +966,7 @@ VOID ClearRecoveryBootFlag (VOID) {
     UINTN       BufferSize;
     VOID       *TmpBuffer    = NULL;
     CHAR16     *VariableName = NULL;
-    UINT32      StorageFlags = APPLE_FLAGS;
+    UINT32      StorageFlags = FULL_ACCESS_FLAGS;
 
     BufferSize   = 0;
     VariableName = L"recovery-boot-mode";

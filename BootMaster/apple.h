@@ -137,18 +137,11 @@ CHAR16 * RP_GetAppleDiskLabel (
 
 #endif // APPLE_APFS_INFO_H
 
-
-
-
 // Apple's GUID
 #define APPLE_GUID \
 { \
   0x7c436110, 0xab2a, 0x4bbb, {0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82}  \
 }
-
-// Apple's NVRAM ACCESS FLAGS
-#define APPLE_FLAGS     EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE;
-
 
 // These codes are returned with the csr-active-config NVRAM variable
 #define CSR_CLEAR_SETTING                      0x0000        // RefindPlus Custom Code

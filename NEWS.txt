@@ -21,10 +21,6 @@
 - Improves `FindMenuShortcutEntry` Function
   * Now initially tries a exact match of the stored string against available entries
   * A match against substrings is only tried if an exact match is not found
-- Improves `SupplyUEFI` Feature
-  * The `QueryVariableInfo` Runtime service is now also emulated
-  * Avoid crashes from unavailability if called on emulated UEFI 2.x
-  * Now returns an `EFI_UNSUPPORTED` error instead
 - Improves Pointer Device Handling
   * Applies workaround for touch mode failure
     - Ref: https://sf.net/p/refind/discussion/general/thread/86f80fa8ef
