@@ -61,7 +61,7 @@ jobs:
     needs: similarity_analysis
     runs-on: ubuntu-latest
 
-    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.comment.body, 'RefindPlus Version') && contains(github.event.comment.body, 'Device Type') && contains(github.event.comment.body, 'Problem Description') && contains(github.event.comment.body, 'Problem Point') && contains(github.event.comment.body, 'Affected Items') && contains(github.event.comment.body, 'Debug Log') && contains(github.event.comment.body, 'Additional Context')
+    if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1

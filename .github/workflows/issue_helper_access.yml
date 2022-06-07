@@ -9,9 +9,9 @@ on:
         options:
         - 'Issue - Open'
         - 'Issue - Close'
-        - 'Issue - Comment - Delete'
         - 'Issue - Thread - Lock'
         - 'Issue - Thread - Unlock'
+        - 'Issue - Comment - Delete'
       item_id:
         description: 'Item ID'
         required: true

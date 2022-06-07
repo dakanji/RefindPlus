@@ -36,13 +36,11 @@
 # attempted removal may fail when booting into MacOS via non-standard approaches such as
 # RefindPlus. It is also possible that Apple will remove this remediation feature once
 # Mac models supporting MacOS v10.15 (Catalina) are deemed to be obsolete by Apple.
+# When this token is set, RefindPlus will remove this bit from the saved
+# CSR bits when booting into MacOS similar to the process undertaken in
+# MacOS 11.x and later. This setting is only active on Apple Firmware.
 #
-# When this token is set, RefindPlus will remove this bit from the saved CSR bits
-# when booting into MacOS, OpenCore or Clover similar to the process undertaken
-# in MacOS 11.x and later. This setting can also be used with older versions.
-# NB: This option is only active on Apple Firmware.
-#
-# Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
+# Inactive when commented out (Takes no action on SIP/SSV settings)
 #
 #csr_normalise
 
@@ -251,6 +249,7 @@
 # is inactive by default for non-Apple SSDs in MacOS. When this option
 # is active however, RefindPlus will enforce MacOS "TRIM" for all types
 # of SSDs, including non-Apple SSDs. This setting only applies to MacOS.
+#
 # Note that the setting will create a MacOS NVRAM entry the first time it
 # is triggered and that it will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also, note that forcing TRIM

@@ -1,9 +1,9 @@
-0.13.3.AA (Pre-Release):
+0.13.3.AA (06 Jun 2022):
 -----------------------
 - Synced with Upstream v0.13.3
 - Adds `EnableMacosFilter` Feature
-  * This feature is active by default and it enables the `ProtectNVRAM` feature (if set) on MacOS boots
-  * The `ProtectNVRAM` feature remains active for other OS types regardless (if set)
+  * This feature is active by default and activates the `ProtectNVRAM` feature, if enabled, on MacOS boots
+  * The `ProtectNVRAM` feature, if enabled, is activated for other applicable OS types regardless
   * The `EnableMacosFilter` feature can be disabled using a new `decline_macos_filter` configuration token
 - Adds `DisableNvramPanicLog` Feature
   * Sets a MacOS `nvram_paniclog=0` boot argument to disable kernel panic logging to NVRAM
@@ -31,16 +31,16 @@
   * Rationalises pointer priority with `EnableTouch` always having priority over `EnableMouse`
     - Previously depended on order of appearance in configuration file
 - Renames Misc Configuration Tokens
-  * `decline_nvramprotect`       to       `decline_nvram_protect`
-  * `decline_uefiemulate`        to        `decline_uefi_emulate`
-  * `decline_espfilter`          to          `decline_esp_filter`
-  * `decline_apfsload`           to           `decline_apfs_load`
-  * `decline_apfsmute`           to           `decline_apfs_mute`
-  * `decline_apfssync`           to           `decline_apfs_sync`
-  * `decline_nvmeload`           to           `decline_nvme_load`
-  * `decline_tagshelp`           to           `decline_tags_help`
-  * `decline_texthelp`           to           `decline_text_help`
-  * `decline_applefb`            to            `decline_apple_fb`
+  * `decline_nvramprotect` to `decline_nvram_protect`
+  * `decline_uefiemulate` to `decline_uefi_emulate`
+  * `decline_espfilter` to `decline_esp_filter`
+  * `decline_apfsload` to `decline_apfs_load`
+  * `decline_apfsmute` to `decline_apfs_mute`
+  * `decline_apfssync` to `decline_apfs_sync`
+  * `decline_nvmeload` to `decline_nvme_load`
+  * `decline_tagshelp` to `decline_tags_help`
+  * `decline_texthelp` to `decline_text_help`
+  * `decline_applefb` to `decline_apple_fb`
 
 
 0.13.2.AP (19 Apr 2022):

@@ -12,8 +12,7 @@ body:
       label: RefindPlus Version
       description: Which version of RefindPlus is affected?
       options:
-        - 'v0.13.2.AP Release'
-        - 'v0.13.2.AN Release'
+        - 'v0.13.3.AA Release'
         - 'Older Released Version'
         - 'Pre-Release Code Build'
     validations:
