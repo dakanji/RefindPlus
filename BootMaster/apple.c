@@ -49,13 +49,15 @@ EFI_STATUS GetCsrStatus (
     UINTN       CsrLength;
     UINT32     *ReturnValue  = NULL;
 
+    MY_FREE_POOL(gCsrStatus);
+
     Status = EfivarGetRaw (
         &AppleGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
         if (Status != EFI_NOT_FOUND) {
-            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Status");
+            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Setting");
         }
         else {
             gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
@@ -63,6 +65,7 @@ EFI_STATUS GetCsrStatus (
 
             if (!NormaliseCall) {
                 // Return 'Success' if not called from NormaliseCSR
+                // Error return needed for accurate logging
                 Status = EFI_SUCCESS;
             }
         }
@@ -71,12 +74,14 @@ EFI_STATUS GetCsrStatus (
         return Status;
     }
 
-    if (CsrLength != 4) {
-        gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
+    if (CsrLength != sizeof (UINT32)) {
+        gCsrStatus = StrDuplicate (L"Bad SIP/SSV Buffer Size");
 
         // Early Return ... Return Error
         return EFI_BAD_BUFFER_SIZE;
     }
+
+    gCsrStatus = StrDuplicate (L"Found SIP/SSV Setting (Not Interpreted)");
 
     *CsrStatus = *ReturnValue;
 
@@ -93,10 +98,12 @@ VOID RecordgCsrStatus (
     CHAR16   *MsgStr    = NULL;
     EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
 
+    MY_FREE_POOL(gCsrStatus);
+
     switch (CsrStatus) {
         // SIP "Cleared" Setting
         case SIP_ENABLED_EX:
-            gCsrStatus = PoolPrint (L"SIP Enabled (Cleared/Empty)");
+            gCsrStatus = StrDuplicate (L"SIP Enabled (Cleared/Empty)");
             break;
 
         // SIP "Enabled" Setting
@@ -177,7 +184,7 @@ VOID RecordgCsrStatus (
         #endif
         egDisplayMessage (
             MsgStr, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            2, L"PauseSeconds"
         );
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
@@ -202,6 +209,7 @@ VOID RotateCsrValue (VOID) {
 
     Status = GetCsrStatus (&CurrentValue);
     if (EFI_ERROR(Status) || !GlobalConfig.CsrValues) {
+        MY_FREE_POOL(gCsrStatus);
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
@@ -252,13 +260,14 @@ VOID RotateCsrValue (VOID) {
     Status = (TargetCsr != 0)
         ? EfivarSetRaw (
             &AppleGuid, L"csr-active-config",
-            &TargetCsr, 4, TRUE
+            &TargetCsr, sizeof (UINT32), TRUE
         )
         : REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, L"csr-active-config",
             &AppleGuid, StorageFlags, 0, NULL
         );
     if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(gCsrStatus);
         gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
 
         #if REFIT_DEBUG > 0
@@ -329,6 +338,11 @@ EFI_STATUS NormaliseCSR (VOID) {
     // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
     OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
     RecordgCsrStatus (OurCSR, TRUE);
+
+    EfivarSetRaw (
+        &AppleGuid, L"csr-active-config",
+        &OurCSR, sizeof (UINT32), TRUE
+    );
 
     // Normalisd Flag - Disable
     NormaliseCall = FALSE;

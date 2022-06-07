@@ -28,10 +28,8 @@
 - Improves Pointer Device Handling
   * Applies workaround for touch mode failure
     - Ref: https://sf.net/p/refind/discussion/general/thread/86f80fa8ef
-  * Retionalises pointer priority with `EnableTouch` always having priority over `EnableMouse`
+  * Rationalises pointer priority with `EnableTouch` always having priority over `EnableMouse`
     - Previously depended on order of appearance in configuration file
-- Amends CSR Operation Coverage
-  * Extends limitation of misc SIP/CSR items to Apple firmware pending review of applicability
 - Renames Misc Configuration Tokens
   * `decline_nvramprotect`       to       `decline_nvram_protect`
   * `decline_uefiemulate`        to        `decline_uefi_emulate`

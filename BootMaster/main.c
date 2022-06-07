@@ -725,11 +725,6 @@ VOID AlignCSR (VOID) {
     UINT32  CsrStatus;
     BOOLEAN RotateCsr = FALSE;
 
-    if (!AppleFirmware) {
-        // Early Return
-        return;
-    }
-
     if ((GlobalConfig.DynamicCSR == 0) ||
         (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1)
     ) {
