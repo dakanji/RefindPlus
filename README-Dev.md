@@ -8,7 +8,6 @@ The current development focus is on the following units:
 - **MacPro3,1**: Early 2008 Mac Pro
 - **MacPro4,1**: Early 2009 Mac Pro
 - **MacPro5,1**: Mid 2010 and Mid 2012 Mac Pros
-- **MacPro6,1**: Late 2013 Mac Pro
 - **XServe2,1**: Early 2008 XServe
 - **XServe3,1**: Early 2009 XServe
 

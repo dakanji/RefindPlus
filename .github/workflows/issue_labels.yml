@@ -20,6 +20,8 @@ jobs:
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
       - uses: mheap/github-action-required-labels@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           mode: exactly
           count: 0
