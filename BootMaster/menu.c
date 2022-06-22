@@ -749,6 +749,8 @@ UINTN RunGenericMenu (
     EFI_STATUS     Status;
     EFI_STATUS     PointerStatus      =  EFI_NOT_READY;
     BOOLEAN        HaveTimeout        =  FALSE;
+    BOOLEAN        UserKeyScan        =  FALSE;
+    BOOLEAN        UserKeyPress       =  FALSE;
     BOOLEAN        WaitForRelease     =  FALSE;
     UINTN          TimeoutCountdown   =  0;
     INTN           TimeSinceKeystroke =  0;
@@ -1029,6 +1031,27 @@ UINTN RunGenericMenu (
                     case '+':                  KeyTxt = L"INFER_DETAILS  Key: '+' (Plus)";      break;
                     case '-':                  KeyTxt = L"INFER_REMOVE   Key: '-' (Minus)";     break;
                 } // switch
+
+                // Flag 'UserKeyPress' on Selection Change
+                switch (key.ScanCode) {
+                    case SCAN_END:
+                    case SCAN_HOME:
+                    case SCAN_PAGE_UP:
+                    case SCAN_PAGE_DOWN:
+                    case SCAN_UP:
+                    case SCAN_LEFT:
+                    case SCAN_DOWN:
+                    case SCAN_RIGHT: UserKeyPress = TRUE;
+                } // switch
+
+                // Flag 'UserKeyScan' on Detecting Some Inputs
+                switch (key.UnicodeChar) {
+                    case CHAR_BACKSPACE:
+                    case CHAR_TAB:
+                    case '+':
+                    case '-':
+                    default: UserKeyScan = TRUE;
+                } // switch
             }
             ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Processing Keystroke: UnicodeChar = 0x%02X ... ScanCode = 0x%02X - %s",
@@ -1051,6 +1074,15 @@ UINTN RunGenericMenu (
                         case SCAN_LEFT:
                         case SCAN_DOWN:
                         case SCAN_RIGHT: BlockRescan = FALSE;
+                    } // switch
+
+                    // Unblock Rescan on Detecting Some Inputs
+                    switch (key.UnicodeChar) {
+                        case CHAR_BACKSPACE:
+                        case CHAR_TAB:
+                        case '+':
+                        case '-':
+                        default: BlockRescan = FALSE;
                     } // switch
                 }
             }
@@ -1148,30 +1180,31 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
     // Primed Keystroke Buffer appears to only affect UEFI PC but some provision to cover Macs made
-    if (!GlobalConfig.DirectBoot &&
+    if (!UserKeyPress &&
+        !GlobalConfig.DirectBoot &&
         MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu")
     ) {
+        UINT64 MenuExitNumb = 512;
+        UINT64 MenuExitGate = MenuExitNumb;
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
-        UINT64 MenuExitNumb = 500;
-        UINT64 MenuExitGate = MenuExitNumb * 2;
 
         if (!AppleFirmware) {
             MenuExitGate = MenuExitNumb * 3;
 
             #if REFIT_DEBUG > 0
-            if (GlobalConfig.LogLevel > 0) {
-                MenuExitGate = MenuExitNumb * 4;
-            }
             if (GlobalConfig.LogLevel > 1) {
                 MenuExitGate = MenuExitNumb * 5;
+            }
+            else if (GlobalConfig.LogLevel > 0) {
+                MenuExitGate = MenuExitNumb * 4;
             }
             #endif
         }
 
-        if (FoundExternalDisk) {
+        if (!UserKeyScan && FoundExternalDisk) {
             // Double threshold when external disks are detected
             MenuExitGate += (MenuExitGate * 3);
         }
@@ -1190,7 +1223,7 @@ UINTN RunGenericMenu (
             FlushFailReset = TRUE;
             MenuExit = 0;
         }
-    } // if !GlobalConfig.DirectBoot
+    } // if !UserKeyPress ETC
 
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];

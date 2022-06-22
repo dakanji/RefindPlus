@@ -1,6 +1,7 @@
 0.13.3.AB (Pre-Release):
 -----------------------
-- PENDING
+- Improves Time Bound Primed Buffer Mitigation
+  * Reduces intervention threshold based on detection of confirmed user key presses
 
 
 0.13.3.AA (06 Jun 2022):
