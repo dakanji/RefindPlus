@@ -2,6 +2,8 @@
 -----------------------
 - Improves Time Bound Primed Buffer Mitigation
   * Reduces intervention threshold based on detection of confirmed user key presses
+- Fixes Unwanted APFS Data Volume Entries
+  * APFS data volumes could sometimes appear as boot options due to inadequate filtering
 
 
 0.13.3.AA (06 Jun 2022):

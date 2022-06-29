@@ -1193,7 +1193,7 @@ LOADER_ENTRY * AddLoaderEntry (
         return NULL;
     }
 
-    if (GlobalConfig.SyncAPFS) {
+    if (Volume->FSType == FS_TYPE_APFS) {
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
@@ -1208,25 +1208,35 @@ LOADER_ENTRY * AddLoaderEntry (
         #endif
 
         if (!EFI_ERROR(Status)) {
-            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                DisplayName = GetVolumeGroupName (LoaderPath, Volume);
+            if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
+                VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
+                VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
+            ) {
+                // Early Return on APFS Support Volume
+                return NULL;
+            }
 
-                if (!DisplayName) {
-                    // Do not display this PreBoot Volume Menu Entry
-                    return NULL;
-                }
+            if (GlobalConfig.SyncAPFS) {
+                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                    DisplayName = GetVolumeGroupName (LoaderPath, Volume);
 
-                BOOLEAN FoundPreBootName = FoundSubStr (DisplayName, L"PreBoot");
-                if (FoundPreBootName) {
-                    MY_FREE_POOL(DisplayName);
-                }
-                else {
-                    MY_FREE_POOL(Volume->VolName);
-                    Volume->VolName = PoolPrint (L"PreBoot - %s", DisplayName);
+                    if (!DisplayName) {
+                        // Do not display this PreBoot Volume Menu Entry
+                        return NULL;
+                    }
+
+                    BOOLEAN FoundPreBootName = FoundSubStr (DisplayName, L"PreBoot");
+                    if (FoundPreBootName) {
+                        MY_FREE_POOL(DisplayName);
+                    }
+                    else {
+                        MY_FREE_POOL(Volume->VolName);
+                        Volume->VolName = PoolPrint (L"PreBoot - %s", DisplayName);
+                    }
                 }
             }
         }
-    }
+    } // if Volume->FSType == FS_TYPE_APFS
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     TitleEntry   = (LoaderTitle) ? LoaderTitle : LoaderPath;
