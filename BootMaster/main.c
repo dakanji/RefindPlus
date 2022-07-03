@@ -407,15 +407,17 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     BOOLEAN IsVendorMS = GuidsAreEqual (VendorGuid, &VendorMS);
     BOOLEAN CurPolicyOEM = (IsVendorMS && MyStriCmp (VariableName, L"CurrentPolicy"));
-    BOOLEAN BlockMore = FALSE;
     BOOLEAN BlockCert = FALSE;
+    BOOLEAN BlockUEFI = FALSE;
     BOOLEAN BlockSize = FALSE;
     BOOLEAN RevokeVar = (!VariableData && VariableSize == 0);
     BOOLEAN HardNVRAM = ((Attributes & EFI_VARIABLE_NON_VOLATILE) == EFI_VARIABLE_NON_VOLATILE);
 
     if (!CurPolicyOEM && !RevokeVar) {
-        BlockCert = (
-            AppleFirmware && HardNVRAM && IsVendorMS
+        // DA-TAG: Always block UEFI Win stuff on Apple Firmware
+        //         That is, without considering storage volatility
+        BlockUEFI = (
+            AppleFirmware && (IsVendorMS || FoundSubStr (VariableName, L"UnlockID"))
         );
     }
 
@@ -427,13 +429,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MY_MUTELOGGER_SET;
     #endif
 
-    if (!BlockCert && !CurPolicyOEM && !RevokeVar) {
-        BlockMore = (
+    if (!BlockUEFI && !CurPolicyOEM && !RevokeVar) {
+        BlockCert = (
             AppleFirmware && HardNVRAM &&
             (
                 (
-                    FoundSubStr (VariableName, L"UnlockID")
-                ) || (
                     GuidsAreEqual (VendorGuid, &gEfiGlobalVariableGuid) &&
                     (
                         MyStriCmp (VariableName, L"PK" ) || /* EFI_PLATFORM_KEY_NAME     */
@@ -452,7 +452,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
     }
 
-    if (!BlockCert && !BlockMore) {
+    if (!BlockUEFI && !BlockCert) {
         BlockSize = (
             AppleFirmware && HardNVRAM &&
             VariableSize > GlobalConfig.NvramVariableLimit &&
@@ -460,7 +460,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
     }
 
-    Status = (BlockCert || BlockMore || BlockSize)
+    Status = (BlockUEFI || BlockCert || BlockSize)
     ? EFI_SUCCESS
     : SetHardwareNvramVariable (
         VariableName, VendorGuid,
@@ -473,7 +473,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (BlockCert || BlockMore || BlockSize)
+            (BlockUEFI || BlockCert || BlockSize)
                 ? EFI_ACCESS_DENIED : Status
         );
         LimitStringLength (LogStatus, 18);
@@ -505,10 +505,10 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             L"In Hardware NVRAM ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
             LogStatus,
             NVRAM_LOG_SET,
-            (BlockCert)
-                ? L"WindowsCert"
-                : (BlockMore)
-                    ? L"SecurityTag"
+            (BlockUEFI)
+                ? L"WindowsUEFI"
+                : (BlockCert)
+                    ? L"Certificate"
                     : (BlockSize)
                         ? L"OversizeItem"
                         : (CurPolicyOEM)
@@ -550,7 +550,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     //         However, best to add filter now in case that changes in future
     //
     // Clear any previously saved instances of blocked variable
-    if (!CurPolicyOEM && (BlockCert || BlockMore || BlockSize)) {
+    if (!CurPolicyOEM && (BlockUEFI || BlockCert || BlockSize)) {
         OrigSetVariableRT (
             VariableName, VendorGuid,
             Attributes, 0, NULL

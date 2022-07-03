@@ -4,6 +4,8 @@
   * Reduces intervention threshold based on detection of confirmed user key presses
 - Fixes Unwanted APFS Data Volume Entries
   * APFS data volumes could sometimes appear as boot options due to inadequate filtering
+- Applies Misc Minor Fixes
+  * Always block UEFI Windows items (Disregard Volatility)
 
 
 0.13.3.AA (06 Jun 2022):
