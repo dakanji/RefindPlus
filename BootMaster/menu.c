@@ -1102,15 +1102,15 @@ UINTN RunGenericMenu (
             }
         }
         else {
-            // React to pointer event
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Processing Pointer Event");
-            #endif
-
             if (StyleFunc != MainMenuStyle) {
                 // Nothing to find on submenus
                 continue;
             }
+
+            // React to pointer event
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Processing Pointer Event");
+            #endif
 
             State.PreviousSelection = State.CurrentSelection;
             POINTER_STATE PointerState = pdGetState();

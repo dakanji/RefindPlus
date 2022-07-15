@@ -486,6 +486,10 @@ EFI_STATUS StartLegacyImageList (
 
     UninitRefitLib();
 
+    #if REFIT_DEBUG > 0
+    OUT_TAG();
+    #endif
+
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
         NULL, NULL
@@ -569,12 +573,15 @@ VOID StartLegacy (
     );
 
     StoreLoaderName (SelectionName);
+
     Status = StartLegacyImageList (
         DiscoveredPathList,
         Entry->LoadOptions,
         &ErrorInStep
     );
-
+    #if REFIT_DEBUG > 0
+    RET_TAG();
+    #endif
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
             SwitchToText (FALSE);
@@ -649,6 +656,9 @@ VOID StartLegacyUEFI (
     BdsLibDoLegacyBoot (Entry->BdsOption);
 
     // There was a failure if we get here.
+    #if REFIT_DEBUG > 0
+    RET_TAG();
+    #endif
     ReinitRefitLib();
 
     #if REFIT_DEBUG > 0

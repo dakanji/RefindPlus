@@ -314,15 +314,20 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
         #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Analyse GOP Modes on GPU Handle[%d]", SelectedGOP);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("%s:", MsgStr);
+        MY_FREE_POOL(MsgStr);
+
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes on Handle %02d - %02d Mode%s ... 0x%lx <-> 0x%lx Framebuffer",
-            SelectedGOP, MaxMode,
+            L"%02d GOP Mode%s ... 0x%lx <-> 0x%lx Framebuffer",
+            MaxMode,
             (MaxMode != 1) ? L"s" : L"",
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("%s:", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s  - Summary:- '%s'", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -339,7 +344,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
             // Limit logged value to 99
             ModeLog = (Mode > 99) ? 99 : Mode;
 
-            LOG_MSG("%s  - Mode[%02d]", OffsetNext, ModeLog);
+            LOG_MSG("%s    * Mode[%02d]", OffsetNext, ModeLog);
             #endif
 
             Status = REFIT_CALL_4_WRAPPER(
@@ -442,11 +447,10 @@ EFI_STATUS egSetGopMode (
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status = EFI_UNSUPPORTED;
-    UINT32       MaxMode;
+    EFI_STATUS   Status;
+    UINT32       i, MaxMode;
     UINTN        SizeOfInfo;
     INT32        Mode;
-    UINT32       i = 0;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -469,11 +473,9 @@ EFI_STATUS egSetGopMode (
 
     MaxMode = GOPDraw->Mode->MaxMode;
     Mode    = GOPDraw->Mode->Mode;
-
+    Status  = EFI_UNSUPPORTED;
 
     if (MaxMode < 1) {
-        Status = EFI_UNSUPPORTED;
-
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Incompatible GPU");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
@@ -484,24 +486,27 @@ EFI_STATUS egSetGopMode (
         #endif
     }
     else {
+        i = 0;
         while (EFI_ERROR(Status) && i <= MaxMode) {
             Mode = Mode + Next;
-            Mode = (Mode >= (INT32)MaxMode)?0:Mode;
-            Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
+            Mode = (Mode >= (INT32) MaxMode) ? 0 : Mode;
+            Mode = (Mode < 0) ? ((INT32) MaxMode - 1) : Mode;
 
             Status = REFIT_CALL_4_WRAPPER(
                 GOPDraw->QueryMode, GOPDraw,
-                (UINT32)Mode, &SizeOfInfo, &Info
+                (UINT32) Mode, &SizeOfInfo, &Info
             );
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("  - Mode[%02d] ... %r", Mode, Status);
-            LOG_MSG("\n");
+            LOG_MSG("%s    * Mode[%02d]", OffsetNext, Status);
             #endif
 
             if (!EFI_ERROR(Status)) {
-                Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
+                #if REFIT_DEBUG > 0
+                LOG_MSG("\n");
+                #endif
+
+                Status = GopSetModeAndReconnectTextOut ((UINT32) Mode);
                 if (!EFI_ERROR(Status)) {
                     egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
                     egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
@@ -510,6 +515,12 @@ EFI_STATUS egSetGopMode (
 
             i++;
         } // while
+
+        #if REFIT_DEBUG > 0
+        if (EFI_ERROR(Status)) {
+            LOG_MSG("\n\n");
+        }
+        #endif
     }
 
     return Status;
@@ -577,7 +588,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"BestMode: Mode[%d] on Handle[%d] @ %d x %d",
+    MsgStr = PoolPrint (L"BestMode:- 'GOP Mode[%d] on GPU Handle[%d] @ %d x %d'",
         BestMode, SelectedGOP,
         Width, Height
     );

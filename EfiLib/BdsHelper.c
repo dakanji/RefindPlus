@@ -116,6 +116,10 @@ EFI_STATUS BdsLibDoLegacyBoot (
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
+    #if REFIT_DEBUG > 0
+    OUT_TAG();
+    #endif
+
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios

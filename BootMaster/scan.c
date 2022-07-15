@@ -334,12 +334,12 @@ VOID GenerateSubScreen (
 ) {
     REFIT_MENU_SCREEN  *SubScreen;
     LOADER_ENTRY       *SubEntry;
+    REFIT_FILE         *File;
     CHAR16             *InitrdName;
     CHAR16             *KernelVersion = NULL;
     CHAR16            **TokenList;
     CHAR16              DiagsFileName[256];
     UINTN               TokenCount;
-    REFIT_FILE         *File;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"GenerateSubScreen";
@@ -358,7 +358,8 @@ VOID GenerateSubScreen (
     if (SubScreen != NULL) {
         // Loader specific submenu entries
         if (Entry->OSType == 'M') {          // Entries for MacOS
-
+            LOG_SEP(L"X");
+            BREAD_CRUMB(L"In %s ... 1 - START for OSType M", FuncTag);
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
@@ -515,9 +516,12 @@ VOID GenerateSubScreen (
                 MY_FREE_POOL(InitrdName);
                 MY_FREE_FILE(File);
             } // if File
+
             BREAD_CRUMB(L"In %s ... 3 END for OSType L", FuncTag);
         }
         else if (Entry->OSType == 'E') {   // Entries for ELILO
+            LOG_SEP(L"X");
+            BREAD_CRUMB(L"In %s ... 1 - START for OSType E", FuncTag);
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
                 SubEntry->me.Title        = StrDuplicate (L"Run ELILO in interactive mode");
@@ -553,8 +557,11 @@ VOID GenerateSubScreen (
             AddMenuInfoLine (SubScreen, L"NOTE: This is an example. Entries");
             AddMenuInfoLine (SubScreen, L"marked with (*) may not work.");
 
+            BREAD_CRUMB(L"In %s ... 2 END for OSType E", FuncTag);
         }
         else if (Entry->OSType == 'X') {   // Entries for xom.efi
+            LOG_SEP(L"X");
+            BREAD_CRUMB(L"In %s ... 1 - START for OSType X", FuncTag);
             // Skip the built-in selection and boot from hard disk only by default
             Entry->LoadOptions = L"-s -h";
 
@@ -581,6 +588,7 @@ VOID GenerateSubScreen (
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
+            BREAD_CRUMB(L"In %s ... 2 END for OSType X", FuncTag);
         } // Entries for xom.efi
 
         LOG_SEP(L"X");
@@ -1172,8 +1180,8 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 } // LOADER_ENTRY * AddEfiLoaderEntry()
 
 
-// Add a specified EFI boot loader to the list, using automatic settings
-// for icons, options, etc.
+// Add a specified EFI boot loader to the list,
+// using automatic settings for icons, options, etc.
 static
 LOADER_ENTRY * AddLoaderEntry (
     IN CHAR16       *LoaderPath,
@@ -2088,19 +2096,19 @@ VOID ScanEfiFiles (
         MY_FREE_POOL(FileName);
     } // if ShouldScan
 
-    // scan the root directory for EFI executables
+    // Scan the root directory for EFI executables
     if (ScanLoaderDir (Volume, L"\\", MatchPatterns)) {
         ScanFallbackLoader = FALSE;
     }
 
-    // scan subdirectories of the EFI directory (as per the standard)
+    // Scan subdirectories of the EFI directory (as per the standard)
     DirIterOpen (Volume->RootDir, L"EFI", &EfiDirIter);
     while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
 
         if (MyStriCmp (EfiDirEntry->FileName, L"tools") ||
             EfiDirEntry->FileName[0] == '.'
         ) {
-            // skip this, does not contain boot loaders or is scanned later
+            // Skip this ... Does not contain boot loaders or is scanned later
             continue;
         }
 

@@ -229,11 +229,12 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 \\EFI\\OEM\\Boot\\bootmgfw.efi"
 #endif
 
-// Files that may be MacOS recovery files
-#define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
+// Misc MacOS Paths/Files
 #define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
 
+// Files that may be MacOS recovery files
+#define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive

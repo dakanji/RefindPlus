@@ -268,10 +268,11 @@ static
 VOID UnexpectedReturn (
     IN CHAR16 *ItemType
 ) {
-    CHAR16 *MsgStr = PoolPrint (L"Unexpected Return from %s", ItemType);
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    CHAR16 *MsgStr = PoolPrint (L"WARN: Unexpected Return from %s", ItemType);
+
+    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("\n\n");
-    LOG_MSG("WARN: %s", MsgStr);
+    LOG_MSG("**%s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
 } // static VOID UnexpectedReturn()
@@ -506,9 +507,9 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             LogStatus,
             NVRAM_LOG_SET,
             (BlockUEFI)
-                ? L"WindowsUEFI"
+                ? L"WindowsCert"
                 : (BlockCert)
-                    ? L"Certificate"
+                    ? L"GeneralCert"
                     : (BlockSize)
                         ? L"OversizeItem"
                         : (CurPolicyOEM)
@@ -532,10 +533,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             LOG_MSG("\n");
         }
         LOG_MSG("%s", MsgStr);
-        if (FirstTimeLog) {
-            LOG_MSG("\n");
-            FirstTimeLog = FALSE;
-        }
+        FirstTimeLog = FALSE;
+
         MY_FREE_POOL(MsgStr);
         MY_FREE_POOL(LogStatus);
         MY_FREE_POOL(LogNameFull);
@@ -2388,26 +2387,26 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG(
         "%s      TextRenderer:- '%s'",
         OffsetNext,
-        GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
+        GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
     );
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext);
-    if (!AppleFirmware) {
-        LOG_MSG("'Disabled'");
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
-    }
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
     if (AppleFirmware) {
         LOG_MSG("'Disabled'");
     }
     else {
         LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
+    }
+    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext);
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
     }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
@@ -2892,20 +2891,8 @@ EFI_STATUS EFIAPI efi_main (
     } // if ConfigWarn
     #endif
 
-    #if REFIT_DEBUG > 0
-    if (GlobalConfig.LogLevel > 1) {
-        /* Enable Forced Native Logging */
-        MY_NATIVELOGGER_SET;
-    }
-    #endif
-
     // Init Pointers
     pdInitialize();
-
-    #if REFIT_DEBUG > 0
-    /* Disable Forced Native Logging */
-    MY_NATIVELOGGER_OFF;
-    #endif
 
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"R U N   M A I N   L O O P");
@@ -3611,10 +3598,7 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
                 }
 
-                #if REFIT_DEBUG > 0
-                OUT_TAG();
-                #endif
-
+                // No end dash line ... Added in 'StartLegacyImageList'
                 StartLegacy (ourLegacyEntry, SelectionName);
 
                 #if REFIT_DEBUG > 0
@@ -3635,9 +3619,9 @@ EFI_STATUS EFIAPI efi_main (
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 MY_FREE_POOL(MsgStr);
-                OUT_TAG();
                 #endif
 
+                // No end dash line ... Added in 'BdsLibDoLegacyBoot'
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
 
                 #if REFIT_DEBUG > 0

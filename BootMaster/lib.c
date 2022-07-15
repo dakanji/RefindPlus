@@ -2717,15 +2717,18 @@ VOID ScanVolumes (VOID) {
             } // if MyStriCmp Volume->VolName
 
             if (!RoleStr && Volume->FSType == FS_TYPE_HFSPLUS) {
-                if (FileExists (Volume->RootDir, L"System\\Library\\CoreServices\\boot.efi")) {
-                    RoleStr = L" * HFS MacOS";
+                if (!GuidsAreEqual (&GuidHFS, &(Volume->PartTypeGuid))) {
+                    PartType        = L"Unknown";
+                    Volume->FSType  = FS_TYPE_UNKNOWN;
                 }
                 else {
-                    RoleStr = L" * HFS Other";
+                    RoleStr = (FileExists (Volume->RootDir, MACOSX_LOADER_PATH))
+                        ? L" * HFS MacOS"
+                        : L" * HFS Other";
                 }
             }
 
-            if (FoundSubStr (RoleStr, L"HFS Recovery")) {
+            if (RoleStr && FoundSubStr (RoleStr, L"HFS Recovery")) {
                 // Create or add to a list of bootable HFS+ volumes
                 AddListElement (
                     (VOID ***) &HfsRecovery,
@@ -3151,13 +3154,14 @@ EFI_STATUS DirNextEntry (
     IN     UINTN           FilterMode
 ) {
     EFI_STATUS  Status = EFI_BAD_BUFFER_SIZE;
-    VOID       *Buffer;
     UINTN       LastBufferSize;
     UINTN       BufferSize;
+    VOID       *Buffer;
     INTN        IterCount;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr = NULL;
+    BOOLEAN FirstRun = TRUE;
+    CHAR16  *MsgStr  = NULL;
     #endif
 
     for (;;) {
@@ -3176,14 +3180,38 @@ EFI_STATUS DirNextEntry (
                 Directory->Read, Directory,
                 &BufferSize, Buffer
             );
-            if (Status != EFI_BUFFER_TOO_SMALL || IterCount >= 4) {
+            if (Status != EFI_BUFFER_TOO_SMALL || IterCount > 3) {
+                #if REFIT_DEBUG > 0
+                if (!FirstRun) {
+                    if (IterCount > 3) {
+                        MsgStr = StrDuplicate (L"IterCount > 3 ... Break");
+                    }
+                    else {
+                        MsgStr = StrDuplicate (L"OK ... Break");
+                    }
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG(":- '%s'", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                }
+                #endif
+
                 break;
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                if (!FirstRun) {
+                    MsgStr = StrDuplicate (L"NOT OK!!");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG(":- '%s'", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                }
+                #endif
             }
 
             if (BufferSize <= LastBufferSize) {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"FS Driver Requests Bad Buffer Size %d (was %d) ... Using %d Instead",
+                    L"Bad FS Driver Buffer Size Request %d (was %d) ... Using %d Instead",
                     BufferSize,
                     LastBufferSize,
                     LastBufferSize * 2
@@ -3198,7 +3226,7 @@ EFI_STATUS DirNextEntry (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Reallocating Buffer from %d to %d",
+                    L"Resizing DirEntry Buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -3206,11 +3234,18 @@ EFI_STATUS DirNextEntry (
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
+            #if REFIT_DEBUG > 0
+            FirstRun = FALSE;
+            #endif
+
             Buffer = EfiReallocatePool (
                 Buffer, LastBufferSize, BufferSize
             );
             LastBufferSize = BufferSize;
-        }
+        } // for IterCount = 0
+        #if REFIT_DEBUG > 0
+        FirstRun = TRUE;
+        #endif
 
         if (EFI_ERROR(Status)) {
             MY_FREE_POOL(Buffer);

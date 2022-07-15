@@ -4,8 +4,12 @@
   * Reduces intervention threshold based on detection of confirmed user key presses
 - Fixes Unwanted APFS Data Volume Entries
   * APFS data volumes could sometimes appear as boot options due to inadequate filtering
-- Applies Misc Minor Fixes
-  * Always block UEFI Windows items (Disregard Volatility)
+- Fixes Misc Items
+  * Always block UEFI Windows NVRAM items (Disregard Volatility)
+  * Misidentification of certain volume types as HFS+ volumes
+  * Excessive pointer event logging
+  * Misplaced `Out` and `Return` log tags
+  * Python Script Code Smells
 
 
 0.13.3.AA (06 Jun 2022):

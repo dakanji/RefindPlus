@@ -52,7 +52,7 @@ for filename in sys.argv[1:]:
     mode = origimage.mode
     data = origimage.getdata()
 
-    print "%s: %d x %d %s" % (filename, width, height, mode)
+    print ("%s: %d x %d %s" % (filename, width, height, mode))
 
     basename = filename[:-4]
     identname = basename.replace("-", "_")
@@ -70,31 +70,31 @@ for filename in sys.argv[1:]:
             planes[2].append(pixeldata[0])
 
         if planes[0] == planes[1] and planes[0] == planes[2]:
-            print " encoding as greyscale"
+            print (" encoding as greyscale")
             planecount = 1
             rawdata.extend(planes[0])
 
             if basename[0:4] == "font":
-                print " font detected, using alpha-only mode"
+                print (" font detected, using alpha-only mode")
                 imgmode = 1
                 # invert all values
                 rawdata = map(lambda x: 255-x, rawdata)
 
         else:
-            print " encoding as true color"
+            print (" encoding as true color")
             planecount = 3
             rawdata.extend(planes[0])
             rawdata.extend(planes[1])
             rawdata.extend(planes[2])
 
     else:
-        print " Mode not supported!!"
+        print (" Mode not supported!!")
         continue
 
     rawlen = len(rawdata)
     compdata = packbits(rawdata)
     complen = len(compdata)
-    print " compressed %d to %d" % (rawlen, complen)
+    print (" compressed %d to %d" % (rawlen, complen))
 
     output = """static UINT8 image_%s_compdata[] = {
 """ % identname
@@ -111,4 +111,4 @@ static BUILTIN_IMAGE image_%s = { NULL, %d, %d, %d, %d, image_%s_compdata, %d };
     f.write(output)
     f.close()
 
-print "Done!!"
+print ("Done!!")

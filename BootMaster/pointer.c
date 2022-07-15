@@ -53,7 +53,7 @@ POINTER_STATE                   State;
 ////////////////////////////////////////////////////////////////////////////////
 // Initialise Pointer Devices
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdInitialize(VOID) {
+VOID pdInitialize (VOID) {
     #if REFIT_DEBUG > 0
     LOG_MSG("I N I T I A L I S E   P O I N T E R   D E V I C E S");
     LOG_MSG("\n");
@@ -167,12 +167,12 @@ VOID pdInitialize(VOID) {
     LOG_MSG("Pointer Devices Initialised");
     LOG_MSG("\n\n");
     #endif
-}
+} // VOID pdInitialize()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Frees allocated memory and closes pointer protocols
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdCleanup(VOID) {
+VOID pdCleanup (VOID) {
     UINTN Index;
 
     #if REFIT_DEBUG > 0
@@ -216,26 +216,28 @@ VOID pdCleanup(VOID) {
     State.Y = ScreenH / 2;
     State.Press = FALSE;
     State.Holding = FALSE;
-}
+} // VOID pdCleanup()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Returns whether or not any pointer devices are available
 ////////////////////////////////////////////////////////////////////////////////
-BOOLEAN pdAvailable(VOID) {
+BOOLEAN pdAvailable (VOID) {
     return PointerAvailable;
-}
+} // BOOLEAN pdAvailable()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Returns the number of pointer devices available
 ////////////////////////////////////////////////////////////////////////////////
-UINTN pdCount(VOID) {
+UINTN pdCount (VOID) {
     return NumAPointerDevices + NumSPointerDevices;
-}
+} // UINTN pdCount()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Returns a pointer device's WaitForInput event
 ////////////////////////////////////////////////////////////////////////////////
-EFI_EVENT pdWaitEvent (UINTN Index) {
+EFI_EVENT pdWaitEvent (
+    UINTN Index
+) {
     if (!PointerAvailable || Index >= NumAPointerDevices + NumSPointerDevices) {
         return NULL;
     }
@@ -244,13 +246,13 @@ EFI_EVENT pdWaitEvent (UINTN Index) {
         return ProtocolS[Index - NumAPointerDevices]->WaitForInput;
     }
     return ProtocolA[Index]->WaitForInput;
-}
+} // EFI_EVENT pdWaitEvent()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Gets the current state of all pointer devices and assigns State to
 // the first available device's state
 ////////////////////////////////////////////////////////////////////////////////
-EFI_STATUS pdUpdateState(VOID) {
+EFI_STATUS pdUpdateState (VOID) {
 #if defined (EFI32) && defined (__MAKEWITH_GNUEFI)
     return EFI_NOT_READY;
 #else
@@ -346,19 +348,19 @@ EFI_STATUS pdUpdateState(VOID) {
 
     return Status;
 #endif
-}
+} // EFI_STATUS pdUpdateState()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Returns the current pointer state
 ////////////////////////////////////////////////////////////////////////////////
-POINTER_STATE pdGetState(VOID) {
+POINTER_STATE pdGetState (VOID) {
     return State;
-}
+} // POINTER_STATE pdGetState()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Draw the mouse at the current coordinates
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdDraw(VOID) {
+VOID pdDraw (VOID) {
     MY_FREE_IMAGE(Background);
     if (MouseImage) {
         UINTN Width = MouseImage->Width;
@@ -378,14 +380,14 @@ VOID pdDraw(VOID) {
     }
     LastXPos = State.X;
     LastYPos = State.Y;
-}
+} // VOID pdDraw()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Restores the background at the position the mouse was last drawn
 ////////////////////////////////////////////////////////////////////////////////
-VOID pdClear(VOID) {
+VOID pdClear (VOID) {
     if (Background) {
         egDrawImage (Background, LastXPos, LastYPos);
         MY_FREE_IMAGE(Background);
     }
-}
+} // VOID pdClear()

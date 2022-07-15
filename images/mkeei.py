@@ -51,7 +51,7 @@ def encode_plane(rawdata, identname, planename):
     rawlen = len(rawdata)
     compdata = compress_rle(rawdata)
     complen = len(compdata)
-    print "  plane %s: compressed %d to %d (%.1f%%)" % (planename, rawlen, complen, float(complen) / float(rawlen) * 100.0)
+    print ("  plane %s: compressed %d to %d (%.1f%%)" % (planename, rawlen, complen, float(complen) / float(rawlen) * 100.0))
 
     output = """static const UINT8 eei_%s_planedata_%s[%d] = {
 """ % (identname, planename, complen)
@@ -67,7 +67,7 @@ def encode_plane(rawdata, identname, planename):
 
 ### main loop
 
-print "mkeei 0.1, Copyright (c) 2006 Christoph Pfisterer"
+print ("mkeei 0.1, Copyright (c) 2006 Christoph Pfisterer")
 
 planenames = ( "blue", "green", "red", "alpha", "grey" )
 
@@ -79,7 +79,7 @@ for filename in sys.argv[1:]:
     mode = origimage.mode
     data = origimage.getdata()
 
-    print "%s: %d x %d %s" % (filename, width, height, mode)
+    print ("%s: %d x %d %s" % (filename, width, height, mode))
 
     basename = filename[:-4]   # TODO!!!!!!
     identname = basename.replace("-", "_")
@@ -109,16 +109,16 @@ for filename in sys.argv[1:]:
             planes[2].append(pixeldata)
 
     else:
-        print " Error: Mode not supported!!"
+        print (" Error: Mode not supported!!")
         continue
 
     # special treatment for fonts
 
     if basename[0:4] == "font":
         if planes[0] != planes[1] or planes[0] != planes[2]:
-            print " Error: Font detected, but it is not greyscale!!"
+            print (" Error: Font detected, but it is not greyscale!!")
             continue
-        print " font detected, encoding as alpha-only"
+        print (" font detected, encoding as alpha-only")
         # invert greyscale values for use as alpha
         planes[3] = map(lambda x: 255-x, planes[0])
         planes[0] = []
@@ -131,30 +131,30 @@ for filename in sys.argv[1:]:
     planeinfo = [ "NULL, 0", "NULL, 0", "NULL, 0", "NULL, 0" ]
 
     if len(planes[0]) > 0 and planes[0] == planes[1] and planes[0] == planes[2]:
-        print " encoding as greyscale"
+        print (" encoding as greyscale")
         (output_part, planeinfo[0]) = encode_plane(planes[0], identname, planenames[4])
         output = output + output_part
         planeinfo[1] = planeinfo[0]
         planeinfo[2] = planeinfo[0]
 
     elif len(planes[0]) > 0:
-        print " encoding as true color"
+        print (" encoding as true color")
 
         (output_part, planeinfo[0]) = encode_plane(planes[0], identname, planenames[0])
         output = output + output_part
 
         if planes[1] == planes[0]:
-            print " encoding plane 1 is a copy of plane 0"
+            print (" encoding plane 1 is a copy of plane 0")
             planeinfo[1] = planeinfo[0]
         else:
             (output_part, planeinfo[1]) = encode_plane(planes[1], identname, planenames[1])
             output = output + output_part
 
         if planes[2] == planes[0]:
-            print " encoding plane 2 is a copy of plane 0"
+            print (" encoding plane 2 is a copy of plane 0")
             planeinfo[2] = planeinfo[0]
         elif planes[2] == planes[1]:
-            print " encoding plane 2 is a copy of plane 1"
+            print (" encoding plane 2 is a copy of plane 1")
             planeinfo[2] = planeinfo[1]
         else:
             (output_part, planeinfo[2]) = encode_plane(planes[2], identname, planenames[2])
@@ -162,7 +162,7 @@ for filename in sys.argv[1:]:
 
     if len(planes[3]) > 0:
         if reduce(lambda x,y: x+y, planes[3]) == 0:
-            print " skipping alpha plane because it is empty"
+            print (" skipping alpha plane because it is empty")
         else:
             (output_part, planeinfo[3]) = encode_plane(planes[3], identname, planenames[3])
             output = output + output_part
@@ -176,4 +176,4 @@ for filename in sys.argv[1:]:
     f.write(output)
     f.close()
 
-print "Done!!"
+print ("Done!!")
