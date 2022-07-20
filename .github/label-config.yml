@@ -6,6 +6,8 @@ Bug:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -19,44 +21,58 @@ Cancelled:
   issues:
     # Remove labels
     unlabel:
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
+    # Close and lock thread
+    close: true
+    # Add Comment
+    comment: >
+      Cancelled by/for: @{issue-author}
 
 # The `Discussion` label is added to issues
 Discussion:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Bug'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Known-Issue'
+      - 'Enhancement'
 
 # The `Documentation` label is added to issues or pull requests
 Documentation:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
-      - 'Duplicate'
 
 # The `Duplicate` label is added to issues
 Duplicate:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -69,6 +85,8 @@ Enhancement:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -82,6 +100,8 @@ Tagged:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -94,6 +114,8 @@ Good-First-Issue:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -107,6 +129,8 @@ Help-Wanted:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -118,6 +142,8 @@ Incomplete:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -131,6 +157,8 @@ Invalid:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -144,6 +172,8 @@ Known-Issue:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -157,6 +187,8 @@ Parked:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Pending'
       - 'Stale'
       - 'Queries'
@@ -164,11 +196,32 @@ Parked:
       - 'Prorogued'
       - 'Duplicate'
 
+# The `Pending` label is added to issues
+Pending:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Cancelled'
+      - 'Resolved'
+      - 'Resolved'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
+    # Reopen and unlock thread
+    reopen: true
+    unlock: true
+    # Add Comment
+    comment: 'Reactivated issue'
+
 # The `Queries` label is added to issues
 Queries:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -181,6 +234,7 @@ Resolved:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -189,11 +243,20 @@ Resolved:
       - 'Prorogued'
       - 'Duplicate'
 
+# The `Resolved` label is removed from issues
+-Resolved:
+  issues:
+    # Reopen and unlock issue
+    reopen: true
+    unlock: true
+
 # The `Stale` label is added to issues
 Stale:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Queries'
@@ -206,6 +269,8 @@ Unclear:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -218,6 +283,8 @@ WontFix:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -229,14 +296,17 @@ WontFix:
 # The `WontFix` label is removed from issues
 -WontFix:
   issues:
-    # Reopen the issue
+    # Reopen and unlock issue
     reopen: true
+    unlock: true
 
 # The `Cannot-Replicate` label is added to issues
 Cannot-Replicate:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
@@ -250,15 +320,20 @@ Prorogued:
   issues:
     # Remove labels
     unlabel:
+      - 'Cancelled'
+      - 'Resolved'
       - 'Parked'
       - 'Pending'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Duplicate'
+    # Close thread
+    close: true
 
 # The `Prorogued` label is removed from issues
 -Prorogued:
   issues:
-    # Reopen the issue
+    # Reopen and unlock issue
     reopen: true
+    unlock: true

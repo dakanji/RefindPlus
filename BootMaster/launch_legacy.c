@@ -216,7 +216,6 @@ EFI_STATUS ActivateMbrPartition (
         BlockIO->Media->MediaId, 0,
         512, SectorBuffer
     );
-
     if (EFI_ERROR(Status)) {
         // Early Return
         return Status;
@@ -233,7 +232,6 @@ EFI_STATUS ActivateMbrPartition (
                 BlockIO->Media->MediaId, ExtCurrent,
                 512, SectorBuffer
             );
-
             if (EFI_ERROR(Status)) {
                 return Status;
             }
@@ -273,7 +271,6 @@ EFI_STATUS ActivateMbrPartition (
                 BlockIO->Media->MediaId, ExtCurrent,
                 512, SectorBuffer
             );
-
             if (EFI_ERROR(Status)) {
                 return Status;
             }
@@ -417,7 +414,7 @@ EFI_STATUS StartLegacyImageList (
     IN  CHAR16           *LoadOptions,
     OUT UINTN            *ErrorInStep
 ) {
-    EFI_STATUS               Status, ReturnStatus;
+    EFI_STATUS               Status;
     EFI_HANDLE               ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     UINTN                    DevicePathIndex;
@@ -438,16 +435,14 @@ EFI_STATUS StartLegacyImageList (
     );
 
     // Load the image into memory
-    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
+    Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePaths[DevicePathIndex],
             NULL, 0, &ChildImageHandle
         );
-        ReturnStatus = Status;
-
-        if (ReturnStatus != EFI_NOT_FOUND) {
+        if (Status != EFI_NOT_FOUND) {
             break;
         }
     } // for
@@ -464,11 +459,11 @@ EFI_STATUS StartLegacyImageList (
         gBS->HandleProtocol, ChildImageHandle,
         &LoadedImageProtocol, (VOID **) &ChildLoadedImage
     );
-    ReturnStatus = Status;
     if (CheckError (Status, L"While Fetching LoadedImageProtocol Handle!!")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 2;
         }
+
         goto bailout_unload;
     }
 
@@ -479,7 +474,7 @@ EFI_STATUS StartLegacyImageList (
     // Turn control over to the image
     // DA-TAG: (optionally) re-enable the EFI watchdog timer!
 
-    // close open file handles
+    // Close open file handles
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy (BIOS) Loader");
     #endif
@@ -489,35 +484,31 @@ EFI_STATUS StartLegacyImageList (
     #if REFIT_DEBUG > 0
     OUT_TAG();
     #endif
-
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
         NULL, NULL
     );
-    ReturnStatus = Status;
-
-    // control returns here when the child image calls Exit()
-    if (CheckError (Status, L"Returned From 'Mac-Style' Legacy (BIOS) Loader")) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Returned From 'Mac-Style' Legacy (BIOS) Loader");
-        #endif
-
+    // Control returned after child image called 'Exit()'
+    if (CheckError (Status, L"Unexpected Return from Loader")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 3;
         }
     }
+    #if REFIT_DEBUG > 0
+    RET_TAG();
+    #endif
 
-    // re-open file handles
+    // Re-open file handles
     ReinitRefitLib();
 
 bailout_unload:
-    // Unload the image, we do not care if it works or not...
+    // Unload the child image ... We do not care if it works or not
     REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MY_FREE_POOL(FullLoadOptions);
 
-    return ReturnStatus;
+    return Status;
 } // EFI_STATUS StartLegacyImageList()
 
 VOID StartLegacy (
@@ -579,9 +570,6 @@ VOID StartLegacy (
         Entry->LoadOptions,
         &ErrorInStep
     );
-    #if REFIT_DEBUG > 0
-    RET_TAG();
-    #endif
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
             SwitchToText (FALSE);

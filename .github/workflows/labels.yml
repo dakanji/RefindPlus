@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: dessant/label-actions@v2
+      - uses: dessant/label-actions@v2.2.0
         with:
           github-token: ${{ github.token }}
           config-path: '.github/label-config.yml'

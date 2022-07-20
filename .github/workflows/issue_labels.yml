@@ -88,7 +88,7 @@ jobs:
     needs: similarity_analysis
     runs-on: ubuntu-latest
 
-    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.comment.body, 'Suggested Feature') && contains(github.event.comment.body, 'Background Information') && contains(github.event.comment.body, 'Additional Context')
+    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1

@@ -21,6 +21,8 @@ body:
       description: |
         Add information about any alternative solutions or features you have considered.
         If your feature request related to a specific problem, please provide a clear and concise description of the problem.
+      placeholder: |
+        Items for which this section is not applicable are typically best under Discussions.
     validations:
       required: true
   - type: textarea

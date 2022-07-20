@@ -16,11 +16,10 @@
 #
 #continue_on_warning
 
-# This token allows actively enabling or disabling the System Integrity Protection (SIP)
-# and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
-# token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
-# RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
-# "Toggle CSR" tool after RefindPlus is loaded. NB: This option is only active on Apple Firmware.
+# This token allows actively enabling or disabling the System Integrity Protection (SIP) and
+# Sealed System Volume (SSV) settings defined under the "csr_values" option. When this token is
+# active, RefindPlus will actively set the CSR Policy as defined. This is done when RefindPlus is
+# loaded but users can manually toggle the set values "ON" or "OFF" by using the "Toggle CSR" tool.
 # The following options are available:
 #   1    - Always Enable SIP (and SSV on MacOS 11.x or later)
 #   0    - Take no Action
@@ -36,9 +35,8 @@
 # attempted removal may fail when booting into MacOS via non-standard approaches such as
 # RefindPlus. It is also possible that Apple will remove this remediation feature once
 # Mac models supporting MacOS v10.15 (Catalina) are deemed to be obsolete by Apple.
-# When this token is set, RefindPlus will remove this bit from the saved
-# CSR bits when booting into MacOS similar to the process undertaken in
-# MacOS 11.x and later. This setting is only active on Apple Firmware.
+# When this token is set, RefindPlus will remove this bit from the saved CSR bits
+# when booting into MacOS, similar to the process done by MacOS v11.x and later.
 #
 # Inactive when commented out (Takes no action on SIP/SSV settings)
 #
@@ -47,7 +45,7 @@
 # Supply APFS filesystem capability. By default, RefindPlus is set up to jumpstart
 # MacOS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # MacOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# MacOS version. This ensures that any changes made to APFS drivers for each specific
+# MacOS version which ensures that any changes made to APFS drivers for each specific
 # MacOS version are accommodated, compared to using one driver no matter what specific
 # MacOS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
@@ -163,7 +161,7 @@
 # RefindPlus defaults to using complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
 # coulr of first pixel in the pixel array (top left pixel). This may not always embody
-# all pixels in banners with multiple colours. As such, the chosen complementary colour
+# all pixels in banners with multiple colours. Thus, the selected complementary colour
 # for the text may not be suitable for all portions of the title banner in such cases.
 # In such cases, users may wish to disable the "TextHelp" feature by activating this
 # token, which will make the text either white or black, based on the brightness of
@@ -188,10 +186,10 @@
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
-# key is unlinked; leaving only the '\' key linked to the feature to
-# allow using 3rd party screenshot tools that often also map 'F10'.
+# key is unlinked whilst the '\' key stays linked to screenshots. It
+# allows using third-party alternatives which may also map the key.
 # As installed as drivers, such tools typically allow screenshots
-# from external tools, which the inbuilt feature does not cover.
+# from external screens that the inbuilt feature does not cover.
 #
 # Inactive when commented out (Does not decouple the F10 key)
 #
@@ -224,7 +222,7 @@
 # the NVRAM by default which can increase wear and tear on the NVRAM of legacy
 # Macs. When this option is active, RefindPlus will add "nvram_paniclog=0" to
 # the boot arguments. This disables panic log writes to the NVRAM for writes
-# the filesystem instead. Note that this setting will create a MacOS boot
+# to the filesystem instead. Note that this token will create a MacOS boot
 # argument the first time it is triggered which will remain active until
 # explicitly cleared, even if this setting is subsequently deactivated.
 #
@@ -261,7 +259,7 @@
 #force_trim
 
 # RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
-# volumes. Howver, wWhen this token is active (and the "hidden_icons_ignore"
+# volumes. However, when this token is active (and the "hidden_icons_ignore"
 # token is not) RefindPlus will also scan "external" volumes for these icons.
 #
 #hidden_icons_external
@@ -281,7 +279,7 @@
 #
 #hidden_icons_ignore
 
-# While RefindPlus does default to scanning volumes for ".VolumeIcon" image icons,
+# RefindPlus always defaults to scanning volumes for .VolumeIcon image icons but
 # any such files found are only used as last ditch display icons when all other
 # display icon options fail. When this option is set, RefindPlus will instead
 # first try to display ".VolumeIcon" image files before attempting to load
@@ -325,8 +323,8 @@
 # for such units. Given the dificulty involved in finding this allowed size,
 # this setting should not be set by most users. Note that this setting is
 # only active on Apple firmware, requires the "ProtectNVRAM" feature and
-# that it is disabled if it is set to a value lower than 1024 bytes.
-# Additionally, the token is only active on direct Mac OS boots.
+# that it is disabled when it is set to a value lower than 1024 bytes.
+# Additionally, this setting is only active on direct Mac OS boots.
 #
 # Inactive when commented out (Does not filter NVRAM writes by size)
 #
@@ -356,15 +354,15 @@
 #
 #provide_console_gop
 
-# Some types of firmware, notably on HP Notebooks, may lock some partitions as they have
-# have DiskIo protocols opened "BY_DRIVER" (partition driver in the case of HP) but no
-# file system is generated from this DiskIo. This prevents other filesystem drivers
-# from connecting to the handles to actually generate file systems when attempts
-# are made to install such. This results in such partitions be inaccessible or
-# in RefindPlus hanging as the drivers provided by the firmware can also be
-# defective. This setting disconnects such drivers and allows installing
-# alternative properly functioning drivers instead (otherwise blocked).
-# NB: This setting is disabled (always inactive) on Apple firmware.
+# Some types of firmware, typically on HP Notebooks, may lock some partitions as they
+# have DiskIo protocols opened "BY_DRIVER" (partition driver in the case of HP) but
+# no filesystem is generated from the DiskIo. This stops other filesystem drivers
+# from connecting to the handles to actually generate filesystems when attempts
+# are made to install such drivers which makes such partitions inaccessible or
+# to hang in RefindPlus; as the drivers provided by the firmware can often be
+# defective. This token disconnects such drivers and allows the installation
+# of alternative properly functioning drivers instead (otherwise blocked).
+# NB: This token is always disabled whenever Apple firmware is detected.
 #
 # Does not try to unlock such partitions when commented out
 #
@@ -888,10 +886,10 @@
 #hideui singleuser
 #hideui all
 
-# Set the name of a subdirectory in which icons are stored. Icons must
-# have the same names they have in the standard directory. The directory
-# name is specified relative to the main RefindPlus binary's directory.
-# if an icon cannot be found in the specified directory, an attempt is
+# Set the name of a subdirectory in which icons are stored. All icons must
+# have the same names as in the standard directory. The subdirectory name
+# is specified relative to the directory with the RefindPlus efi binary.
+# If an icon cannot be found in the specified directory, an attempt is
 # made to load it from the default directory. Therefore, icons can be
 # replaced in a directory and the default relied on for others. Icon
 # files may be in any supported format ICNS (*.icns), BMP (*.bmp),
@@ -1238,11 +1236,11 @@ menuentry "My MacOS" {
 # The "firmware_bootnum" token takes a HEXADECIMAL value and
 # sets that value using the EFI's "BootNext" variable and then
 # reboots the computer. This triggers a one-time boot using this
-# boot option. It can be used for various purposes, but one that
+# boot option. This can be used for various purposes but one that
 # may be of interest is that some Macs may produce lower-resolution
 # displays with HiDPI monitors when booted via RefindPlus compared to
 # when booted via the Apple boot manager. Booting with RefindPlus using
-# this option may produce a better resolution in such cases. Note that the
+# this option may output a higher resolution in such cases. Note that the
 # "loader" manual stanza option is not used with this type of configuration.
 #
 menuentry "MacOS via BootNext" {
