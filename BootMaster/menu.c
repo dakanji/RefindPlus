@@ -102,6 +102,8 @@ BOOLEAN PointerEnabled       = FALSE;
 BOOLEAN PointerActive        = FALSE;
 BOOLEAN DrawSelection        =  TRUE;
 
+BOOLEAN SubScreenBoot        = FALSE;
+
 REFIT_MENU_ENTRY MenuEntryNo = {
     L"No",
     TAG_RETURN,
@@ -3296,6 +3298,8 @@ UINTN RunMainMenu (
                 MenuExit = 0;
             }
             else {
+                SubScreenBoot = TRUE;
+
                 BREAD_CRUMB(L"In %s ... 9a 3a 1b 1", FuncTag);
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,

@@ -309,7 +309,44 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
         #endif
 
-        SubEntry->me.Title    = StrDuplicate (L"Boot With Default Options");
+        CHAR16 *NameOS = L"";
+        // DA-TAG: Maintain space after NameOS
+        if (Entry->OSType == 'M') {
+            NameOS = L"MacOS ";
+        }
+        else if (Entry->OSType == 'L') {
+            NameOS = L"Linux ";
+        }
+        else if (Entry->OSType == 'W') {
+            if (FoundSubStr (SubScreen->Title, L"UEFI")) {
+                NameOS = L"Windows (UEFI) ";
+            }
+            else if (FoundSubStr (SubScreen->Title, L"Legacy")) {
+                NameOS = L"Windows (Legacy) ";
+            }
+            else {
+                NameOS = L"Windows ";
+            }
+        }
+        else if (Entry->OSType == 'R') {
+            NameOS = L"rEFit Variant ";
+        }
+        else if (Entry->OSType == 'G') {
+            NameOS = L"Grub ";
+        }
+        else if (Entry->OSType == 'X') {
+            NameOS = L"XoM ";
+        }
+        else if (Entry->OSType == 'E') {
+            NameOS = L"Elilo ";
+        }
+        else if (FoundSubStr (SubScreen->Title, L"OpenCore")) {
+            NameOS = L"OpenCore ";
+        }
+        else if (FoundSubStr (SubScreen->Title, L"Clover")) {
+            NameOS = L"Clover ";
+        }
+        SubEntry->me.Title    = PoolPrint (L"Boot %swith Default Options", NameOS);
         MainOptions           = StrDuplicate (SubEntry->LoadOptions);
         SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
         MY_FREE_POOL(MainOptions);
@@ -378,51 +415,64 @@ VOID GenerateSubScreen (
             }
 #endif
 
-            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
-                SubEntry = InitializeLoaderEntry (Entry);
-                if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode");
-                    SubEntry->UseGraphicsMode = FALSE;
-                    SubEntry->LoadOptions     = StrDuplicate (L"-v");
-                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-                }
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode");
+                SubEntry->LoadOptions     = StrDuplicate (L"-v");
+                SubEntry->UseGraphicsMode = FALSE;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            }
 
 #if defined (EFIX64)
-                SubEntry = InitializeLoaderEntry (Entry);
-                if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (64-bit)");
-                    SubEntry->UseGraphicsMode = FALSE;
-                    SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
-                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-                }
-
-                SubEntry = InitializeLoaderEntry (Entry);
-                if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (32-bit)");
-                    SubEntry->UseGraphicsMode = FALSE;
-                    SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
-                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-                }
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (64-bit)");
+                SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
+                SubEntry->UseGraphicsMode = FALSE;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            }
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (32-bit)");
+                SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
+                SubEntry->UseGraphicsMode = FALSE;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            }
 #endif
-
-                SubEntry = InitializeLoaderEntry (Entry);
-                if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode");
-                    SubEntry->UseGraphicsMode = FALSE;
-                    SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
-                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-                }
-            } // single-user mode allowed
 
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode (Quiet)");
+                    SubEntry->LoadOptions     = StrDuplicate (L"-x");
                     SubEntry->UseGraphicsMode = FALSE;
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                }
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
+                    SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
             } // Safe mode allowed
+
+            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode (Quiet)");
+                    SubEntry->LoadOptions     = StrDuplicate (L"-s");
+                    SubEntry->UseGraphicsMode = FALSE;
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                }
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode (Verbose)");
+                    SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
+                    SubEntry->UseGraphicsMode = FALSE;
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                }
+            } // single-user mode allowed
 
             // Check for Apple hardware diagnostics
             StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");

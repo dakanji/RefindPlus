@@ -255,6 +255,7 @@ extern EFI_FILE                     *gVarsDir;
 extern BOOLEAN                       ForceRescanDXE;
 extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
+extern BOOLEAN                       SubScreenBoot;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -2917,6 +2918,7 @@ EFI_STATUS EFIAPI efi_main (
         IsBoot         = FALSE;
         FoundTool      = FALSE;
         RunOurTool     = FALSE;
+        SubScreenBoot  = FALSE;
         MY_FREE_POOL(FilePath);
 
         MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);
@@ -3296,7 +3298,72 @@ EFI_STATUS EFIAPI efi_main (
 
                     RunMacBootSupportFuncs();
                 }
-                else if (ourLoaderEntry->OSType == 'M'
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"OpenCore")
+                    )
+                    || FoundSubStr (ourLoaderEntry->Title, L"OpenCore")
+                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
+                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
+                ) {
+                    // Set CSR if required
+                    AlignCSR();
+
+                    if (!ourLoaderEntry->UseGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = (
+                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE) == GRAPHICS_FOR_OPENCORE
+                        );
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
+                    MsgStr = StrDuplicate (L"Load OpenCore Instance");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext,
+                        MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"Clover")
+                    )
+                    || FoundSubStr (ourLoaderEntry->Title, L"Clover")
+                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
+                ) {
+                    // Set CSR if required
+                    AlignCSR();
+
+                    if (!ourLoaderEntry->UseGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = (
+                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER) == GRAPHICS_FOR_CLOVER
+                        );
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'Received User Input:'
+                    LOG_MSG("Received User Input:");
+                    MsgStr = StrDuplicate (L"Load Clover Instance");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext,
+                        MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"MacOS")
+                    )
+                    || ourLoaderEntry->OSType == 'M'
                     || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
                     // Set CSR if required
@@ -3356,7 +3423,11 @@ EFI_STATUS EFIAPI efi_main (
                         SetProtectNvram (SystemTable, TRUE);
                     }
                 }
-                else if (ourLoaderEntry->OSType == 'W'
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"Windows")
+                    )
+                    || ourLoaderEntry->OSType == 'W'
                     || FoundSubStr (ourLoaderEntry->Title, L"Windows")
                 ) {
                     #if REFIT_DEBUG > 0
@@ -3386,7 +3457,11 @@ EFI_STATUS EFIAPI efi_main (
                     // Start ProtectNVRAM
                     SetProtectNvram (SystemTable, TRUE);
                 }
-                else if (ourLoaderEntry->OSType == 'G'
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"Grub")
+                    )
+                    || ourLoaderEntry->OSType == 'G'
                     || FoundSubStr (ourLoaderEntry->Title, L"Grub")
                 ) {
                     #if REFIT_DEBUG > 0
@@ -3400,63 +3475,6 @@ EFI_STATUS EFIAPI efi_main (
                         ourLoaderEntry->LoaderPath
                     );
 
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else if (
-                    (
-                        FoundSubStr (ourLoaderEntry->Title, L"OpenCore")
-                    ) && (
-                        FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\") ||
-                        FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
-                    )
-                ) {
-                    // Set CSR if required
-                    AlignCSR();
-
-                    if (!ourLoaderEntry->UseGraphicsMode) {
-                        ourLoaderEntry->UseGraphicsMode = (
-                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE) == GRAPHICS_FOR_OPENCORE
-                        );
-                    }
-
-                    #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received User Input:'
-                    LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load OpenCore Instance");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    LOG_MSG(
-                        "%s  - %s:- '%s'",
-                        OffsetNext,
-                        MsgStr,
-                        ourLoaderEntry->LoaderPath
-                    );
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Clover")
-                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
-                ) {
-                    // Set CSR if required
-                    AlignCSR();
-
-                    if (!ourLoaderEntry->UseGraphicsMode) {
-                        ourLoaderEntry->UseGraphicsMode = (
-                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER) == GRAPHICS_FOR_CLOVER
-                        );
-                    }
-
-                    #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received User Input:'
-                    LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Clover Instance");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    LOG_MSG(
-                        "%s  - %s:- '%s'",
-                        OffsetNext,
-                        MsgStr,
-                        ourLoaderEntry->LoaderPath
-                    );
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -3505,7 +3523,11 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (ourLoaderEntry->OSType == 'L'
+                else if (
+                    (
+                        SubScreenBoot && FoundSubStr (SelectionName, L"Linux")
+                    )
+                    || ourLoaderEntry->OSType == 'L'
                     || FoundSubStr (ourLoaderEntry->Title, L"Linux")
                 ) {
                     #if REFIT_DEBUG > 0
