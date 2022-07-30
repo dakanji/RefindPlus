@@ -1657,14 +1657,15 @@ BOOLEAN DuplicatesFallback (
 } // BOOLEAN DuplicatesFallback()
 
 // Returns FALSE if two measures of file size are identical for a single file,
-// TRUE if not or if the file can't be opened and the other measure is non-0.
-// Despite the function's name, this is not really a direct test of symbolic
+// TRUE if not or if the file cannot be opened and the other measure is non-0.
+// Despite the function's name, this is not an actual direct test of symbolic
 // link status, since EFI does not officially support symlinks. It does seem
 // to be a reliable indicator, though. (OTOH, some disk errors might cause a
-// file to fail to open, which would return a false positive -- but as I use
-// this function to exclude symbolic links from the list of boot loaders,
-// that would be fine, since such boot loaders wouldn't work.)
-// CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
+// file to fail to open, which would return a false positive -- but as this
+// function is used to exclude symbolic links from the list of boot loaders,
+// that would be fine, as such boot loaders would not work anyway.)
+//
+// NB: *FullName MUST be properly cleaned up (using 'CleanUpPathNameSlashes')
 static
 BOOLEAN IsSymbolicLink (
     REFIT_VOLUME  *Volume,
@@ -1737,7 +1738,7 @@ BOOLEAN ScanLoaderDir (
         (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
         (!InSelfPath)) && (ShouldScan (Volume, Path))
     ) {
-        // look through contents of the directory
+        // Look through contents of the directory
         DirIterOpen (Volume->RootDir, Path, &DirIter);
 
         while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
@@ -1760,7 +1761,7 @@ BOOLEAN ScanLoaderDir (
                 FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
                 !IsValidLoader (Volume->RootDir, FullName)
             ) {
-                // skip this
+                // Skip This Entry
                 continue;
             }
 
@@ -1823,9 +1824,9 @@ BOOLEAN ScanLoaderDir (
 
         Status = DirIterClose (&DirIter);
         // NOTE: EFI_INVALID_PARAMETER really is an error that should be reported;
-        // but I've gotten reports from users who are getting this error occasionally
-        // and I can't find anything wrong or reproduce the problem, so I'm putting
-        // it down to buggy EFI implementations and ignoring that particular error.
+        // but reports have been received from users that get this error occasionally
+        // but nothing wrong has been found or the problem reproduced. It is therefore
+        // being put down to buggy EFI implementations and that particular error igored.
         if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
             if (Path) {
                 Message = PoolPrint (
@@ -1848,8 +1849,8 @@ BOOLEAN ScanLoaderDir (
     return FoundFallbackDuplicate;
 } // static VOID ScanLoaderDir()
 
-// Run the IPXE_DISCOVER_NAME program, which obtains the IP address of the boot
-// server and the name of the boot file it delivers.
+// Run the IPXE_DISCOVER_NAME program, which obtains the IP address
+// of the boot server and the name of the boot file it delivers.
 static
 CHAR16 * RuniPXEDiscover (
     EFI_HANDLE Volume

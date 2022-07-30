@@ -196,24 +196,22 @@ Parked:
       - 'Prorogued'
       - 'Duplicate'
 
-# The `Pending` label is added to issues
-Pending:
+# The `Upstream` label is added to issues
+Upstream:
   issues:
+    # Add labels
+    label:
+      - 'Known-Issue'
     # Remove labels
     unlabel:
       - 'Cancelled'
       - 'Resolved'
-      - 'Resolved'
+      - 'Pending'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
-    # Reopen and unlock thread
-    reopen: true
-    unlock: true
-    # Add Comment
-    comment: 'Reactivated issue'
 
 # The `Queries` label is added to issues
 Queries:
