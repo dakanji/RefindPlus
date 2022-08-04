@@ -15,6 +15,7 @@ Bug:
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Cancelled` label is added to issues
 Cancelled:
@@ -25,9 +26,11 @@ Cancelled:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
+      - 'Incomplete'
     # Close and lock thread
     close: true
     # Add Comment
@@ -45,10 +48,12 @@ Discussion:
       - 'Pending'
       - 'Stale'
       - 'Bug'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
       - 'Known-Issue'
       - 'Enhancement'
 
@@ -62,9 +67,11 @@ Documentation:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
+      - 'Incomplete'
 
 # The `Duplicate` label is added to issues
 Duplicate:
@@ -76,9 +83,11 @@ Duplicate:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
+      - 'Incomplete'
 
 # The `Enhancement` label is added to issues
 Enhancement:
@@ -90,10 +99,12 @@ Enhancement:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Tagged` label is added to issues
 Tagged:
@@ -119,10 +130,12 @@ Good-First-Issue:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Help-Wanted` label is added to issues
 Help-Wanted:
@@ -132,10 +145,12 @@ Help-Wanted:
       - 'Cancelled'
       - 'Resolved'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Incomplete` label is added to issues
 Incomplete:
@@ -166,6 +181,7 @@ Invalid:
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Known-Issue` label is added to issues
 Known-Issue:
@@ -181,6 +197,7 @@ Known-Issue:
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Parked` label is added to issues
 Parked:
@@ -191,10 +208,12 @@ Parked:
       - 'Resolved'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Upstream` label is added to issues
 Upstream:
@@ -208,10 +227,11 @@ Upstream:
       - 'Resolved'
       - 'Pending'
       - 'Stale'
-      - 'Queries'
+      - 'Tagged'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Queries` label is added to issues
 Queries:
@@ -222,10 +242,12 @@ Queries:
       - 'Resolved'
       - 'Parked'
       - 'Pending'
+      - 'Tagged'
       - 'Stale'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Resolved` label is added to issues
 Resolved:
@@ -236,10 +258,12 @@ Resolved:
       - 'Parked'
       - 'Pending'
       - 'Stale'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Resolved` label is removed from issues
 -Resolved:
@@ -257,6 +281,7 @@ Stale:
       - 'Resolved'
       - 'Parked'
       - 'Pending'
+      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
@@ -272,9 +297,9 @@ Unclear:
       - 'Parked'
       - 'Pending'
       - 'Stale'
-      - 'Queries'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `WontFix` label is added to issues
 WontFix:
@@ -290,6 +315,7 @@ WontFix:
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `WontFix` label is removed from issues
 -WontFix:
@@ -308,10 +334,10 @@ Cannot-Replicate:
       - 'Parked'
       - 'Pending'
       - 'Stale'
-      - 'Queries'
       - 'Unclear'
       - 'Prorogued'
       - 'Duplicate'
+      - 'Incomplete'
 
 # The `Prorogued` label is added to issues
 Prorogued:
@@ -326,6 +352,7 @@ Prorogued:
       - 'Queries'
       - 'Unclear'
       - 'Duplicate'
+      - 'Incomplete'
     # Close thread
     close: true
 

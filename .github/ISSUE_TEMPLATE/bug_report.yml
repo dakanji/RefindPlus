@@ -46,7 +46,7 @@ body:
       label: Problem Point
       description: Where does the problem manifest itself?
       options:
-        - 'Before RefindPlus loads'
+        - 'RefindPlus fails to load'
         - 'Before starting a loader or tool'
         - 'While starting a loader or tool'
         - 'After starting a loader or tool'
@@ -62,9 +62,9 @@ body:
       options:
         - 'One or More Tools (Second Row Items)'
         - 'All OS Loaders (First Row Items)'
-        - 'MacOS Loader'
-        - 'WinOS Loader'
-        - 'LinOS Loader'
+        - 'Mac OS Loader'
+        - 'Win OS Loader'
+        - 'Lin OS Loader'
         - 'OpenCore Loader'
         - 'Clover Loader'
         - 'Other Loader'
@@ -76,8 +76,9 @@ body:
     attributes:
       label: Debug Log
       description: |
-        Run the DBG build file and add a debug log file.
-        Kindly attach the file and do not paste the contents directly.
+        Run the RefindPlus "DBG" file and add debug log file(s).
+        Kindly attach logs and do not paste the contents directly.
+        You can attach logs by dragging/dropping on the field below.
       placeholder: |
         Reports not requiring log files are typically best under Discussions.
         Reports without log files will be automatically closed in most cases.
@@ -88,7 +89,8 @@ body:
     attributes:
       label: Additional Context
       description: |
-        Add additional context that may provide clarity on the problem.
+        Any additional details that may provide clarity on the problem.
       placeholder: |
+        You can attach file(s) by dragging/dropping them on this field.
         You can also add screenshots to shed more light on the problem.
         Screenshots can be saved by pressing the F10 key in RefindPlus.

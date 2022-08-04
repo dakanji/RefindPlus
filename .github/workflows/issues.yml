@@ -180,34 +180,38 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
-      - name: Lock Incomplete Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Incomplete, Unclear'
-          remove-issue-labels: 'Pending, Tagged, Queries'
-          process-only: 'issues'
-
       - name: Lock Duplicate Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Duplicate, Known-Issue'
+          include-any-issue-labels: 'Duplicate'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
-      - name: Lock WontFix Issues
+      - name: Lock Inactive Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
+          issue-inactive-days: '3'
+          include-any-issue-labels: ''
+          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
+          remove-issue-labels: 'Pending, Tagged, Queries'
+          process-only: 'issues'
+
+      - name: Lock Incomplete Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           issue-inactive-days: '2'
-          include-any-issue-labels: 'WontFix'
+          include-any-issue-labels: 'Incomplete'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
@@ -216,8 +220,22 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Cannot-Replicate'
+          remove-issue-labels: 'Pending, Tagged, Queries'
+          process-only: 'issues'
+
+      - name: Lock Known Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
+          issue-inactive-days: '2'
+          include-any-issue-labels: 'Known-Issue'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
@@ -227,7 +245,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           issue-comment: >
-            This thread is being locked. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related issues.
+            This thread is being locked as resolved. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Resolved'
           exclude-any-issue-labels: ''
@@ -235,14 +253,14 @@ jobs:
           remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Tagged, Queries'
           process-only: 'issues'
 
-      - name: Lock Inactive Issues
+      - name: Lock WontFix Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          add-issue-labels: 'Resolved'
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
-          include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
+          include-any-issue-labels: 'WontFix'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
