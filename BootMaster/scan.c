@@ -369,14 +369,17 @@ VOID GenerateSubScreen (
     IN     REFIT_VOLUME *Volume,
     IN     BOOLEAN       GenerateReturn
 ) {
+    EFI_STATUS          Status;
     REFIT_MENU_SCREEN  *SubScreen;
+    REFIT_VOLUME       *DiagnosticsVolume;
     LOADER_ENTRY       *SubEntry;
     REFIT_FILE         *File;
+    BOOLEAN             UseSystemVolume;
     CHAR16             *InitrdName;
     CHAR16             *KernelVersion = NULL;
     CHAR16            **TokenList;
-    CHAR16              DiagsFileName[256];
     UINTN               TokenCount;
+    UINTN               i;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"GenerateSubScreen";
@@ -475,20 +478,53 @@ VOID GenerateSubScreen (
             } // single-user mode allowed
 
             // Check for Apple hardware diagnostics
-            StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
-            if (FileExists (Volume->RootDir, DiagsFileName) &&
-                !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
-            ) {
-                SubEntry = InitializeLoaderEntry (Entry);
-                if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Run Apple Hardware Test");
-                    MY_FREE_POOL(SubEntry->LoaderPath);
-                    SubEntry->LoaderPath      = StrDuplicate (DiagsFileName);
-                    SubEntry->Volume          = CopyVolume (Volume);
-                    SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)) {
+                UseSystemVolume = FALSE;
+                // DA-TAG: Investigate This
+                //         Is SingleAPFS really needed?
+                //         Play safe and add it for now
+                if (SingleAPFS) {
+                    if (GlobalConfig.SyncAPFS && (Volume->FSType == FS_TYPE_APFS)) {
+                        APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
+
+                        // DA-TAG: Limit to TianoCore
+                        #ifndef __MAKEWITH_TIANO
+                        Status = EFI_NOT_STARTED;
+                        #else
+                        Status = RP_GetApfsVolumeInfo (
+                            Volume->DeviceHandle,
+                            NULL, NULL,
+                            &VolumeRole
+                        );
+                        #endif
+
+                        if (!EFI_ERROR(Status)) {
+                            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                                for (i = 0; i < SystemVolumesCount; i++) {
+                                    if (GuidsAreEqual (&(SystemVolumes[i]->PartGuid), &(Volume->PartGuid))) {
+                                        UseSystemVolume = TRUE;
+                                        break;
+                                    }
+                                } // for
+                            }
+                        }
+                    }
                 }
-            }
+
+                DiagnosticsVolume = (UseSystemVolume) ? SystemVolumes[i] : Volume;
+                if (FileExists (DiagnosticsVolume->RootDir, MACOSX_DIAGNOSTICS)) {
+                    SubEntry = InitializeLoaderEntry (Entry);
+                    if (SubEntry != NULL) {
+                        MY_FREE_POOL(SubEntry->LoaderPath);
+                        SubEntry->Volume          = CopyVolume (DiagnosticsVolume);
+                        SubEntry->me.Title        = StrDuplicate (L"Run Apple Hardware Test");
+                        SubEntry->LoaderPath      = StrDuplicate (MACOSX_DIAGNOSTICS);
+                        SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+                        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                    }
+                }
+            } // if !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
+            BREAD_CRUMB(L"In %s ... 2 END for OSType M", FuncTag);
         }
         else if (Entry->OSType == 'L') {   // Entries for Linux kernels with EFI stub loaders
             LOG_SEP(L"X");

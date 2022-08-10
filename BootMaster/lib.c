@@ -2096,6 +2096,7 @@ VOID VetMultiInstanceAPFS (VOID) {
     CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'";
     CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
     CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
+    CHAR16 *MsgStrE = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'";
 
     // Check if configured to show Apple Recovery
     BOOLEAN AppleRecovery = FALSE;
@@ -2173,6 +2174,9 @@ VOID VetMultiInstanceAPFS (VOID) {
             #if REFIT_DEBUG > 0
             MsgStrA = L"Multi-Instance APFS Container Found";
             LOG_MSG("INFO: %s", MsgStrA);
+
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrE);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStrE);
 
             if (AppleRecovery) {
                 // Log relevant warning if configured to show Apple Recovery

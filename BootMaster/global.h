@@ -232,6 +232,7 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 // Misc MacOS Paths/Files
 #define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
+#define MACOSX_DIAGNOSTICS      ( MACOSX_LOADER_DIR L"\\.diagnostics\\diags.efi" )
 
 // Files that may be MacOS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"

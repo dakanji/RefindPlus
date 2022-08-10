@@ -7,6 +7,11 @@
   * This resulted in some processes being skipped or unwanted processes being applied
   * RefindPlus now tries to make such boots specific as follows:
     - `Opencore`, `Clover`, `Linux`, `MacOS`, `Windows` and `Misc Others`
+- Fixes Apple Hardware Test Option
+  * While Apple stopped providing this feature after June 2013, some users may have restored this
+    - See https://github.com/upekkha/AppleHardwareTest
+  * In such cases however, RefindPlus did not provide the option on APFS volumes when `SyncAPFS` is active
+  * This has now being reinstated subject to not having multiple MacOS instances in any single APFS container
 - Fixes Misc Items
   * Always block UEFI Windows NVRAM items (Disregard Volatility)
   * Misidentification of certain volume types as HFS+ volumes
