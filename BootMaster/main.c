@@ -213,6 +213,7 @@ BOOLEAN                IsBoot               = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                OverrideSB           = FALSE;
+BOOLEAN                OneMainLoop          = FALSE;
 BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
@@ -2911,7 +2912,6 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16   *FilePath     =  NULL;
     BOOLEAN   FoundTool    = FALSE;
     BOOLEAN   RunOurTool   = FALSE;
-    BOOLEAN   LoopedOnce   = FALSE;
 
     while (MainLoopRunning) {
         // Reset Misc
@@ -2925,6 +2925,9 @@ EFI_STATUS EFIAPI efi_main (
 
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
+            // Flag at least one loop done
+            OneMainLoop = TRUE;
+
             #if REFIT_DEBUG > 0
             LOG_MSG("Received User Input:");
             LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
@@ -2942,6 +2945,9 @@ EFI_STATUS EFIAPI efi_main (
 
         // Ignore MenuExit if FlushFailedTag is set and not previously reset
         if (FlushFailedTag && !FlushFailReset) {
+            // Flag at least one loop done
+            OneMainLoop = TRUE;
+
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2956,11 +2962,11 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
-        if (!LoopedOnce &&
+        if (!OneMainLoop &&
             ChosenEntry->Tag == TAG_REBOOT
         ) {
             // Flag at least one loop done
-            LoopedOnce = TRUE;
+            OneMainLoop = TRUE;
 
             #if REFIT_DEBUG > 0
             LOG_MSG("INFO: Invalid Post-Load Reboot Call ... Ignoring Reboot Call");
@@ -3776,7 +3782,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         // Flag at least one loop done
-        LoopedOnce = TRUE;
+        OneMainLoop = TRUE;
     } // while
 
     // Things have gone wrong if we end up here ... Try to reboot.

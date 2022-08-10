@@ -18,6 +18,11 @@
   * Excessive pointer event logging
   * Misplaced `Out` and `Return` log tags
   * Python Script Code Smells
+- Improves `System Reset Call` Fix
+  * Was previously always active when on system reboot calls
+  * This meant such calls always required confirmation
+  * Such confirmations are no longer required if keypresses had taken place before the call
+  * Hence all legitimate calls now proceed without issue and buffered keystroke calls are also captured
 - Improves Time Bound Primed Buffer Mitigation
   * Reduces intervention threshold based on detection of confirmed user key presses
 

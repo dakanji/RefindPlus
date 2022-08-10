@@ -124,6 +124,7 @@ extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
 extern BOOLEAN             BlockRescan;
+extern BOOLEAN             OneMainLoop;
 extern EFI_GUID            RefindPlusGuid;
 
 
@@ -1021,6 +1022,27 @@ UINTN RunGenericMenu (
                     break;
             } // switch
 
+            // Flag 'UserKeyPress' on Selection Change
+            switch (key.ScanCode) {
+                case SCAN_END:
+                case SCAN_HOME:
+                case SCAN_PAGE_UP:
+                case SCAN_PAGE_DOWN:
+                case SCAN_UP:
+                case SCAN_LEFT:
+                case SCAN_DOWN:
+                case SCAN_RIGHT: UserKeyPress = TRUE;
+            } // switch
+
+            // Flag 'UserKeyScan' on Detecting Some Inputs
+            switch (key.UnicodeChar) {
+                case CHAR_BACKSPACE:
+                case CHAR_TAB:
+                case '+':
+                case '-':
+                default: UserKeyScan = TRUE;
+            } // switch
+
             #if REFIT_DEBUG > 0
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
@@ -1032,27 +1054,6 @@ UINTN RunGenericMenu (
                     case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key: Tab";             break;
                     case '+':                  KeyTxt = L"INFER_DETAILS  Key: '+' (Plus)";      break;
                     case '-':                  KeyTxt = L"INFER_REMOVE   Key: '-' (Minus)";     break;
-                } // switch
-
-                // Flag 'UserKeyPress' on Selection Change
-                switch (key.ScanCode) {
-                    case SCAN_END:
-                    case SCAN_HOME:
-                    case SCAN_PAGE_UP:
-                    case SCAN_PAGE_DOWN:
-                    case SCAN_UP:
-                    case SCAN_LEFT:
-                    case SCAN_DOWN:
-                    case SCAN_RIGHT: UserKeyPress = TRUE;
-                } // switch
-
-                // Flag 'UserKeyScan' on Detecting Some Inputs
-                switch (key.UnicodeChar) {
-                    case CHAR_BACKSPACE:
-                    case CHAR_TAB:
-                    case '+':
-                    case '-':
-                    default: UserKeyScan = TRUE;
                 } // switch
             }
             ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1129,6 +1130,8 @@ UINTN RunGenericMenu (
                 case POINTER_LEFT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_UP);
+                        UserKeyPress = TRUE;
+                        BlockRescan = FALSE;
                     }
 
                     if (DrawSelection) {
@@ -1140,6 +1143,8 @@ UINTN RunGenericMenu (
                 case POINTER_RIGHT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_DOWN);
+                        UserKeyPress = TRUE;
+                        BlockRescan = FALSE;
                     }
 
                     if (DrawSelection) {
@@ -1180,52 +1185,58 @@ UINTN RunGenericMenu (
         MenuExit = 0;
     }
 
-    // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
-    // Primed Keystroke Buffer appears to only affect UEFI PC but some provision to cover Macs made
-    if (!UserKeyPress &&
-        !GlobalConfig.DirectBoot &&
-        MenuExit == MENU_EXIT_ENTER &&
-        !ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"Main Menu")
-    ) {
-        UINT64 MenuExitNumb = 512;
-        UINT64 MenuExitGate = MenuExitNumb;
-        UINT64 MenuExitTime = GetCurrentMS();
-        UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
+    if (UserKeyPress) {
+        OneMainLoop = TRUE;
+    }
+    else {
+        // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
+        // Primed Keystroke Buffer appears to only affect UEFI PC but some provision to cover Macs made
+        if (!GlobalConfig.DirectBoot &&
+            MenuExit == MENU_EXIT_ENTER &&
+            !ClearedBuffer && !FlushFailReset &&
+            MyStriCmp (Screen->Title, L"Main Menu")
+        ) {
+            UINT64 MenuExitNumb = 512;
+            UINT64 MenuExitGate = MenuExitNumb;
+            UINT64 MenuExitTime = GetCurrentMS();
+            UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-        if (!AppleFirmware) {
-            MenuExitGate = MenuExitNumb * 3;
+            if (!AppleFirmware) {
+                MenuExitGate = MenuExitNumb * 3;
 
-            #if REFIT_DEBUG > 0
-            if (GlobalConfig.LogLevel > 1) {
-                MenuExitGate = MenuExitNumb * 5;
+                #if REFIT_DEBUG > 0
+                if (GlobalConfig.LogLevel > 1) {
+                    MenuExitGate = MenuExitNumb * 5;
+                }
+                else if (GlobalConfig.LogLevel > 0) {
+                    MenuExitGate = MenuExitNumb * 4;
+                }
+                #endif
             }
-            else if (GlobalConfig.LogLevel > 0) {
-                MenuExitGate = MenuExitNumb * 4;
+
+            if (UserKeyScan) {
+                OneMainLoop = TRUE;
             }
-            #endif
-        }
+            else if (FoundExternalDisk) {
+                MenuExitGate = (AppleFirmware) ? MenuExitGate * 2 : MenuExitGate * 4;
+            }
 
-        if (!UserKeyScan && FoundExternalDisk) {
-            // Double threshold when external disks are detected
-            MenuExitGate += (MenuExitGate * 3);
-        }
+            if (MenuExitDiff < MenuExitGate) {
+                #if REFIT_DEBUG > 0
+                LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
+                CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");
+                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+                LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
+                MY_FREE_POOL(MsgStr);
+                #endif
 
-        if (MenuExitDiff < MenuExitGate) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
-            CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
-
-            FlushFailedTag = FALSE;
-            FlushFailReset = TRUE;
-            MenuExit = 0;
-        }
-    } // if !UserKeyPress ETC
+                FlushFailedTag = FALSE;
+                FlushFailReset = TRUE;
+                MenuExit = 0;
+            }
+        } // if !GlobalConfig.DirectBoot ETC
+    } // if UserKeyScan
 
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
