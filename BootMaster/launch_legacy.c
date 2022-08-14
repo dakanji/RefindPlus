@@ -674,6 +674,20 @@ VOID AddLegacyEntry (
     CHAR16            *LegacyTitle;
     CHAR16             ShortcutLetter = 0;
 
+    if (Volume == NULL) {
+        // Early Return
+        return;
+    }
+
+    if (Volume->FSType == FS_TYPE_NTFS) {
+        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
+            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
+            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+        ) {
+            // Early Return on Windows Support Volume
+            return;
+        }
+    }
 
     if (LoaderTitle == NULL) {
         if (!Volume->OSName) {

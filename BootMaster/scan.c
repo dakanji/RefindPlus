@@ -1280,14 +1280,21 @@ LOADER_ENTRY * AddLoaderEntry (
     CHAR16        *TitleEntry  = NULL;
     CHAR16        *DisplayName = NULL;
 
-    CleanUpPathNameSlashes (LoaderPath);
-    Entry = InitializeLoaderEntry (NULL);
-
-    if (Entry == NULL) {
+    if (Volume == NULL) {
+        // Early Return
         return NULL;
     }
 
-    if (Volume->FSType == FS_TYPE_APFS) {
+    if (Volume->FSType == FS_TYPE_NTFS) {
+        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
+            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
+            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+        ) {
+            // Early Return on Windows Support Volume
+            return NULL;
+        }
+    }
+    else if (Volume->FSType == FS_TYPE_APFS) {
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
@@ -1330,7 +1337,14 @@ LOADER_ENTRY * AddLoaderEntry (
                 }
             }
         }
-    } // if Volume->FSType == FS_TYPE_APFS
+    } // if/else Volume->FSType == FS_TYPE_NTFS
+
+    CleanUpPathNameSlashes (LoaderPath);
+    Entry = InitializeLoaderEntry (NULL);
+    if (Entry == NULL) {
+        // Early Return
+        return NULL;
+    }
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     TitleEntry   = (LoaderTitle) ? LoaderTitle : LoaderPath;
@@ -2024,6 +2038,16 @@ VOID ScanEfiFiles (
     ) {
         // Early Return on Invalid Volume
         return;
+    }
+
+    if (Volume->FSType == FS_TYPE_NTFS) {
+        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
+            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
+            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+        ) {
+            // Early Return on Windows Support Volume
+            return;
+        }
     }
 
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;

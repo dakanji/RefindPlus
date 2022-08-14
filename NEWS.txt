@@ -23,6 +23,10 @@
   * This meant such calls always required confirmation
   * Such confirmations are no longer required if keypresses had taken place before the call
   * Hence all legitimate calls now proceed without issue and buffered keystroke calls are also captured
+- Improves FS Type Handling
+  * Prevents Windows Support Volumes from being offered as boot options
+  * Updates Volume `FS_TYPE` setting to match assumed types
+  * Differentiates between HFS+ types
 - Improves Time Bound Primed Buffer Mitigation
   * Reduces intervention threshold based on detection of confirmed user key presses
 
