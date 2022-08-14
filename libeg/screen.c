@@ -314,7 +314,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Analyse GOP Modes on GPU Handle[%d]", SelectedGOP);
+        MsgStr = PoolPrint (L"Analyse GOP Modes on GPU Handle[%02d]", SelectedGOP);
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         LOG_MSG("%s:", MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -377,11 +377,11 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
             }
             else {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"Mode[%d]: %r", ModeLog, Status);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"Mode[%02d]: %r", ModeLog, Status);
                 LOG_MSG(" ... %r", Status);
 
                 if (Mode > 99) {
-                    LOG_MSG( ". NB: Real Mode = %d", Mode);
+                    LOG_MSG( ". NB: Real Mode = %02d", Mode);
                 }
 
                 if (LoopCount >= (MaxMode - 1)) {
@@ -431,7 +431,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
 
     Status = REFIT_CALL_2_WRAPPER(GOPDraw->SetMode, GOPDraw, ModeNumber);
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ... %r", ModeNumber, Status);
+    MsgStr = PoolPrint (L"Switch to GOP Mode[%02d] ... %r", ModeNumber, Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n\n");
@@ -588,7 +588,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"BestMode:- 'GOP Mode[%d] on GPU Handle[%d] @ %d x %d'",
+    MsgStr = PoolPrint (L"BestMode:- 'GOP Mode[%02d] on GPU Handle[%02d] @ %d x %d'",
         BestMode, SelectedGOP,
         Width, Height
     );
@@ -775,7 +775,7 @@ VOID egInitScreen (VOID) {
                     &ConsoleControlProtocolGuid, (VOID*) &ConsoleControl
                 );
                 #if REFIT_DEBUG > 0
-                LOG_MSG("    ** Evaluate on Handle[%02d] ... %r", i, Status);
+                LOG_MSG("    ** Evaluate on GPU Handle[%02d] ... %r", i, Status);
                 #endif
                 if (!EFI_ERROR(Status)) {
                     break;
@@ -844,7 +844,7 @@ VOID egInitScreen (VOID) {
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s    ** Examine Handle[%02d] ... %r", OffsetNext, i, Status);
+                LOG_MSG("%s    ** Examine GPU Handle[%02d] ... %r", OffsetNext, i, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -870,7 +870,7 @@ VOID egInitScreen (VOID) {
 
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
-                                "%s    *** Select Handle[%02d] @ %5d x %-5d",
+                                "%s    *** Select GPU Handle[%02d] @ %5d x %-5d",
                                 OffsetNext, i, UGAWidth, UGAHeight
                             );
                             #endif
@@ -878,7 +878,7 @@ VOID egInitScreen (VOID) {
                         else {
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
-                                "%s    *** Ignore Handle[%02d] @ %5d x %-5d",
+                                "%s    *** Ignore GPU Handle[%02d] @ %5d x %-5d",
                                 OffsetNext, i, Width, Height
                             );
                             #endif
@@ -958,7 +958,7 @@ VOID egInitScreen (VOID) {
                         &GOPDrawProtocolGuid, (VOID*) &TmpGop
                     );
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("%s    ** Evaluate on Handle[%02d] ... %r", OffsetNext, i, Status);
+                    LOG_MSG("%s    ** Evaluate on GPU Handle[%02d] ... %r", OffsetNext, i, Status);
                     #endif
                     if (!EFI_ERROR(Status)) {
                         if (HandleCount == 1) {
@@ -980,7 +980,7 @@ VOID egInitScreen (VOID) {
 
                                     #if REFIT_DEBUG > 0
                                     LOG_MSG(
-                                        "%s    *** Select Handle[%02d][%02d] @ %5d x %-5d",
+                                        "%s    *** Select GPU Handle[%02d][%02d] @ %5d x %-5d",
                                         OffsetNext,
                                         i, GopMode,
                                         GopWidth,
@@ -991,7 +991,7 @@ VOID egInitScreen (VOID) {
                                 else {
                                     #if REFIT_DEBUG > 0
                                     LOG_MSG(
-                                        "%s        Ignore Handle[%02d][%02d] @ %5d x %-5d",
+                                        "%s        Ignore GPU Handle[%02d][%02d] @ %5d x %-5d",
                                         OffsetNext,
                                         i, GopMode,
                                         Info->HorizontalResolution,

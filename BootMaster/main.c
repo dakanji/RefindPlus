@@ -1855,7 +1855,7 @@ VOID AdjustDefaultSelection (VOID) {
     CHAR16     *MsgStr            = NULL;
     BOOLEAN     LoggedOnce        = FALSE;
 
-    LOG_MSG("A D J U S T   D E F A U L T   S E L E C T I O N");
+    LOG_MSG("A L I G N   D E F A U L T   S E L E C T I O N");
     #endif
 
     while ((Element = FindCommaDelimited (
@@ -2212,7 +2212,7 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     /* Start Logging */
-    LOG_MSG("B E G I N   B O O T S T R A P");
+    LOG_MSG("B E G I N   P R O G R A M   B O O T S T R A P");
     LOG_MSG("\n");
     LOG_MSG(
         "Loading RefindPlus v%s on %s Firmware",
@@ -2360,13 +2360,12 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("P R O G R E S S   B O O T S T R A P");
-    LOG_MSG("\n");
-
     #define TAG_ITEM_A(Item) OffsetNext,  Item
     #define TAG_ITEM_B(Item) OffsetNext, (Item) ? L"YES" : L"NO"
     #define TAG_ITEM_C(Item) OffsetNext, (Item) ? L"Active" : L"Inactive"
 
+    LOG_MSG("L I S T   M I S C   S E T T I N G S");
+    LOG_MSG("\n");
     LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                             );
     LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel       ));
     LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay      ));
@@ -2379,6 +2378,11 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
 
+    LOG_MSG(
+        "%s      TextRenderer:- '%s'",
+        OffsetNext,
+        GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
+    );
     LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     if (!AppleFirmware) {
         LOG_MSG("'Disabled'");
@@ -2386,11 +2390,6 @@ EFI_STATUS EFIAPI efi_main (
     else {
         LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
     }
-    LOG_MSG(
-        "%s      TextRenderer:- '%s'",
-        OffsetNext,
-        GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
-    );
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,
@@ -2430,6 +2429,8 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     #if REFIT_DEBUG > 0
+    LOG_MSG("P R O V I D E   B A S E   S U P P O R T");
+    LOG_MSG("\n");
     LOG_MSG("INFO: Supply Support:- 'UEFI  :  %r'", Status);
 
     // DA-TAG: Prime Status for SupplyNVME
@@ -2539,7 +2540,7 @@ EFI_STATUS EFIAPI efi_main (
             GlobalConfig.ContinueOnWarning = TRUE;
         }
 
-        LOG_MSG("C O N F I R M   D I R E C T    B O O T");
+        LOG_MSG("C O N F I R M   D I R E C T   B O O T");
         if (OverrideSB) {
             LOG_MSG("\n");
             LOG_MSG("Load Error or Warning Present");
@@ -2593,7 +2594,7 @@ EFI_STATUS EFIAPI efi_main (
     } // if GlobalConfig.DirectBoot
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"I N I T I A L I S E   G R A P H I C S");
+    MsgStr = StrDuplicate (L"I N I T I A L I S E   S C R E E N   D I S P L A Y");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
@@ -2896,14 +2897,6 @@ EFI_STATUS EFIAPI efi_main (
     // Init Pointers
     pdInitialize();
 
-    #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"R U N   M A I N   L O O P");
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("%s", MsgStr);
-    LOG_MSG("\n");
-    MY_FREE_POOL(MsgStr);
-    #endif
-
     if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
@@ -3140,7 +3133,7 @@ EFI_STATUS EFIAPI efi_main (
                 TypeStr = L"Running System Reset";
 
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"R E B O O T   S Y S T E M");
+                MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E B O O T");
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -3190,7 +3183,7 @@ EFI_STATUS EFIAPI efi_main (
                 TerminateScreen();
 
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"S H U T   S Y S T E M   D O W N");
+                MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");

@@ -1224,11 +1224,10 @@ UINTN RunGenericMenu (
             if (MenuExitDiff < MenuExitGate) {
                 #if REFIT_DEBUG > 0
                 LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
-                CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");
+                CHAR16 *MsgStr = L"Mitigated Potential Persistent Primed Keystroke Buffer";
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
                 #endif
 
                 FlushFailedTag = FALSE;
@@ -3209,7 +3208,14 @@ UINTN RunMainMenu (
             REFINDPLUS_VERSION, VendorInfo
         );
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+
+        MsgStr = StrDuplicate (L"R U N   M A I N   L O O P");
+        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
     }
     #endif
@@ -3228,7 +3234,8 @@ UINTN RunMainMenu (
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            LOG_MSG("\n");
+            LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
         #endif
@@ -3251,7 +3258,8 @@ UINTN RunMainMenu (
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            LOG_MSG("\n");
+            LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
         BREAD_CRUMB(L"In %s ... 4a 3", FuncTag);

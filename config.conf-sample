@@ -2,6 +2,7 @@
 # Configuration file for the RefindPlus boot manager
 
 ##--------------------------------------------------------------##
+##                        Section 1 of 3                        ##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
 ##          New Functionality Provided by RefindPlus            ##
 ##--------------------------------------------------------------##
@@ -454,6 +455,7 @@
 
 
 ##--------------------------------------------------------------##
+##                        Section 2 of 3                        ##
 ##                 AMENDED CONFIGURATION ITEMS                  ##
 ##           Existing Features Modified in RefindPlus           ##
 ##--------------------------------------------------------------##
@@ -627,6 +629,7 @@
 
 
 ##--------------------------------------------------------------##
+##                        Section 3 of 3                        ##
 ##                STANDARD CONFIGURATION ITEMS                  ##
 ##                  Unchanged  Functionality                    ##
 ##--------------------------------------------------------------##

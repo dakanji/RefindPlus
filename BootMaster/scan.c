@@ -1754,18 +1754,7 @@ BOOLEAN ScanLoaderDir (
     BOOLEAN                  FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *PathStr;
-
-    if (MyStriCmp (Path, L"\\")) {
-        PathStr = StrDuplicate (L"\\");
-    }
-    else {
-        PathStr = PoolPrint (L"%s", Path);
-    }
-
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, PathStr);
-
-    MY_FREE_POOL(PathStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, Path);
     #endif
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);

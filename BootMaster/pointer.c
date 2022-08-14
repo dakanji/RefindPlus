@@ -47,6 +47,7 @@ EG_IMAGE                       *MouseImage         = NULL;
 EG_IMAGE                       *Background         = NULL;
 
 BOOLEAN                         PointerAvailable   = FALSE;
+BOOLEAN                         NoMouseActive      = FALSE;
 POINTER_STATE                   State;
 
 
@@ -54,17 +55,31 @@ POINTER_STATE                   State;
 // Initialise Pointer Devices
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize (VOID) {
+    EFI_STATUS Status;
+
     #if REFIT_DEBUG > 0
-    LOG_MSG("I N I T I A L I S E   P O I N T E R   D E V I C E S");
+    EFI_STATUS EnableStatusTouch;
+    EFI_STATUS EnableStatusMouse;
+
+    CHAR16 *MsgStr = StrDuplicate (L"I N I T I A L I S E   P O I N T E R   D E V I C E S");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
+    MY_FREE_POOL(MsgStr);
     #endif
 
     pdCleanup(); // Just in case
 
     if (!GlobalConfig.EnableMouse && !GlobalConfig.EnableTouch) {
+        NoMouseActive = TRUE;
+
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s  - Detected Keyboard-Only Mode", OffsetNext);
+        MsgStr = L"Running in Keyboard-Only Mode";
+        // DA-TAG: Use LOG_THREE_STAR_END for this instance
+        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
         LOG_MSG("\n\n");
+        LOG_MSG("INFO: %s", MsgStr);
         #endif
 
         // Early Return
@@ -73,17 +88,25 @@ VOID pdInitialize (VOID) {
 
     // Get all handles that support absolute pointer protocol
     // Usually touchscreens but sometimes mice
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"Initialise Pointer Devices:");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("\n");
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+
+    EnableStatusTouch = EFI_NOT_STARTED;
+    #endif
     UINTN NumPointerHandles = 0;
-    EFI_STATUS handlestatus = REFIT_CALL_5_WRAPPER(
+    EFI_STATUS HandleStatus = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &APointerGuid, NULL,
         &NumPointerHandles, &HandleA
     );
-
-    if (EFI_ERROR(handlestatus)) {
+    if (EFI_ERROR(HandleStatus)) {
         #if REFIT_DEBUG > 0
         if (GlobalConfig.EnableTouch) {
-            LOG_MSG("%s  - Could Not Enable Touch", OffsetNext);
+            EnableStatusTouch = EFI_LOAD_ERROR;
         }
         #endif
 
@@ -94,15 +117,15 @@ VOID pdInitialize (VOID) {
         UINTN Index;
         for (Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = REFIT_CALL_6_WRAPPER(
+            Status = REFIT_CALL_6_WRAPPER(
                 gBS->OpenProtocol, HandleA[Index],
                 &APointerGuid, (VOID **) &ProtocolA[NumAPointerDevices],
                 SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
             );
-            if (status == EFI_SUCCESS) {
+            if (Status == EFI_SUCCESS) {
                 #if REFIT_DEBUG > 0
                 if (GlobalConfig.EnableTouch) {
-                    LOG_MSG("%s  - Enabled Touch", OffsetNext);
+                    EnableStatusTouch = EFI_SUCCESS;
                 }
                 #endif
 
@@ -110,19 +133,30 @@ VOID pdInitialize (VOID) {
             }
         }
     }
+    #if REFIT_DEBUG > 0
+    if (GlobalConfig.EnableTouch) {
+        MsgStr = PoolPrint (L"Enable Touch ... %r", EnableStatusTouch);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+    }
+    #endif
 
     // Get all handles that support simple pointer protocol (mice)
+    #if REFIT_DEBUG > 0
+    EnableStatusMouse = EFI_NOT_STARTED;
+    #endif
     NumPointerHandles = 0;
-    handlestatus = REFIT_CALL_5_WRAPPER(
+    HandleStatus = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &SPointerGuid, NULL,
         &NumPointerHandles, &HandleS
     );
 
-    if (EFI_ERROR(handlestatus)) {
+    if (EFI_ERROR(HandleStatus)) {
         #if REFIT_DEBUG > 0
         if (GlobalConfig.EnableMouse) {
-            LOG_MSG("%s  - Could Not Enable Mouse", OffsetNext);
+            EnableStatusMouse = EFI_LOAD_ERROR;
         }
         #endif
 
@@ -134,26 +168,39 @@ VOID pdInitialize (VOID) {
         BOOLEAN GotMouse = FALSE;
         for (Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = REFIT_CALL_6_WRAPPER(
+            Status = REFIT_CALL_6_WRAPPER(
                 gBS->OpenProtocol, HandleS[Index],
                 &SPointerGuid, (VOID **) &ProtocolS[NumSPointerDevices],
                 SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
             );
-            if (status == EFI_SUCCESS) {
+            if (Status == EFI_SUCCESS) {
                 if (GlobalConfig.EnableMouse) {
                     GotMouse = TRUE;
                 }
 
                 NumSPointerDevices++;
             }
+            else if (!GotMouse && Status != EFI_NOT_FOUND) {
+                #if REFIT_DEBUG > 0
+                EnableStatusMouse = EFI_LOAD_ERROR;
+                #endif
+            }
         } // for
 
         #if REFIT_DEBUG > 0
         if (GotMouse) {
-            LOG_MSG("%s  - Enabled Mouse", OffsetNext);
+            EnableStatusMouse = EFI_SUCCESS;
         }
         #endif
     }
+    #if REFIT_DEBUG > 0
+    if (GlobalConfig.EnableMouse) {
+        MsgStr = PoolPrint (L"Enable Mouse ... %r", EnableStatusMouse);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+    }
+    #endif
 
     PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
 
@@ -161,11 +208,22 @@ VOID pdInitialize (VOID) {
     if (PointerAvailable && GlobalConfig.EnableMouse) {
         MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
     }
+    else {
+        NoMouseActive = TRUE;
+    }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n");
-    LOG_MSG("Pointer Devices Initialised");
+    if (!EFI_ERROR(EnableStatusTouch) || !EFI_ERROR(EnableStatusMouse)) {
+        Status = EFI_SUCCESS;
+    }
+    else {
+        Status = EFI_DEVICE_ERROR;
+    }
+    MsgStr = L"Enable Pointer Devices";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s ... %r", MsgStr, Status);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("\n\n");
+    LOG_MSG("INFO: %s ... %r", MsgStr, Status);
     #endif
 } // VOID pdInitialize()
 
@@ -176,7 +234,9 @@ VOID pdCleanup (VOID) {
     UINTN Index;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Close Existing Pointer Protocols:");
+    CHAR16 *MsgStr = L"Reset Pointer Devices";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
     #endif
 
     PointerAvailable = FALSE;
@@ -216,6 +276,12 @@ VOID pdCleanup (VOID) {
     State.Y = ScreenH / 2;
     State.Press = FALSE;
     State.Holding = FALSE;
+
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Close Pointer Protocols ... Success";
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    #endif
 } // VOID pdCleanup()
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -361,6 +427,11 @@ POINTER_STATE pdGetState (VOID) {
 // Draw the mouse at the current coordinates
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdDraw (VOID) {
+    if (NoMouseActive) {
+        // Early Return
+        return;
+    }
+
     MY_FREE_IMAGE(Background);
     if (MouseImage) {
         UINTN Width = MouseImage->Width;
@@ -386,8 +457,23 @@ VOID pdDraw (VOID) {
 // Restores the background at the position the mouse was last drawn
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdClear (VOID) {
+    if (NoMouseActive) {
+        // Early Return
+        return;
+    }
+
     if (Background) {
         egDrawImage (Background, LastXPos, LastYPos);
         MY_FREE_IMAGE(Background);
     }
+
+    #if REFIT_DEBUG > 0
+    static BOOLEAN NotLogged = TRUE;
+    if (NotLogged) {
+        CHAR16 *MsgStr = L"Clear Pointer Artefacts ... Success";
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+        NotLogged = FALSE;
+    }
+    #endif
 } // VOID pdClear()

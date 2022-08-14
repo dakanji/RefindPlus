@@ -700,7 +700,7 @@ VOID ReadConfig (
 
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
-    if (AllowIncludes) LOG_MSG("R E A D   C O N F I G");
+    if (AllowIncludes) LOG_MSG("R E A D   C O N F I G U R A T I O N   F I L E");
     MY_MUTELOGGER_SET;
     #endif
 
@@ -1129,7 +1129,7 @@ VOID ReadConfig (
 
                 MY_MUTELOGGER_OFF;
                 LOG_MSG("\n");
-                LOG_MSG("Detected Overrides File - L O A D   O V E R R I D E S");
+                LOG_MSG("Detected Overrides File - L O A D   S E T T I N G   O V E R R I D E S");
                 MuteLogger = TRUE; /* Explicit For FB Infer */
                 #endif
 

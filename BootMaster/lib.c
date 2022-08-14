@@ -2609,12 +2609,12 @@ VOID ScanVolumes (VOID) {
             RoleStr = NULL;
             VolumeRole = 0;
             if (0);
-            else if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
-            else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * HFS Recovery";
-            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Win Data";
-            else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * MS Reserved";
-            else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Win Reserved";
-            else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
+            else if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * EFI Partition";
+            else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * HFS Recovery" ;
+            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Win Data"     ;
+            else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * MS Reserved"  ;
+            else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Win Reserved" ;
+            else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set"  ;
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
@@ -3230,7 +3230,7 @@ EFI_STATUS DirNextEntry (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Resizing DirEntry Buffer from %d to %d",
+                    L"Resizing DirEntry Buffer from %d to %d bytes",
                     LastBufferSize, BufferSize
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

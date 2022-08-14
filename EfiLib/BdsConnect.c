@@ -247,7 +247,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     }
     else {
-        MsgStr = StrDuplicate (L"L I N K    D E V I C E    H A N D L E S");
+        MsgStr = StrDuplicate (L"L I N K   D E V I C E   H A N D L E S");
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     }
     LOG_MSG("%s", MsgStr);
