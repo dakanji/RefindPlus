@@ -110,7 +110,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableNvramPanicLog = */ FALSE,
     /* DecoupleKeyF10 = */ FALSE,
     /* DisableAMFI = */ FALSE,
-    /* EnableMacosFilter = */ TRUE,
+    /* FocusNvramFix = */ FALSE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ TRUE,
@@ -2414,6 +2414,13 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
+    LOG_MSG("%s      FocusNvramFix:- ",    OffsetNext);
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.FocusNvramFix ? L"Active" : L"Inactive");
+    }
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI
@@ -3417,7 +3424,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     RunMacBootSupportFuncs();
 
-                    if (GlobalConfig.EnableMacosFilter) {
+                    if (!GlobalConfig.FocusNvramFix) {
                         // Start ProtectNVRAM
                         SetProtectNvram (SystemTable, TRUE);
                     }
@@ -3578,9 +3585,11 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    // Some UEFI Windows installers/updaters may not be in the standard path
-                    // Therefore, activate ProtectNVRAM (if set) on any unidentified loaders
-                    SetProtectNvram (SystemTable, TRUE);
+                    if (!GlobalConfig.FocusNvramFix) {
+                        // Some UEFI Windows installers/updaters may not be in the standard path
+                        // So, activate ProtectNVRAM (if set and allowed) on unidentified loaders
+                        SetProtectNvram (SystemTable, TRUE);
+                    }
                 }
 
                 // No end dash line ... Added in 'IsValidLoader'

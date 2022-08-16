@@ -62,7 +62,6 @@ decline_apfs_mute     |Disables supressesion of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
 decline_esp_filter    |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
-decline_macos_filter  |Disables the `ProtectNVRAM` feature on MacOS boots
 decline_nvme_load     |Disables the built in NvmExpress Driver
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
 decline_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
@@ -74,6 +73,7 @@ disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
+focus_nvram_fix       |Limits the `ProtectNVRAM` feature to explicit UEFI Windows boots
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required

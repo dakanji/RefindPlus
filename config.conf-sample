@@ -103,14 +103,6 @@
 #
 #decline_esp_filter
 
-# When this option is activated, the "ProtectNVRAM" feature will be
-# deactivated, if set, when booting into MacOS. ProtectNVRAM will be
-# active, if set, when booting into other relevant operating systems.
-#
-# Inactive when commented out (Does not stop ProtectNVRAM on MacOS boot)
-#
-#decline_macos_filter
-
 # Supply NVME driver. By default, RefindPlus is set up to always load
 # a built in version of the NvmExpressDxe driver which provides NVMe
 # support when unavailable. This is disabled when this token is on.
@@ -243,6 +235,14 @@
 # Inactive when commented out (Does not stop rescans for DXE drivers)
 #
 #disable_rescan_dxe
+
+# When this option is activated, the ProtectNVRAM feature will only
+# be activated, if set, when explicitly booting into UEFI Windows.
+# This setting is only activated when Apple Firmware is detected.
+#
+# Inactive when commented out (Does not focus ProtectNVRAM on UEFI Windows)
+#
+#focus_nvram_fix
 
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option

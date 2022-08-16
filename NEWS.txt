@@ -1,5 +1,9 @@
 0.13.3.AB (Pre-Release):
 -----------------------
+- Adds `FocusNvramFix` Feature
+  * Focuses the `ProtectNVRAM` feature (if set) on explicit UEFI Windows boots
+  * The feature can be enabled using a new `focus_nvram_fix` configuration token
+  * Replaces the `EnableMacosFilter` feature which has been removed
 - Fixes Unwanted APFS Data Volume Entries
   * APFS data volumes could sometimes appear as boot options due to inadequate filtering
 - Fixes SubScreen Boots
