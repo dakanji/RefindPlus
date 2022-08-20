@@ -27,9 +27,7 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 
 #include "../../include/refit_call_wrapper.h"
 
-EFI_STATUS RP_ApfsConnectParentDevice (
-    VOID
-) {
+EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
     EFI_STATUS       Status;
     EFI_STATUS       XStatus;
     UINTN            HandleCount;
@@ -60,9 +58,7 @@ EFI_STATUS RP_ApfsConnectParentDevice (
     return Status;
 }
 
-EFI_STATUS RP_ApfsConnectDevices (
-    VOID
-) {
+EFI_STATUS RP_ApfsConnectDevices (VOID) {
     EFI_STATUS  Status;
     VOID        *PartitionInfoInterface;
 

@@ -81,8 +81,7 @@ EFI_STATUS GetCsrStatus (
         return EFI_BAD_BUFFER_SIZE;
     }
 
-    gCsrStatus = StrDuplicate (L"Found SIP/SSV Setting (Not Interpreted)");
-
+    gCsrStatus = StrDuplicate (L"Found SIP/SSV Setting but not Interpreted");
     *CsrStatus = *ReturnValue;
 
     return Status;
@@ -204,7 +203,7 @@ VOID RotateCsrValue (VOID) {
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotating SIP Value");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
     #endif
 
     Status = GetCsrStatus (&CurrentValue);

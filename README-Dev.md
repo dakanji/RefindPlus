@@ -54,7 +54,7 @@ RefindPlus-Specific funtionality can be configured by adding the tokens below to
 
 Token | Functionality
 ----- | -----
-continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended boot)
+continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
 csr_dynamic           |Actively enables or disables the SIP Policy on Macs
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_apfs_load     |Disables built in provision of APFS filesystem capability

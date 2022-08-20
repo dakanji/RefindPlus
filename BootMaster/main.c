@@ -428,7 +428,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     #if REFIT_DEBUG > 0
     BOOLEAN        CheckMute;
     BOOLEAN        ForceNative;
-    static BOOLEAN FirstTimeLog = TRUE;
 
     MY_MUTELOGGER_SET;
     #endif
@@ -532,6 +531,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                 : L""
         );
 
+        static BOOLEAN FirstTimeLog = TRUE;
         if (!FirstTimeLog) {
             LOG_MSG("\n");
         }
@@ -779,7 +779,7 @@ VOID AlignCSR (VOID) {
     }
 
     if (RotateCsr) {
-        // Toggle SIP/SSV from current setting
+        // Rotate CSR/SSV from current setting
         RotateCsrValue ();
 
         // Set 'Status' to 'Success'
@@ -3388,7 +3388,7 @@ EFI_STATUS EFIAPI efi_main (
                         LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
-                        if (GlobalConfig.SyncAPFS) {
+                        if (ourLoaderEntry->Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
                             APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
                             // DA-TAG: Limit to TianoCore
@@ -3739,7 +3739,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_CSR_ROTATE:
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Toggle Mac SIP", OffsetNext);
+                LOG_MSG("%s  - Rotate CSR", OffsetNext);
                 LOG_MSG("\n");
                 #endif
 

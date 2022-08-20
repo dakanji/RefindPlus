@@ -59,6 +59,7 @@ EFI_STATUS EFIAPI RefitConnectController (
     VOID        *DevicePath;
 
     if (ControllerHandle == NULL) {
+        // Early Return
         return EFI_INVALID_PARAMETER;
     }
 
@@ -69,6 +70,7 @@ EFI_STATUS EFIAPI RefitConnectController (
         &gEfiDevicePathProtocolGuid, &DevicePath
     );
     if (EFI_ERROR(Status)) {
+        // Early Return
         return EFI_NOT_STARTED;
     }
 
@@ -108,13 +110,22 @@ EFI_STATUS ScanDeviceHandles (
         HandleCount, HandleBuffer
     );
     if (EFI_ERROR(Status)) {
-        goto Error;
+        MY_FREE_POOL(*HandleType);
+        MY_FREE_POOL(*HandleBuffer);
+        *HandleCount  = 0;
+
+        // Early Return
+        return Status;
     }
 
     *HandleType = AllocatePool (*HandleCount * sizeof (UINT32));
-
     if (*HandleType == NULL) {
-        goto Error;
+        MY_FREE_POOL(*HandleType);
+        MY_FREE_POOL(*HandleBuffer);
+        *HandleCount  = 0;
+
+        // Early Return
+        return Status;
     }
 
     for (k = 0; k < *HandleCount; k++) {
@@ -125,84 +136,80 @@ EFI_STATUS ScanDeviceHandles (
             gBS->ProtocolsPerHandle, (*HandleBuffer)[k],
             &ProtocolGuidArray, &ArrayCount
         );
-        if (!EFI_ERROR(Status)) {
-            for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
-                }
+        if (EFI_ERROR(Status)) {
+            continue;
+        }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
-                }
+        for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
+            }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
-                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
+            }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
-                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
+            }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
-                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
+            }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
-                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
+            }
 
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
-                    (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
-                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
+            }
 
-                // Retrieve the list of agents that have opened each protocol
-                Status = REFIT_CALL_4_WRAPPER(
-                    gBS->OpenProtocolInformation, (*HandleBuffer)[k],
-                    ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
-                );
-                if (!EFI_ERROR(Status)) {
-                    for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
-                        if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
-                            if ((OpenInfo[OpenInfoIndex].Attributes &
-                                EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER
-                            ) {
-                                for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
-                                    if ((*HandleBuffer)[ChildIndex] == OpenInfo[OpenInfoIndex].AgentHandle) {
-                                        (*HandleType)[ChildIndex] |= EFI_HANDLE_TYPE_DEVICE_DRIVER;
-                                    }
-                                }
+            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
+                (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
+            }
+
+            // Retrieve the list of agents that have opened each protocol
+            Status = REFIT_CALL_4_WRAPPER(
+                gBS->OpenProtocolInformation, (*HandleBuffer)[k],
+                ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
+            );
+            if (EFI_ERROR(Status)) {
+                continue;
+            }
+
+            for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
+                if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
+                    if ((OpenInfo[OpenInfoIndex].Attributes &
+                        EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER
+                    ) {
+                        for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
+                            if ((*HandleBuffer)[ChildIndex] == OpenInfo[OpenInfoIndex].AgentHandle) {
+                                (*HandleType)[ChildIndex] |= EFI_HANDLE_TYPE_DEVICE_DRIVER;
                             }
+                        } // for
+                    }
 
-                            if ((OpenInfo[OpenInfoIndex].Attributes &
-                                EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
-                            ) {
-                                (*HandleType)[k] |= EFI_HANDLE_TYPE_PARENT_HANDLE;
-                                for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
-                                    if ((*HandleBuffer)[ChildIndex] == OpenInfo[OpenInfoIndex].AgentHandle) {
-                                        (*HandleType)[ChildIndex] |= EFI_HANDLE_TYPE_BUS_DRIVER;
-                                    }
-                                }
+                    if ((OpenInfo[OpenInfoIndex].Attributes &
+                        EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                    ) {
+                        (*HandleType)[k] |= EFI_HANDLE_TYPE_PARENT_HANDLE;
+                        for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
+                            if ((*HandleBuffer)[ChildIndex] == OpenInfo[OpenInfoIndex].AgentHandle) {
+                                (*HandleType)[ChildIndex] |= EFI_HANDLE_TYPE_BUS_DRIVER;
                             }
-                        }
-                    } // for OpenInfoIndex = 0
-
-                    MY_FREE_POOL(OpenInfo);
+                        } // for
+                    }
                 }
-            } // for for ProtocolIndex = 0
+            } // for OpenInfoIndex = 0
 
-            MY_FREE_POOL(ProtocolGuidArray);
-        } // if !EFI_ERROR Status
+            MY_FREE_POOL(OpenInfo);
+        } // for ProtocolIndex = 0
+
+        MY_FREE_POOL(ProtocolGuidArray);
     } // for k = 0
 
     return EFI_SUCCESS;
-
-    Error:
-    MY_FREE_POOL(*HandleType);
-    MY_FREE_POOL(*HandleBuffer);
-
-    *HandleCount  = 0;
-
-    return Status;
 } // EFI_STATUS ScanDeviceHandles()
 
 
@@ -583,7 +590,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
         MY_FREE_POOL(HandleBuffer);
         MY_FREE_POOL(HandleType);
-    }  // for
+    }  // for i = 0
 
     #if REFIT_DEBUG > 0
     MY_FREE_POOL(GopDevicePathStr);

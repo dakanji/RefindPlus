@@ -654,7 +654,6 @@ extern CHAR16 *gLogTemp;
 /* Misc Extra Items - END */
 
 
-
 #endif
 
 /* EOF */

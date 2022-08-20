@@ -826,7 +826,7 @@ UINTN RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
-    BOOLEAN Toggled = FALSE;
+    BOOLEAN Rotated = FALSE;
     while (MenuExit == 0) {
         // Update the screen
         pdClear();
@@ -858,8 +858,8 @@ UINTN RunGenericMenu (
         //         Toggle the selection once to work around failure to
         //         display the default selection on load in text mode.
         //         This is a Workaround ... Proper solution needed.
-        if (!Toggled) {
-            Toggled = TRUE;
+        if (!Rotated) {
+            Rotated = TRUE;
             if (State.ScrollMode == SCROLL_MODE_TEXT) {
                 if (State.CurrentSelection < State.MaxIndex) {
                     UpdateScroll (&State, SCROLL_LINE_DOWN);

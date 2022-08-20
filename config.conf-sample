@@ -20,7 +20,7 @@
 # This token allows actively enabling or disabling the System Integrity Protection (SIP) and
 # Sealed System Volume (SSV) settings defined under the "csr_values" option. When this token is
 # active, RefindPlus will actively set the CSR Policy as defined. This is done when RefindPlus is
-# loaded but users can manually toggle the set values "ON" or "OFF" by using the "Toggle CSR" tool.
+# loaded but users can manually toggle the set values "ON" or "OFF" by using the "Rotate CSR" tool.
 # The following options are available:
 #   1    - Always Enable SIP (and SSV on MacOS 11.x or later)
 #   0    - Take no Action
@@ -333,7 +333,7 @@
 # this setting should not be set by most users. Note that this setting is
 # only active on Apple firmware, requires the "ProtectNVRAM" feature and
 # that it is disabled when it is set to a value lower than 1024 bytes.
-# Additionally, this setting is only active on direct Mac OS boots.
+# Additionally, this option is only activated on direct MacOS boots.
 #
 # Inactive when commented out (Does not filter NVRAM writes by size)
 #
@@ -489,18 +489,22 @@
 # is recommended however, to keep the default "OFF" setting
 # of "10" in place, and to use the "csr_normalise" token
 # instead to better achieve the same end (both values).
-#      CSR_ALLOW_UNTRUSTED_KEXTS                0x0001
-#      CSR_ALLOW_UNRESTRICTED_FS                0x0002
-#      CSR_ALLOW_TASK_FOR_PID                   0x0004
-#      CSR_ALLOW_KERNEL_DEBUGGER                0x0008
-#      CSR_ALLOW_APPLE_INTERNAL                 0x0010
-#      CSR_ALLOW_UNRESTRICTED_DTRACE            0x0020
-#      CSR_ALLOW_UNRESTRICTED_NVRAM             0x0040
-#      CSR_ALLOW_DEVICE_CONFIGURATION           0x0080
-#      CSR_ALLOW_ANY_RECOVERY_OS                0x0100
-#      CSR_ALLOW_UNAPPROVED_KEXTS               0x0200
-#      CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE     0x0400
-#      CSR_ALLOW_UNAUTHENTICATED_ROOT           0x0800
+#      CSR_ALLOW_UNTRUSTED_KEXTS                 0x0001
+#      CSR_ALLOW_UNRESTRICTED_FS                 0x0002
+#      CSR_ALLOW_TASK_FOR_PID                    0x0004
+#      CSR_ALLOW_KERNEL_DEBUGGER                 0x0008
+#      CSR_ALLOW_APPLE_INTERNAL                  0x0010
+#      CSR_ALLOW_UNRESTRICTED_DTRACE             0x0020
+#      CSR_ALLOW_UNRESTRICTED_NVRAM              0x0040
+#      CSR_ALLOW_DEVICE_CONFIGURATION            0x0080
+#      CSR_ALLOW_ANY_RECOVERY_OS                 0x0100
+#      CSR_ALLOW_UNAPPROVED_KEXTS                0x0200
+#      CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE      0x0400
+#      CSR_ALLOW_UNAUTHENTICATED_ROOT            0x0800
+# The "CSR Rotate" tool actually rotates defined values
+# and does not just implement a binary toggle of two (2)
+# values. Hence, three (3) or more values can be defined
+# which will be rotated in turn in a loop by CSR Rotate.
 #
 # Inactive when commented out (CSR values for SIP/SSV cannot be set)
 #

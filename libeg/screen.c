@@ -646,9 +646,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
 // egScreenHeight, and egHasGraphics. The first two of these will be
 // unchanged if neither GOPDraw nor UGADraw is a valid pointer.
 static
-VOID egDetermineScreenSize (
-    VOID
-) {
+VOID egDetermineScreenSize (VOID) {
     EFI_STATUS Status = EFI_SUCCESS;
     UINT32     ScreenW;
     UINT32     ScreenH;

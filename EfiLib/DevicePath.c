@@ -1047,8 +1047,7 @@ for the string buffer.
 VOID DevPathFvFilePath (
     IN OUT POOL_PRINT *Str,
     IN     VOID       *DevPath
-)
-{
+) {
     MEDIA_FW_VOL_FILEPATH_DEVICE_PATH *FvFilePath;
 
     FvFilePath = DevPath;

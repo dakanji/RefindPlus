@@ -1144,7 +1144,16 @@ VOID FindLegacyBootType (VOID) {
     EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
+    // Macs have their own system. If the firmware vendor code contains the
+    //   string "Apple", assume it is available. Note that this overrides the
+    //   UEFI type, and might yield false positives if the vendor string
+    //   contains "Apple" as part of something bigger, so this is not perfect.
+    if (AppleFirmware) {
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
+
+        // Early Return
+        return;
+    }
 
     // UEFI-style legacy BIOS support is only available with some EFI implementations
     Status = REFIT_CALL_3_WRAPPER(
@@ -1153,15 +1162,12 @@ VOID FindLegacyBootType (VOID) {
     );
     if (!EFI_ERROR(Status)) {
         GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
+
+        // Early Return
+        return;
     }
 
-    // Macs have their own system. If the firmware vendor code contains the
-    //   string "Apple", assume it is available. Note that this overrides the
-    //   UEFI type, and might yield false positives if the vendor string
-    //   contains "Apple" as part of something bigger, so this is not perfect.
-    if (AppleFirmware) {
-        GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
-    }
+    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 } // VOID FindLegacyBootType()
 
 // Warn user if legacy OS scans are enabled but the firmware does not support them
