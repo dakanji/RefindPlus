@@ -424,6 +424,7 @@ typedef struct {
     BOOLEAN           DecoupleKeyF10;
     BOOLEAN           DisableAMFI;
     BOOLEAN           FocusNvramFix;
+    BOOLEAN           FollowSymlinks;
     BOOLEAN           SupplyNVME;
     BOOLEAN           SupplyAPFS;
     BOOLEAN           SupplyUEFI;

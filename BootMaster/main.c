@@ -111,6 +111,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DecoupleKeyF10 = */ FALSE,
     /* DisableAMFI = */ FALSE,
     /* FocusNvramFix = */ FALSE,
+    /* FollowSymlinks = */ FALSE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ TRUE,

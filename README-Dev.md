@@ -74,6 +74,7 @@ disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
 focus_nvram_fix       |Limits the `ProtectNVRAM` feature to explicit UEFI Windows boots
+follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required

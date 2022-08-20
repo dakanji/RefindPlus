@@ -1,5 +1,9 @@
 0.13.3.AB (Pre-Release):
 -----------------------
+- Adds `FollowSymlinks` Feature
+  * Allows following symbolic links to loaders
+  * These are otherwise ignored to avoid misc issues but made be useful to run some Linux setups
+  * The feature can be enabled using a new `follow_symlinks` configuration token
 - Adds `FocusNvramFix` Feature
   * Focuses the `ProtectNVRAM` feature (if set) on explicit UEFI Windows boots
   * The feature can be enabled using a new `focus_nvram_fix` configuration token

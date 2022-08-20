@@ -244,6 +244,14 @@
 #
 #focus_nvram_fix
 
+# When this option is activated, RefindPlus will process symlinked loaders.
+# Symlinks are ignored by default as they may result in undesirable outcomes.
+# This token may however be useful on Linux setups that use symlinked loaders.
+#
+# Inactive when commented out (Does not process symlinked loaders)
+#
+#follow_symlinks
+
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option
 # is active however, RefindPlus will enforce MacOS "TRIM" for all types

@@ -1794,7 +1794,13 @@ BOOLEAN ScanLoaderDir (
             MergeStrings (&FullName, DirEntry->FileName, L'\\');
             CleanUpPathNameSlashes (FullName);
 
-            // IsSymbolicLink (Volume, FullName, DirEntry) = is symbolic link
+            if (!GlobalConfig.FollowSymlinks) {
+                if (IsSymbolicLink (Volume, FullName, DirEntry)) {
+                    // Skip This Entry
+                    continue;
+                }
+            }
+
             // HasSignedCounterpart (Volume, FullName) = file with same name plus ".efi.signed" is present
             if (DirEntry->FileName[0] == '.' ||
                 MyStriCmp (Extension, L".icns") ||
@@ -1802,7 +1808,6 @@ BOOLEAN ScanLoaderDir (
                 (MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
                 (MyStriCmp (Path, L"EFI\\BOOT"))) ||
                 FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-                IsSymbolicLink (Volume, FullName, DirEntry) ||
                 HasSignedCounterpart (Volume, FullName) ||
                 FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
                 !IsValidLoader (Volume->RootDir, FullName)
