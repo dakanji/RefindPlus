@@ -83,6 +83,7 @@ icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Finetunes the resulting `icon_row_move` outcome
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
+prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs

@@ -1,5 +1,9 @@
 0.13.3.AB (Pre-Release):
 -----------------------
+- Adds `PreferUGA` Feature
+  * Sets RefindPlus to always use UGA for graphics output when available
+    - Default is to use GOP and fallback on UGA when GOP is not available
+  * The feature can be enabled using a new `prefer_uga` configuration token
 - Adds `FollowSymlinks` Feature
   * Allows following symbolic links to loaders
   * These are otherwise ignored to avoid misc issues but made be useful to run some Linux setups

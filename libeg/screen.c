@@ -84,6 +84,7 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw        = NULL;
 EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 
 BOOLEAN egHasGraphics  = FALSE;
+BOOLEAN SetPreferUGA   = FALSE;
 
 UINTN   SelectedGOP    = 0;
 UINTN   egScreenWidth  = 800;
@@ -719,28 +720,12 @@ VOID egGetScreenSize (
     }
 } // VOID egGetScreenSize()
 
-
-VOID egInitScreen (VOID) {
-    EFI_STATUS                     Status  = EFI_SUCCESS;
-    EFI_STATUS                     XFlag;
+static
+VOID egInitConsoleControl (VOID) {
+    EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
-    BOOLEAN                        FlagUGA        = FALSE;
-    BOOLEAN                        thisValidGOP   = FALSE;
-    BOOLEAN                        FoundHandleUGA = FALSE;
     EFI_HANDLE                    *HandleBuffer   = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGop         = NULL;
-
-    #if REFIT_DEBUG > 0
-    UINTN    SizeFB   = 0;
-    CHAR16  *MsgStr   = NULL;
-    BOOLEAN  PrevFlag = FALSE;
-
-    LOG_MSG("Check for Graphics:");
-    #endif
-
-    // Get ConsoleControl Protocol
-    ConsoleControl = NULL;
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s  - Seek Console Control", OffsetNext);
@@ -787,20 +772,30 @@ VOID egInitScreen (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (
-        (EFI_ERROR(Status))
+    CHAR16 *MsgStr = (EFI_ERROR(Status))
         ? L"Assess Console Control ... NOT OK!!"
-        : L"Assess Console Control ... ok"
-    );
+        : L"Assess Console Control ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
+} // static VOID egInitConsoleControl()
 
-    // Get UGADraw Protocol
-    UGADraw = NULL;
+BOOLEAN egInitUGADraw (
+    BOOLEAN LogOutput
+) {
+    EFI_STATUS                     Status;
+    UINTN                          i;
+    UINTN                          HandleCount;
+    BOOLEAN                        FoundHandleUGA = FALSE;
+    EFI_HANDLE                    *HandleBuffer   = NULL;
 
     #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
+    if (!LogOutput) {
+        MY_MUTELOGGER_SET;
+    }
+
     LOG_MSG("\n%s  - Seek Universal Graphics Adapter", OffsetNext);
     #endif
 
@@ -890,23 +885,70 @@ VOID egInitScreen (VOID) {
     } // if EFI_ERROR(Status
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (
-        (EFI_ERROR(Status))
+    CHAR16 *MsgStr = (EFI_ERROR(Status))
         ? L"Assess Universal Graphics Adapter ... NOT OK!!"
-        : L"Assess Universal Graphics Adapter ... ok"
-    );
+        : L"Assess Universal Graphics Adapter ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
+
+    if (!LogOutput) {
+        MY_MUTELOGGER_OFF;
+    }
     #endif
 
-    // Get GOPDraw Protocol
-    GOPDraw = NULL;
+    return FoundHandleUGA;
+} // static BOOLEAN egInitUGADraw()
 
-    if (FoundHandleUGA && AcquireErrorGOP) {
+VOID egInitScreen (VOID) {
+    EFI_STATUS                     Status;
+    EFI_STATUS                     XFlag;
+    UINTN                          i;
+    UINTN                          HandleCount;
+    BOOLEAN                        FlagUGA        = FALSE;
+    BOOLEAN                        thisValidGOP   = FALSE;
+    EFI_HANDLE                    *HandleBuffer   = NULL;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGop         = NULL;
+
+    #if REFIT_DEBUG > 0
+    UINTN    SizeFB   = 0;
+    CHAR16  *MsgStr   = NULL;
+    BOOLEAN  PrevFlag = FALSE;
+
+    LOG_MSG("Check for Graphics:");
+    #endif
+
+    // Get ConsoleControl Protocol
+    egInitConsoleControl();
+
+    // Get UGADraw Protocol
+    BOOLEAN FoundHandleUGA = egInitUGADraw(TRUE);
+
+    // Align PreferUGA
+    if (GlobalConfig.PreferUGA && FoundHandleUGA && !SetPreferUGA) {
+        UINT32     TmpScreenW;
+        UINT32     TmpScreenH;
+        UINT32     TmpUgaDepth;
+        UINT32     TmpUgaRefreshRate;
+
+        Status = REFIT_CALL_5_WRAPPER(
+            UGADraw->GetMode, UGADraw,
+            &TmpScreenW, &TmpScreenH,
+            &TmpUgaDepth, &TmpUgaRefreshRate
+        );
+        if (EFI_ERROR(Status)) {
+            UGADraw =  NULL;
+        }
+        else {
+            SetPreferUGA = TRUE;
+        }
+    }
+
+    // Get GOPDraw Protocol
+    if (FoundHandleUGA && (SetPreferUGA || AcquireErrorGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-        LOG_MSG("INFO: Skipping GOP Search ... Apparent UGA-Only Graphics");
+        LOG_MSG("INFO: Skip GOP Search ... ");
+        LOG_MSG("%s", (SetPreferUGA) ? L"Enforced UGA-Only Mode" : L"Apparent UGA-Only Graphics");
         LOG_MSG("\n\n");
         #endif
     }
@@ -1166,7 +1208,7 @@ VOID egInitScreen (VOID) {
             FreePool (MsgStr);
         }
         #endif
-    } // if/else FoundHandleUGA && AcquireErrorGOP
+    } // if/else FoundHandleUGA && (SetPreferUGA || AcquireErrorGOP)
 
     // Get Screen Size
     egHasGraphics = FALSE;
@@ -1261,7 +1303,9 @@ VOID egInitScreen (VOID) {
                     ? L"Graphics Not Available ... Fall Back on Text Mode"
                     : (FoundHandleUGA && AcquireErrorGOP)
                         ? L"Leveraging Universal Graphics Adapter"
-                        : L"GOP Not Available ... Fall Back on UGA"
+                        : (SetPreferUGA)
+                            ? L"Enforcing Universal Graphics Adapter"
+                            : L"GOP Not Available ... Fall Back on UGA"
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);

@@ -347,6 +347,16 @@
 #
 #pass_uga_through
 
+# RefindPlus defaults to using the Graphic Output Protocol (GOP) for graphics
+# output if available and only falls backs on the Universal Graphics Adapter
+# (UGA) when this is available and GOP is not. When this setting is active,
+# it will instead always use UGA when available and will not consider GOP.
+# This may also improve RefindPlus loading speed on legacy UGA-Only GPUs.
+#
+# Inactive when commented out (Does not prefer UGA over GOP for graphics)
+#
+#prefer_uga
+
 # Some computers, such as some classic MacPros, may have multiple GOP instances:
 #     - One installed on the Console Out handle
 #     - Others installed on GPU handles.

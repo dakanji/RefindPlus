@@ -31,6 +31,8 @@ EFI_STATUS AmendSysTable (VOID) {
 #include "../../MdeModulePkg/Core/Dxe/DxeMain.h"
 #include "../../MdeModulePkg/Core/Dxe/Event/Event.h"
 
+extern BOOLEAN egInitUGADraw (BOOLEAN LogOutput);
+
 #define EFI_FIELD_OFFSET(TYPE, Field) ((UINTN) (&(((TYPE *) 0)->Field)))
 #define TARGET_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
 
@@ -413,6 +415,7 @@ EFI_STATUS OurCreateEventEx (
   @retval EFI_OUT_OF_RESOURCES      Out of memory.
   @retval EFI_ALREADY_STARTED       Already on UEFI 2.3 or later.
   @retval EFI_PROTOCOL_ERROR        Unexpected Field Offset.
+  @retval EFI_NOT_STARTED           Aborted Process ... PreferUGA
 **/
 EFI_STATUS AmendSysTable (VOID) {
     EFI_BOOT_SERVICES *uBS;

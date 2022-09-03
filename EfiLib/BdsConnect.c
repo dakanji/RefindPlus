@@ -43,10 +43,23 @@ UINTN   AllHandleCount;
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
 
+extern BOOLEAN SetPreferUGA;
+
 // DA-TAG: Limit to TianoCore
 #ifdef __MAKEWITH_TIANO
 extern EFI_STATUS OcConnectDrivers (VOID);
 #endif
+
+static
+VOID UpdatePreferUGA (VOID) {
+    static BOOLEAN GotStatusUGA = FALSE;
+
+    if (GotStatusUGA) return;
+    if (GlobalConfig.PreferUGA && egInitUGADraw(FALSE)) {
+        SetPreferUGA = TRUE;
+    }
+    GotStatusUGA = TRUE;
+} // static VOID UpdatePreferUGA()
 
 static
 EFI_STATUS EFIAPI RefitConnectController (
@@ -624,6 +637,10 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     }
     #endif
 
+    if (!SetPreferUGA) {
+        UpdatePreferUGA();
+    }
+
     do {
         FoundGOP = FALSE;
 
@@ -635,6 +652,13 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
         // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' is false.
         Status = (RescanDrivers) ? gDS->Dispatch() : EFI_NOT_FOUND;
+
+        if (SetPreferUGA) {
+            // DA-TAG: Rig 'FoundGOP' if forcing UGA-Only
+            //         This skips ReloadGOP
+            //         This makes this function return EFI_SUCCESS
+            FoundGOP = TRUE;
+        }
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
@@ -703,32 +727,34 @@ EFI_STATUS ApplyGOPFix (VOID) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
         #endif
+
+        // Early Return
+        return Status;
     }
-    else {
-        Status = AcquireGOP();
 
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s      %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
+    Status = AcquireGOP();
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s      %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+    if (EFI_ERROR(Status)) {
+        AcquireErrorGOP = TRUE;
 
-        if (EFI_ERROR(Status)) {
-            AcquireErrorGOP = TRUE;
-        }
-        else {
-            // Connect all devices if no error
-            #if REFIT_DEBUG > 0
-            LOG_MSG("\n\n");
-            #endif
-
-            BOOLEAN TempRescanDXE  = GlobalConfig.RescanDXE;
-            GlobalConfig.RescanDXE = FALSE;
-            Status = BdsLibConnectAllDriversToAllControllersEx();
-            GlobalConfig.RescanDXE = TempRescanDXE;
-        }
+        // Early Return
+        return Status;
     }
+
+    // Connect all devices if no error
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n\n");
+    #endif
+
+    BOOLEAN TempRescanDXE  = GlobalConfig.RescanDXE;
+    GlobalConfig.RescanDXE = FALSE;
+    Status = BdsLibConnectAllDriversToAllControllersEx();
+    GlobalConfig.RescanDXE = TempRescanDXE;
 
     return Status;
 } // BOOLEAN ApplyGOPFix()

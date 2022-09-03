@@ -112,6 +112,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableAMFI = */ FALSE,
     /* FocusNvramFix = */ FALSE,
     /* FollowSymlinks = */ FALSE,
+    /* PreferUGA = */ FALSE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ TRUE,
@@ -2370,6 +2371,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                             );
     LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel       ));
     LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay      ));
+    LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA      ));
     LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP      ));
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
     LOG_MSG("%s      TagsHelp:- '%s'",     TAG_ITEM_C(GlobalConfig.TagsHelp       ));

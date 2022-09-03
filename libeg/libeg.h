@@ -158,7 +158,7 @@ BOOLEAN egHasGraphicsMode (VOID);
 BOOLEAN egIsGraphicsModeEnabled (VOID);
 BOOLEAN egSetTextMode (UINT32 RequestedMode);
 BOOLEAN egGetResFromMode (UINTN *ModeWidth, UINTN *Height);
-
+BOOLEAN egInitUGADraw (BOOLEAN LogOutput);
 
 EG_IMAGE * egCopyScreen (VOID);
 EG_IMAGE * egCopyImage (IN EG_IMAGE *Image);

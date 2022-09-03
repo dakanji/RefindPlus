@@ -1231,6 +1231,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"follow_symlinks")) {
             GlobalConfig.FollowSymlinks = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"prefer_uga")) {
+            GlobalConfig.PreferUGA = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"focus_nvram_fix")
             ||  MyStriCmp  (TokenList[0], L"decline_macos_filter")
         ) {
