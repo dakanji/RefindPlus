@@ -1838,6 +1838,14 @@ VOID ScanUserConfigured (
     UINTN              TokenCount, size;
     LOADER_ENTRY      *Entry;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanUserConfigured";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
     static UINTN EntryCount = 0;
 
     if (FileExists (SelfDir, FileName)) {
@@ -1872,8 +1880,12 @@ VOID ScanUserConfigured (
                     MyStriCmp (FileName, GlobalConfig.ConfigFilename)
                 ) {
                     if (!MyStriCmp (TokenList[1], FileName)) {
+                        LOG_SEP(L"X");
+                        BREAD_CRUMB(L"%s:  A1 - INNER SCAN: START", FuncTag);
                         InnerScan = TRUE;
                         ScanUserConfigured (TokenList[1]);
+                        BREAD_CRUMB(L"%s:  A2 - INNER SCAN: END", FuncTag);
+                        LOG_SEP(L"X");
                     }
                 }
 
@@ -1891,6 +1903,10 @@ VOID ScanUserConfigured (
     #endif
 
     InnerScan = FALSE;
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID ScanUserConfigured()
 
 // Create an options file based on /etc/fstab. The resulting file has two options
@@ -1914,23 +1930,26 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     #endif
 
     LOG_SEP(L"X");
-    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     if (!FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        BREAD_CRUMB(L"In %s ... 1a 1 - END:- return NULL - '\\etc\\fstab' Does Not Exist", FuncTag);
+        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' Does Not Exist", FuncTag);
+        LOG_DECREMENT();
         LOG_SEP(L"X");
 
         // Early Return
         return NULL;
     }
 
-    BREAD_CRUMB(L"In %s ... 2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     Options = AllocateZeroPool (sizeof(REFIT_FILE));
 
-    BREAD_CRUMB(L"In %s ... 3", FuncTag);
+    BREAD_CRUMB(L"%s:  3", FuncTag);
     Fstab = AllocateZeroPool (sizeof(REFIT_FILE));
     if (Fstab == NULL) {
-        BREAD_CRUMB(L"In %s ... 3a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        LOG_DECREMENT();
         LOG_SEP(L"X");
 
         MY_FREE_POOL(Options);
@@ -1939,12 +1958,13 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"In %s ... 4", FuncTag);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
     Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
 
-    BREAD_CRUMB(L"In %s ... 5", FuncTag);
+    BREAD_CRUMB(L"%s:  5", FuncTag);
     if (CheckError (Status, L"while reading /etc/fstab")) {
-        BREAD_CRUMB(L"In %s ... 5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
+        BREAD_CRUMB(L"%s:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
+        LOG_DECREMENT();
         LOG_SEP(L"X");
 
         MY_FREE_POOL(Options);
@@ -1954,11 +1974,11 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"In %s ... 6", FuncTag);
+    BREAD_CRUMB(L"%s:  6", FuncTag);
     // File read; locate root fs and create entries
     Options->Encoding = ENCODING_UTF16_LE;
 
-    BREAD_CRUMB(L"In %s ... 7", FuncTag);
+    BREAD_CRUMB(L"%s:  7", FuncTag);
     while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -1969,86 +1989,88 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         #endif
 
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"In %s ... 7a 1 START WHILE LOOP", FuncTag);
+        BREAD_CRUMB(L"%s:  7a 1 - WHILE LOOP:- START", FuncTag);
         if (TokenCount > 2) {
-            BREAD_CRUMB(L"In %s ... 7a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  7a 1a 1", FuncTag);
             if (StrCmp (TokenList[1], L"\\") == 0) {
-                BREAD_CRUMB(L"In %s ... 7a 1a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 1a 1", FuncTag);
                 Root = PoolPrint (L"%s", TokenList[0]);
             }
             else if (StrCmp (TokenList[2], L"\\") == 0) {
-                BREAD_CRUMB(L"In %s ... 7a 1a 1b 1", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 1b 1", FuncTag);
                 Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
             }
 
-            BREAD_CRUMB(L"In %s ... 7a 1a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  7a 1a 2", FuncTag);
             if (Root && (Root[0] != L'\0')) {
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 1", FuncTag);
                 for (i = 0; i < StrLen (Root); i++) {
                     LOG_SEP(L"X");
-                    BREAD_CRUMB(L"In %s ... 7a 1a 2a 1  START FOR LOOP", FuncTag);
+                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1 - FOR LOOP:- START", FuncTag);
                     if (Root[i] == '\\') {
-                        BREAD_CRUMB(L"In %s ... 7a 1a 2a 1a 1", FuncTag);
+                        BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1a 1 - Flip Slash", FuncTag);
                         Root[i] = '/';
                     }
-                    BREAD_CRUMB(L"In %s ... 7a 1a 2a 2  END FOR LOOP", FuncTag);
+                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 2 - FOR LOOP:- END", FuncTag);
                     LOG_SEP(L"X");
                 }
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 2", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 2", FuncTag);
                 Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 3", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 3", FuncTag);
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 4", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 4", FuncTag);
                 MY_FREE_POOL(Line);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 5", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 5", FuncTag);
                 Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 6", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 6", FuncTag);
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 7", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 7", FuncTag);
                 MY_FREE_POOL(Line);
 
-                BREAD_CRUMB(L"In %s ... 7a 1a 2a 8", FuncTag);
+                BREAD_CRUMB(L"%s:  7a 1a 2a 8", FuncTag);
                 Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
             } // if
 
-            BREAD_CRUMB(L"In %s ... 7a 1a 3", FuncTag);
+            BREAD_CRUMB(L"%s:  7a 1a 3", FuncTag);
             MY_FREE_POOL(Root);
          } // if
 
-         BREAD_CRUMB(L"In %s ... 7a 2", FuncTag);
+         BREAD_CRUMB(L"%s:  7a 2", FuncTag);
          FreeTokenLine (&TokenList, &TokenCount);
 
-         BREAD_CRUMB(L"In %s ... 7a 3 END WHILE LOOP", FuncTag);
+         BREAD_CRUMB(L"%s:  7a 3 - WHILE LOOP:- END", FuncTag);
          LOG_SEP(L"X");
     } // while
 
-    BREAD_CRUMB(L"In %s ... 8", FuncTag);
+    BREAD_CRUMB(L"%s:  8", FuncTag);
     if (Options->Buffer) {
-        BREAD_CRUMB(L"In %s ... 8a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
         Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
         Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
         Options->Current16Ptr = (CHAR16 *)Options->Buffer;
         Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
 
-        BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
     }
     else {
-        BREAD_CRUMB(L"In %s ... 8b 1", FuncTag);
+        BREAD_CRUMB(L"%s:  8b 1", FuncTag);
         MY_FREE_POOL(Options);
     }
 
-    BREAD_CRUMB(L"In %s ... 9", FuncTag);
+    BREAD_CRUMB(L"%s:  9", FuncTag);
     MY_FREE_POOL(Fstab->Buffer);
     MY_FREE_POOL(Fstab);
 
-    BREAD_CRUMB(L"In %s ... 10 - END:- return REFIT_FILE *Options", FuncTag);
+    BREAD_CRUMB(L"%s:  10 - END:- return REFIT_FILE *Options", FuncTag);
+    LOG_DECREMENT();
     LOG_SEP(L"X");
+
     return Options;
 } // GenerateOptionsFromEtcFstab()
 
@@ -2072,65 +2094,68 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     #endif
 
     LOG_SEP(L"X");
-    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
     if (GlobalConfig.DiscoveredRoot) {
-        BREAD_CRUMB(L"In %s ... 1a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  1a 1", FuncTag);
         Options = AllocateZeroPool (sizeof (REFIT_FILE));
 
-        BREAD_CRUMB(L"In %s ... 1a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  1a 2", FuncTag);
         if (Options) {
-            BREAD_CRUMB(L"In %s ... 1a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 1", FuncTag);
             Options->Encoding = ENCODING_UTF16_LE;
 
-            BREAD_CRUMB(L"In %s ... 1a 2a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 2", FuncTag);
             GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
 
-            BREAD_CRUMB(L"In %s ... 1a 2a 3", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 3", FuncTag);
             WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
 
-            BREAD_CRUMB(L"In %s ... 1a 2a 4", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 4", FuncTag);
             ToLower (GuidString);
 
-            BREAD_CRUMB(L"In %s ... 1a 2a 5", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 5", FuncTag);
             if (GuidString) {
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 1", FuncTag);
                 Line = PoolPrint (
                     L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
                     WriteStatus, GuidString
                 );
 
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 2", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 2", FuncTag);
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 3", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 3", FuncTag);
                 MY_FREE_POOL(Line);
 
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 4", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 4", FuncTag);
                 Line = PoolPrint (
                     L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
                     WriteStatus, GuidString
                 );
 
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 5", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 5", FuncTag);
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"In %s ... 1a 2a 5a 6", FuncTag);
+                BREAD_CRUMB(L"%s:  1a 2a 5a 6", FuncTag);
                 MY_FREE_POOL(Line);
                 MY_FREE_POOL(GuidString);
             } // if (GuidString)
 
-            BREAD_CRUMB(L"In %s ... 1a 2a 6", FuncTag);
+            BREAD_CRUMB(L"%s:  1a 2a 6", FuncTag);
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
             Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
             Options->Current16Ptr = (CHAR16 *) Options->Buffer;
             Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
         } // if (Options allocated OK)
-        BREAD_CRUMB(L"In %s ... 1a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  1a 3", FuncTag);
     } // if (partition has root GUID)
 
-    BREAD_CRUMB(L"In %s ... 2 - END:- return REFIT_FILE *Options", FuncTag);
+    BREAD_CRUMB(L"%s:  2 - END:- return REFIT_FILE *Options", FuncTag);
+    LOG_DECREMENT();
     LOG_SEP(L"X");
+
     return Options;
 } // REFIT_FILE * GenerateOptionsFromPartTypes()
 
@@ -2164,20 +2189,21 @@ REFIT_FILE * ReadLinuxOptionsFile (
     #endif
 
     LOG_SEP(L"X");
-    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    BREAD_CRUMB(L"In %s ... 2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     do {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"In %s ... 2a 1  START DO LOOP", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 1 - DO LOOP:- START", FuncTag);
         OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
 
-        BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         FullFilename = FindPath (LoaderPath);
 
-        BREAD_CRUMB(L"In %s ... 2a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
         if ((OptionsFilename == NULL) || (FullFilename == NULL)) {
-            BREAD_CRUMB(L"In %s ... 2a 3a 1  END DO LOOP - Missing Params", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 3a 1 - DO LOOP:- BREAK - Missing Params", FuncTag);
             LOG_SEP(L"X");
 
             MY_FREE_POOL(OptionsFilename);
@@ -2186,65 +2212,67 @@ REFIT_FILE * ReadLinuxOptionsFile (
             break;
         }
 
-        BREAD_CRUMB(L"In %s ... 2a 4", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
         MergeStrings (&FullFilename, OptionsFilename, '\\');
 
-        BREAD_CRUMB(L"In %s ... 2a 5", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 5", FuncTag);
         if (FileExists (Volume->RootDir, FullFilename)) {
-            BREAD_CRUMB(L"In %s ... 2a 5a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
             File = AllocateZeroPool (sizeof (REFIT_FILE));
             if (File == NULL) {
                 MY_FREE_POOL(OptionsFilename);
                 MY_FREE_POOL(FullFilename);
 
-                BREAD_CRUMB(L"In %s ... 2a 5a 1a 1  END DO LOOP - OUT OF MEMORY", FuncTag);
-                BREAD_CRUMB(L"In %s ... 2a 5a 1a 2 - END:- return NULL", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 5a 1a 1 - DO LOOP:- BREAK - OUT OF MEMORY", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 5a 1a 2 - END:- return NULL", FuncTag);
+                LOG_DECREMENT();
                 LOG_SEP(L"X");
 
                 return NULL;
             }
 
-            BREAD_CRUMB(L"In %s ... 2a 5a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 5a 2", FuncTag);
             Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
 
-            BREAD_CRUMB(L"In %s ... 2a 5a 3", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 5a 3", FuncTag);
             if (CheckError (Status, L"While Loading the Linux Options File")) {
-                BREAD_CRUMB(L"In %s ... 2a 5a 3a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 5a 3a 1", FuncTag);
                 MY_FREE_FILE(File);
             }
             else {
-                BREAD_CRUMB(L"In %s ... 2a 5a 3b 1", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 5a 3b 1", FuncTag);
                 GoOn      = FALSE;
                 FileFound = TRUE;
             }
-            BREAD_CRUMB(L"In %s ... 2a 5a 4", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 5a 4", FuncTag);
         }
-        BREAD_CRUMB(L"In %s ... 2a 6", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 6", FuncTag);
 
         MY_FREE_POOL(OptionsFilename);
         MY_FREE_POOL(FullFilename);
 
-        BREAD_CRUMB(L"In %s ... 2a 7  END DO LOOP", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 7 - DO LOOP:- END", FuncTag);
         LOG_SEP(L"X");
     } while (GoOn);
 
-    BREAD_CRUMB(L"In %s ... 3", FuncTag);
+    BREAD_CRUMB(L"%s:  3", FuncTag);
     if (!FileFound) {
-        BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         // No refindplus_linux.conf or refind_linux.conf file
         // Look for /etc/fstab and try to pull values from there
         File = GenerateOptionsFromEtcFstab(Volume);
 
-        BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
         if (!File) {
-            BREAD_CRUMB(L"In %s ... 3a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             File = GenerateOptionsFromPartTypes();
         }
-        BREAD_CRUMB(L"In %s ... 3a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
     } // if
 
-    BREAD_CRUMB(L"In %s ... 4 - END:- return REFIT_FILE *File", FuncTag);
+    BREAD_CRUMB(L"%s:  4 - END:- return REFIT_FILE *File", FuncTag);
+    LOG_DECREMENT();
     LOG_SEP(L"X");
     return File;
 } // static REFIT_FILE * ReadLinuxOptionsFile()
@@ -2264,29 +2292,32 @@ CHAR16 * GetFirstOptionsFromFile (
     #endif
 
     LOG_SEP(L"X");
-    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
     File = ReadLinuxOptionsFile (LoaderPath, Volume);
 
-    BREAD_CRUMB(L"In %s ... 2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (File != NULL) {
-        BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         TokenCount = ReadTokenLine(File, &TokenList);
 
-        BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         if (TokenCount > 1) {
             Options = StrDuplicate(TokenList[1]);
         }
 
-        BREAD_CRUMB(L"In %s ... 2a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        BREAD_CRUMB(L"In %s ... 2a 4", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
         MY_FREE_FILE(File);
     }
 
-    BREAD_CRUMB(L"In %s ... 3 - END:- return CHAR16 *Options = '%s'", FuncTag,
+    BREAD_CRUMB(L"%s:  3 - END:- return CHAR16 *Options = '%s'", FuncTag,
         Options ? Options : L"NULL"
     );
+    LOG_DECREMENT();
     LOG_SEP(L"X");
+
     return Options;
 } // static CHAR16 * GetOptionsFile()

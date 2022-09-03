@@ -187,7 +187,7 @@ extern BOOLEAN     LogNewLine;
 #define SAMPLE_SIZE 69632
 
 
-#define NAME_FIX(Name) FoundSubStr ((*Volume)->VolName, Name)) VolumeName = Name
+#define NAME_FIX(Name) FindSubStr ((*Volume)->VolName, Name)) VolumeName = Name
 
 
 BOOLEAN egIsGraphicsModeEnabled (VOID);
@@ -2570,12 +2570,12 @@ VOID ScanVolumes (VOID) {
             PartType = FSTypeName (Volume->FSType);
 
             // Improve Volume Id
-            if (FoundSubStr (PartType, L"Unknown")) {
+            if (FindSubStr (PartType, L"Unknown")) {
                 if (0);
                 else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)"    ;
                 else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)"    ;
-                else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)"    ;
-                else if (FoundSubStr (Volume->VolName, L"Optical Disc Drive")        ) PartType = L"ISO-9660 (Assumed)";
+                else if (FindSubStr (Volume->VolName, L"/FileVault Container")       ) PartType = L"APFS (Assumed)"    ;
+                else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")         ) PartType = L"ISO-9660 (Assumed)";
 
                 // Split checks as '/FileVault' may be Core Storage
                 if (0);
@@ -2588,15 +2588,15 @@ VOID ScanVolumes (VOID) {
 
                 // Update FS Types
                 if (0);
-                else if (FoundSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS;
-                else if (FoundSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS;
-                else if (FoundSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
-                else if (FoundSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
+                else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS;
+                else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS;
+                else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
+                else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
             }
 
             if (!DoneHeadings) {
                 LOG_MSG(
-                    "%-39s%-39s%-20s%-39s%-20s%s",
+                    "%-39s%-39s%-21s%-39s%-20s%s",
                     ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
                 );
                 LOG_MSG("\n");
@@ -2625,15 +2625,15 @@ VOID ScanVolumes (VOID) {
             RoleStr = NULL;
             VolumeRole = 0;
             if (0);
-            else if (FoundSubStr (Volume->VolName, L"APFS/FileVault")    ) RoleStr = L"0xEE - Container";
+            else if (FindSubStr (Volume->VolName, L"APFS/FileVault")     ) RoleStr = L"0xCC - Container";
             else if (MyStriCmp (Volume->VolName, L"EFI")                 ) RoleStr = L" * EFI Partition";
             else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume")   ) RoleStr = L" * Physical Disk";
             else if (MyStriCmp (Volume->VolName, L"Recovery HD")         ) RoleStr = L" * HFS Recovery" ;
             else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")            ) RoleStr = L" * Bootcamp Win" ;
             else if (MyStriCmp (Volume->VolName, L"Optical Disc Drive")  ) RoleStr = L" * Optical Drive";
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")) RoleStr = L" * Win BasicData";
-            else if (FoundSubStr (Volume->VolName, L"System Reserved")   ) RoleStr = L" * Win Reserved" ;
-            else if (FoundSubStr (Volume->VolName, L"Microsoft Reserved")) RoleStr = L" * MS Reserved"  ;
+            else if (FindSubStr (Volume->VolName, L"System Reserved")    ) RoleStr = L" * Win Reserved" ;
+            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved") ) RoleStr = L" * MS Reserved"  ;
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
@@ -2766,7 +2766,7 @@ VOID ScanVolumes (VOID) {
             #endif
 
             if (RoleStr) {
-                if (FoundSubStr (RoleStr, L"HFS Recovery")) {
+                if (FindSubStr (RoleStr, L"HFS Recovery")) {
                     // Create or add to a list of bootable HFS+ volumes
                     AddListElement (
                         (VOID ***) &HfsRecovery,
@@ -2784,15 +2784,15 @@ VOID ScanVolumes (VOID) {
             VolumeUUID   = GuidAsString (&(Volume->VolUuid));
 
             // Control PartName Length
-            LimitStringLength (PartName, 15);
+            LimitStringLength (PartName, 18);
 
             if (!RoleStr) {
                 RoleStr = L"";
             }
 
             MsgStr = PoolPrint (
-                L"%-36s : %-36s : %-17s : %-36s : %-17s : %s",
-                PartTypeGUID, PartGUID, PartType,
+                L"%-36s : %-36s : %-18s : %-36s : %-17s : %s",
+                PartTypeGUID, PartGUID, PartName,
                 VolumeUUID, RoleStr, Volume->VolName
             );
 
@@ -2826,7 +2826,7 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"%-39s%-39s%-20s%-39s%-20s%s",
+        L"%-39s%-39s%-21s%-39s%-20s%s",
         ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2962,6 +2962,29 @@ VOID GetVolumeBadgeIcons (VOID) {
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Check for Volume Badges for Internal Volumes");
     #endif
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GetVolumeBadgeIcons";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'"
+        );
+        #endif
+
+        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skipped Check)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return;
+    }
+
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         MsgStr = (GlobalConfig.DirectBoot)
@@ -2971,15 +2994,9 @@ VOID GetVolumeBadgeIcons (VOID) {
         MY_FREE_POOL(MsgStr);
         #endif
 
-        return;
-    }
-
-    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'"
-        );
-        #endif
+        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (DirectBoot or Text Mode is Active)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
 
         // Early Return
         return;
@@ -3034,6 +3051,10 @@ VOID GetVolumeBadgeIcons (VOID) {
             #endif
         } // if Volume->IsReadable
     } // for
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID GetVolumeBadgeIcons()
 
 VOID SetVolumeIcons (VOID) {
@@ -3056,6 +3077,29 @@ VOID SetVolumeIcons (VOID) {
     );
     #endif
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"SetVolumeIcons";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
+    if (GlobalConfig.HiddenIconsIgnore) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'hidden_icons_ignore'"
+        );
+        #endif
+
+        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skipped Check)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return;
+    }
+
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         MsgStr = (GlobalConfig.DirectBoot)
@@ -3065,16 +3109,9 @@ VOID SetVolumeIcons (VOID) {
         MY_FREE_POOL(MsgStr);
         #endif
 
-        // Early Return
-        return;
-    }
-
-    if (GlobalConfig.HiddenIconsIgnore) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'hidden_icons_ignore'"
-        );
-        #endif
+        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (DirectBoot or Text Mode is Active)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
 
         // Early Return
         return;
@@ -3158,6 +3195,10 @@ VOID SetVolumeIcons (VOID) {
             #endif
         } // if Volume->IsReadable
     } // for
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID SetVolumeIcons()
 
 //
@@ -3203,51 +3244,84 @@ EFI_STATUS DirNextEntry (
     CHAR16  *MsgStr  = NULL;
     #endif
 
+    //#if REFIT_DEBUG > 1
+    //CHAR16 *FuncTag = L"DirNextEntry";
+    //#endif
+
+    //LOG_SEP(L"X");
+    //LOG_INCREMENT();
+    //BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+    //BREAD_CRUMB(L"%s:  2", FuncTag);
     for (;;) {
+        //LOG_SEP(L"X");
+        //BREAD_CRUMB(L"%s:  2a 1 - FOR LOOP:- START", FuncTag);
+
         // Release pointer from last call
         MY_FREE_POOL(*DirEntry);
 
         // Read next directory entry
+        //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         LastBufferSize = BufferSize = 256;
         Buffer         = AllocatePool (BufferSize);
         if (Buffer == NULL) {
+            //BREAD_CRUMB(L"%s:  2a 2a 1 - END:- return EFI_STATUS = 'Bad Buffer Size'", FuncTag);
+
             return EFI_BAD_BUFFER_SIZE;
         }
 
+        //BREAD_CRUMB(L"%s:  2a 3", FuncTag);
         for (IterCount = 0; ; IterCount++) {
+            //LOG_SEP(L"X");
+            //BREAD_CRUMB(L"%s:  2a 3a 1 - FOR LOOP:- START", FuncTag);
             Status = REFIT_CALL_3_WRAPPER(
                 Directory->Read, Directory,
                 &BufferSize, Buffer
             );
+
+            //BREAD_CRUMB(L"%s:  2a 3a 2", FuncTag);
             if (Status != EFI_BUFFER_TOO_SMALL || IterCount > 3) {
+                //BREAD_CRUMB(L"%s:  2a 3a 2a 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 if (!FirstRun) {
+                    //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1", FuncTag);
                     if (IterCount > 3) {
+                        //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1a 1", FuncTag);
                         MsgStr = StrDuplicate (L"IterCount > 3 ... Break");
                     }
                     else {
+                        //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1b 1", FuncTag);
                         MsgStr = StrDuplicate (L"OK ... Break");
                     }
+                    //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 2", FuncTag);
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG(":- '%s'", MsgStr);
                     MY_FREE_POOL(MsgStr);
                 }
                 #endif
 
+                //BREAD_CRUMB(L"%s:  2a 3a 2a 2 - FOR LOOP:- BREAK ... Status/IterCount", FuncTag);
+                //LOG_SEP(L"X");
+
                 break;
             }
             else {
+                //BREAD_CRUMB(L"%s:  2a 3a 2b 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 if (!FirstRun) {
+                    //BREAD_CRUMB(L"%s:  2a 3a 2b 1a 1", FuncTag);
                     MsgStr = StrDuplicate (L"NOT OK!!");
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG(":- '%s'", MsgStr);
                     MY_FREE_POOL(MsgStr);
                 }
                 #endif
+                //BREAD_CRUMB(L"%s:  2a 3a 2b 2", FuncTag);
             }
 
+            //BREAD_CRUMB(L"%s:  2a 3a 3", FuncTag);
             if (BufferSize <= LastBufferSize) {
+                //BREAD_CRUMB(L"%s:  2a 3a 3a 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
                     L"Bad FS Driver Buffer Size Request %d (was %d) ... Using %d Instead",
@@ -3263,6 +3337,7 @@ EFI_STATUS DirNextEntry (
                 BufferSize = LastBufferSize * 2;
             }
             else {
+                //BREAD_CRUMB(L"%s:  2a 3a 3b 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
                     L"Resizing DirEntry Buffer from %d to %d bytes",
@@ -3273,6 +3348,8 @@ EFI_STATUS DirNextEntry (
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
+            //BREAD_CRUMB(L"%s:  2a 3a 4", FuncTag);
+
             #if REFIT_DEBUG > 0
             FirstRun = FALSE;
             #endif
@@ -3281,69 +3358,119 @@ EFI_STATUS DirNextEntry (
                 Buffer, LastBufferSize, BufferSize
             );
             LastBufferSize = BufferSize;
+
+            //BREAD_CRUMB(L"%s:  2a 3a 5 - FOR LOOP:- END", FuncTag);
+            //LOG_SEP(L"X");
         } // for IterCount = 0
+
         #if REFIT_DEBUG > 0
         FirstRun = TRUE;
         #endif
 
+        //BREAD_CRUMB(L"%s:  2a 4", FuncTag);
         if (EFI_ERROR(Status)) {
+            //BREAD_CRUMB(L"%s: 2a 4a 1 - FOR LOOP:- BREAK ... Status Error", FuncTag);
+            //LOG_SEP(L"X");
+
             MY_FREE_POOL(Buffer);
             break;
         }
 
-        // Check for end of listing
-
+        // Check for End of Listing
+        //BREAD_CRUMB(L"%s:  2a 5", FuncTag);
         if (BufferSize == 0) {
-            // end of directory listing
+            //BREAD_CRUMB(L"%s: 2a 5a 1 - FOR LOOP:- BREAK ... End of Listing", FuncTag);
+            //LOG_SEP(L"X");
+
+            // End of Directory Listing
             MY_FREE_POOL(Buffer);
             break;
         }
 
         // Entry is ready to be returned
+        //BREAD_CRUMB(L"%s:  2a 6", FuncTag);
         *DirEntry = (EFI_FILE_INFO *) Buffer;
 
         // Filter results
+        //BREAD_CRUMB(L"%s:  2a 7", FuncTag);
         if (FilterMode == 1) {
+            //BREAD_CRUMB(L"%s:  2a 7a 1", FuncTag);
             // Only return directories
             if (((*DirEntry)->Attribute & EFI_FILE_DIRECTORY)) {
+                //BREAD_CRUMB(L"%s:  2a 7a 1a 1 - FOR LOOP:- BREAK ... EFI_FILE_DIRECTORY", FuncTag);
+                //LOG_SEP(L"X");
+
                 break;
             }
         }
         else if (FilterMode == 2) {
+            //BREAD_CRUMB(L"%s:  2a 7b 1", FuncTag);
             // Only return files
             if (((*DirEntry)->Attribute & EFI_FILE_DIRECTORY) == 0) {
+                //BREAD_CRUMB(L"%s:  2a 7b 1a 1 - FOR LOOP:- BREAK ... EFI_FILE_DIRECTORY == 0", FuncTag);
+                //LOG_SEP(L"X");
+
                 break;
             }
         }
-        else {
-            // No filter or unknown filter -> return everything
-            break;
-        }
+
+        //BREAD_CRUMB(L"%s:  3a 8 - FOR LOOP:- END ... No Filter or Unknown Filter", FuncTag);
+        //LOG_SEP(L"X");
+
+        // No Filter or Unknown Filter -> Return Everything
+        break;
     } // for ;;
 
+    //BREAD_CRUMB(L"%s:  3 - END:- return EFI_STATUS Status = '%r'", FuncTag,
+    //    Status
+    //);
+    //LOG_DECREMENT();
+    //LOG_SEP(L"X");
+
     return Status;
-}
+} // EFI_STATUS DirNextEntry()
 
 VOID DirIterOpen (
     IN  EFI_FILE        *BaseDir,
     IN  CHAR16          *RelativePath OPTIONAL,
     OUT REFIT_DIR_ITER  *DirIter
 ) {
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"DirIterOpen";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+
+    //BREAD_CRUMB(L"%s:  2", FuncTag);
     if (RelativePath == NULL) {
+        //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         DirIter->LastStatus     = EFI_SUCCESS;
         DirIter->DirHandle      = BaseDir;
         DirIter->CloseDirHandle = FALSE;
     }
     else {
+        //BREAD_CRUMB(L"%s:  2b 1", FuncTag);
         DirIter->LastStatus = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
             &(DirIter->DirHandle), RelativePath,
             EFI_FILE_MODE_READ, 0
         );
+
+        //BREAD_CRUMB(L"%s:  2b 2", FuncTag);
         DirIter->CloseDirHandle = EFI_ERROR(DirIter->LastStatus) ? FALSE : TRUE;
     }
+
+    //BREAD_CRUMB(L"%s:  3", FuncTag);
     DirIter->LastFileInfo = NULL;
-}
+
+    BREAD_CRUMB(L"%s:  4 - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+} // VOID DirIterOpen()
 
 #if defined(__MAKEWITH_TIANO)
 EFI_UNICODE_COLLATION_PROTOCOL * OcUnicodeCollationEngInstallProtocol (IN BOOLEAN  Reinstall);
@@ -3394,46 +3521,87 @@ BOOLEAN DirIterNext (
     BOOLEAN  TestMetai;
     BOOLEAN  KeepGoing = TRUE;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"DirIterNext";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+
     MY_FREE_POOL(DirIter->LastFileInfo);
 
+    //BREAD_CRUMB(L"%s:  2", FuncTag);
     if (EFI_ERROR(DirIter->LastStatus)) {
+        BREAD_CRUMB(L"%s:  2a 1 - END:- return BOOLEAN FALSE on DirIter->LastStatus Error", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
         // Stop iteration
         return FALSE;
     }
 
+    //BREAD_CRUMB(L"%s:  3", FuncTag);
     do {
+        //LOG_SEP(L"X");
+        //BREAD_CRUMB(L"%s:  3a 1 - DO LOOP:- START", FuncTag);
         DirIter->LastStatus = DirNextEntry (
             DirIter->DirHandle,
             &(DirIter->LastFileInfo),
             FilterMode
         );
 
+        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         if (EFI_ERROR(DirIter->LastStatus)) {
+            BREAD_CRUMB(L"%s:  3a 2a 1 - return BOOLEAN FALSE on DirIter->LastStatus Error", FuncTag);
+            LOG_DECREMENT();
+            LOG_SEP(L"X");
+
             return FALSE;
         }
 
+        //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
         if (DirIter->LastFileInfo == NULL)  {
-            // End of listing
+            BREAD_CRUMB(L"%s:  3a 3a 1 - END:- return BOOLEAN FALSE on End of Listing", FuncTag);
+            LOG_DECREMENT();
+            LOG_SEP(L"X");
+
+            // End of Listing
             return FALSE;
         }
 
+        //BREAD_CRUMB(L"%s:  3a 4", FuncTag);
         if (FilePattern == NULL) {
+            //BREAD_CRUMB(L"%s:  3a 4a 1 - DO LOOP:- BREAK ... FilePattern == NULL", FuncTag);
+            //LOG_SEP(L"X");
+
             break;
         }
 
+        //BREAD_CRUMB(L"%s:  3a 5", FuncTag);
         if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
+            //BREAD_CRUMB(L"%s:  3a 5a 1 - DO LOOP:- BREAK ... LastFileInfo->Attribute & EFI_FILE_DIRECTORY", FuncTag);
+            //LOG_SEP(L"X");
+
             break;
         }
 
+        //BREAD_CRUMB(L"%s:  3a 6", FuncTag);
         #if !defined (__MAKEWITH_GNUEFI) && !defined(__MAKEWITH_TIANO)
+        //BREAD_CRUMB(L"%s:  3a 6a 1 - DO LOOP:- BREAK ... Unknown Build System", FuncTag);
+        //LOG_SEP(L"X");
+
         break;
         #endif
 
+        //BREAD_CRUMB(L"%s:  3a 7", FuncTag);
         i = 0;
         while (
             KeepGoing &&
             (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
         ) {
+            //BREAD_CRUMB(L"%s:  3a 7a 1 - Update 'KeepGoing' Loop Start", FuncTag);
             TestMetai = RP_MetaiMatch (
                 DirIter->LastFileInfo->FileName,
                 OnePattern
@@ -3441,23 +3609,52 @@ BOOLEAN DirIterNext (
             KeepGoing = (TestMetai) ? FALSE : TRUE;
 
             MY_FREE_POOL(OnePattern);
+            //BREAD_CRUMB(L"%s:  3a 7a 2 - Update 'KeepGoing' Loop End", FuncTag);
         } // while
-   } while (KeepGoing);
 
+        //BREAD_CRUMB(L"%s:  3a 8 - DO LOOP:- END", FuncTag);
+        //LOG_SEP(L"X");
+    } while (KeepGoing);
+
+    //BREAD_CRUMB(L"%s:  4", FuncTag);
     *DirEntry = DirIter->LastFileInfo;
+
+    BREAD_CRUMB(L"%s:  5 - END:- return BOOLEAN TRUE", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+
     return TRUE;
-}
+} // BOOLEAN DirIterNext()
 
 EFI_STATUS DirIterClose (
     IN OUT REFIT_DIR_ITER *DirIter
 ) {
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"DirIterClose";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+
     MY_FREE_POOL(DirIter->LastFileInfo);
+
+    //BREAD_CRUMB(L"%s:  2", FuncTag);
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
+        //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
     }
 
+    BREAD_CRUMB(L"%s:  3 - END:- return EFI_STATUS DirIter->LastStatus = '%r'", FuncTag,
+        DirIter->LastStatus
+    );
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+
     return DirIter->LastStatus;
-}
+} // EFI_STATUS DirIterClose()
 
 //
 // file name manipulation

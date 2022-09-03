@@ -769,6 +769,14 @@ UINTN RunGenericMenu (
     SCROLL_STATE   State;
     EFI_INPUT_KEY  key;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"RunGenericMenu";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
     ALT_LOG(1, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
@@ -1242,6 +1250,12 @@ UINTN RunGenericMenu (
     }
 
     *DefaultEntryIndex = State.CurrentSelection;
+
+    BREAD_CRUMB(L"%s:  2 - END:- return UINTN MenuExit = '%d'", FuncTag,
+        MenuExit
+    );
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 
     return MenuExit;
 } // UINTN RunGenericMenu()
@@ -3194,12 +3208,13 @@ UINTN RunMainMenu (
     #endif
 
     LOG_SEP(L"X");
-    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG]   * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
-    BREAD_CRUMB(L"In %s ... 2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
 
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
@@ -3220,16 +3235,16 @@ UINTN RunMainMenu (
     }
     #endif
 
-    BREAD_CRUMB(L"In %s ... 3", FuncTag);
+    BREAD_CRUMB(L"%s:  3", FuncTag);
     if (DefaultSelection && *DefaultSelection) {
-        BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         // Find a menu entry that includes *DefaultSelection as a substring
         DefaultEntryIndex = FindMenuShortcutEntry (Screen, *DefaultSelection);
 
-        BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         #if REFIT_DEBUG > 0
         if (ShowLoaded) {
-            BREAD_CRUMB(L"In %s ... 3a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             SetSelection = (GlobalConfig.DirectBoot) ? FALSE : TRUE;
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
@@ -3239,18 +3254,18 @@ UINTN RunMainMenu (
             MY_FREE_POOL(MsgStr);
         }
         #endif
-        BREAD_CRUMB(L"In %s ... 3a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
     }
 
-    BREAD_CRUMB(L"In %s ... 4", FuncTag);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
-        BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
         ShowLoaded = FALSE;
 
-        BREAD_CRUMB(L"In %s ... 4a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
         if (SetSelection) {
-            BREAD_CRUMB(L"In %s ... 4a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  4a 2a 1", FuncTag);
             UINTN EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
             MsgStr = PoolPrint (
                 L"Highlighted Screen Option:- '%s'",
@@ -3262,11 +3277,11 @@ UINTN RunMainMenu (
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
-        BREAD_CRUMB(L"In %s ... 4a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  4a 3", FuncTag);
         LOG_MSG("\n\n");
     }
     #endif
-    BREAD_CRUMB(L"In %s ... 5", FuncTag);
+    BREAD_CRUMB(L"%s:  5", FuncTag);
 
     // Remove any buffered key strokes
     BOOLEAN KeyStrokeFound = ReadAllKeyStrokes();
@@ -3274,28 +3289,28 @@ UINTN RunMainMenu (
         // No KeyStrokes found ... Reset the buffer on UEFI PC anyway
         REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
     }
-    BREAD_CRUMB(L"In %s ... 6", FuncTag);
+    BREAD_CRUMB(L"%s:  6", FuncTag);
 
     if (AllowGraphicsMode) {
-        BREAD_CRUMB(L"In %s ... 6a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
         Style          = GraphicsMenuStyle;
         MainStyle      = MainMenuStyle;
         PointerEnabled = PointerActive = pdAvailable();
         DrawSelection  = !PointerEnabled;
     }
 
-    BREAD_CRUMB(L"In %s ... 7 - GenerateWaitList", FuncTag);
+    BREAD_CRUMB(L"%s:  7 - GenerateWaitList", FuncTag);
     // Generate WaitList if not already generated.
     GenerateWaitList();
 
-    BREAD_CRUMB(L"In %s ... 8 - GetCurrentMS", FuncTag);
+    BREAD_CRUMB(L"%s:  8 - GetCurrentMS", FuncTag);
     // Save time elaspsed from start til now
     MainMenuLoad = GetCurrentMS();
 
-    BREAD_CRUMB(L"In %s ... 9", FuncTag);
+    BREAD_CRUMB(L"%s:  9", FuncTag);
     do {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"In %s ... 9a 1 START DO LOOP", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 1 - DO LOOP:- START", FuncTag);
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
         #if REFIT_DEBUG > 0
@@ -3305,21 +3320,21 @@ UINTN RunMainMenu (
         );
         #endif
 
-        BREAD_CRUMB(L"In %s ... 9a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 2", FuncTag);
         Screen->TimeoutSeconds = 0;
 
-        BREAD_CRUMB(L"In %s ... 9a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 3", FuncTag);
         if (MenuExit == MENU_EXIT_DETAILS) {
-            BREAD_CRUMB(L"In %s ... 9a 3a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  9a 3a 1", FuncTag);
             if (!TempChosenEntry->SubScreen) {
-                BREAD_CRUMB(L"In %s ... 9a 3a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1a 1", FuncTag);
                 // No sub-screen ... Ignore keypress
                 MenuExit = 0;
             }
             else {
                 SubScreenBoot = TRUE;
 
-                BREAD_CRUMB(L"In %s ... 9a 3a 1b 1", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1b 1", FuncTag);
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
@@ -3327,7 +3342,7 @@ UINTN RunMainMenu (
                     &TempChosenEntry
                 );
 
-                BREAD_CRUMB(L"In %s ... 9a 3a 1b 2", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1b 2", FuncTag);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
                     L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
@@ -3335,50 +3350,50 @@ UINTN RunMainMenu (
                 );
                 #endif
 
-                BREAD_CRUMB(L"In %s ... 9a 3a 1b 3", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1b 3", FuncTag);
                 if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
-                    BREAD_CRUMB(L"In %s ... 9a 3a 1b 3a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  9a 3a 1b 3a 1", FuncTag);
                     MenuExit = 0;
                 }
 
-                BREAD_CRUMB(L"In %s ... 9a 3a 1b 4", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1b 4", FuncTag);
                 if (MenuExit == MENU_EXIT_DETAILS) {
-                    BREAD_CRUMB(L"In %s ... 9a 3a 1b 4a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  9a 3a 1b 4a 1", FuncTag);
                     if (!EditOptions ((LOADER_ENTRY *) TempChosenEntry)) {
-                        BREAD_CRUMB(L"In %s ... 9a 3a 1b 4a 1a 1", FuncTag);
+                        BREAD_CRUMB(L"%s:  9a 3a 1b 4a 1a 1", FuncTag);
                         MenuExit = 0;
                     }
-                    BREAD_CRUMB(L"In %s ... 9a 3a 1b 4a 2", FuncTag);
+                    BREAD_CRUMB(L"%s:  9a 3a 1b 4a 2", FuncTag);
                 }
-                BREAD_CRUMB(L"In %s ... 9a 3a 1b 5", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 3a 1b 5", FuncTag);
             }
-            BREAD_CRUMB(L"In %s ... 9a 3a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  9a 3a 2", FuncTag);
         } // if MenuExit == MENU_EXIT_DETAILS
 
-        BREAD_CRUMB(L"In %s ... 9a 4", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 4", FuncTag);
         if (MenuExit == MENU_EXIT_HIDE) {
-            BREAD_CRUMB(L"In %s ... 9a 4a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  9a 4a 1", FuncTag);
             if (GlobalConfig.HiddenTags) {
-                BREAD_CRUMB(L"In %s ... 9a 4a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  9a 4a 1a 1", FuncTag);
                 HideTag (TempChosenEntry);
             }
 
-            BREAD_CRUMB(L"In %s ... 9a 4a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  9a 4a 2", FuncTag);
             MenuExit = 0;
         }
 
-        BREAD_CRUMB(L"In %s ... 9a 5", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 5", FuncTag);
         if (GlobalConfig.EnableTouch && MenuExit == 0) {
-            BREAD_CRUMB(L"In %s ... 9a 5a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  9a 5a 1", FuncTag);
             // Break out of loop and reload page
             // Reload happens in 'main.c -> MainLoopRunning'
             break;
         }
 
-        BREAD_CRUMB(L"In %s ... 9a 6 END DO LOOP", FuncTag);
+        BREAD_CRUMB(L"%s:  9a 6 - DO LOOP:- END", FuncTag);
         LOG_SEP(L"X");
     } while (MenuExit == 0);
-    BREAD_CRUMB(L"In %s ... 10", FuncTag);
+    BREAD_CRUMB(L"%s:  10", FuncTag);
 
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
     if (FlushFailedTag && !FlushFailReset) {
@@ -3395,23 +3410,25 @@ UINTN RunMainMenu (
         MenuExit = 0;
     }
 
-    BREAD_CRUMB(L"In %s ... 11", FuncTag);
+    BREAD_CRUMB(L"%s:  11", FuncTag);
     if (ChosenEntry) {
-        BREAD_CRUMB(L"In %s ... 11a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  11a 1", FuncTag);
         *ChosenEntry = TempChosenEntry;
     }
 
-    BREAD_CRUMB(L"In %s ... 12", FuncTag);
+    BREAD_CRUMB(L"%s:  12", FuncTag);
     if (DefaultSelection) {
-        BREAD_CRUMB(L"In %s ... 12a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  12a 1", FuncTag);
         MY_FREE_POOL(*DefaultSelection);
         *DefaultSelection = StrDuplicate (TempChosenEntry->Title);
     }
 
-    BREAD_CRUMB(L"In %s ... 13 - END:- return UINTN MenuExit = '%d'", FuncTag,
+    BREAD_CRUMB(L"%s:  13 - END:- return UINTN MenuExit = '%d'", FuncTag,
         MenuExit
     );
+    LOG_DECREMENT();
     LOG_SEP(L"X");
+
     return MenuExit;
 } // UINTN RunMainMenu()
 

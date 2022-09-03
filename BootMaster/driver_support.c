@@ -640,7 +640,10 @@ UINTN ScanDriverDir (
         #if REFIT_DEBUG > 0
         LOG_MSG(
             "%s  - %r ... UEFI Driver:- '%s'",
-            OffsetNext, Status, FileName
+            (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                ? OffsetNext
+                : L"",
+            Status, FileName
         );
         #endif
 
@@ -714,7 +717,13 @@ BOOLEAN LoadDrivers (VOID) {
                 L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, SelfDirectory
             );
-            LOG_MSG("%s  - %s", OffsetNext, MsgNotFound);
+            LOG_MSG(
+                "%s  - %s",
+                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                    ? OffsetNext
+                    : L"",
+                MsgNotFound
+            );
             BRK_MAX("\n");
             #endif
         }
@@ -726,7 +735,7 @@ BOOLEAN LoadDrivers (VOID) {
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
+        BRK_MOD("\n\n");
         LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
         BRK_MAX("\n");
         #endif

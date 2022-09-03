@@ -494,6 +494,7 @@ extern CHAR16              *OffsetNext;
 extern CHAR16              *SelfDirPath;
 extern CHAR16              *gHiddenTools;
 
+extern UINTN                PadPosition;
 extern UINTN                VolumesCount;
 extern UINTN                RecoveryVolumesCount;
 extern UINTN                SkipApfsVolumesCount;
@@ -577,10 +578,13 @@ VOID WayPointer (
     IN CHAR16  *Msg
 );
 
+
 // NB: 'gLogTemp' is freed in 'DeepLoggger'
 extern CHAR16 *gLogTemp;
 
 #if REFIT_DEBUG > 0
+extern VOID LogPadding (BOOLEAN Increment);
+
 #   define ALT_LOG(level, type, ...)                                                           \
         do {                                                                                   \
             if (KernelNotStarted) {                                                            \
@@ -601,6 +605,8 @@ extern CHAR16 *gLogTemp;
 #endif
 
 #if REFIT_DEBUG < 1
+#   define LOG_INCREMENT(...)
+#   define LOG_DECREMENT(...)
 #   define BREAD_CRUMB(...)
 #   define LOG_SEP(...)
 #   define BRK_MAX(...)
@@ -617,7 +623,11 @@ extern CHAR16 *gLogTemp;
 #   define BRK_MAX(...)
 #   define LOG_SEP(...)
 #   define BREAD_CRUMB(...)
+#   define LOG_DECREMENT(...)
+#   define LOG_INCREMENT(...)
 #else
+#   define LOG_INCREMENT(...) LogPadding (TRUE);
+#   define LOG_DECREMENT(...) LogPadding (FALSE);
 #   define BREAD_CRUMB(...)                                                                    \
         do {                                                                                   \
             if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \

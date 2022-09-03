@@ -525,6 +525,14 @@ VOID StartLegacy (
 
     IsBoot = TRUE;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"StartLegacy";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"Starting 'Mac-style' Legacy (BIOS) OS:- '%s'",
@@ -532,64 +540,87 @@ VOID StartLegacy (
     );
     #endif
 
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     BeginExternalScreen (TRUE, L"Booting 'Mac-style' Legacy (BIOS) OS");
 
+    BREAD_CRUMB(L"%s:  3", FuncTag);
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
     if (BootLogoImage != NULL) {
+        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
         BltImageAlpha (
             BootLogoImage,
             (ScreenW - BootLogoImage->Width ) >> 1,
             (ScreenH - BootLogoImage->Height) >> 1,
             &StdBackgroundPixel
         );
+        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
     }
 
+    BREAD_CRUMB(L"%s:  5", FuncTag);
     if (Entry->Volume->IsMbrPartition) {
+        BREAD_CRUMB(L"%s:  5a 1", FuncTag);
         ActivateMbrPartition (
             Entry->Volume->WholeDiskBlockIO,
             Entry->Volume->MbrPartitionIndex
         );
+        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
     }
 
+    BREAD_CRUMB(L"%s:  6", FuncTag);
     if (Entry->Volume->DiskKind != DISK_KIND_OPTICAL &&
         Entry->Volume->WholeDiskDevicePath != NULL
     ) {
+        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
         WriteBootDiskHint (Entry->Volume->WholeDiskDevicePath);
+        BREAD_CRUMB(L"%s:  6a 2", FuncTag);
     }
 
+    BREAD_CRUMB(L"%s:  7", FuncTag);
     ExtractLegacyLoaderPaths (
         DiscoveredPathList,
         MAX_DISCOVERED_PATHS,
         LegacyLoaderList
     );
 
+    BREAD_CRUMB(L"%s:  8", FuncTag);
     StoreLoaderName (SelectionName);
 
+    BREAD_CRUMB(L"%s:  9", FuncTag);
     Status = StartLegacyImageList (
         DiscoveredPathList,
         Entry->LoadOptions,
         &ErrorInStep
     );
+    BREAD_CRUMB(L"%s:  10", FuncTag);
     if (Status == EFI_NOT_FOUND) {
+        BREAD_CRUMB(L"%s:  10a 1", FuncTag);
         if (ErrorInStep == 1) {
+            BREAD_CRUMB(L"%s:  10a 1a 1", FuncTag);
             SwitchToText (FALSE);
 
+            BREAD_CRUMB(L"%s:  10a 1a 2", FuncTag);
             MsgStrA = L"Please make sure you have the latest firmware update installed";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            BREAD_CRUMB(L"%s:  10a 1a 3", FuncTag);
 
             #if REFIT_DEBUG > 0
             LOG_MSG("** WARN: %s", MsgStrA);
             LOG_MSG("\n\n");
             #endif
 
+            BREAD_CRUMB(L"%s:  10a 1a 4", FuncTag);
             PauseForKey();
+            BREAD_CRUMB(L"%s:  10a 1a 5", FuncTag);
             SwitchToGraphics();
         }
         else if (ErrorInStep == 3) {
+            BREAD_CRUMB(L"%s:  10a 1b 1", FuncTag);
             SwitchToText (FALSE);
 
+            BREAD_CRUMB(L"%s:  10a 1b 2", FuncTag);
             MsgStrA = L"The firmware refused to boot from the selected volume";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
@@ -600,6 +631,7 @@ VOID StartLegacy (
             LOG_MSG("\n");
             #endif
 
+            BREAD_CRUMB(L"%s:  10a 1b 3", FuncTag);
             MsgStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrB, NEXTLINE);
@@ -610,12 +642,20 @@ VOID StartLegacy (
             LOG_MSG("\n\n");
             #endif
 
+            BREAD_CRUMB(L"%s:  10a 1b 4", FuncTag);
             PauseForKey();
+
+            BREAD_CRUMB(L"%s:  10a 1b 5", FuncTag);
             SwitchToGraphics();
         } // if/else ErrorInStep
     } // if Status == EFI_NOT_FOUND
 
+    BREAD_CRUMB(L"%s:  11", FuncTag);
     FinishExternalScreen();
+
+    BREAD_CRUMB(L"%s:  12 - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // static VOID StartLegacy()
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
@@ -921,6 +961,14 @@ VOID ScanLegacyUEFI (
     BBS_BBS_DEVICE_PATH       *BbsDevicePath   = NULL;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanLegacyUEFI";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
     #if REFIT_DEBUG > 0
     UINTN LogLineType = (FirstLegacyScan)
         ? LOG_THREE_STAR_MID
@@ -941,6 +989,10 @@ VOID ScanLegacyUEFI (
         NULL, (VOID **) &LegacyBios
     );
     if (EFI_ERROR(Status)) {
+        BREAD_CRUMB(L"%s:  B - END:- VOID (LocateProtocol Error)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
         // Early Return
         return;
     }
@@ -1007,6 +1059,10 @@ VOID ScanLegacyUEFI (
     } // while
 
     MY_FREE_POOL(BootOrder);
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // static VOID ScanLegacyUEFI()
 
 static
@@ -1019,6 +1075,14 @@ VOID ScanLegacyVolume (
 
     ShowVolume        = FALSE;
     HideIfOthersFound = FALSE;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanLegacyVolume";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     if (Volume->HasBootCode) {
         ShowVolume = TRUE;
@@ -1051,6 +1115,10 @@ VOID ScanLegacyVolume (
 
         AddLegacyEntry (NULL, Volume);
     }
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // static VOID ScanLegacyVolume()
 
 
@@ -1066,6 +1134,14 @@ VOID ScanLegacyDisc (VOID) {
     );
     #endif
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanLegacyDisc";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
     FirstLegacyScan = TRUE;
     if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
         ScanLegacyUEFI (BBS_CDROM);
@@ -1079,6 +1155,10 @@ VOID ScanLegacyDisc (VOID) {
          } // for
     }
     FirstLegacyScan = FALSE;
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID ScanLegacyDisc()
 
 // Scan internal hard disks for legacy (BIOS) boot code
@@ -1086,6 +1166,14 @@ VOID ScanLegacyDisc (VOID) {
 VOID ScanLegacyInternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanLegacyInternal";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
@@ -1108,6 +1196,10 @@ VOID ScanLegacyInternal (VOID) {
         } // for
     }
     FirstLegacyScan = FALSE;
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID ScanLegacyInternal()
 
 // Scan external disks for legacy (BIOS) boot code
@@ -1116,27 +1208,39 @@ VOID ScanLegacyExternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
-   #if REFIT_DEBUG > 0
-   ALT_LOG(1, LOG_LINE_THIN_SEP,
-       L"Scan for External Disk Volumes with Mode:- 'Legacy (BIOS)'"
-   );
-   #endif
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
+        L"Scan for External Disk Volumes with Mode:- 'Legacy (BIOS)'"
+    );
+    #endif
 
-   FirstLegacyScan = TRUE;
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      // TODO: This actually does not do anything useful.
-      //       Leaving in hope of fixing it later.
-      ScanLegacyUEFI (BBS_USB);
-   }
-   else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-         Volume = Volumes[VolumeIndex];
-         if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
-             ScanLegacyVolume (Volume, VolumeIndex);
-         }
-      } // for
-   }
-   FirstLegacyScan = FALSE;
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanLegacyExternal";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
+    FirstLegacyScan = TRUE;
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        // TODO: This actually does not do anything useful.
+        //       Leaving in hope of fixing it later.
+        ScanLegacyUEFI (BBS_USB);
+    }
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
+                ScanLegacyVolume (Volume, VolumeIndex);
+            }
+        } // for
+    }
+    FirstLegacyScan = FALSE;
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID ScanLegacyExternal()
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
@@ -1174,6 +1278,13 @@ VOID FindLegacyBootType (VOID) {
 VOID WarnIfLegacyProblems (VOID) {
     UINTN     i     = 0;
     BOOLEAN   found = FALSE;
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"WarnIfLegacyProblems";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
         do {
@@ -1215,4 +1326,8 @@ VOID WarnIfLegacyProblems (VOID) {
             PauseForKey();
         }
     } // if GlobalConfig.LegacyType
+
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
 } // VOID WarnIfLegacyProblems()

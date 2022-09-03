@@ -1036,7 +1036,7 @@ VOID StartTool (
     }
     #endif
 
-    if (FoundSubStr (Entry->me.Title, L"APFS Instance")) {
+    if (FindSubStr (Entry->me.Title, L"APFS Instance")) {
         /* APFS Recovery Instance */
         EFI_STATUS Status = ApfsRecoveryBoot (Entry);
         if (EFI_ERROR(Status)) {

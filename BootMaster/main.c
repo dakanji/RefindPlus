@@ -421,7 +421,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // DA-TAG: Always block UEFI Win stuff on Apple Firmware
         //         That is, without considering storage volatility
         BlockUEFI = (
-            AppleFirmware && (IsVendorMS || FoundSubStr (VariableName, L"UnlockID"))
+            AppleFirmware && (IsVendorMS || FindSubStr (VariableName, L"UnlockID"))
         );
     }
 
@@ -779,7 +779,7 @@ VOID AlignCSR (VOID) {
     }
 
     if (RotateCsr) {
-        // Rotate CSR/SSV from current setting
+        // Rotate SIP/SSV from current setting
         RotateCsrValue ();
 
         // Set 'Status' to 'Success'
@@ -1047,7 +1047,7 @@ EFI_STATUS NoCheckCompat (VOID) {
     }
     else {
         CHAR16 *CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        if (FoundSubStr (CurArgs, ArgData)) {
+        if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
@@ -1112,7 +1112,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
         CHAR16 *CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
         BootArg = PoolPrint (L"%s %s=1", CurArgs, ArgData);
 
-        if (FoundSubStr (CurArgs, ArgData)) {
+        if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
         MY_FREE_POOL(CurArgs);
@@ -1169,7 +1169,7 @@ EFI_STATUS NoNvramPanicLog (VOID) {
     }
     else {
         CHAR16 *CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        if (FoundSubStr (CurArgs, ArgData)) {
+        if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
@@ -1913,7 +1913,7 @@ VOID AdjustDefaultSelection (VOID) {
         LOG_MSG("\n");
         LOG_MSG("INFO: No Change to Default Selection");
     }
-    LOG_MSG("\n\n");
+    BRK_MOD("\n\n");
     #endif
 
     MY_FREE_POOL(GlobalConfig.DefaultSelection);
@@ -2396,19 +2396,19 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
-    if (AppleFirmware) {
-        LOG_MSG("'Disabled'");
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
-    }
     LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext);
     if (!AppleFirmware) {
         LOG_MSG("'Disabled'");
     }
     else {
         LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
+    }
+    LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
+    if (AppleFirmware) {
+        LOG_MSG("'Disabled'");
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
     }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
@@ -3252,35 +3252,35 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected MacOS
-                if (!FoundSubStr (ourLoaderEntry->Title, L"MacOS") &&
-                    FoundSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
+                if (!FindSubStr (ourLoaderEntry->Title, L"MacOS") &&
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
-                    ourLoaderEntry->Title = (FoundSubStr (ourLoaderEntry->Volume->VolName, L"PreBoot"))
+                    ourLoaderEntry->Title = (FindSubStr (ourLoaderEntry->Volume->VolName, L"PreBoot"))
                         ? L"MacOS" : L"RefindPlus";
                 }
 
                 // Fix undetected Windows
-                if (!FoundSubStr (ourLoaderEntry->Title, L"Windows") &&
-                    FoundSubStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot")
+                if (!FindSubStr (ourLoaderEntry->Title, L"Windows") &&
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot")
                 ) {
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
                 if (
                     (
-                        FoundSubStr (ourLoaderEntry->Title, L"MacOS Installer")
+                        FindSubStr (ourLoaderEntry->Title, L"MacOS Installer")
                     ) || (
-                        FoundSubStr (ourLoaderEntry->Title, L"com.apple.installer")
+                        FindSubStr (ourLoaderEntry->Title, L"com.apple.installer")
                     ) || (
-                        FoundSubStr (ourLoaderEntry->LoaderPath, L"MacOS Installer")
+                        FindSubStr (ourLoaderEntry->LoaderPath, L"MacOS Installer")
                     ) || (
-                        FoundSubStr (ourLoaderEntry->LoaderPath, L"com.apple.installer")
-                    ) || (
-                        ourLoaderEntry->Volume->VolName &&
-                        FoundSubStr (ourLoaderEntry->Volume->VolName, L"MacOS Installer")
+                        FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.installer")
                     ) || (
                         ourLoaderEntry->Volume->VolName &&
-                        FoundSubStr (ourLoaderEntry->Volume->VolName, L"com.apple.installer")
+                        FindSubStr (ourLoaderEntry->Volume->VolName, L"MacOS Installer")
+                    ) || (
+                        ourLoaderEntry->Volume->VolName &&
+                        FindSubStr (ourLoaderEntry->Volume->VolName, L"com.apple.installer")
                     )
                 ) {
                     // Set CSR if required
@@ -3307,11 +3307,11 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"OpenCore")
+                        SubScreenBoot && FindSubStr (SelectionName, L"OpenCore")
                     )
-                    || FoundSubStr (ourLoaderEntry->Title, L"OpenCore")
-                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
-                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
+                    || FindSubStr (ourLoaderEntry->Title, L"OpenCore")
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
                     // Set CSR if required
                     AlignCSR();
@@ -3338,10 +3338,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"Clover")
+                        SubScreenBoot && FindSubStr (SelectionName, L"Clover")
                     )
-                    || FoundSubStr (ourLoaderEntry->Title, L"Clover")
-                    || FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
+                    || FindSubStr (ourLoaderEntry->Title, L"Clover")
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
                 ) {
                     // Set CSR if required
                     AlignCSR();
@@ -3368,10 +3368,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"MacOS")
+                        SubScreenBoot && FindSubStr (SelectionName, L"MacOS")
                     )
                     || ourLoaderEntry->OSType == 'M'
-                    || FoundSubStr (ourLoaderEntry->Title, L"MacOS")
+                    || FindSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
                     // Set CSR if required
                     AlignCSR();
@@ -3432,10 +3432,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"Windows")
+                        SubScreenBoot && FindSubStr (SelectionName, L"Windows")
                     )
                     || ourLoaderEntry->OSType == 'W'
-                    || FoundSubStr (ourLoaderEntry->Title, L"Windows")
+                    || FindSubStr (ourLoaderEntry->Title, L"Windows")
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
@@ -3466,10 +3466,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"Grub")
+                        SubScreenBoot && FindSubStr (SelectionName, L"Grub")
                     )
                     || ourLoaderEntry->OSType == 'G'
-                    || FoundSubStr (ourLoaderEntry->Title, L"Grub")
+                    || FindSubStr (ourLoaderEntry->Title, L"Grub")
                 ) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
@@ -3485,7 +3485,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
+                else if (FindSubStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via VMLinuz Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -3500,7 +3500,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
+                else if (FindSubStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via BZImage Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -3515,7 +3515,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"kernel")) {
+                else if (FindSubStr (ourLoaderEntry->LoaderPath, L"kernel")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Kernel Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -3532,10 +3532,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FoundSubStr (SelectionName, L"Linux")
+                        SubScreenBoot && FindSubStr (SelectionName, L"Linux")
                     )
                     || ourLoaderEntry->OSType == 'L'
-                    || FoundSubStr (ourLoaderEntry->Title, L"Linux")
+                    || FindSubStr (ourLoaderEntry->Title, L"Linux")
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'

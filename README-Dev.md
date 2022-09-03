@@ -110,7 +110,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
   * Levels 1 and 2 output logs similar to the detailed upstream format.
     - Level 1 is broadly equivalent to upstream Level 4 (upstream Levels 1 to 3 were dispensed with)
     - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
-      * Automate by passing `ALL` as a second parameter to the RefindPlus build script
+      * Create `NOOPT` build by passing `ALL` as a second parameter to the RefindPlus build script
       * The first parameter is the build branch, which also needs to be specified in such instances
     - When Level 2 is not exposed, selected levels above `1` will be capped at Level 1
     - When exposed, selected levels above `2` will be capped at Level 2

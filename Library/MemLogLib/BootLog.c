@@ -31,6 +31,7 @@ extern  INT16  NowHour;
 extern  INT16  NowMinute;
 extern  INT16  NowSecond;
 
+CHAR16  *PadStr    = NULL;
 CHAR16  *gLogTemp  = NULL;
 CHAR16  *mDebugLog = NULL;
 
@@ -292,7 +293,7 @@ VOID DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN    Limit     = 210;
+    UINTN    Limit     = 213;
     CHAR8   *FormatMsg = NULL;
     CHAR16  *StoreMsg  = NULL;
     CHAR16  *Tmp       = NULL;
@@ -320,6 +321,8 @@ VOID DeepLoggger (
         return;
     }
 
+    CHAR16 *OurPad = (PadStr) ? PadStr : L"[ ";
+
     // Truncate message at MAXLOGLEVEL and lower (if required)
     if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {
         BOOLEAN LongStr = TruncateString (*Msg, Limit);
@@ -345,7 +348,7 @@ VOID DeepLoggger (
         case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n",   *Msg); break;
         case LOG_THREE_STAR_END: Tmp = PoolPrint (L"                ***[ %s ]***\n\n",                   *Msg); break;
         case LOG_THREE_STAR_MID: Tmp = PoolPrint (L"                ***[ %s\n",                          *Msg); break;
-        case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---[ %s\n",                          *Msg); break;
+        case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---%s%s\n",                  OurPad, *Msg); break;
         case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                            *Msg); break;
         case LOG_LINE_SAME:      Tmp = PoolPrint (L"%s",                                                 *Msg); break;
         case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n %s\n\n",                                          *Msg); break;
@@ -410,6 +413,51 @@ VOID EFIAPI DebugLog (
 
     TimeStamp = TRUE;
 } // VOID EFIAPI DebugLog()
+
+VOID LogPadding (BOOLEAN Increment) {
+    if (MuteLogger) {
+        // Early Return
+        return;
+    }
+
+    if (!PadStr) {
+        PadStr = StrDuplicate (L"[ ");
+
+        // Early Return
+        return;
+    }
+
+    CHAR16 *TmpPad = StrDuplicate (PadStr);
+    UINTN   PadPos = StrLen (PadStr);
+    FreePool (PadStr);
+    PadStr = NULL;
+
+    if (Increment == TRUE) {
+        if (NativeLogger) {
+            PadStr = StrDuplicate (TmpPad);
+        }
+        else {
+            PadStr = PoolPrint (L"%s. ", TmpPad);
+        }
+    }
+    else {
+        if (NativeLogger) {
+            PadStr = StrDuplicate (TmpPad);
+        }
+        else {
+            PadPos = PadPos - 2;
+            if (PadPos < 3) {
+                PadStr = StrDuplicate (L"[ ");
+            }
+            else {
+                TmpPad[PadPos] = L'\0';
+                PadStr = StrDuplicate (TmpPad);
+            }
+        }
+    }
+
+    FreePool (TmpPad);
+} // VOID LogPadding()
 
 // DBG Build Only - END
 #endif
