@@ -1,4 +1,4 @@
-0.13.3.AB (Pre-Release):
+0.13.3.AB (06 Sep 2022):
 -----------------------
 - Adds `PreferUGA` Feature
   * Sets RefindPlus to always use UGA for graphics output when available

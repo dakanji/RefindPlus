@@ -54,7 +54,7 @@ RefindPlus-Specific funtionality can be configured by adding the tokens below to
 
 Token | Functionality
 ----- | -----
-continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended boot)
+continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
 csr_dynamic           |Actively enables or disables the SIP Policy on Macs
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_apfs_load     |Disables built in provision of APFS filesystem capability
@@ -62,7 +62,6 @@ decline_apfs_mute     |Disables supressesion of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
 decline_esp_filter    |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
-decline_macos_filter  |Disables the `ProtectNVRAM` feature on MacOS boots
 decline_nvme_load     |Disables the built in NvmExpress Driver
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
 decline_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
@@ -74,6 +73,8 @@ disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
+focus_nvram_fix       |Limits the `ProtectNVRAM` feature to explicit UEFI Windows boots
+follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
@@ -82,6 +83,7 @@ icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Finetunes the resulting `icon_row_move` outcome
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
+prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
@@ -109,7 +111,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
   * Levels 1 and 2 output logs similar to the detailed upstream format.
     - Level 1 is broadly equivalent to upstream Level 4 (upstream Levels 1 to 3 were dispensed with)
     - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
-      * Automate by passing `ALL` as a second parameter to the RefindPlus build script
+      * Create `NOOPT` builds by passing `ALL` as a second parameter to the RefindPlus build script
       * The first parameter is the build branch, which also needs to be specified in such instances
     - When Level 2 is not exposed, selected levels above `1` will be capped at Level 1
     - When exposed, selected levels above `2` will be capped at Level 2
