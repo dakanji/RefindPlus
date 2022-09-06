@@ -11,7 +11,7 @@
 - Adds `FocusNvramFix` Feature
   * Focuses the `ProtectNVRAM` feature (if set) on explicit UEFI Windows boots
   * The feature can be enabled using a new `focus_nvram_fix` configuration token
-  * Replaces the `EnableMacosFilter` feature which has been removed
+    - Replaces the `EnableMacosFilter` feature which has been removed
 - Fixes Unwanted APFS Data Volume Entries
   * APFS data volumes could sometimes appear as boot options due to inadequate filtering
 - Fixes SubScreen Boots
@@ -21,15 +21,15 @@
     - `Opencore`, `Clover`, `Linux`, `MacOS`, `Windows` and `Misc Others`
 - Fixes Apple Hardware Test Option
   * While Apple stopped providing this feature after June 2013, some users may have restored this
-    - See https://github.com/upekkha/AppleHardwareTest
+    - Ref: https://github.com/upekkha/AppleHardwareTest
   * In such cases however, RefindPlus did not provide the option on APFS volumes when `SyncAPFS` is active
-  * This has now being reinstated subject to not having multiple MacOS instances in any single APFS container
+  * Now reinstated subject to not having multiple MacOS instances in any single APFS container
 - Fixes Misc Items
   * Always block UEFI Windows NVRAM items (Disregard Volatility)
-  * Misidentification of certain volume types as HFS+ volumes
-  * Excessive pointer event logging
-  * Misplaced `Out` and `Return` log tags
-  * Python Script Code Smells
+  * Address misidentification of certain volume types as HFS+ volumes
+  * Address misplaced `Out` and `Return` log tags
+  * Eliminate excessive pointer event logging
+  * Eliminate python script code smells
 - Improves `System Reset Call` Fix
   * Was previously always active when on system reboot calls
   * This meant such calls always required confirmation
@@ -41,6 +41,14 @@
   * Differentiates between HFS+ types
 - Improves Time Bound Primed Buffer Mitigation
   * Reduces intervention threshold based on detection of confirmed user key presses
+- Amends the `ShouldScan` Function to Exclude HFS+ `Recovery HD` Volumes
+  * This recovery functionality was meant to be handled by the Mac Recovery Tool
+- Amends the `WarnIfLegacyProblems` Function Run Position
+  * Now runs after the `SetupScreen` function to ensure screen display on issues
+- Amends EFI Scan to Exclude BOOTCAMP
+  * BootCamp creates HybridMBR disks and trigger redundant attempts to find EFI loaders
+- Ports Downstream Directory Scan Iteration Fix
+  * Ref: https://github.com/joevt/RefindPlus/commit/8d03f987ce544869d275d0bd31cd1eb9b5939891
 
 
 0.13.3.AA (06 Jun 2022):

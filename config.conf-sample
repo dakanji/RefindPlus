@@ -211,10 +211,10 @@
 #
 #disable_compat_check
 
-# Disable kernel panic logging to the NVRAM. MacOS writes kernel panic logs to
-# the NVRAM by default which can increase wear and tear on the NVRAM of legacy
-# Macs. When this option is active, RefindPlus will add "nvram_paniclog=0" to
-# the boot arguments. This disables panic log writes to the NVRAM for writes
+# Disable kernel panic logging to the NVRAM. MacOS may save kernel panic logs in
+# the NVRAM under certain conditions which can increase wear and tear on legacy
+# Mac NVRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
+# the boot arguments which disables panic log writes to the NVRAM for writes
 # to the filesystem instead. Note that this token will create a MacOS boot
 # argument the first time it is triggered which will remain active until
 # explicitly cleared, even if this setting is subsequently deactivated.

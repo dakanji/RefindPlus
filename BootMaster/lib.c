@@ -3228,9 +3228,10 @@ BOOLEAN FileExists (
     return FALSE;
 }
 
+static
 EFI_STATUS DirNextEntry (
     IN     EFI_FILE       *Directory,
-    IN OUT EFI_FILE_INFO **DirEntry,
+    OUT    EFI_FILE_INFO **DirEntry,
     IN     UINTN           FilterMode
 ) {
     EFI_STATUS  Status = EFI_BAD_BUFFER_SIZE;
@@ -3256,9 +3257,7 @@ EFI_STATUS DirNextEntry (
     for (;;) {
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  2a 1 - FOR LOOP:- START", FuncTag);
-
-        // Release pointer from last call
-        MY_FREE_POOL(*DirEntry);
+        *DirEntry = NULL;
 
         // Read next directory entry
         //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
@@ -3445,27 +3444,25 @@ VOID DirIterOpen (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (RelativePath == NULL) {
-        //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         DirIter->LastStatus     = EFI_SUCCESS;
         DirIter->DirHandle      = BaseDir;
         DirIter->CloseDirHandle = FALSE;
     }
     else {
-        //BREAD_CRUMB(L"%s:  2b 1", FuncTag);
+        BREAD_CRUMB(L"%s:  2b 1", FuncTag);
         DirIter->LastStatus = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
             &(DirIter->DirHandle), RelativePath,
             EFI_FILE_MODE_READ, 0
         );
-
-        //BREAD_CRUMB(L"%s:  2b 2", FuncTag);
         DirIter->CloseDirHandle = EFI_ERROR(DirIter->LastStatus) ? FALSE : TRUE;
     }
-
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
-    DirIter->LastFileInfo = NULL;
+    BREAD_CRUMB(L"%s:  3 - CloseDirHandle = '%s'", FuncTag,
+        (DirIter->CloseDirHandle) ? L"TRUE" : L"FALSE"
+    );
 
     BREAD_CRUMB(L"%s:  4 - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -3516,10 +3513,10 @@ BOOLEAN DirIterNext (
     IN      CHAR16          *FilePattern OPTIONAL,
     OUT     EFI_FILE_INFO  **DirEntry
 ) {
-    UINTN    i;
-    CHAR16  *OnePattern;
-    BOOLEAN  TestMetai;
-    BOOLEAN  KeepGoing = TRUE;
+    UINTN          i;
+    BOOLEAN        Found;
+    CHAR16        *OnePattern;
+    EFI_FILE_INFO *LastFileInfo;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"DirIterNext";
@@ -3529,95 +3526,77 @@ BOOLEAN DirIterNext (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-
-    MY_FREE_POOL(DirIter->LastFileInfo);
-
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (EFI_ERROR(DirIter->LastStatus)) {
         BREAD_CRUMB(L"%s:  2a 1 - END:- return BOOLEAN FALSE on DirIter->LastStatus Error", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
-        // Stop iteration
+        // Stop Iteration
         return FALSE;
     }
 
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
-    do {
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    for (;;) {
         //LOG_SEP(L"X");
-        //BREAD_CRUMB(L"%s:  3a 1 - DO LOOP:- START", FuncTag);
+        //BREAD_CRUMB(L"%s:  3a 1 - FOR LOOP:- START", FuncTag);
+
+        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         DirIter->LastStatus = DirNextEntry (
             DirIter->DirHandle,
-            &(DirIter->LastFileInfo),
+            &LastFileInfo,
             FilterMode
         );
 
-        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
-        if (EFI_ERROR(DirIter->LastStatus)) {
-            BREAD_CRUMB(L"%s:  3a 2a 1 - return BOOLEAN FALSE on DirIter->LastStatus Error", FuncTag);
-            LOG_DECREMENT();
-            LOG_SEP(L"X");
-
-            return FALSE;
-        }
-
         //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
-        if (DirIter->LastFileInfo == NULL)  {
-            BREAD_CRUMB(L"%s:  3a 3a 1 - END:- return BOOLEAN FALSE on End of Listing", FuncTag);
+        if (EFI_ERROR(DirIter->LastStatus) || LastFileInfo == NULL) {
+            BREAD_CRUMB(L"%s:  3a 3a 1 - END:- return BOOLEAN FALSE ... ERROR DirIter->LastStatus", FuncTag);
             LOG_DECREMENT();
             LOG_SEP(L"X");
 
-            // End of Listing
             return FALSE;
         }
 
         //BREAD_CRUMB(L"%s:  3a 4", FuncTag);
-        if (FilePattern == NULL) {
-            //BREAD_CRUMB(L"%s:  3a 4a 1 - DO LOOP:- BREAK ... FilePattern == NULL", FuncTag);
+        if (FilePattern == NULL || LastFileInfo->Attribute & EFI_FILE_DIRECTORY) {
+            //BREAD_CRUMB(L"%s:  3a 4a 1 -  - FOR LOOP:- BREAK ... FilePattern == NULL", FuncTag);
             //LOG_SEP(L"X");
 
             break;
         }
 
         //BREAD_CRUMB(L"%s:  3a 5", FuncTag);
-        if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
-            //BREAD_CRUMB(L"%s:  3a 5a 1 - DO LOOP:- BREAK ... LastFileInfo->Attribute & EFI_FILE_DIRECTORY", FuncTag);
+        i     =     0;
+        Found = FALSE;
+        while (!Found && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
             //LOG_SEP(L"X");
+            //BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START", FuncTag);
 
-            break;
-        }
-
-        //BREAD_CRUMB(L"%s:  3a 6", FuncTag);
-        #if !defined (__MAKEWITH_GNUEFI) && !defined(__MAKEWITH_TIANO)
-        //BREAD_CRUMB(L"%s:  3a 6a 1 - DO LOOP:- BREAK ... Unknown Build System", FuncTag);
-        //LOG_SEP(L"X");
-
-        break;
-        #endif
-
-        //BREAD_CRUMB(L"%s:  3a 7", FuncTag);
-        i = 0;
-        while (
-            KeepGoing &&
-            (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
-        ) {
-            //BREAD_CRUMB(L"%s:  3a 7a 1 - Update 'KeepGoing' Loop Start", FuncTag);
-            TestMetai = RP_MetaiMatch (
-                DirIter->LastFileInfo->FileName,
-                OnePattern
-            );
-            KeepGoing = (TestMetai) ? FALSE : TRUE;
-
+            //BREAD_CRUMB(L"%s:  3a 5a 2", FuncTag);
+            if (RP_MetaiMatch (LastFileInfo->FileName, OnePattern)) {
+                //BREAD_CRUMB(L"%s:  3a 5a 2a 1", FuncTag);
+                Found = TRUE;
+            }
             MY_FREE_POOL(OnePattern);
-            //BREAD_CRUMB(L"%s:  3a 7a 2 - Update 'KeepGoing' Loop End", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 5a 3 - WHILE LOOP:- END", FuncTag);
+            //LOG_SEP(L"X");
         } // while
 
-        //BREAD_CRUMB(L"%s:  3a 8 - DO LOOP:- END", FuncTag);
-        //LOG_SEP(L"X");
-    } while (KeepGoing);
+        //BREAD_CRUMB(L"%s:  3a 6", FuncTag);
+        if (Found) {
+            //BREAD_CRUMB(L"%s:  3a 6a 1 -  - FOR LOOP:- BREAK ... Found == TRUE", FuncTag);
+            //LOG_SEP(L"X");
+            break;
+        }
+        //BREAD_CRUMB(L"%s:  3a 7", FuncTag);
+        MY_FREE_POOL(LastFileInfo);
 
-    //BREAD_CRUMB(L"%s:  4", FuncTag);
-    *DirEntry = DirIter->LastFileInfo;
+        //BREAD_CRUMB(L"%s:  3a 6 - FOR LOOP:- END", FuncTag);
+        //LOG_SEP(L"X");
+    } // for
+    BREAD_CRUMB(L"%s:  4", FuncTag);
+
+    *DirEntry = LastFileInfo;
 
     BREAD_CRUMB(L"%s:  5 - END:- return BOOLEAN TRUE", FuncTag);
     LOG_DECREMENT();
@@ -3629,7 +3608,6 @@ BOOLEAN DirIterNext (
 EFI_STATUS DirIterClose (
     IN OUT REFIT_DIR_ITER *DirIter
 ) {
-
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"DirIterClose";
     #endif
@@ -3638,10 +3616,7 @@ EFI_STATUS DirIterClose (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-
-    MY_FREE_POOL(DirIter->LastFileInfo);
-
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
         //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);

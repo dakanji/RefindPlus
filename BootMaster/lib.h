@@ -75,7 +75,6 @@ typedef struct {
     EFI_STATUS          LastStatus;
     EFI_FILE_HANDLE     DirHandle;
     BOOLEAN             CloseDirHandle;
-    EFI_FILE_INFO       *LastFileInfo;
 } REFIT_DIR_ITER;
 
 #define DISK_KIND_INTERNAL  (0)
@@ -123,11 +122,6 @@ EFI_STATUS EfivarSetRaw (
     IN  VOID      *VariableData,
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
-);
-EFI_STATUS DirNextEntry (
-    IN     EFI_FILE       *Directory,
-    IN OUT EFI_FILE_INFO **DirEntry,
-    IN     UINTN           FilterMode
 );
 
 VOID ScanVolumes (VOID);

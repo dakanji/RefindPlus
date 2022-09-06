@@ -19,7 +19,7 @@ on:
         - 'Label - Remove - Tagged'
         - 'Label - Remove - Queries'
         - 'Label - Remove - Upstream'
-        - 'Label - Remove - WontFix'
+        - 'Label - Remove - Not-Planned'
       item_id:
         description: 'Item ID'
         required: true
@@ -190,14 +190,14 @@ jobs:
           labels: 'Upstream'
 
   label_remove_wontfix:
-    name: Label - Remove - WontFix
+    name: Label - Remove - Not-Planned
     runs-on: ubuntu-latest
 
-    if: github.event.inputs.operation == 'Label - Remove - WontFix'
+    if: github.event.inputs.operation == 'Label - Remove - Not-Planned'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'WontFix'
+          labels: 'Not-Planned'

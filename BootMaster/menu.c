@@ -579,6 +579,7 @@ VOID SaveScreen (VOID) {
     UINT64 BaseTimeWait = 3750;
 
     #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
     CHAR16 *LoopChange = NULL;
     CHAR16 *MsgStr = L"Activity Wait Threshold Exceeded ... Start Screensaver";
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -688,7 +689,13 @@ VOID SaveScreen (VOID) {
             default: OUR_COLOUR = COLOUR_30; break;
         }
 
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
         egClearScreen (&OUR_COLOUR);
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
 
         retval = WaitForInput (TimeWait);
         if (retval == INPUT_KEY || retval == INPUT_TIMER_ERROR) {

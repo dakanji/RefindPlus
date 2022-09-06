@@ -38,6 +38,21 @@ jobs:
           stale-issue-label: 'Tagged'
           any-of-labels: 'Resolved'
 
+      - name: Flag or Close Uncertain Issues
+        uses: actions/stale@v5.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure as uncertain.
+          close-issue-message: >
+            This item is being closed as uncertain.
+          days-before-stale: 15
+          days-before-close: 22
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Stale'
+          remove-issue-stale-when-updated: true
+          any-of-labels: 'Uncertain'
+
       - name: Flag or Close Incomplete Issues
         uses: actions/stale@v5.0.0
         with:
@@ -149,7 +164,7 @@ jobs:
           stale-issue-label: 'Tagged'
           any-of-labels: 'Cannot-Replicate'
 
-      - name: Close WontFix Issues
+      - name: Close Not-Planned Issues
         uses: actions/stale@v5.0.0
         with:
           repo-token: ${{ github.token }}
@@ -159,7 +174,7 @@ jobs:
           days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
-          any-of-labels: 'WontFix'
+          any-of-labels: 'Not-Planned'
 
       - name: Catchall Closer
         uses: actions/stale@v5.0.0
@@ -190,7 +205,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Inactive Issues
@@ -212,7 +227,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Incomplete'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -224,7 +239,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Cannot-Replicate'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Known Issues
@@ -236,7 +251,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Known-Issue'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
@@ -248,12 +263,11 @@ jobs:
             This thread is being locked as resolved. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Resolved'
-          exclude-any-issue-labels: ''
           add-issue-labels: ''
-          remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Tagged, Queries'
+          remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
-      - name: Lock WontFix Issues
+      - name: Lock Not-Planned Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
@@ -261,6 +275,6 @@ jobs:
           issue-comment: >
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
-          include-any-issue-labels: 'WontFix'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          include-any-issue-labels: 'Not-Planned'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'

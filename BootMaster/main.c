@@ -2612,7 +2612,6 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     InitScreen();
-    WarnIfLegacyProblems();
 
     // Disable the EFI watchdog timer
     REFIT_CALL_4_WRAPPER(
@@ -2622,6 +2621,8 @@ EFI_STATUS EFIAPI efi_main (
 
     // Further bootstrap (now with config available)
     SetupScreen();
+
+    WarnIfLegacyProblems();
 
     #if REFIT_DEBUG > 0
     /* Disable Forced Native Logging */

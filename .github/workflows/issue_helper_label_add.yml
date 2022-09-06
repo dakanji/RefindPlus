@@ -19,7 +19,7 @@ on:
         - 'Label - Add - Tagged'
         - 'Label - Add - Queries'
         - 'Label - Add - Upstream'
-        - 'Label - Add - WontFix'
+        - 'Label - Add - Not-Planned'
       item_id:
         description: 'Item ID'
         required: true
@@ -190,14 +190,14 @@ jobs:
           labels: 'Upstream'
 
   label_add_wontfix:
-    name: Label - Add - WontFix
+    name: Label - Add - Not-Planned
     runs-on: ubuntu-latest
 
-    if: github.event.inputs.operation == 'Label - Add - WontFix'
+    if: github.event.inputs.operation == 'Label - Add - Not-Planned'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'WontFix'
+          labels: 'Not-Planned'

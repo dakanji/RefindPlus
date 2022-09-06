@@ -1276,8 +1276,10 @@ VOID FindLegacyBootType (VOID) {
 
 // Warn user if legacy OS scans are enabled but the firmware does not support them
 VOID WarnIfLegacyProblems (VOID) {
-    UINTN     i     = 0;
-    BOOLEAN   found = FALSE;
+    UINTN     i      = 0;
+    BOOLEAN   found  = FALSE;
+    CHAR16   *MsgStr = NULL;
+
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"WarnIfLegacyProblems";
     #endif
@@ -1299,31 +1301,52 @@ VOID WarnIfLegacyProblems (VOID) {
 
         if (found) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Legacy (BIOS) Support Enabled in RefindPlus but Unavailable in EFI!!"
-            );
+            MsgStr = StrDuplicate (L"Legacy (BIOS) Support Enabled in RefindPlus but Unavailable in EFI");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
+            LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
             #endif
 
-            SwitchToText (FALSE);
-
-            CHAR16 *MsgStr =
-                L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n"
-                L"         (BIOS) boot options; however, this is not possible because your computer\n"
-                L"         lacks the necessary Compatibility Support Module (CSM) support or that support\n"
-                L"         is disabled in your firmware.";
+            MsgStr = StrDuplicate (
+                L"Your 'scanfor' config line specifies scanning for one or more legacy     \n"
+                L"(BIOS) boot options; however, this is not possible because your computer \n"
+                L"lacks the necessary Compatibility Support Module (CSM) support or because\n"
+                L"CSM support has been disabled in your firmware.                           "
+            );
 
             if (!GlobalConfig.DirectBoot) {
+                CHAR16 *TmpMsgA = L"** WARN: Legacy (BIOS) Boot Issues                                        ";
+                CHAR16 *TmpMsgB = L"                                                                          ";
+
+                #if REFIT_DEBUG > 0
+                BOOLEAN CheckMute;
+                MY_MUTELOGGER_SET;
+                #endif
+                SwitchToText (FALSE);
+
+                PrintUglyText (TmpMsgB, NEXTLINE);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-                PrintUglyText (MsgStr, NEXTLINE);
+                PrintUglyText (TmpMsgA, NEXTLINE);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                PrintUglyText (TmpMsgB, NEXTLINE);
+                PrintUglyText (MsgStr, NEXTLINE);
+                PrintUglyText (TmpMsgB, NEXTLINE);
+
+                PauseForKey();
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
             }
 
             #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+            LOG_SEP(L"X");
             LOG_MSG("%s", MsgStr);
             LOG_MSG("\n\n");
             #endif
 
-            PauseForKey();
+            MY_FREE_POOL(MsgStr);
         }
     } // if GlobalConfig.LegacyType
 

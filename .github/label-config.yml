@@ -1,15 +1,33 @@
 
 # Configuration for Label Actions - https://github.com/dessant/label-actions
 
-# The `Bug` label is added to issues
-Bug:
+# The `Uncertain` label is added to issues
+Uncertain:
   issues:
     # Remove labels
     unlabel:
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
+      - 'Stale'
+      - 'Tagged'
+      - 'Queries'
+      - 'Unclear'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+
+# The `Bug` label is added to issues
+Bug:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Uncertain'
+      - 'Cancelled'
+      - 'Resolved'
+      - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -22,9 +40,10 @@ Cancelled:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -42,10 +61,11 @@ Discussion:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Bug'
       - 'Tagged'
@@ -62,10 +82,11 @@ Documentation:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -78,10 +99,11 @@ Duplicate:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -94,10 +116,11 @@ Enhancement:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -111,10 +134,11 @@ Tagged:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -125,10 +149,11 @@ Good-First-Issue:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -142,6 +167,7 @@ Help-Wanted:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
       - 'Stale'
@@ -157,10 +183,11 @@ Incomplete:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -172,10 +199,11 @@ Invalid:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -188,10 +216,11 @@ Known-Issue:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -204,6 +233,7 @@ Parked:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
       - 'Pending'
@@ -223,6 +253,7 @@ Upstream:
       - 'Known-Issue'
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
       - 'Pending'
@@ -238,10 +269,11 @@ Queries:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Tagged'
       - 'Stale'
       - 'Unclear'
@@ -254,9 +286,10 @@ Resolved:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -277,10 +310,11 @@ Stale:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Tagged'
       - 'Queries'
       - 'Unclear'
@@ -292,24 +326,26 @@ Unclear:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Prorogued'
       - 'Duplicate'
       - 'Incomplete'
 
-# The `WontFix` label is added to issues
-WontFix:
+# The `Not-Planned` label is added to issues
+Not-Planned:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -317,8 +353,8 @@ WontFix:
       - 'Duplicate'
       - 'Incomplete'
 
-# The `WontFix` label is removed from issues
--WontFix:
+# The `Not-Planned` label is removed from issues
+-Not-Planned:
   issues:
     # Reopen and unlock issue
     reopen: true
@@ -329,10 +365,11 @@ Cannot-Replicate:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Unclear'
       - 'Prorogued'
@@ -344,10 +381,11 @@ Prorogued:
   issues:
     # Remove labels
     unlabel:
+      - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
-      - 'Parked'
       - 'Pending'
+      - 'Parked'
       - 'Stale'
       - 'Queries'
       - 'Unclear'

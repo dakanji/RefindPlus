@@ -188,6 +188,7 @@ CHAR16 * FindInitrd (
         }
         BREAD_CRUMB(L"%s:  8a 2a 5", FuncTag);
         MY_FREE_POOL(InitrdVersion);
+        MY_FREE_POOL(DirEntry);
 
         BREAD_CRUMB(L"%s:  8a 3 - WHILE LOOP:- END", FuncTag);
         LOG_SEP(L"X");

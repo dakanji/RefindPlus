@@ -1528,6 +1528,13 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
+    // DA-TAG: Do not scan HFS+ Recovery HD
+    if (Volume->FSType == FS_TYPE_HFSPLUS) {
+        if (FindSubStr (Volume->VolName, L"Recovery HD")) {
+            return FALSE;
+        }
+    }
+
     if (Volume->FSType == FS_TYPE_APFS) {
         EFI_STATUS                     Status;
         CHAR16           *TmpVolNameA  = NULL;
@@ -1780,8 +1787,9 @@ BOOLEAN ScanLoaderDir (
     struct LOADER_LIST      *LoaderList  = NULL;
     LOADER_ENTRY            *FirstKernel = NULL;
     LOADER_ENTRY            *LatestEntry = NULL;
-    BOOLEAN                  FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
-    BOOLEAN                  FoundBAK = FALSE;
+    BOOLEAN                  FoundFallbackDuplicate = FALSE;
+    BOOLEAN                  InSelfPath;
+    BOOLEAN                  IsLinux;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"ScanLoaderDir";
@@ -1809,6 +1817,7 @@ BOOLEAN ScanLoaderDir (
         DirIterOpen (Volume->RootDir, Path, &DirIter);
 
         //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        BOOLEAN SkipDir = FALSE;
         while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
             //LOG_SEP(L"X");
             //BREAD_CRUMB(L"%s:  2a 2a 1 - WHILE LOOP:- START", FuncTag);
@@ -1834,28 +1843,42 @@ BOOLEAN ScanLoaderDir (
                 }
             }
 
-            // HasSignedCounterpart (Volume, FullName) = file with same name plus ".efi.signed" is present
             //BREAD_CRUMB(L"%s:  2a 2a 6", FuncTag);
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            FoundBAK = FindSubStr (DirEntry->FileName, L"_BAK");
+            SkipDir = (
+                FindSubStr (DirEntry->FileName, L"_BAK") ||
+                MyStriCmp (DirEntry->FileName, L"APPLE")
+            );
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_OFF;
             #endif
-            if (FoundBAK || DirEntry->FileName[0] == '.' ||
-                MyStriCmp (Extension, L".icns") ||
-                MyStriCmp (Extension, L".png") ||
-                (MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
-                (MyStriCmp (Path, L"EFI\\BOOT"))) ||
-                FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-                HasSignedCounterpart (Volume, FullName) ||
+
+            // HasSignedCounterpart (Volume, FullName) = file with same name plus ".efi.signed" is present
+            if (SkipDir                                                                   ||
+                DirEntry->FileName[0] == '.'                                              ||
+                MyStriCmp (Extension, L".log")                                            ||
+                MyStriCmp (Extension, L".txt")                                            ||
+                MyStriCmp (Extension, L".png")                                            ||
+                MyStriCmp (Extension, L".bmp")                                            ||
+                MyStriCmp (Extension, L".jpg")                                            ||
+                MyStriCmp (Extension, L".jpeg")                                           ||
+                MyStriCmp (Extension, L".icns")                                           ||
+                (
+                    MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
+                    MyStriCmp (Path, L"EFI\\BOOT")
+                )                                                                         ||
+                FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES)                ||
+                HasSignedCounterpart (Volume, FullName)                                   ||
                 FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
                 !IsValidLoader (Volume->RootDir, FullName)
             ) {
                 //BREAD_CRUMB(L"%s:  2a 2a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid File)", FuncTag);
                 //LOG_SEP(L"X");
                 // Skip This Entry
+                MY_FREE_POOL(Extension);
+
                 continue;
             }
 
@@ -1877,6 +1900,7 @@ BOOLEAN ScanLoaderDir (
             //BREAD_CRUMB(L"%s:  2a 2a 8", FuncTag);
             MY_FREE_POOL(Extension);
             MY_FREE_POOL(FullName);
+            MY_FREE_POOL(DirEntry);
 
             //BREAD_CRUMB(L"%s:  2a 2a 9 - WHILE LOOP:- END", FuncTag);
             //LOG_SEP(L"X");
@@ -2124,6 +2148,7 @@ VOID ScanEfiFiles (
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
+    BOOLEAN  CheckMute;
     #endif
 
     //#if REFIT_DEBUG > 1
@@ -2162,7 +2187,7 @@ VOID ScanEfiFiles (
             return;
         }
         //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        if (MyStriCmp (Volume->VolName, L"BOOTCAMP")) {
+        if (AppleFirmware && MyStrStr (Volume->VolName, L"BOOTCAMP")) {
             //BREAD_CRUMB(L"%s:  2a 2a 1 - END:- VOID ... Exit on Windows BootCamp Volume", FuncTag);
             //LOG_DECREMENT();
             //LOG_SEP(L"X");
@@ -2312,7 +2337,11 @@ VOID ScanEfiFiles (
                 MY_FREE_POOL(FileName);
                 //BREAD_CRUMB(L"%s:  6a 4a 1a 5", FuncTag);
             }
-            //BREAD_CRUMB(L"%s:  6a 4a 2 - WHILE LOOP:- END", FuncTag);
+
+            //BREAD_CRUMB(L"%s:  6a 4a 2", FuncTag);
+            MY_FREE_POOL(EfiDirEntry);
+
+            //BREAD_CRUMB(L"%s:  6a 4a 3 - WHILE LOOP:- END", FuncTag);
             //LOG_SEP(L"X");
         } // while
 
@@ -2406,109 +2435,139 @@ VOID ScanEfiFiles (
     // Scan subdirectories of the EFI directory (as per the standard)
     //BREAD_CRUMB(L"%s:  9", FuncTag);
     DirIterOpen (Volume->RootDir, L"EFI", &EfiDirIter);
-    //BREAD_CRUMB(L"%s:  10", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 1", FuncTag);
+    CHAR16  *Extension;
+    BOOLEAN  SkipDir = FALSE;
     while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
+        Extension = FindExtension (EfiDirEntry->FileName);
+
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        SkipDir = (
+            FindSubStr (EfiDirEntry->FileName, L"_BAK") ||
+            MyStriCmp (EfiDirEntry->FileName, L"APPLE")
+        );
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+
         //LOG_SEP(L"X");
-        //BREAD_CRUMB(L"%s:  10a 1 - WHILE LOOP:- START", FuncTag);
-        if (MyStriCmp (EfiDirEntry->FileName, L"tools") ||
-            EfiDirEntry->FileName[0] == '.'
+        //BREAD_CRUMB(L"%s:  9a 1a 1 - WHILE LOOP:- START", FuncTag);
+        if (SkipDir                                     ||
+            EfiDirEntry->FileName[0] == '.'             ||
+            MyStriCmp (Extension, L".log")              ||
+            MyStriCmp (Extension, L".txt")              ||
+            MyStriCmp (Extension, L".png")              ||
+            MyStriCmp (Extension, L".bmp")              ||
+            MyStriCmp (Extension, L".jpg")              ||
+            MyStriCmp (Extension, L".jpeg")             ||
+            MyStriCmp (Extension, L".icns")             ||
+            MyStriCmp (EfiDirEntry->FileName, L"tools")
         ) {
-            //BREAD_CRUMB(L"%s:  10a 1 - WHILE LOOP:- BREAK", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 1a 1a 1 - WHILE LOOP:- BREAK", FuncTag);
             //LOG_SEP(L"X");
+
             // Skip this ... Does not contain boot loaders or is scanned later
+            MY_FREE_POOL(Extension);
+            MY_FREE_POOL(EfiDirEntry);
+
             continue;
         }
 
-        //BREAD_CRUMB(L"%s:  10a 2", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 1a 2", FuncTag);
         FileName = PoolPrint (L"EFI\\%s", EfiDirEntry->FileName);
 
-        //BREAD_CRUMB(L"%s:  10a 3", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 1a 3", FuncTag);
         if (ScanLoaderDir (Volume, FileName, MatchPatterns)) {
-            //BREAD_CRUMB(L"%s:  10a 3a 1", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 1a 3a 1", FuncTag);
             ScanFallbackLoader = FALSE;
         }
 
         MY_FREE_POOL(FileName);
+        MY_FREE_POOL(Extension);
+        MY_FREE_POOL(EfiDirEntry);
 
-        //BREAD_CRUMB(L"%s:  10a 3 - WHILE LOOP:- END", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 1a 4 - WHILE LOOP:- END", FuncTag);
         //LOG_SEP(L"X");
     } // while
 
-    //BREAD_CRUMB(L"%s:  11", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 2", FuncTag);
     Status = DirIterClose (&EfiDirIter);
-    //BREAD_CRUMB(L"%s:  12", FuncTag);
-    if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-        //BREAD_CRUMB(L"%s:  12a 1", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 3", FuncTag);
+    if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
+        //BREAD_CRUMB(L"%s:  9a 3a 1", FuncTag);
         Temp = PoolPrint (
             L"While Scanning the EFI System Partition on '%s'",
             Volume->VolName
         );
-        //BREAD_CRUMB(L"%s:  12a 2", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 3a 2", FuncTag);
         CheckError (Status, Temp);
         MY_FREE_POOL(Temp);
-        //BREAD_CRUMB(L"%s:  12a 3", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 3a 3", FuncTag);
     }
 
-    //BREAD_CRUMB(L"%s:  13", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 4", FuncTag);
     // Scan user-specified (or additional default) directories.
     i = 0;
     while ((Directory = FindCommaDelimited (GlobalConfig.AlsoScan, i++)) != NULL) {
         //LOG_SEP(L"X");
-        //BREAD_CRUMB(L"%s:  13a 1 - WHILE LOOP:- START", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 4a 1 - WHILE LOOP:- START", FuncTag);
         if (ShouldScan (Volume, Directory)) {
-            //BREAD_CRUMB(L"%s:  13a 1a 1", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 4a 1a 1", FuncTag);
             SplitVolumeAndFilename (&Directory, &VolName);
 
-            //BREAD_CRUMB(L"%s:  13a 1a 2", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 4a 1a 2", FuncTag);
             CleanUpPathNameSlashes (Directory);
 
-            //BREAD_CRUMB(L"%s:  13a 1a 3", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 4a 1a 3", FuncTag);
             Length = StrLen (Directory);
 
-            //BREAD_CRUMB(L"%s:  13a 1a 4", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 4a 1a 4", FuncTag);
             if ((Length > 0) && ScanLoaderDir (Volume, Directory, MatchPatterns)) {
-                //BREAD_CRUMB(L"%s:  13a 1a 4a 1", FuncTag);
+                //BREAD_CRUMB(L"%s:  9a 4a 1a 4a 1", FuncTag);
                 ScanFallbackLoader = FALSE;
             }
-            //BREAD_CRUMB(L"%s:  13a 1a 5", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 4a 1a 5", FuncTag);
             MY_FREE_POOL(VolName);
         }
         MY_FREE_POOL(Directory);
 
-        //BREAD_CRUMB(L"%s:  13a 2 - WHILE LOOP:- END", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 4a 2 - WHILE LOOP:- END", FuncTag);
         //LOG_SEP(L"X");
     } // while
 
-    //BREAD_CRUMB(L"%s:  14", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 5", FuncTag);
     // Do not scan the fallback loader if it is on the same volume and a duplicate of RefindPlus itself.
     SelfPath = DevicePathToStr (SelfLoadedImage->FilePath);
 
-    //BREAD_CRUMB(L"%s:  15", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 6", FuncTag);
     CleanUpPathNameSlashes (SelfPath);
 
-    //BREAD_CRUMB(L"%s:  16", FuncTag);
+    //BREAD_CRUMB(L"%s:  9a 7", FuncTag);
     if ((Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) &&
         DuplicatesFallback (Volume, SelfPath)
     ) {
-        //BREAD_CRUMB(L"%s:  16a 1", FuncTag);
+        //BREAD_CRUMB(L"%s:  9a 7a 1", FuncTag);
         ScanFallbackLoader = FALSE;
     }
     MY_FREE_POOL(SelfPath);
+    //BREAD_CRUMB(L"%s:  9a 8", FuncTag);
 
-    //BREAD_CRUMB(L"%s:  17", FuncTag);
+    //BREAD_CRUMB(L"%s:  10", FuncTag);
     // Create an entry for fallback loaders
     if (ScanFallbackLoader &&
         FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&
         ShouldScan (Volume, L"EFI\\BOOT") &&
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
-        //BREAD_CRUMB(L"%s:  17a 1", FuncTag);
+        //BREAD_CRUMB(L"%s:  10a 1", FuncTag);
         AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Loader", Volume, TRUE);
     }
 
     MY_FREE_POOL(MatchPatterns);
 
-    //BREAD_CRUMB(L"%s:  18 - END:- VOID", FuncTag);
+    //BREAD_CRUMB(L"%s:  11 - END:- VOID", FuncTag);
     //LOG_DECREMENT();
     //LOG_SEP(L"X");
 } // static VOID ScanEfiFiles()
