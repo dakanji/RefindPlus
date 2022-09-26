@@ -1211,7 +1211,7 @@ UINTN RunGenericMenu (
             !ClearedBuffer && !FlushFailReset &&
             MyStriCmp (Screen->Title, L"Main Menu")
         ) {
-            UINT64 MenuExitNumb = 512;
+            UINT64 MenuExitNumb = 636; // 512 + 124
             UINT64 MenuExitGate = MenuExitNumb;
             UINT64 MenuExitTime = GetCurrentMS();
             UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
@@ -2704,7 +2704,7 @@ VOID ManageHiddenTags (VOID) {
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Restore Hidden Tags' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Restore Tags' Screen");
     #endif
 
     HiddenTags = ReadHiddenTags (L"HiddenTags");
@@ -2742,7 +2742,7 @@ VOID ManageHiddenTags (VOID) {
 
     REFIT_MENU_SCREEN *RestoreItemMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     RestoreItemMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    RestoreItemMenu->Title      = StrDuplicate (L"Restore Hidden Tags");
+    RestoreItemMenu->Title      = StrDuplicate (L"Restore Tags");
     RestoreItemMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' to Apply the Option");
     RestoreItemMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
 

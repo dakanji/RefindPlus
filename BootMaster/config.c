@@ -74,6 +74,7 @@
 
 BOOLEAN SilenceAPFS;
 BOOLEAN InnerScan = FALSE;
+BOOLEAN FoundFontImage = TRUE;
 
 // Control Forensic Logging
 #if REFIT_DEBUG > 1
@@ -1431,6 +1432,14 @@ VOID ReadConfig (
     if (AllowIncludes) {
         // Disable 'AllowIncludes' on exiting the outer loop
         AllowIncludes = FALSE;
+
+        if (!FoundFontImage) {
+            LOG_MSG(
+                "%s  - WARN: Font image file is invalid ... Using default font",
+                OffsetNext
+            );
+            FoundFontImage = TRUE;
+        }
 
         // Log formating on exiting the outer loop
         LOG_MSG("\n");

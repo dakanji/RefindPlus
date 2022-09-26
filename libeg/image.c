@@ -90,7 +90,8 @@
 #endif
 
 #if REFIT_DEBUG > 0
-CHAR16 *OffsetNext = L"\n                   ";
+extern BOOLEAN   DefaultBanner;
+CHAR16          *OffsetNext = L"\n                   ";
 #endif
 
 //
@@ -733,6 +734,10 @@ EG_IMAGE * egPrepareEmbeddedImage (
     IN BOOLEAN            WantAlpha,
     IN EG_PIXEL          *ForegroundColor
 ) {
+    #if REFIT_DEBUG > 0
+    static BOOLEAN LogTextColour = TRUE;
+    #endif
+
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
     #endif
@@ -867,11 +872,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
         //BREAD_CRUMB(L"%s:  7c 2", FuncTag);
         #if REFIT_DEBUG > 0
-        // DA-TAG: Limit Logging to Embedded Banner
-        if ((WantAlpha && ForegroundColor) &&
-            (EmbeddedImage->Width == egemb_refindplus_banner.Width) &&
-            (EmbeddedImage->Height == egemb_refindplus_banner.Height)
-        ) {
+        // DA-TAG: Limit logging to embedded banner and only once
+        if (DefaultBanner && LogTextColour) {
+            LogTextColour = FALSE;
             //BREAD_CRUMB(L"%s:  7c 2a 1", FuncTag);
             LOG_MSG(
                 "%s      Colour (Text) ... %3d %3d %3d",

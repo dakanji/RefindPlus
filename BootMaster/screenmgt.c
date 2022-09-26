@@ -72,7 +72,7 @@ UINTN      ScreenShortest         = 0;
 
 BOOLEAN    AllowGraphicsMode      = FALSE;
 BOOLEAN    ClearedBuffer          = FALSE;
-BOOLEAN    DefaultBanner          = FALSE;
+BOOLEAN    DefaultBanner          =  TRUE;
 
 EG_PIXEL   BlackPixel             = { 0x00, 0x00, 0x00, 0 };
 EG_PIXEL   GrayPixel              = { 0xBF, 0xBF, 0xBF, 0 };
@@ -748,11 +748,11 @@ VOID FinishExternalScreen (VOID) {
 } // VOID FinishExternalScreen()
 
 VOID TerminateScreen (VOID) {
-    // clear text screen
+    // Clear text screen
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut);
 
-    // enable cursor
+    // Enable cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
 } // VOID TerminateScreen()
 
@@ -1426,6 +1426,9 @@ VOID BltClearScreen (
             }
 
             if (Banner != NULL) {
+                // Using Custom Title Banner
+                DefaultBanner = FALSE;
+
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Custom Title Banner");
                 LOG_MSG("%s    * %s", OffsetNext, MsgStr);
@@ -1480,7 +1483,6 @@ VOID BltClearScreen (
                     &BannerFont
                 );
 
-                DefaultBanner = TRUE;
             } // if/else Banner != NULL
 
             if (Banner != NULL) {

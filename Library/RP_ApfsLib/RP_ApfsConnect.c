@@ -220,7 +220,7 @@ EFI_STATUS RP_ApfsConnectHandle (
         &gEfiSimpleFileSystemProtocolGuid, &TempProtocol
     );
     if (!EFI_ERROR(Status)) {
-        return EFI_ALREADY_STARTED;
+        return (AppleFirmware) ? EFI_ALREADY_STARTED : EFI_NO_MAPPING;
     }
 
     // Obtain Block I/O.

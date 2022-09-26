@@ -51,11 +51,11 @@
 
 #define FONT_NUM_CHARS 96
 
-extern
-BOOLEAN   DefaultBanner;
+extern BOOLEAN   DefaultBanner;
+extern BOOLEAN   FoundFontImage;
 
-UINTN     FontCellWidth = 7;
-EG_IMAGE *BaseFontImage = NULL;
+UINTN            FontCellWidth = 7;
+EG_IMAGE        *BaseFontImage = NULL;
 
 //
 // Text rendering
@@ -219,7 +219,7 @@ VOID egLoadFont (
     MY_FREE_IMAGE(BaseFontImage);
     BaseFontImage = egLoadImage (SelfDir, Filename, TRUE);
     if (BaseFontImage == NULL) {
-        Print (L"Note: Font image file %s is invalid! Using default font!\n");
+        FoundFontImage = FALSE;
     }
     egPrepareFont();
 } // VOID egLoadFont()

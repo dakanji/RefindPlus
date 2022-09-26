@@ -27,6 +27,8 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 
 #include "../../include/refit_call_wrapper.h"
 
+extern BOOLEAN AppleFirmware;
+
 EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
     EFI_STATUS       Status;
     EFI_STATUS       XStatus;
@@ -40,20 +42,20 @@ EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
         &gEfiBlockIoProtocolGuid, NULL,
         &HandleCount, &HandleBuffer
     );
-    if (!EFI_ERROR(Status)) {
-        Status = EFI_NOT_FOUND;
+    if (EFI_ERROR(Status)) {
+        return EFI_LOAD_ERROR;
+    }
 
-        for (Index = 0; Index < HandleCount; ++Index) {
-            XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
-            if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
-                if (EFI_ERROR(Status)) {
-                    Status = XStatus;
-                }
+    Status = EFI_NOT_FOUND;
+    for (Index = 0; Index < HandleCount; ++Index) {
+        XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
+        if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED || XStatus == EFI_NO_MAPPING) {
+            if (EFI_ERROR(Status)) {
+                Status = XStatus;
             }
         }
-
-        FreePool (HandleBuffer);
     }
+    FreePool (HandleBuffer);
 
     return Status;
 }

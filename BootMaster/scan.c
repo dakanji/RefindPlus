@@ -1874,7 +1874,9 @@ BOOLEAN ScanLoaderDir (
                 FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
                 !IsValidLoader (Volume->RootDir, FullName)
             ) {
-                //BREAD_CRUMB(L"%s:  2a 2a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid File)", FuncTag);
+                //BREAD_CRUMB(L"%s:  2a 2a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
+                //    DirEntry->FileName
+                //);
                 //LOG_SEP(L"X");
                 // Skip This Entry
                 MY_FREE_POOL(Extension);
@@ -2465,7 +2467,9 @@ VOID ScanEfiFiles (
             MyStriCmp (Extension, L".icns")             ||
             MyStriCmp (EfiDirEntry->FileName, L"tools")
         ) {
-            //BREAD_CRUMB(L"%s:  9a 1a 1a 1 - WHILE LOOP:- BREAK", FuncTag);
+            //BREAD_CRUMB(L"%s:  9a 1a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
+            //    EfiDirEntry->FileName
+            //);
             //LOG_SEP(L"X");
 
             // Skip this ... Does not contain boot loaders or is scanned later
@@ -3263,8 +3267,14 @@ BOOLEAN IsValidTool (
     CHAR16       *PathName
 ) {
     UINTN    i = 0;
-    CHAR16  *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis  = NULL;
-    CHAR16  *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools = NULL;
+    CHAR16  *DontVolName   = NULL;
+    CHAR16  *TestVolName   = NULL;
+    CHAR16  *TestPathName  = NULL;
+    CHAR16  *TestFileName  = NULL;
+    CHAR16  *DontPathName  = NULL;
+    CHAR16  *DontFileName  = NULL;
+    CHAR16  *DontScanThis  = NULL;
+    CHAR16  *DontScanTools = NULL;
     BOOLEAN  retval = TRUE;
 
     if (!FileExists (BaseVolume->RootDir, PathName)) {
@@ -3363,16 +3373,6 @@ BOOLEAN FindTool (
                         L"Adding Tag for '%s' on '%s'",
                         FileName, Volumes[VolumeIndex]->VolName
                     );
-                    #endif
-
-                    AddToolEntry (
-                        Volumes[VolumeIndex],
-                        PathName, Description,
-                        BuiltinIcon (Icon),
-                        'S', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
                         L"Added Tool:- '%-18s    :::    %s'",
                         Description, PathName
@@ -3387,6 +3387,12 @@ BOOLEAN FindTool (
                     MY_FREE_POOL(ToolStr);
                     #endif
 
+                    AddToolEntry (
+                        Volumes[VolumeIndex],
+                        PathName, Description,
+                        BuiltinIcon (Icon),
+                        'S', FALSE
+                    );
                     FoundTool = TRUE;
                 } // if Volumes[VolumeIndex]->RootDir
             } // for
@@ -3407,7 +3413,6 @@ VOID ScanForTools (VOID) {
     UINTN             VolumeIndex;
     VOID             *ItemBuffer = 0;
     CHAR16           *TmpStr     = NULL;
-    CHAR16           *ToolName   = NULL;
     CHAR16           *FileName   = NULL;
     CHAR16           *VolumeTag  = NULL;
     CHAR16           *RecoverVol = NULL;
@@ -3483,35 +3488,33 @@ VOID ScanForTools (VOID) {
         MergeStrings (&MokLocations, SelfDirPath, L',');
     }
 
+    CHAR16 *ToolName = NULL;
     for (i = 0; i < NUM_TOOLS; i++) {
         // Reset Vars
         MY_FREE_POOL(FileName);
         MY_FREE_POOL(VolumeTag);
-        MY_FREE_POOL(ToolName);
-
-        FoundTool = FALSE;
 
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");            break;
-            case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Firmware Boot Order");  break;
-            case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Rotate CSR");                  break;
-            case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");             break;
-            case TAG_FIRMWARE:         ToolName = StrDuplicate (L"Firmware Reboot");             break;
-            case TAG_FWUPDATE_TOOL:    ToolName = StrDuplicate (L"Firmware Update");             break;
-            case TAG_GDISK:            ToolName = StrDuplicate (L"GDisk");                       break;
-            case TAG_GPTSYNC:          ToolName = StrDuplicate (L"GPT Sync");                    break;
-            case TAG_HIDDEN:           ToolName = StrDuplicate (L"Hidden Tags");                 break;
-            case TAG_INFO_NVRAMCLEAN:  ToolName = StrDuplicate (L"Clean Nvram");                 break;
-            case TAG_INSTALL:          ToolName = StrDuplicate (L"Install RefindPlus");          break;
-            case TAG_MEMTEST:          ToolName = StrDuplicate (L"Memtest");                     break;
-            case TAG_MOK_TOOL:         ToolName = StrDuplicate (L"MOK Protocol");                break;
-            case TAG_NETBOOT:          ToolName = StrDuplicate (L"Net Boot");                    break;
-            case TAG_REBOOT:           ToolName = StrDuplicate (L"System Restart");              break;
-            case TAG_RECOVERY_APPLE:   ToolName = StrDuplicate (L"Recovery (Mac)");              break;
-            case TAG_RECOVERY_WINDOWS: ToolName = StrDuplicate (L"Recovery (Win)");              break;
-            case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");                  break;
-            case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");             break;
-            default:                                                                          continue;
+            case TAG_ABOUT:            ToolName = L"About RefindPlus";            break;
+            case TAG_BOOTORDER:        ToolName = L"Boot Order";                  break;
+            case TAG_CSR_ROTATE:       ToolName = L"Rotate CSR";                  break;
+            case TAG_EXIT:             ToolName = L"Exit RefindPlus";             break;
+            case TAG_FIRMWARE:         ToolName = L"Firmware Reboot";             break;
+            case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update";             break;
+            case TAG_GDISK:            ToolName = L"GDisk Tool";                  break;
+            case TAG_GPTSYNC:          ToolName = L"GPT Sync";                    break;
+            case TAG_HIDDEN:           ToolName = L"Hidden Tags";                 break;
+            case TAG_INFO_NVRAMCLEAN:  ToolName = L"Clean Nvram";                 break;
+            case TAG_INSTALL:          ToolName = L"Install RefindPlus";          break;
+            case TAG_MEMTEST:          ToolName = L"Memtest Tool";                break;
+            case TAG_MOK_TOOL:         ToolName = L"MOK Protocol";                break;
+            case TAG_NETBOOT:          ToolName = L"Net Boot";                    break;
+            case TAG_REBOOT:           ToolName = L"System Restart";              break;
+            case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)";              break;
+            case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)";              break;
+            case TAG_SHELL:            ToolName = L"UEFI Shell";                  break;
+            case TAG_SHUTDOWN:         ToolName = L"System Shutdown";             break;
+            default:                                                           continue;
         } // switch
 
         #if REFIT_DEBUG > 0
@@ -3519,13 +3522,14 @@ VOID ScanForTools (VOID) {
         LOG_MSG("%s  - Type %02d ... ", OffsetNext, ToolTotal);
         #endif
 
+        FoundTool = FALSE;
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_INFO_NVRAMCLEAN:
                 MenuEntryPreCleanNvram = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryPreCleanNvram) {
                     FoundTool = TRUE;
 
-                    MenuEntryPreCleanNvram->Title          = StrDuplicate (L"Clean NVRAM");
+                    MenuEntryPreCleanNvram->Title          = StrDuplicate (ToolName);
                     MenuEntryPreCleanNvram->Tag            = TAG_INFO_NVRAMCLEAN;
                     MenuEntryPreCleanNvram->Row            = 1;
                     MenuEntryPreCleanNvram->ShortcutDigit  = 0;
@@ -3557,7 +3561,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryShutdown) {
                     FoundTool = TRUE;
 
-                    MenuEntryShutdown->Title          = StrDuplicate (L"System Shutdown");
+                    MenuEntryShutdown->Title          = StrDuplicate (ToolName);
                     MenuEntryShutdown->Tag            = TAG_SHUTDOWN;
                     MenuEntryShutdown->Row            =  1;
                     MenuEntryShutdown->ShortcutDigit  =  0;
@@ -3589,7 +3593,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryReset) {
                     FoundTool = TRUE;
 
-                    MenuEntryReset->Title          = StrDuplicate (L"System Restart");
+                    MenuEntryReset->Title          = StrDuplicate (ToolName);
                     MenuEntryReset->Tag            = TAG_REBOOT;
                     MenuEntryReset->Row            =  1;
                     MenuEntryReset->ShortcutDigit  =  0;
@@ -3621,7 +3625,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryAbout) {
                     FoundTool = TRUE;
 
-                    MenuEntryAbout->Title          = StrDuplicate (L"About RefindPlus");
+                    MenuEntryAbout->Title          = StrDuplicate (ToolName);
                     MenuEntryAbout->Tag            = TAG_ABOUT;
                     MenuEntryAbout->Row            =  1;
                     MenuEntryAbout->ShortcutDigit  =  0;
@@ -3653,7 +3657,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryExit) {
                     FoundTool = TRUE;
 
-                    MenuEntryExit->Title          = StrDuplicate (L"Exit RefindPlus");
+                    MenuEntryExit->Title          = StrDuplicate (ToolName);
                     MenuEntryExit->Tag            = TAG_EXIT;
                     MenuEntryExit->Row            = 1;
                     MenuEntryExit->ShortcutDigit  = 0;
@@ -3684,7 +3688,7 @@ VOID ScanForTools (VOID) {
                 if (GlobalConfig.HiddenTags) {
                     MenuEntryHiddenTags = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                     if (MenuEntryHiddenTags) {
-                        MenuEntryHiddenTags->Title          = StrDuplicate (L"Restore Hidden Tags");
+                        MenuEntryHiddenTags->Title          = StrDuplicate (ToolName);
                         MenuEntryHiddenTags->Tag            = TAG_HIDDEN;
                         MenuEntryHiddenTags->Row            = 1;
                         MenuEntryHiddenTags->ShortcutDigit  = 0;
@@ -3739,7 +3743,7 @@ VOID ScanForTools (VOID) {
                         if (MenuEntryFirmware) {
                             FoundTool = TRUE;
 
-                            MenuEntryFirmware->Title          = StrDuplicate (L"Reboot into Firmware");
+                            MenuEntryFirmware->Title          = StrDuplicate (ToolName);
                             MenuEntryFirmware->Tag            = TAG_FIRMWARE;
                             MenuEntryFirmware->Row            = 1;
                             MenuEntryFirmware->ShortcutDigit  = 0;
@@ -4257,7 +4261,7 @@ VOID ScanForTools (VOID) {
                     if (MenuEntryRotateCsr) {
                         FoundTool = TRUE;
 
-                        MenuEntryRotateCsr->Title          = StrDuplicate (L"Rotate CSR Values");
+                        MenuEntryRotateCsr->Title          = StrDuplicate (ToolName);
                         MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
                         MenuEntryRotateCsr->Row            = 1;
                         MenuEntryRotateCsr->ShortcutDigit  = 0;
@@ -4298,7 +4302,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryInstall) {
                     FoundTool = TRUE;
 
-                    MenuEntryInstall->Title          = StrDuplicate (L"Install RefindPlus");
+                    MenuEntryInstall->Title          = StrDuplicate (ToolName);
                     MenuEntryInstall->Tag            = TAG_INSTALL;
                     MenuEntryInstall->Row            = 1;
                     MenuEntryInstall->ShortcutDigit  = 0;
@@ -4330,7 +4334,7 @@ VOID ScanForTools (VOID) {
                 if (MenuEntryBootorder) {
                     FoundTool = TRUE;
 
-                    MenuEntryBootorder->Title          = StrDuplicate (L"Manage Firmware Boot Order");
+                    MenuEntryBootorder->Title          = StrDuplicate (ToolName);
                     MenuEntryBootorder->Tag            = TAG_BOOTORDER;
                     MenuEntryBootorder->Row            = 1;
                     MenuEntryBootorder->ShortcutDigit  = 0;

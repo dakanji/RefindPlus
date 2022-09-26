@@ -118,8 +118,8 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
   - If nothing is entered, the script will build on the default `GOPFix` branch
 - Press `Enter`
 
-### Syncing Your Repositories with Upstream Repositories
-If a period of time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with upstream repositories in order to incorporate upstream changes made in the intervening period.
+### Syncing Your Repositories with Source Repositories
+If a period of time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with the source repositories in order to incorporate changes made in the intervening period.
 
 #### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
@@ -155,4 +155,4 @@ $ git push
 ```
 
 #### OPTION 3: GitHub Sync
-GitHub now includes an interface for syncing forks. While Options 1 and 2 will leave the fork with a clean history consistent with the upstream repository, some may find the GitHub interface easier to use.
+GitHub now includes an interface for syncing forks. While Options 1 and 2 will leave the fork with a clean history consistent with the source repository, some may find the GitHub interface easier to use.

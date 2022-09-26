@@ -3237,7 +3237,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_ABOUT:    // About RefindPlus
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Show 'About RefindPlus' Page", OffsetNext);
+                LOG_MSG("%s  - Show 'About RefindPlus'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -3246,7 +3246,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit 'About RefindPlus' Page", OffsetNext);
+                LOG_MSG("%s  - Exit 'About RefindPlus'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -3627,7 +3627,17 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load 'Mac-Style' Legacy (BIOS) OS");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLegacyEntry->Volume->OSName);
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr,
+                        (ourLegacyEntry->Volume)
+                            ? ourLegacyEntry->Volume->OSName
+                            : (ourLoaderEntry->OSType == 'W')
+                                ? L"Windows Volume"
+                                : (ourLoaderEntry->OSType == 'L')
+                                    ? L"Linux Volume"
+                                    : L"NULL Volume Label"
+                    );
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -3650,7 +3660,13 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG(
                     "%s  - %s:- '%s'",
                     OffsetNext, MsgStr,
-                    ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
+                    (ourLegacyEntry->Volume)
+                        ? ourLegacyEntry->Volume->OSName
+                        : (ourLoaderEntry->OSType == 'W')
+                            ? L"Windows Volume"
+                            : (ourLoaderEntry->OSType == 'L')
+                                ? L"Linux Volume"
+                                : L"NULL Volume Label"
                 );
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -3683,7 +3699,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Reboot into Firmware Defined Loader", OffsetNext);
+                LOG_MSG("%s  - Reboot into Firmware Loader", OffsetNext);
                 #endif
 
                 // No end dash line ... Added in 'RebootIntoLoader'
@@ -3698,7 +3714,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Manage Hidden Tag Entries", OffsetNext);
+                LOG_MSG("%s  - Restore Tags", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -3707,7 +3723,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit Hidden Tags Page", OffsetNext);
+                LOG_MSG("%s  - Exit 'Restore Tags'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -3715,7 +3731,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_EXIT:    // Exit RefindPlus
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit RefindPlus", OffsetNext);
+                LOG_MSG("%s  - Close RefindPlus", OffsetNext);
                 OUT_TAG();
                 #endif
 
@@ -3764,7 +3780,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_BOOTORDER:
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Manage Firmware Boot Order", OffsetNext);
+                LOG_MSG("%s  - Manage Boot Order", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -3773,7 +3789,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit Manage Firmware Boot Order Page", OffsetNext);
+                LOG_MSG("%s  - Exit 'Boot Order'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 

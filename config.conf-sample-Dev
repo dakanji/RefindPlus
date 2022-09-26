@@ -623,10 +623,10 @@
 #   osx         - MacOS loader
 #   windows     - Windows loader
 #   linux       - Linux stub loader
-#   grub        - The GRUB bootloader
-#   elilo       - The ELILO bootloader
-#   clover      - The Clover bootloader
-#   opencore    - The OpenCore bootloader
+#   grub        - The GRUB boot loader
+#   elilo       - The ELILO boot loader
+#   clover      - The Clover boot loader
+#   opencore    - The OpenCore boot loader
 #
 # Defaults to 'osx' when commented out (Launches MacOS in graphics mode)
 #
