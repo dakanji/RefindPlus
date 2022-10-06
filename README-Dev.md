@@ -94,8 +94,8 @@ set_boot_args         |Allows setting arbitrary MacOS boot arguments
 transient_boot        |Disables saving the last booted loader if not required
 unicode_collation     |Provides finetuned support for languages that use unicode text
 
-## Extended Functionality
-In addition to the new functionality listed above, the following upsteam tokens have been extended:
+## Modified Functionality
+In addition to the new functionality listed above, the following upsteam tokens have been modified:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
 - **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
@@ -120,7 +120,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
 ## Divergence
 Implementation differences with the upstream base version v0.13.3 are:
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
-- **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account.
+- **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_tags_help` configuration token to switch it off.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_reload_gop` configuration token to switch it off.
 - **NVMe Driver Provision:** RefindPlus installs a built in NvmExpressDxe driver when it detects an absence of NvmExpress capability on units with PCIe slots. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_nvme_load` configuration token to switch it off.

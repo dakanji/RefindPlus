@@ -56,6 +56,8 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/egemb_refindplus_banner.h"
+#include "../include/egemb_refindplus_banner_lorez.h"
+#include "../include/egemb_refindplus_banner_hidpi.h"
 
 // Console defines and variables
 
@@ -88,8 +90,64 @@ static BOOLEAN     GraphicsScreenDirty;
 static BOOLEAN     haveError = FALSE;
 
 extern BOOLEAN            IsBoot;
+extern BOOLEAN            IconScaleSet;
 extern BOOLEAN            egHasGraphics;
 extern BOOLEAN            FlushFailedTag;
+
+
+VOID FixIconScale (VOID) {
+    if (IconScaleSet || GlobalConfig.ScaleUI == 99) {
+        // Early Return
+        return;
+    }
+    IconScaleSet = TRUE;
+
+    // Scale icons as required
+    if (GlobalConfig.ScaleUI == 1) {
+        GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+        GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+        GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+        GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+    }
+    else if (GlobalConfig.ScaleUI == -1) {
+        if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
+        }
+        else {
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
+        }
+    }
+    else { // GlobalConfig.ScaleUI == 0 ... Technically any other value
+        if (ScreenShortest > HIDPI_SHORT && ScreenLongest > HIDPI_LONG) {
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+        }
+        else {
+            if (ScreenLongest < LOREZ_LIMIT || ScreenShortest < LOREZ_LIMIT) {
+                if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
+                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
+                }
+                else {
+                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
+                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
+                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
+                }
+            }
+        }
+    } // if/else GlobalConfig.ScaleUI
+} // VOID FixIconScale()
 
 
 VOID PrepareBlankLine (VOID) {
@@ -179,8 +237,6 @@ VOID SetupScreen (VOID) {
     BOOLEAN gotGraphics;
     static
     BOOLEAN BannerLoaded = FALSE;
-    static
-    BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -304,9 +360,11 @@ VOID SetupScreen (VOID) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
-            MsgStr = (!gotGraphics)
-                ? StrDuplicate (L"Text Screen Mode Active ... Prepare Graphics Mode Switch")
-                : StrDuplicate (L"Graphics Screen Mode Active ... Prepare Title Banner Display");
+            MsgStr = StrDuplicate (
+                (!gotGraphics)
+                    ? L"Text Screen Mode Active ... Prepare Graphics Mode Switch"
+                    : L"Graphics Screen Mode Active ... Prepare Title Banner Display"
+            );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -320,41 +378,66 @@ VOID SetupScreen (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
 
-            // Scale icons up for HiDPI graphics if required
-            if (GlobalConfig.ScaleUI == -1) {
-                #if REFIT_DEBUG > 0
+            // Scale icons for HiDPI or LoRez graphics as required
+            #if REFIT_DEBUG > 0
+            if (GlobalConfig.ScaleUI == 99) {
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
-                #endif
             }
-            else if (ScreenShortest < HIDPI_SHORT || ScreenLongest < HIDPI_LONG) {
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
-                #endif
+            else if (GlobalConfig.ScaleUI == 1) {
+                MsgStr = StrDuplicate (
+                    (IconScaleSet)
+                        ? L"HiDPI Flag ... Maintain Scaled Icons"
+                        : L"HiDPI Flag ... Scale Icons Up"
+                );
             }
-            else {
-                #if REFIT_DEBUG > 0
-                TmpStr = (GlobalConfig.ScaleUI == 1)
-                    ? L"HiDPI Flag" : L"HiDPI Mode";
-                #endif
-
-                if (ScaledIcons) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ... Maintain Upscaled Icons", TmpStr);
-                    #endif
+            else if (GlobalConfig.ScaleUI == -1) {
+                if (IconScaleSet) {
+                    MsgStr = StrDuplicate (
+                        (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
+                            ? L"LoRez Flag ... Maintain Scaled Icons"
+                            : L"BaseRez Flag ... Maintain Scaled Icons"
+                    );
                 }
                 else {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ... Scale Icons Up", TmpStr);
-                    #endif
-
-                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
-
-                    ScaledIcons = TRUE;
+                    MsgStr = StrDuplicate (
+                        (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
+                            ? L"LoRez Flag ... Scale Icons Down"
+                            : L"BaseRez Flag ... Scale Icons Down"
+                    );
+                }
+            }
+            else { // GlobalConfig.ScaleUI == 0 ... Technically any other value
+                if (ScreenShortest > HIDPI_SHORT && ScreenLongest > HIDPI_LONG) {
+                    MsgStr = StrDuplicate (
+                        (IconScaleSet)
+                            ? L"HiDPI Mode ... Maintain Scaled Icons"
+                            : L"HiDPI Mode ... Scale Icons Up"
+                    );
+                }
+                else {
+                    if (ScreenShortest > LOREZ_LIMIT && ScreenLongest > LOREZ_LIMIT) {
+                        MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
+                    }
+                    else if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
+                        MsgStr = StrDuplicate (
+                            (IconScaleSet)
+                                ? L"LoRez Mode ... Maintain Scaled Icons"
+                                : L"LoRez Mode ... Scale Icons Down"
+                        );
+                    }
+                    else {
+                        MsgStr = StrDuplicate (
+                            (IconScaleSet)
+                                ? L"BaseRez Mode ... Maintain Scaled Icons"
+                                : L"BaseRez Mode ... Scale Icons Down"
+                        );
+                    }
                 }
             } // if/else GlobalConfig.ScaleUI
+            #endif
+
+            // Run the update
+            FixIconScale();
 
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1477,12 +1560,31 @@ VOID BltClearScreen (
                 // Get complementary font colour if needed
                 EG_PIXEL BannerFont = FontComplement();
 
-                Banner = egPrepareEmbeddedImage (
-                    &egemb_refindplus_banner,
-                    TRUE,
-                    &BannerFont
-                );
+                // Get default banner type
+                UINTN BannerType = 0;
+                if (0);
+                else if (GlobalConfig.ScaleUI == 99) BannerType = 0;
+                else if (GlobalConfig.ScaleUI == -1) BannerType = 2;
+                else if (
+                    (GlobalConfig.ScaleUI == 1) ||
+                    (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
+                ) {
+                    BannerType = 1;
+                }
+                else if (ScreenShortest < LOREZ_LIMIT || ScreenLongest < LOREZ_LIMIT) {
+                    BannerType = 2;
+                }
 
+                // Get default banner
+                if (BannerType == 2) {
+                    Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner_lorez, TRUE, &BannerFont);
+                }
+                else if (BannerType == 1) {
+                    Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner_hidpi, TRUE, &BannerFont);
+                }
+                else {
+                    Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner,       TRUE, &BannerFont);
+                }
             } // if/else Banner != NULL
 
             if (Banner != NULL) {

@@ -47,6 +47,7 @@
 #include "../BootMaster/rp_funcs.h"
 #include "../BootMaster/screenmgt.h"
 #include "egemb_font.h"
+#include "egemb_font_small.h"
 #include "egemb_font_large.h"
 
 #define FONT_NUM_CHARS 96
@@ -74,14 +75,20 @@ VOID egPrepareFont (VOID) {
 
 
     if (BaseFontImage == NULL) {
-        if (GlobalConfig.ScaleUI == -1) {
+        if (GlobalConfig.ScaleUI == 99) {
             BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE, &TextFontColor);
+        }
+        else if (GlobalConfig.ScaleUI == -1) {
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font_small, TRUE, &TextFontColor);
         }
         else if (
             (GlobalConfig.ScaleUI == 1) ||
             (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
         ) {
             BaseFontImage = egPrepareEmbeddedImage (&egemb_font_large, TRUE, &TextFontColor);
+        }
+        else if (ScreenShortest <= LOREZ_LIMIT || ScreenLongest <= LOREZ_LIMIT) {
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font_small, TRUE, &TextFontColor);
         }
         else {
             BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE, &TextFontColor);

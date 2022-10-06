@@ -1,6 +1,11 @@
 0.13.3.AC (PRE-RELEASE):
 -----------------------
-- PENDING
+- Improves UI Element Scaling
+  * Some units use a low resolution display for the boot stage that result in distorted UI
+  * RefindPlus can now detect this and automatically scale UI elements down accordingly
+  * Alternatively, users can use the `scale_ui` token to scale UI elements down
+  * The threshold below which the display is considered `LoRez` is 1025px
+  * Ensures correct icon scales are maintained on `RescanAll` calls
 
 
 0.13.3.AB (06 Sep 2022):

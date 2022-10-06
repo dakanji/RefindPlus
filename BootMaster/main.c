@@ -218,6 +218,7 @@ BOOLEAN                OverrideSB           = FALSE;
 BOOLEAN                OneMainLoop          = FALSE;
 BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
+BOOLEAN                IconScaleSet         = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
 BOOLEAN                AllowTweakUEFI       = FALSE;
@@ -1642,7 +1643,15 @@ VOID RescanAll (
         ScanVolumes();
     }
 
+    // Unset Icon Scaled Flag
+    IconScaleSet = FALSE;
+
+    // Read Config
     ReadConfig (GlobalConfig.ConfigFilename);
+
+    // Fix Icon Scales
+    FixIconScale();
+
     if (OverrideSB) {
         GlobalConfig.TextOnly = TRUE;
         GlobalConfig.DirectBoot = FALSE;

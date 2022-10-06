@@ -69,6 +69,8 @@
 #include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/egemb_refindplus_banner.h"
+#include "../include/egemb_refindplus_banner_lorez.h"
+#include "../include/egemb_refindplus_banner_hidpi.h"
 #include "lodepng.h"
 #include "libeg.h"
 

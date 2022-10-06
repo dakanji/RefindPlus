@@ -110,6 +110,7 @@ UINTN GetLumIndex (
 VOID InitScreen (VOID);
 VOID SetupScreen (VOID);
 VOID PauseForKey (VOID);
+VOID FixIconScale (VOID);
 VOID RefitDeadLoop (VOID);
 VOID TerminateScreen (VOID);
 VOID PrepareBlankLine (VOID);
