@@ -146,6 +146,8 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                                                   TAG_FWUPDATE_TOOL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
                             };
 
+CHAR16 *gHiddenTools = NULL;
+
 EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 //
@@ -446,7 +448,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     BOOLEAN            MainLoopRunning = TRUE;
     BOOLEAN            MokProtocol;
     REFIT_MENU_ENTRY   *ChosenEntry;
-    UINTN              MenuExit, i;
+    UINTN              MenuExit = MENU_EXIT_ENTER, i;
     CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
 
@@ -496,6 +498,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     SetVolumeIcons();
     ScanForBootloaders(FALSE);
     ScanForTools();
+
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a
     // message that must be deleted, so do so
     BltClearScreen(TRUE);

@@ -38,6 +38,8 @@
 
 # Revision history:
 #
+# 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
+# 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
 #            with Shim, add backup direct boot NVRAM option
 # 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
@@ -159,7 +161,7 @@ GetParams() {
          --encryptkeys) EncryptKeys=1
               ;;
          --shim | --preloader) ShimSource="$2"
-              ShimType=`basename $ShimSource`
+              ShimType=$(basename $ShimSource)
               shift
               ;;
          --keepname) KeepName=1
@@ -230,7 +232,7 @@ ReadYesNo() {
       YesNo="Y"
       echo "Y"
    else
-      read YesNo
+      read -r YesNo
    fi
 }
 
@@ -268,7 +270,7 @@ DeterminePlatform() {
    local CpuType
    case "$OSTYPE" in
    darwin*)
-      CpuType=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
+      CpuType=$(ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4)
       case "$CpuType" in
       EFI64)
          Platform="x64"
@@ -283,7 +285,7 @@ DeterminePlatform() {
       esac
       ;;
    linux*)
-      CpuType=`uname -m`
+      CpuType=$(uname -m)
       case "$CpuType" in
       aarch64)
          Platform="aa64"
@@ -383,16 +385,16 @@ CheckForFiles() {
          if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" || $ShimType == "shimx64.efi.signed" ]] ; then
             TargetX64="grubx64.efi"
             TargetAARCH64="grubaa64.efi"
-            MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi.signed
+            MokManagerSource=$(dirname "$ShimSource")/mm$Platform.efi.signed
             if [[ ! -f "$MokManagerSource" ]] ; then
-                MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi
+                MokManagerSource=$(dirname "$ShimSource")/mm$Platform.efi
             fi
             if [[ ! -f "$MokManagerSource" ]] ; then
-                MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+                MokManagerSource=$(dirname "$ShimSource")/MokManager.efi
             fi
          elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
             TargetX64="loader.efi"
-            MokManagerSource=`dirname "$ShimSource"`/HashTool.efi
+            MokManagerSource=$(dirname "$ShimSource")/HashTool.efi
          else
             echo "Unknown shim/PreBootloader filename: $ShimType!"
             echo "Known filenames are shimx64.efi, shim.efi, and PreLoader.efi. Aborting!"
@@ -409,21 +411,24 @@ CheckForFiles() {
 # Helper for CopyRefindFiles; copies shim files (including MokManager, if it's
 # available) to target.
 CopyShimFiles() {
-   local inode1=`ls -i "$ShimSource" 2> /dev/null | cut -f 1 -d " "`
-   local inode2=`ls -i "$InstallDir/$TargetDir/$TargetShim" 2> /dev/null | cut -f 1 -d " "`
-   if [[ $inode1 != $inode2 ]] ; then
-      cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim"
-      if [[ $? != 0 ]] ; then
+   local TargetMMName
+   local inode1
+   local inode2
+
+   inode1=$(ls -i "$ShimSource" 2> /dev/null | cut -f 1 -d " ")
+   inode2=$(ls -i "$InstallDir/$TargetDir/$TargetShim" 2> /dev/null | cut -f 1 -d " ")
+   if [[ "$inode1" != "$inode2" ]] ; then
+      if ! cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim" ; then
          Problems=1
       fi
    fi
-   inode1=`ls -i "$MokManagerSource" 2> /dev/null | cut -f 1 -d " "`
-   local TargetMMName=`basename $MokManagerSource`
+   inode1=$(ls -i "$MokManagerSource" 2> /dev/null | cut -f 1 -d " ")
+   TargetMMName=$(basename "$MokManagerSource")
    if [[ $TargetMMName == "mm$Platform.efi.signed" ]] ; then
        TargetMMName="mm$Platform.efi"
    fi
-   inode2=`ls -i "$InstallDir/$TargetDir/$TargetMMName" 2> /dev/null | cut -f 1 -d " "`
-   if [[ $inode1 != $inode2 ]] ; then
+   inode2=$(ls -i "$InstallDir/$TargetDir/$TargetMMName" 2> /dev/null | cut -f 1 -d " ")
+   if [[ "$inode1" != "$inode2" ]] ; then
       if [[ -f "$MokManagerSource" ]] ; then
          cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/$TargetMMName"
       fi
@@ -530,17 +535,17 @@ DetermineTargetDir() {
    fi
 
    if [[ ! -d /sys/firmware/efi && ! $OSTYPE == darwin* && $Upgrade == 0 ]] ; then     # BIOS-mode
-      FoundEfiFiles=`find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null`
-      FoundConfFiles=`find "$InstallDir" -name "refind\.conf" 2> /dev/null`
-      if [[ ! -n "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
+      FoundEfiFiles=$(find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null)
+      FoundConfFiles=$(find "$InstallDir" -name "refind\.conf" 2> /dev/null)
+      if [[ -z "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
          mv -n "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" "$InstallDir/EFI/Microsoft" &> /dev/null
          SetVarsForMsBoot
          echo "Running in BIOS mode with a suspected Windows installation; moving boot loader"
          echo "files so as to install to $InstallDir$TargetDir."
-      elif [[ ! -n "$FoundEfiFiles" ]] ; then  # In BIOS mode and no default loader; install as default loader
+      elif [[ -z "$FoundEfiFiles" ]] ; then  # In BIOS mode and no default loader; install as default loader
          SetVarsForBoot
          echo "Running in BIOS mode with no existing default boot loader; installing to"
-         echo $InstallDir$TargetDir
+         echo "$InstallDir""$TargetDir"
       else
          echo "Running in BIOS mode with an existing default boot loader; backing it up and"
          echo "installing rEFInd in its place."
@@ -571,8 +576,8 @@ SetBootFS() {
    case "$OSTYPE" in
       linux*)
            if command -v blkid &>/dev/null; then
-              BootPart=`df $RootDir/boot | grep dev | cut -f 1 -d " "`
-              BootFS=`blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+              BootPart=$(df "$RootDir"/boot | grep dev | cut -f 1 -d " ")
+              BootFS=$(blkid -o export "$BootPart" 2> /dev/null | grep TYPE= | cut -f 2 -d =)
            fi
            ;;
       darwin*)
@@ -598,8 +603,8 @@ SetBootFS() {
 CopyDrivers() {
    if [[ $InstallDrivers == "all" ]] ; then
       mkdir -p "$InstallDir/$TargetDir/drivers_$1"
-      cp "$ThisDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
-      cp "$RefindDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
+      cp "$ThisDir"/drivers_"$1"/*_"$1".efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
+      cp "$RefindDir"/drivers_"$1"/*_"$1".efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
    elif [[ "$InstallDrivers" == "boot" ]] ; then
       SetBootFS
       DriverType=""
@@ -648,12 +653,10 @@ CopyTools() {
 CopyRefindFiles() {
    mkdir -p "$InstallDir/$TargetDir"
    if [[ "$TargetDir" == '/EFI/BOOT' ]] ; then
-      cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32" 2> /dev/null
-      if [[ $? != 0 ]] ; then
+      if ! cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32" 2> /dev/null ; then
          echo "Note: IA32 (x86) binary not installed!"
       fi
-      cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64" 2> /dev/null
-      if [[ $? != 0 ]] ; then
+      if ! cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64" 2> /dev/null ; then
          Problems=1
       fi
       cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64" 2> /dev/null
@@ -674,8 +677,7 @@ CopyRefindFiles() {
       Refind="boot$Platform.efi"
       CopyKeys
    elif [[ $Platform == 'x64' || $TargetDir == "/EFI/Microsoft/Boot" ]] ; then
-      cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64"
-      if [[ $? != 0 ]] ; then
+      if ! cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64" ; then
          Problems=1
       fi
       CopyDrivers x64
@@ -684,7 +686,7 @@ CopyRefindFiles() {
       CopyKeys
       if [[ "$ShimSource" != "none" ]] ; then
          if [[ "$TargetShim" == "default" ]] ; then
-            TargetShim=`basename "$ShimSource"`
+            TargetShim=$(basename "$ShimSource")
          fi
          CopyShimFiles
          Refind="$TargetShim"
@@ -700,13 +702,11 @@ CopyRefindFiles() {
       fi
    elif [[ $Platform == 'ia32' || $Platform == 'aa64' ]] ; then
       if [[ $Platform == 'ia32' ]] ; then
-         cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32"
-         if [[ $? != 0 ]] ; then
+         if ! cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32" ; then
             Problems=1
          fi
       else
-         cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64"
-         if [[ $? != 0 ]] ; then
+         if ! cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64" ; then
             Problems=1
          fi
       fi
@@ -727,8 +727,7 @@ CopyRefindFiles() {
       mv -f "$InstallDir/$TargetDir/icons" "$InstallDir/$TargetDir/icons-backup"
       echo "Notice: Backed up existing icons directory as icons-backup."
    fi
-   cp -r "$IconsDir" "$InstallDir/$TargetDir"
-   if [[ $? != 0 ]] ; then
+   if ! cp -r "$IconsDir" "$InstallDir/$TargetDir" ; then
       Problems=1
    fi
    mkdir -p "$InstallDir/$TargetDir/keys"
@@ -738,16 +737,14 @@ CopyRefindFiles() {
       echo "Existing refind.conf file found; copying sample file as refind.conf-sample"
       echo "to avoid overwriting your customizations."
       echo ""
-      cp -f "$ConfFile" "$InstallDir/$TargetDir"
-      if [[ $? != 0 ]] ; then
+      if ! cp -f "$ConfFile" "$InstallDir/$TargetDir" ; then
          Problems=1
       fi
    else
       echo "Copying sample configuration file as refind.conf; edit this file to configure"
       echo "rEFInd."
       echo ""
-      cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf"
-      if [[ $? != 0 ]] ; then
+      if ! cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf" ; then
          Problems=1
       fi
    fi
@@ -772,8 +769,8 @@ MountDefaultTarget() {
    UnmountEsp=1
    if [[ $OSTYPE == darwin* ]] ; then
       if [[ $OwnHfs == '1' ]] ; then
-         Temp=`diskutil info "$TargetPart" | grep "Mount Point"`
-         InstallDir=`echo $Temp | cut -f 3-30 -d ' ' | sed 's/\/\+/\//g'`
+         Temp=$(diskutil info "$TargetPart" | grep "Mount Point")
+         InstallDir=$(echo "$Temp" | cut -f 3-30 -d ' ' | sed 's/\/\+/\//g')
          if [[ $InstallDir == '' ]] ; then
             InstallDir=/tmp/refind_install
             mount -t hfs "$TargetPart" "$InstallDir"
@@ -811,7 +808,6 @@ CreateBootCsvFile() {
               $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
       fi
    fi
-   exit
 } # CreateBootCsvFile()
 
 #
@@ -826,39 +822,37 @@ MountOSXESP() {
    # Identify the ESP. Note: This returns the FIRST ESP found;
    # if the system has multiple disks, this could be wrong!
    Temp=$(mount | sed -n -E "/^(\/dev\/disk.*) on \/ \(.*$/s//\1/p")
-   if [ $Temp ]; then
+   if [ "$Temp" ]; then
       Temp=$(diskutil list | grep " EFI " | grep -o 'disk.*' | head -n 1)
-      if [ -z $Temp ]; then
+      if [ -z "$Temp" ]; then
          echo "Warning: root device doesn't have an EFI System Partition"
       fi
    else
       echo "Warning: root device could not be found"
    fi
-   if [ -z $Temp ]; then
+   if [ -z "$Temp" ]; then
       Temp=$(diskutil list | sed -n -E '/^ *[0-9]+:[ ]+EFI EFI[ ]+[0-9.]+ [A-Z]+[ ]+(disk[0-9]+s[0-9]+)$/ { s//\1/p
              q
          }' )
 
-      if [ -z $Temp ]; then
+      if [ -z "$Temp" ]; then
          echo "Could not find an EFI System Partition. Aborting!"
          exit 1
       fi
    fi
-   Esp=/dev/`echo $Temp`
+   Esp=/dev/"$Temp"
    # If the ESP is mounted, use its current mount point....
-   Temp=`df -P | grep "$Esp "`
-   InstallDir=`echo $Temp | cut -f 6- -d ' ' | sed 's/\/\+/\//g'`
+   Temp=$(df -P | grep "$Esp ")
+   InstallDir=$(echo "$Temp" | cut -f 6- -d ' ' | sed 's/\/\+/\//g')
    if [[ "$InstallDir" == '' ]] ; then
       mkdir /Volumes/ESP &> /dev/null
-      mount -t msdos "$Esp" /Volumes/ESP
       # Some systems have HFS+ "ESPs." They shouldn't, but they do. If this is
       # detected, mount it as such and set appropriate options.
-      if [[ $? != 0 ]] ; then
-         mount -t hfs "$Esp" /Volumes/Esp
+      if ! mount -t msdos "$Esp" /Volumes/ESP ; then
          OwnHfs=1
          InstallToEspOnMac=0
-         if [[ $? != 0 ]] ; then
-            echo "Unable to mount ESP! Aborting!\n"
+         if ! mount -t hfs "$Esp" /Volumes/Esp ; then
+            printf "Unable to mount ESP! Aborting!\n\n"
             exit 1
          fi
       fi
@@ -888,16 +882,19 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.13.2</string>
+        <string>0.13.3</string>
 </dict>
 </plist>
 ENDOFHERE
 } # SetupMacHfs()
 
 CheckForSIP() {
+   local OKToInstall
+   local RootName
+
    if [[ -x "/usr/bin/csrutil" && -z "$TargetPart" ]] ; then
-      local OKToInstall=`/usr/bin/csrutil status | \
-                         grep "Protection status: disabled\|enabled (Apple Internal)\|NVRAM Protections: disabled"`
+      OKToInstall=$(/usr/bin/csrutil status | \
+                         grep "Protection status: disabled\|enabled (Apple Internal)\|NVRAM Protections: disabled")
       if [[ -z "$OKToInstall" ]] ; then
          echo
          echo "**** ALERT: SIP ENABLED! ****"
@@ -919,11 +916,11 @@ CheckForSIP() {
          echo "  2. Hold down Command+R as the chime sounds"
          echo "  3. When the OS has booted, select Utilities->Terminal"
          echo "  4. Change to this directory with the 'cd' command; it will probably be under"
-         if [[ "`pwd | cut -b 1-8`" == "/Volumes" ]] ; then
-            echo "     `pwd`"
+         if [[ "$(pwd | cut -b 1-8)" == "/Volumes" ]] ; then
+            echo "     $(pwd)"
          else
-            local RootName=`diskutil info -plist / | grep -A 1 VolumeName | grep string | cut -d \> -f 2 | cut -d \< -f 1`
-            echo "     /Volumes/$RootName`pwd`"
+            RootName=$(diskutil info -plist / | grep -A 1 VolumeName | grep string | cut -d \> -f 2 | cut -d \< -f 1)
+            echo "     /Volumes/$RootName$(pwd)"
          fi
          echo "  5. Re-run this script."
          echo
@@ -954,7 +951,7 @@ InstallOnOSX() {
       MountDefaultTarget
    else
       InstallDir="$RootDir/"
-      InstallDir=`echo $InstallDir  | sed 's/\/\+/\//g'`
+      InstallDir=$(echo "$InstallDir" | sed 's/\/\+/\//g')
    fi
    echo "Installing rEFInd to the partition mounted at $InstallDir"
    DetermineTargetDir
@@ -997,9 +994,9 @@ InstallOnOSX() {
 CheckSecureBoot() {
    IsSecureBoot="0"
    if [[ -f /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c ]] ; then
-      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}'`
+      IsSecureBoot=$(od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}')
    elif [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
-      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
+      IsSecureBoot=$(od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[:space:]')
    fi
    if [[ $IsSecureBoot == "1" && "$TargetDir" != '/EFI/BOOT' && "$ShimSource" == "none" ]] ; then
       echo ""
@@ -1149,8 +1146,8 @@ ReSignBinaries() {
    SignOneBinary "$RefindDir/refind_$Platform.efi" "$TempDir/refind_$Platform.efi"
    SaveIFS=$IFS
    IFS=$(echo -en "\n\b")
-   for Driver in `ls "$RefindDir"/drivers_$Platform/*.efi "$ThisDir"/drivers_$Platform/*.efi 2> /dev/null` ; do
-      TempName=`basename "$Driver"`
+   for Driver in $(ls "$RefindDir"/drivers_$Platform/*.efi "$ThisDir"/drivers_$Platform/*.efi 2> /dev/null) ; do
+      TempName=$(basename "$Driver")
       SignOneBinary "$Driver" "$TempDir/drivers_$Platform/$TempName"
    done
    IFS=$SaveIFS
@@ -1184,16 +1181,16 @@ FindLinuxESP() {
    fi
    # Iterate through all FAT partitions in the hopes of finding an ESP....
    # (Note: FatPart with be set to "/dev/{whatever}".)
-   for FatPart in `blkid -t TYPE="vfat" -o device` ; do
+   for FatPart in $(blkid -t TYPE="vfat" -o device) ; do
       # For each FAT partition, find its parent disk device, since we need
       # the disk device and partition number as separate components to feed
       # to efibootmgr....
       # (Note: PotentialParent will be lacking "/dev/" prefix.)
-      for PotentialParent in `lsblk | grep disk | cut -f 1 -d " "` ; do
+      for PotentialParent in $(lsblk | grep disk | cut -f 1 -d " ") ; do
          IsItRaid=0
          # Exclude anything that looks like it's on software RAID....
          if [[ -x "$Dmraid" ]] ; then
-            DmStatus=`dmraid -r | grep $PotentialParent`
+            DmStatus=$(dmraid -r | grep "$PotentialParent")
             if [ -n "$DmStatus" ] ; then
                echo "/dev/$PotentialParent seems to be part of a RAID array; skipping!"
                IsItRaid=1
@@ -1208,15 +1205,15 @@ FindLinuxESP() {
          fi
       done
       if [[ $IsItRaid == 0 ]] ; then
-         PartNum=`grep -Eo '[0-9]{1,4}' <<< $FatPart | tail -n 1`
-         TypeCode=`$Sgdisk -i $PartNum /dev/$ParentDisk | grep "GUID code"`
+         PartNum=$(grep -Eo '[0-9]{1,4}' <<< "$FatPart" | tail -n 1)
+         TypeCode=$($Sgdisk -i "$PartNum" /dev/"$ParentDisk" | grep "GUID code")
          shopt -s nocasematch
          if [[ $TypeCode == *$EspGuid* ]] ; then
              InstallDir="$RootDir/boot/efi"
-             InstallDir=`echo $InstallDir | sed 's/\/\+/\//g'`
+             InstallDir=$(echo "$InstallDir" | sed 's/\/\+/\//g')
              echo "Mounting ESP ($FatPart) at $InstallDir"
-             mkdir -p $InstallDir
-             mount $FatPart $InstallDir
+             mkdir -p "$InstallDir"
+             mount "$FatPart" "$InstallDir"
              EspFilesystem="vfat"
              shopt -u nocasematch
              break
@@ -1234,17 +1231,17 @@ FindMountedESP() {
    mount /boot &> /dev/null
    mount /boot/efi &> /dev/null
    mount /efi &> /dev/null
-   EspLine=`df "$RootDir/efi" 2> /dev/null | grep efi`
-   if [[ ! -n "$EspLine" ]] ; then
-      EspLine=`df "$RootDir"/boot/efi 2> /dev/null | grep boot/efi`
+   EspLine=$(df "$RootDir/efi" 2> /dev/null | grep efi)
+   if [[ -z "$EspLine" ]] ; then
+      EspLine=$(df "$RootDir"/boot/efi 2> /dev/null | grep boot/efi)
    fi
-   if [[ ! -n "$EspLine" ]] ; then
-      EspLine=`df "$RootDir"/boot 2> /dev/null | grep boot`
+   if [[ -z "$EspLine" ]] ; then
+      EspLine=$(df "$RootDir"/boot 2> /dev/null | grep boot)
    fi
-   InstallDir=`echo $EspLine | cut -d " " -f 6 | sed 's/\/\+/\//g'`
+   InstallDir=$(echo "$EspLine" | xargs | cut -d " " -f 6 | sed 's/\/\+/\//g')
 
    if [[ -n "$InstallDir" ]] ; then
-      EspFilesystem=`grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3 | uniq`
+      EspFilesystem=$(grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3 | uniq)
    fi
    if [[ $EspFilesystem != 'vfat' ]] ; then
       FindLinuxESP
@@ -1280,12 +1277,12 @@ AddBootEntry() {
 
    Efibootmgr="$(command -v efibootmgr 2> /dev/null)"
    if [[ "$Efibootmgr" ]] ; then
-      InstallPart=`grep "$InstallDir " /etc/mtab | grep -v autofs | cut -d " " -f 1 | tail -n1`
-      for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
+      InstallPart=$(grep "$InstallDir " /etc/mtab | grep -v autofs | cut -d " " -f 1 | tail -n1)
+      for Name in $(lsblk -r | grep disk | cut -f 1 -d " ") ; do
          if [[ $InstallPart == *"$Name"* ]] ; then
             InstallDisk="/dev/"$Name
             PartNum=${InstallPart#$InstallDisk}
-            PartNum=`echo "${PartNum//[!0-9]/}"`
+            PartNum="${PartNum//[!0-9]/}"
             break
          fi
       done
@@ -1296,20 +1293,20 @@ AddBootEntry() {
       fi
       EntryFilename="$TargetDir/$Refind"
       EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
-      EfiEntryFilename2=`echo ${EfiEntryFilename} | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
-      InstallPartGuid=`blkid -s PARTUUID -o value "$InstallPart"`
-      FirstBoot=`"$Efibootmgr" | grep BootOrder | cut -c 12-15`
-      ExistingEntry=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1`
-      ExistingEntryFirstBoot=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | grep "Boot$FirstBoot"`
+      EfiEntryFilename2=`echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
+      InstallPartGuid=$(blkid -s PARTUUID -o value "$InstallPart")
+      FirstBoot=$("$Efibootmgr" | grep BootOrder | cut -c 12-15)
+      ExistingEntry=$("$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1)
+      ExistingEntryFirstBoot=$("$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | grep "Boot$FirstBoot")
 
       if [[ "$ExistingEntry" ]] ; then
-         ExistingEntryBootNum=`echo "$ExistingEntry" | cut -c 5-8`
-         if [[ ! -n "$ExistingEntryFirstBoot" ]] ; then
+         ExistingEntryBootNum=$(echo "$ExistingEntry" | cut -c 5-8)
+         if [[ -z "$ExistingEntryFirstBoot" ]] ; then
             echo "An existing rEFInd boot entry exists, but isn't set as the default boot"
             echo "manager. The boot order is being adjusted to make rEFInd the default boot"
             echo "manager. If this is NOT what you want, you should use efibootmgr to"
             echo "manually adjust your EFI's boot order."
-            "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
+            "$Efibootmgr" -b "$ExistingEntryBootNum" -B &> /dev/null
          else
             KeepExistingEntry=1
          fi
@@ -1329,14 +1326,14 @@ AddBootEntry() {
                  RealRefindBinary="$TargetDir/grub$Platform.efi"
              fi
              "$Efibootmgr" -c -l "$RealRefindBinary" -L "rEFInd Boot Manager (direct)" \
-                           -d $InstallDisk -p $PartNum &> /dev/null
+                           -d "$InstallDisk" -p "$PartNum" &> /dev/null
          fi
          if [[ "$KeepName" == 0 ]] ; then
-             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk \
-                           -p $PartNum &> /dev/null
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d "$InstallDisk" \
+                           -p "$PartNum" &> /dev/null
          else
-             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk \
-                           -p $PartNum -u "$TargetShim $TargetX64" &> /dev/null
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d "$InstallDisk" \
+                           -p "$PartNum" -u "$TargetShim $TargetX64" &> /dev/null
          fi
       else
          echo "Keeping existing NVRAM entry"
@@ -1369,21 +1366,22 @@ GenerateRefindLinuxConf() {
       echo "Existing $RLConfFile found; not overwriting."
    else
       echo "Creating $RLConfFile; edit it to adjust kernel options."
-      RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
-      StartOfDevname=`echo "$RootFS" | cut -b 1-7`
-      if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
+      RootFS=$(df "$RootDir" | grep dev | cut -f 1 -d " ")
+      StartOfDevName=$(echo "$RootFS" | cut -b 1-7)
+      if [[ "$StartOfDevName" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" || "$StartOfDevName" == "/dev/vd" ]] ; then
          # Identify root filesystem by UUID rather than by device node, if possible
-         Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
+         Uuid=$(blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=)
          if [[ -n $Uuid ]] ; then
             RootFS="$Uuid"
          fi
       fi
       if [[ $RootDir == "/" ]] ; then
-         local FirstCmdlineOption=`cat /proc/cmdline | cut -d ' ' -f 1`
+         local FirstCmdlineOption
+         FirstCmdlineOption=$(cut -d ' ' -f 1 < /proc/cmdline)
          if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
-            DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+            DefaultOptions=$(cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//')
          else
-            DefaultOptions=`cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+            DefaultOptions=$(cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//')
          fi
       else
          if [[ -f "$RootDir/etc/default/grub" ]] ; then
@@ -1393,9 +1391,9 @@ GenerateRefindLinuxConf() {
          fi
          DefaultOptions="ro root=$RootFS $GRUB_CMDLINE_LINUX $GRUB_CMDLINE_LINUX_DEFAULT"
       fi
-      echo "\"Boot with standard options\"  \"$DefaultOptions\"" > $RLConfFile
-      echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> $RLConfFile
-      echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> $RLConfFile
+      echo "\"Boot with standard options\"  \"$DefaultOptions\"" > "$RLConfFile"
+      echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> "$RLConfFile"
+      echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> "$RLConfFile"
    fi
 }
 
@@ -1424,8 +1422,7 @@ InstallSBKey() {
                 echo "screen should appear asking if you want to press a key to manage MOKs. Do"
                 echo "so, and then select the option to 'Enroll MOK'. After you confirm the"
                 echo "enrollment, you will be asked to enter the password you're about to type."
-                mokutil -i "$UsedDerKey"
-                if [[ $? != 0 ]] ; then
+                if ! mokutil -i "$UsedDerKey" ; then
                     echo "Problem detected installing MOK!"
                     Problems=1
                 fi
@@ -1482,8 +1479,7 @@ InstallOnLinux() {
 GetParams "$@"
 if [[ $UID != 0 ]] ; then
    echo "Not running as root; attempting to elevate privileges via sudo...."
-   sudo "$BASH_SOURCE" "$@"
-   if [[ $? != 0 ]] ; then
+   if ! sudo "${BASH_SOURCE[0]}" "$@" ; then
       echo "This script must be run as root (or using sudo). Exiting!"
       exit 1
    else
@@ -1502,7 +1498,7 @@ case "$OSTYPE" in
            echo "The --localkeys option is not supported on macOS! Exiting!"
            exit 1
         fi
-        InstallOnOSX $1
+        InstallOnOSX "$1"
         ;;
    linux*)
         InstallOnLinux
@@ -1533,10 +1529,10 @@ if [[ $UnmountEsp == '1' ]] ; then
    echo "Unmounting install dir"
    case "$OSTYPE" in
    darwin*)
-      diskutil unmount $InstallDir
+      diskutil unmount "$InstallDir"
       ;;
    *)
-      umount $InstallDir
+      umount "$InstallDir"
       ;;
    esac
 fi

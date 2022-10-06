@@ -14,21 +14,21 @@
 # The resulting CD image file is stored in
 # ../snapshots/{version}/refind-cd-{version}.iso
 
-StartDir=`pwd`
+StartDir=$(pwd)
 Version=$1
 
 # Unzip the binary archive file....
-cd ../snapshots/$Version
+cd ../snapshots/"$Version" || exit
 rm -rf temp
 mkdir temp
-cd temp
-unzip ../refind-bin-$Version.zip
-cp $StartDir/SHELLS.txt ./refind-bin-$Version
+cd temp || exit
+unzip ../refind-bin-"$Version".zip
+cp "$StartDir"/SHELLS.txt ./refind-bin-"$Version"
 
 # Create a boot directory and (temporarily) copy the EFI shell
 # files to it....
-mkdir -p refind-bin-$Version/EFI/boot
-cd refind-bin-$Version/EFI/boot
+mkdir -p refind-bin-"$Version"/EFI/boot
+cd refind-bin-"$Version"/EFI/boot || exit
 #cp $StartDir/shell*.efi ./
 
 # Create hard links to the rEFInd files so that they'll be suitable for an
@@ -43,39 +43,35 @@ sed -i '/#csr_values/a csr_values 10,77' refind.conf
 sed -i '/#csr_values/a csr_values 10,77' refind.conf
 sed -i 's/^showtools shell/showtools install,bootorder,shell/g' refind.conf
 mkdir icons
-cd icons
+(
+cd icons || exit
 ln ../../../refind/icons/* ./
-cd ../
+)
 mkdir drivers_x64
-cd drivers_x64
+(
+cd drivers_x64 || exit
 ln ../../../refind/drivers_x64/* ./
-cd ..
+)
 mkdir drivers_ia32
-cd drivers_ia32
+cd drivers_ia32 || exit
 ln ../../../refind/drivers_ia32/* ./
 cd ..
 mkdir drivers_aa64
-cd drivers_aa64
+cd drivers_aa64 || exit
 ln ../../../refind/drivers_aa64/* ./
-cd ../..
+cd ../.. || exit
 
 # Copy stuff to the EFI/tools directory
 mkdir tools
-cd tools
-cp $StartDir/tools/*.efi ./
-# echo "---"
-# echo ""
-# ls ../../../../temp/refind-bin-$Version/refind/tools*/
-# echo "--"
-# ls ../../../../temp/refind-bin-$Version/refind/tools*/*.efi
-# exit
-cp ../../../../temp/refind-bin-$Version/refind/tools*/*.efi ./
-cd ../..
+cd tools || exit
+cp "$StartDir"/tools/*.efi ./
+cp ../../../../temp/refind-bin-"$Version"/refind/tools*/*.efi ./
+cd ../.. || exit
 
 # Get the size of the binaries to go in the El Torito image in kB
-ToritoSize=`du -s EFI | cut -f 1`
-let ToritoSize=($ToritoSize)/28
-let ToritoSize=($ToritoSize)*32
+ToritoSize=$(du -s EFI | cut -f 1)
+((ToritoSize=ToritoSize/28))
+((ToritoSize=ToritoSize*32))
 
 # Move the EFI shell files back to the root where they belong
 # (They were in EFI/boot just so they'd get counted in ToritoSize)
@@ -83,42 +79,41 @@ let ToritoSize=($ToritoSize)*32
 
 # Prepare a FAT filesystem image and populate it with the
 # EFI boot files....
-dd if=/dev/zero of=refind-bin-$Version.img bs=1024 count=$ToritoSize
-mkdosfs -n "ElTorito" refind-bin-$Version.img
-mcopy -irefind-bin-$Version.img -s EFI shell*.efi ::/
+dd if=/dev/zero of=refind-bin-"$Version".img bs=1024 count=$ToritoSize
+mkdosfs -n "ElTorito" refind-bin-"$Version".img
+mcopy -irefind-bin-"$Version".img -s EFI shell*.efi ::/
 
 # Make the ISO-9660 image file....
 mkisofs -A "Bootable rEFInd" -V "rEFInd_$Version" -volset "rEFInd_$Version" \
-    -J -r -v -x ./lost+found -o ../../refind-cd-$Version.iso \
-    -eltorito-alt-boot -efi-boot refind-bin-$Version.img \
+    -J -r -v -x ./lost+found -o ../../refind-cd-"$Version".iso \
+    -eltorito-alt-boot -efi-boot refind-bin-"$Version".img \
     -no-emul-boot ./
 
 # Create a bootable USB flash drive image, using the FAT filesystem
 # created above and a stored partition table image (plus some empty
 # sectors)....
 #
-rm -f ../../refind-flashdrive-$Version.*
-let FatSize=`du -s refind-bin-$Version.img | cut -f 1`
-let FatSize=($FatSize)+2048
-dd if=/dev/zero of=../../refind-flashdrive-$Version.img bs=1024 count=$FatSize
-sgdisk -n 1:2048:0 -t 1:EF00 -g ../../refind-flashdrive-$Version.img
-if [[ $? != 0 ]] ; then
+rm -f ../../refind-flashdrive-"$Version".*
+((FatSize=$(du -s keys-part.img | cut -f 1)))
+((FatSize=FatSize+2048))
+dd if=/dev/zero of=../../refind-flashdrive-"$Version".img bs=1024 count="$FatSize"
+if ! sgdisk -n 1:2048:0 -t 1:EF00 -g ../../refind-flashdrive-"$Version".img ; then
    echo "sgdisk failed! Exiting!"
    exit 1
 fi
-dd if=refind-bin-$Version.img of=../../refind-flashdrive-$Version.img bs=512 seek=2048 conv=notrunc
+dd if=refind-bin-"$Version".img of=../../refind-flashdrive-"$Version".img bs=512 seek=2048 conv=notrunc
 
 cd ..
-mkdir refind-flashdrive-$Version
-ln ../refind-flashdrive-$Version.img refind-flashdrive-$Version
-cp $StartDir/README-flashdrive.txt $StartDir/COPYING.txt $StartDir/NEWS.txt \
-   $StartDir/CREDITS.txt $StartDir/LICENSE.txt $StartDir/SHELLS.txt refind-flashdrive-$Version
-zip -9r ../refind-flashdrive-$Version.zip refind-flashdrive-$Version
+mkdir refind-flashdrive-"$Version"
+ln ../refind-flashdrive-"$Version".img refind-flashdrive-"$Version"
+cp "$StartDir"/README-flashdrive.txt "$StartDir"/COPYING.txt "$StartDir"/NEWS.txt \
+   "$StartDir"/CREDITS.txt "$StartDir"/LICENSE.txt "$StartDir"/SHELLS.txt refind-flashdrive-"$Version"
+zip -9r ../refind-flashdrive-"$Version".zip refind-flashdrive-"$Version"
 
 cd ../
 
 # Zip up the optical disc image....
-rm -f refind-cd-$Version.zip
-zip -9 refind-cd-$Version.zip refind-cd-$Version.iso
+rm -f refind-cd-"$Version".zip
+zip -9 refind-cd-"$Version".zip refind-cd-"$Version".iso
 
 rm -r temp/

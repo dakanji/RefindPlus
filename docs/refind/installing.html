@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/13/2021, referencing rEFInd 0.13.2</p>
+4/10/2022, referencing rEFInd 0.13.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -218,11 +218,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>I provide RPM and Debian package files for rEFInd; and I maintain an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
 
-<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.13.2-1.x86_64.rpm</tt></pre>
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.13.3-1.x86_64.rpm</tt></pre>
 
 <p>On a Debian-based system, the equivalent command is:</p>
 
-<pre class="listing"># <tt class="userinput">dpkg -i refind_0.13.2-1_amd64.deb</tt></pre>
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.13.3-1_amd64.deb</tt></pre>
 
 <p class="sidebar"><b>Tip:</b> If you're installing on a system with your own custom Secure Boot keys, as described <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">here,</a> and if you're not using Shim, then you should delete all copies of Shim from your ESP before installing a rEFInd package. The package scripts try to find Shim on the ESP and tell <tt>refind-install</tt> about it; but if that Shim is unnecessary, then its use to boot rEFInd may result in a Secure Boot failure. Depending on the UEFI implementation, this failure might be unnoticeable, a minor warning message, or a complete system hang or shutdown. Removing unnecessary Shim binaries from the ESP will eliminate this failure condition.</p>
 
@@ -235,7 +235,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 $ <tt class="userinput">sudo apt-get update</tt>
 $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 
-<p class="sidebar"><b>Warning:</b> I know of one bug with the version of rEFInd built with GNU-EFI: On my 32-bit Mac Mini, the filesystem drivers hang when launched. This can render the system unbootable until you bypass rEFInd. This bug does <i>not</i> manifest when running the same binaries under a 32-bit VirtualBox, and I've never run into it on any 64-bit system (including a 64-bit MacBook Air). Debugging suggests that a function is being entered mid-function, which implies a bug in the EFI or in the development tools. In any event, the bottom line is to not use the PPA on a 32-bit Mac.</p>
+<p class="sidebar"><b>Warning:</b> I know of one bug with the version of rEFInd built with GNU-EFI: On both my 32-bit Mac Mini and an ASUS T100TA tablet, the filesystem drivers hang when launched. This can render the system unbootable until you bypass rEFInd. This bug does <i>not</i> manifest when running the same binaries under a 32-bit VirtualBox, and I've never run into it on any 64-bit system (including a 64-bit MacBook Air). Debugging suggests that a function is being entered mid-function, which implies a bug in the EFI or in the development tools. In any event, the bottom line is to not use the PPA on a 32-bit Mac or the ASUS T100TA.</p>
 
 <p>The PPA version asks if you want to install rEFInd to your ESP. (Chances are you want to respond affirmatively.) The PPA version will update automatically with your other software, which you might or might not want to have happen. It's also built with GNU-EFI rather than with TianoCore. This last detail <i>should</i> have no practical effects.</p>
 

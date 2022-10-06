@@ -96,10 +96,6 @@ static UINTN TileSizes[2] = { 144, 64 };
 #define TILE_XSPACING (8)
 #define TILE_YSPACING (16)
 
-// Alignment values for PaintIcon()
-#define ALIGN_RIGHT 1
-#define ALIGN_LEFT 0
-
 static EG_IMAGE *SelectionImages[2] = { NULL, NULL };
 static EG_PIXEL SelectionBackgroundPixel = { 0xff, 0xff, 0xff, 0 };
 
@@ -422,9 +418,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
 
     if (Screen->TimeoutSeconds == -1) {
         Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        if (Status == EFI_NOT_READY) {
-            MenuExit = MENU_EXIT_TIMEOUT;
-        } else {
+        if (Status == EFI_SUCCESS) {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry = FindMenuShortcutEntry(Screen, KeyAsString);
@@ -435,12 +429,15 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                 WaitForRelease = TRUE;
                 HaveTimeout = FALSE;
             }
+        } else {
+            MenuExit = MENU_EXIT_TIMEOUT;
         }
     }
 
     if (GlobalConfig.ScreensaverTime != -1)
         State.PaintAll = TRUE;
 
+    LOG(3, LOG_LINE_NORMAL, L"About to enter while() loop in RunGenericMenu()");
     while (!MenuExit) {
         // update the screen
         pdClear();
@@ -499,6 +496,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         } else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
+                LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
@@ -540,6 +538,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         }
 
         if (!PointerActive) { // react to key press
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)....", key.ScanCode);
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll(&State, SCROLL_LINE_UP);
@@ -583,6 +582,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                         MenuExit = MENU_EXIT_ESCAPE;
                     break;
             }
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)....", key.UnicodeChar);
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
@@ -599,6 +599,9 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                 case '-':
                     MenuExit = MENU_EXIT_HIDE;
                     break;
+                case '\\':
+                    egScreenShot();
+                    break;
                 default:
                     KeyAsString[0] = key.UnicodeChar;
                     KeyAsString[1] = 0;
@@ -610,6 +613,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                     break;
             }
         } else { //react to pointer event
+            LOG(3, LOG_LINE_NORMAL, L"Processing pointer event");
             if (StyleFunc != MainMenuStyle) {
                 continue; // nothing to find on submenus
             }
@@ -651,9 +655,9 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                         MenuExit = MENU_EXIT_ENTER;
                     }
                     break;
-            }
-        }
-    }
+            } // switch()
+        } // if/else
+    } // while()
 
     pdClear();
     StyleFunc(Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -663,7 +667,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     *DefaultEntryIndex = State.CurrentSelection;
     LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
     return MenuExit;
-} /* static UINTN RunGenericMenu() */
+} // UINTN RunGenericMenu()
 
 //
 // text-mode generic style
@@ -1162,62 +1166,51 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
     }
 } // static VOID MoveSelection(VOID)
 
-// Display a 48x48 icon at the specified location. Uses the image specified by
-// ExternalFilename if it's available, or BuiltInImage if it's not. The
-// Y position is specified as the center value, and so is adjusted by half
-// the icon's height. The X position is set along the icon's left
-// edge if Alignment == ALIGN_LEFT, and along the right edge if
-// Alignment == ALIGN_RIGHT
-static VOID PaintIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon,
-                      IN CHAR16 *ExternalFilename,
-                      UINTN PosX, UINTN PosY, UINTN Alignment) {
-    EG_IMAGE *Icon = NULL;
-
-    Icon = egFindIcon(ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
-    if (Icon == NULL)
-        Icon = egPrepareEmbeddedImage(BuiltInIcon, TRUE);
-    if (Icon != NULL) {
-        if (Alignment == ALIGN_RIGHT)
-            PosX -= Icon->Width;
-        egDrawImageWithTransparency(Icon, NULL, PosX, PosY - (Icon->Height / 2), Icon->Width, Icon->Height);
-        egFreeImage(Icon);
-    }
-} // static VOID ()
+// Fetches the image specified by ExternalFilename if it's available, or BuiltInImage if it's not.
+static EG_IMAGE * GetIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon, IN CHAR16 *ExternalFilename){
+    EG_IMAGE * Icon = egFindIcon(ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
+    if(Icon != NULL) return Icon;
+    return egPrepareEmbeddedImage(BuiltInIcon, TRUE);
+}
 
 UINTN ComputeRow0PosY(VOID) {
     return ((UGAHeight / 2) - TileSizes[0] / 2);
 } // UINTN ComputeRow0PosY()
 
+static VOID ClearWithBackground(UINTN PosX, UINTN PosY, UINTN Width, UINTN Height){
+    EG_IMAGE * TempImage = egCropImage(GlobalConfig.ScreenBackground, PosX, PosY, Width, Height);
+    BltImage(TempImage, PosX, PosY);
+    egFreeImage(TempImage);
+}
+
+// PosY is specified as the center value, PosX is left aligned.
+static VOID PaintArrow(EG_IMAGE * Arrow, UINTN PosX, UINTN PosY, BOOLEAN visible) {
+    UINTN TopY = PosY - (Arrow->Height / 2);
+    if (visible) egDrawImageWithTransparency(Arrow, NULL, PosX, TopY, Arrow->Width, Arrow->Height);
+    else ClearWithBackground(PosX, TopY, Arrow->Width, Arrow->Height);
+}
+
 // Display (or erase) the arrow icons to the left and right of an icon's row,
 // as appropriate.
 static VOID PaintArrows(SCROLL_STATE *State, UINTN PosX, UINTN PosY, UINTN row0Loaders) {
-    EG_IMAGE *TempImage;
-    UINTN Width, Height, RightX, AdjPosY;
+    BOOLEAN HideFlagArrows = GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS;
+    if(!HideFlagArrows){
 
-    // NOTE: Assume that left and right arrows are of the same size....
-    Width = egemb_arrow_left.Width;
-    Height = egemb_arrow_left.Height;
-    RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
-    AdjPosY = PosY - (Height / 2);
+        EG_IMAGE * LeftArrow = GetIcon(&egemb_arrow_left, L"arrow_left");
+        if(LeftArrow){
+            UINTN LeftX = PosX - LeftArrow->Width;
+            PaintArrow(LeftArrow, LeftX, PosY, State->FirstVisible > 0);
+            egFreeImage(LeftArrow);
+        }
 
-    // For PaintIcon() calls, the starting Y position is moved to the midpoint
-    // of the surrounding row; PaintIcon() adjusts this back up by half the
-    // icon's height to properly center it.
-    if ((State->FirstVisible > 0) && (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))) {
-        PaintIcon(&egemb_arrow_left, L"arrow_left", PosX, PosY, ALIGN_RIGHT);
-    } else {
-        TempImage = egCropImage(GlobalConfig.ScreenBackground, PosX - Width, AdjPosY, Width, Height);
-        BltImage(TempImage, PosX - Width, AdjPosY);
-        egFreeImage(TempImage);
-    } // if/else
+        EG_IMAGE * RightArrow = GetIcon(&egemb_arrow_right, L"arrow_right");
+        if(RightArrow){
+            UINTN RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+            PaintArrow(RightArrow, RightX, PosY, State->LastVisible < (row0Loaders - 1));
+            egFreeImage(RightArrow);
+        }
 
-    if ((State->LastVisible < (row0Loaders - 1)) && (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))) {
-        PaintIcon(&egemb_arrow_right, L"arrow_right", RightX, PosY, ALIGN_LEFT);
-    } else {
-        TempImage = egCropImage(GlobalConfig.ScreenBackground, RightX, AdjPosY, Width, Height);
-        BltImage(TempImage, RightX, AdjPosY);
-        egFreeImage(TempImage);
-    } // if/else
+    }
 } // VOID PaintArrows()
 
 // Display main menu in graphics mode
@@ -1281,9 +1274,6 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
 
         case MENU_FUNCTION_PAINT_ALL:
             PaintAll(Screen, State, itemPosX, row0PosY, row1PosY, textPosY);
-            // For PaintArrows(), the starting Y position is moved to the midpoint
-            // of the surrounding row; PaintIcon() adjusts this back up by half the
-            // icon's height to properly center it.
             PaintArrows(State, row0PosX - TILE_XSPACING, row0PosY + (TileSizes[0] / 2), row0Loaders);
             break;
 
@@ -1398,10 +1388,11 @@ UINTN WaitForInput(UINTN Timeout) {
     EFI_EVENT TimerEvent;
     EFI_STATUS Status;
 
+    LOG(3, LOG_LINE_NORMAL, L"Entering WaitForInput(), Timeout = %d", Timeout);
+    Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
         Length--;
     } else {
-        Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if(EFI_ERROR(Status)) {
             refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
@@ -1417,9 +1408,9 @@ UINTN WaitForInput(UINTN Timeout) {
     if(EFI_ERROR(Status)) {
         refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
-    } else if(Index == 0) {
+    } else if (Index == 0) {
         return INPUT_KEY;
-    } else if(Index < Length - 1) {
+    } else if (Index < Length - 1) {
         return INPUT_POINTER;
     }
     return INPUT_TIMEOUT;
@@ -1583,8 +1574,11 @@ VOID ManageHiddenTags(VOID) {
             SaveHiddenList(HiddenTags, L"HiddenTags");
         if (SaveLegacy)
             SaveHiddenList(HiddenLegacy, L"HiddenLegacy");
-        if (SaveTools)
+        if (SaveTools) {
             SaveHiddenList(HiddenTools, L"HiddenTools");
+            MyFreePool(gHiddenTools);
+            gHiddenTools = NULL;
+        }
         if (SaveFirmware)
             SaveHiddenList(HiddenFirmware, L"HiddenFirmware");
         if (SaveTags || SaveTools || SaveLegacy || SaveFirmware)
@@ -1780,6 +1774,8 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag(Loader, &HideItemMenu, L"HiddenTools");
+            MyFreePool(gHiddenTools);
+            gHiddenTools = NULL;
             RescanAll(FALSE, FALSE);
             break;
     } // switch()

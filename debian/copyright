@@ -324,7 +324,6 @@ Files: icons/arrow_left.png
        icons/os_opensuse.png
        icons/os_slackware.png
        icons/os_suse.png
-       icons/os_ubuntu.png
        icons/os_uefi.png
        icons/os_unknown.png
        icons/os_win8.png
@@ -378,6 +377,10 @@ License: CC-BY-SA-3.0
 Files: icons/os_artful.png
        icons/os_bionic.png
 Copyright: 2017-2018 by Canonical Ltd.
+License: CC-BY-SA-3.0
+
+Files: icons/os_ubuntu.png
+Copyright: 2022 by Canonical Ltd.
 License: CC-BY-SA-3.0
 
 Files: icons/os_debian.png

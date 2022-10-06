@@ -44,6 +44,11 @@ Icon Sources (Overview)
   - Copyright (c) 2017-2018 Canonical Ltd.
   - License: CC-BY-SA-3.0
 
+- Ubuntu standard icon (os_ubuntu.png)
+  - Source: https://logos.fandom.com/wiki/Ubuntu?file=Ubuntu_%25282022%2529.svg
+  - Copyright (c) 2022 Canonical Ltd.
+  - License: CC-BY-SA 3.0
+
 - Void Linux icon
   - Source: https://commons.wikimedia.org/wiki/File:Void_Linux_logo.svg
   - Copyright: Public Domain
@@ -71,7 +76,6 @@ os_lubuntu.png -- AwOken/clear/128x128/start-here/start-here-lubuntu.png
 os_mageia.png -- AwOken/clear/128x128/start-here/start-here-mageia.png
 os_mandriva.png -- AwOken/clear/128x128/start-here/start-here-mandriva5.png
 os_network.png -- AwOken/clear/128x128/places/network-workgroup1.png
-os_ubuntu.png -- AwOken/clear/128x128/start-here/start-here-ubuntu.png
 os_uefi.png -- AwOkenWhite/clear/128x128/start-here/start-here-umbrella3.png
 os_unknown.png -- AwOken/clear/128x128/actions/color-line1.png
 os_win8.png -- AwOken/clear/128x128/apps/live1.png
@@ -124,9 +128,10 @@ Modified Void Linux icon:
 os_void.png (public domain)
 
 
-Modified Ubuntu "animal" icons:
+Modified Ubuntu icons:
 
 os_trusty.png
+os_ubuntu.png
 os_xenial.png
 os_zesty.png
 

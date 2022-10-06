@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-3/13/2021, referencing rEFInd 0.13.2</p>
+4/10/2022, referencing rEFInd 0.13.3</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -157,7 +157,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<li>You can load a filesystem driver to gain access to files on a filesystem other than FAT (or HFS+ or APFS on Macs or ISO-9660 on some systems). This is most likely to be useful on a Linux installation, since a filesystem driver can enable you to store a Linux kernel with EFI stub loader or for use by ELILO on a Linux-native filesystem if your EFI System Partition (ESP) is getting crowded.</li>
+<li>You can load a filesystem driver to gain access to files on a filesystem other than FAT (or HFS+ or APFS on Macs or ISO-9660 or NTFS on some systems). This is most likely to be useful on a Linux installation, since a filesystem driver can enable you to store a Linux kernel with EFI stub loader or for use by ELILO on a Linux-native filesystem if your EFI System Partition (ESP) is getting crowded.</li>
 
 <li>You can load a driver for a plug-in disk controller to give the EFI access to its disks. Note that this is <i>not</i> required if you place your boot loader (and perhaps your OS kernel) on another disk, or if the plug-in disk controller includes EFI-capable firmware. It could be handy, perhaps in conjunction with a filesystem driver, to enable the EFI to read a boot loader or kernel from a disk on a plug-in controller, though. I've received one report of the NVMe driver from <a href="https://sourceforge.net/projects/cloverefiboot/">Clover</a> being useful to boot from an aftermarket NVMe disk on a Mac, for instance.</li>
 
@@ -175,7 +175,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>As a side note, using an ISO-9660 driver can theoretically help you keep the size of a custom Linux boot CD/DVD down to a reasonable value. This is because EFI systems normally boot from optical discs by reading a FAT image file in El Torito format and treating that file as an ESP. If you need to store the kernel both in that file and directly in the ISO-9660 filesystem (to maintain bootability on BIOS systems), that can represent an unwanted extra space requirement. Placing rEFInd and an ISO-9660 driver in the FAT image file should enable you to store the kernel on the disc only once. Unfortunately, this doesn't work in practice. When the ISO-9660 driver is loaded from the El Torito image, the driver discovers that the optical disc is in use and refuses to access it. It's possible to use EFI shell commands to give the ISO-9660 driver access to the shell device, but this causes the El Torito access to go away, which means that anything loaded from the El Torito image (such as rEFInd) is likely to malfunction. Also, some EFI implementations include ISO-9660 drivers, so you might not need a separate ISO-9660 driver if you're building a disc for a particular computer.</p>
 
-<a name="installing">
+<p>I've seen reports of (very rare) computers that provide built-in NTFS drivers. Unfortunately, these drivers are sometimes buggy, and can cause rEFInd to hang; see <a href="https://sourceforge.net/p/refind/discussion/general/thread/f1f144d655/">this discussion</a> of a problem with an HP computer for an example. If you suspect you're running into such a problem, the best solution is to disable scanning of the affected partition(s) by using the <tt>dont_scan_volumes</tt> token in <tt>refind.conf</tt>. Pass it the filesystem name, partition name, or GUID of the volume(s) in question, as in:</p>
+
+<pre class="listing">
+dont_scan_volumes B034F306-A900-4AC7-9BF7-737601DAE627,Windows
+</pre>
+
+<p>This example prevents rEFInd from scanning the partition with a partition-unique GUID of B034F306-A900-4AC7-9BF7-737601DAE627 or any partition called <i>Windows</i>. Identifying a partition by its GUID (which you can learn using <tt>gdisk</tt> or some other partitioning tools) is most reliable, but the partition's name can also work, and is sometimes easier to determine. Another possible solution to this problem is to run a filesystem check on the filesystem; this may correct a filesystem error, if that is tripping up the driver.</p>
+
+<a name="installing">
 <h2>Installing rEFInd's EFI Drivers</h2>
 </a>
 
@@ -385,7 +393,7 @@ the worst of the speed problems in rEFInd's drivers as of version 0.7.0; however
 
 <ul>
 
-<li><a href="https://github.com/NikolajSchlej/CrScreenshotDxe"><b>CrScreenshot</b></a>&mdash;This driver adds a screenshot capability to any EFI. Note that it's available only as source code that requires the Tianocore EDK2 to build. I have not tested it. (Note also that rEFInd provides its own screen shot capability; pressing F10 takes a screen shot within rEFInd.)</li>
+<li><a href="https://github.com/NikolajSchlej/CrScreenshotDxe"><b>CrScreenshot</b></a>&mdash;This driver adds a screenshot capability to any EFI. Note that it's available only as source code that requires the Tianocore EDK2 to build. I have not tested it. (Note also that rEFInd provides its own screen shot capability; pressing F10 or <tt>\</tt> takes a screen shot within rEFInd.)</li>
 
 <li><a href="https://github.com/rcpao-enmotus/RamDiskPkg"><b>RamDiskPkg</a></b>&mdash;This is a rudimentary RAM disk driver. It must be compiled with a RAM disk image; the resulting binary is hard-coded with a fixed RAM disk image. It's therefore useful mostly for developers.</li>
 

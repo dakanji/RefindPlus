@@ -395,6 +395,7 @@ extern REFIT_VOLUME     **Volumes;
 extern UINTN            VolumesCount;
 
 extern REFIT_CONFIG     GlobalConfig;
+extern CHAR16           *gHiddenTools;
 
 extern EFI_GUID gEfiLegacyBootProtocolGuid;
 extern EFI_GUID gEfiGlobalVariableGuid;

@@ -1,3 +1,52 @@
+0.13.3.1 (4/12/2022):
+-------------------
+
+- Fixed bug that caused refind-install to not recognize already-mounted
+  ESP in Linux. This was causing installation failures on some systems.
+
+- Fixed bug in refind-install that caused duplicate EFI boot manager
+  entries when updating a rEFInd installation that used Shim.
+
+0.13.3 (4/10/2022):
+-------------------
+
+- Fixed compile problem introduced somewhere between GNU-EFI 3.0.9 and
+  3.0.13.
+
+- Fixed bug that could cause rEFInd to freeze when processing keystrokes
+  in menus.
+
+- Fixed bug that caused option to return from folded Linux kernel submenu to
+  be missing.
+
+- Code cleanup in bash scripts.
+
+- Removed a stray exit command from refind-install, which caused
+  premature termination of the script.
+
+- Minimized reading of HiddenTools variable, which was being read
+  unnecessarily often.
+
+- Fixed handling of timeout == -1 when no keyboard is attached.
+
+- Fixed display of arrow icons when those icons are larger than the stock
+  size because of manual specification of icon size in refind.conf.
+
+- Updated Ubuntu icon for its 22.04 revision.
+
+- Introduced log file rotation -- if refind.log-old exists and logging is
+  enabled, that log file is deleted and the existing log file is renamed to
+  refind.log-old. This enables preservation of two log files, which is
+  useful in case rEFInd crashes; the crash log file will be available as
+  refind.log-old.
+
+- I am officially deprecating the "tiano" target, which builds with
+  TianoCore UDK2014 using custom Makefile rules rather than the usual
+  TianoCore build process. I'm doing this because it's badly broken in my
+  current build environment (Ubuntu 20.04). Although it may still work in
+  older configurations, I'm not currently using or testing it, and I see
+  no advantage to keeping it working.
+
 0.13.2 (3/13/2021):
 -------------------
 

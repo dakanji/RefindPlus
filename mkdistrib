@@ -26,9 +26,9 @@ MakeRpm=1
 MakeDebian=1
 MakeZip=1
 KeysDir=/mnt/refind
-KeysInfo=`df $KeysDir 2> /dev/null | grep $KeysDir`
-StartDir=`pwd`
-SBSign=`which sbsign 2> /dev/null`
+KeysInfo=$(df $KeysDir 2> /dev/null | grep $KeysDir)
+StartDir=$(pwd)
+SBSign=$(command -v sbsign 2> /dev/null)
 
 ShowUsage() {
    echo "Usage:"
@@ -39,7 +39,7 @@ ShowUsage() {
 GetParams() {
    while [[ $# -gt 0 ]]; do
       echo "$1"
-      case $1 in
+      case "$1" in
          --nosign) SignIt=0
               ;;
          --norpm) MakeRpm=0
@@ -48,40 +48,40 @@ GetParams() {
               ;;
          --nozip) MakeZip=0
               ;;
-         --help) ShowUsage $0
+         --help) ShowUsage "$0"
               ;;
          * ) Version=$1
       esac
       shift
    done
    if [[ -z "$Version" ]] ; then
-      ShowUsage $0
+      ShowUsage "$0"
    fi
 } # GetParams()
 
-# Copy rEFInd source files to refind-$Version inside $TargetDir directory
-# and create a tarball from refind-$Version. Both the tarball and the
-# source directory are left in $TargetDir when this function finishes, and
-# $TargetDir is the current directory at the end.
+# Copy rEFInd source files to refind-"$Version" inside "$TargetDir" directory
+# and create a tarball from refind-"$Version". Both the tarball and the
+# source directory are left in "$TargetDir" when this function finishes, and
+# "$TargetDir" is the current directory at the end.
 MakeTarball() {
     # Prepare a place and copy files there....
-    mkdir -p $TargetDir/refind-$Version/icons/licenses $TargetDir/refind-$Version/icons/svg
-    cp --preserve=timestamps icons/*png icons/README $TargetDir/refind-$Version/icons/
-    cp --preserve=timestamps -r icons/licenses/* $TargetDir/refind-$Version/icons/licenses/
-    cp --preserve=timestamps -r icons/svg/* $TargetDir/refind-$Version/icons/svg/
+    mkdir -p "$TargetDir"/refind-"$Version"/icons/licenses "$TargetDir"/refind-"$Version"/icons/svg
+    cp --preserve=timestamps icons/*png icons/README "$TargetDir"/refind-"$Version"/icons/
+    cp --preserve=timestamps -r icons/licenses/* "$TargetDir"/refind-"$Version"/icons/licenses/
+    cp --preserve=timestamps -r icons/svg/* "$TargetDir"/refind-"$Version"/icons/svg/
     cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems \
         gptsync refind.spec refind-install refind-mkdefault mkrlconf mvrefind mountesp CREDITS.txt \
         NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf gptsync.inf \
-        Make.common Makefile refind.conf-sample RefindPkg.d?? $TargetDir/refind-$Version
+        Make.common Makefile refind.conf-sample RefindPkg.d?? "$TargetDir"/refind-"$Version"
 
     # Go there and prepare a souce code tarball....
-    cd $TargetDir
-    rm -f refind-src-$Version.tar.gz
-    tar cvf refind-src-$Version.tar refind-$Version
-    gzip -9 refind-src-$Version.tar
+    cd "$TargetDir"
+    rm -f refind-src-"$Version".tar.gz
+    tar cvf refind-src-"$Version".tar refind-"$Version"
+    gzip -9 refind-src-"$Version".tar
 
     # Remove SVG files, since they aren't needed for binary packages....
-    rm -rf refind-$Version/icons/svg
+    rm -rf refind-"$Version"/icons/svg
 } # MakeTarball()
 
 # Create two .zip packages containing the full binary builds of rEFInd for three
@@ -91,16 +91,16 @@ MakeTarball() {
 # those rare cases when the TianoCore build fails.) The X64 binaries are signed
 # with my key *IF* --nosign is not specified and if the key is available.
 MakeZipBinary() {
-    cd $TargetDir/refind-$Version
+    cd "$TargetDir"/refind-"$Version"
     # Build the ARM64 binaries
     ARCH=aarch64 make -j1
     ARCH=aarch64 make fs
-    mkdir -p refind-bin-$Version/refind/drivers_aa64
-    cp --preserve=timestamps drivers_aa64/*_aa64.efi refind-bin-$Version/refind/drivers_aa64/
-    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-$Version/refind/drivers_aa64/
-    cp refind/refind_aa64.efi refind-bin-$Version/refind/refind_aa64.efi
-    cp refind/refind_aa64.efi $StartDir/
-    mkdir -p refind-bin-$Version/refind/tools_aa64
+    mkdir -p refind-bin-"$Version"/refind/drivers_aa64
+    cp --preserve=timestamps drivers_aa64/*_aa64.efi refind-bin-"$Version"/refind/drivers_aa64/
+    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-"$Version"/refind/drivers_aa64/
+    cp refind/refind_aa64.efi refind-bin-"$Version"/refind/refind_aa64.efi
+    cp refind/refind_aa64.efi "$StartDir"/
+    mkdir -p refind-bin-"$Version"/refind/tools_aa64
     # Don't copy gptsync_aa64.efi because it won't build in cross-compile environment
     # and because it's likely to be useless on ARM64.
 
@@ -108,82 +108,87 @@ MakeZipBinary() {
     make clean
     ARCH=ia32 make -j1
     ARCH=ia32 make fs
-    mkdir -p refind-bin-$Version/refind/drivers_ia32
-    cp --preserve=timestamps drivers_ia32/*_ia32.efi refind-bin-$Version/refind/drivers_ia32/
-    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-$Version/refind/drivers_ia32/
-    cp refind/refind_ia32.efi refind-bin-$Version/refind/refind_ia32.efi
-    cp refind/refind_ia32.efi $StartDir/
-    mkdir -p refind-bin-$Version/refind/tools_ia32
-    cp --preserve=timestamps gptsync/gptsync_ia32.efi refind-bin-$Version/refind/tools_ia32/
+    mkdir -p refind-bin-"$Version"/refind/drivers_ia32
+    cp --preserve=timestamps drivers_ia32/*_ia32.efi refind-bin-"$Version"/refind/drivers_ia32/
+    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-"$Version"/refind/drivers_ia32/
+    cp refind/refind_ia32.efi refind-bin-"$Version"/refind/refind_ia32.efi
+    cp refind/refind_ia32.efi "$StartDir"/
+    mkdir -p refind-bin-"$Version"/refind/tools_ia32
+    cp --preserve=timestamps gptsync/gptsync_ia32.efi refind-bin-"$Version"/refind/tools_ia32/
 
     # Build the X64 binaries
     make clean
     make -j1
     make fs
-    mkdir -p refind-bin-$Version/refind/drivers_x64
-    cp -a icons refind-bin-$Version/refind/
+    mkdir -p refind-bin-"$Version"/refind/drivers_x64
+    cp -a icons refind-bin-"$Version"/refind/
     if [[ $SignIt == 1 ]] ; then
-        for File in `ls drivers_x64/*_x64.efi` ; do
-            $SBSign --key $KeysDir/refind.key --cert $KeysDir/refind.crt --output refind-bin-$Version/refind/$File $File
+        for File in drivers_x64/*_x64.efi ; do
+            $SBSign --key "$KeysDir"/refind.key --cert "$KeysDir"/refind.crt \
+                    --output refind-bin-"$Version"/refind/"$File" "$File"
         done
     else
-        cp --preserve=timestamps drivers_x64/*_x64.efi refind-bin-$Version/refind/drivers_x64/
+        cp --preserve=timestamps drivers_x64/*_x64.efi refind-bin-"$Version"/refind/drivers_x64/
     fi
-    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-$Version/refind/drivers_x64/
-    cp --preserve=timestamps refind.conf-sample refind-bin-$Version/refind/
+    cp --preserve=timestamps filesystems/LICENSE*txt refind-bin-"$Version"/refind/drivers_x64/
+    cp --preserve=timestamps refind.conf-sample refind-bin-"$Version"/refind/
     if [[ $SignIt == 1 ]] ; then
-        $SBSign --key $KeysDir/refind.key --cert $KeysDir/refind.crt --output refind-bin-$Version/refind/refind_x64.efi refind/refind_x64.efi
+        "$SBSign" --key "$KeysDir"/refind.key --cert "$KeysDir"/refind.crt \
+                  --output refind-bin-"$Version"/refind/refind_x64.efi refind/refind_x64.efi
     else
-        cp refind/refind_x64.efi refind-bin-$Version/refind/refind_x64.efi
+        cp refind/refind_x64.efi refind-bin-"$Version"/refind/refind_x64.efi
     fi
-    mkdir -p refind-bin-$Version/refind/tools_x64
+    mkdir -p refind-bin-"$Version"/refind/tools_x64
     if [[ $SignIt == 1 ]] ; then
-        $SBSign --key $KeysDir/refind.key --cert $KeysDir/refind.crt --output refind-bin-$Version/refind/tools_x64/gptsync_x64.efi gptsync/gptsync_x64.efi
+        $SBSign --key "$KeysDir"/refind.key --cert "$KeysDir"/refind.crt \
+                --output refind-bin-"$Version"/refind/tools_x64/gptsync_x64.efi gptsync/gptsync_x64.efi
     else
-        cp --preserve=timestamps gptsync/gptsync_x64.efi refind-bin-$Version/refind/tools_x64/
+        cp --preserve=timestamps gptsync/gptsync_x64.efi refind-bin-"$Version"/refind/tools_x64/
     fi
-    cp refind-bin-$Version/refind/refind_x64.efi $StartDir
-    cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install refind-mkdefault mkrlconf mvrefind mountesp refind-bin-$Version
+    cp refind-bin-"$Version"/refind/refind_x64.efi "$StartDir"
+    cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install \
+       refind-mkdefault mkrlconf mvrefind mountesp refind-bin-"$Version"
 
     # Prepare the final .zip file
-    zip -9r ../refind-bin-$Version.zip refind-bin-$Version
+    zip -9r ../refind-bin-"$Version".zip refind-bin-"$Version"
 
     # Prepare a variant with the x86-64 version built with GNU-EFI....
     make clean
     make -j1 gnuefi
     if [[ $SignIt == 1 ]] ; then
-        $SBSign --key $KeysDir/refind.key --cert $KeysDir/refind.crt --output refind-bin-$Version/refind/refind_x64.efi refind/refind_x64.efi
+        $SBSign --key "$KeysDir"/refind.key --cert "$KeysDir"/refind.crt \
+                --output refind-bin-"$Version"/refind/refind_x64.efi refind/refind_x64.efi
     else
-        cp refind/refind_x64.efi refind-bin-$Version/refind/refind_x64.efi
+        cp refind/refind_x64.efi refind-bin-"$Version"/refind/refind_x64.efi
     fi
-    zip -9r ../refind-bin-gnuefi-$Version.zip refind-bin-$Version
+    zip -9r ../refind-bin-gnuefi-"$Version".zip refind-bin-"$Version"
 
-    cd $TargetDir
-    rm -r refind-$Version
+    cd "$TargetDir"
+    rm -r refind-"$Version"
 } # MakeZipBinary()
 
 # Make Debian packages using native Debian calls. Note that the Debian
 # rules currently do NOT use a signing key, so these binaries will be
 # UNSIGNED!
 MakeDebianPackage() {
-    cd $TargetDir
+    cd "$TargetDir"
     rm -rf debian-source
     mkdir debian-source
     cd debian-source
-    tar xvfz ../refind-src-$Version.tar.gz
-    ln -sf ../refind-src-$Version.tar.gz refind_$Version.orig.tar.gz
-    cd refind-$Version
+    tar xvfz ../refind-src-"$Version".tar.gz
+    ln -sf ../refind-src-"$Version".tar.gz refind_"$Version".orig.tar.gz
+    cd refind-"$Version"
     debuild -S -sa -rfakeroot -k'Rod Smith <rodsmith@rodsbooks.com>'
     cd ..
     rm -rf ../debian-binary
     mkdir ../debian-binary
-    mv refind-$Version ../debian-binary
+    mv refind-"$Version" ../debian-binary
     cd ../debian-binary
-    ln -sf ../refind-src-$Version.tar.gz refind_$Version.orig.tar.gz
-    cd refind-$Version
+    ln -sf ../refind-src-"$Version".tar.gz refind_"$Version".orig.tar.gz
+    cd refind-"$Version"
     dpkg-buildpackage -us -uc
     cd ..
-    rm -rf refind-$Version
+    rm -rf refind-"$Version"
     cd ..
 } # MakeDebianPackage
 
@@ -192,16 +197,16 @@ MakeDebianPackage() {
 # passed as an option. (The RPM .spec file checks for the presence
 # of my key files.)
 MakeRpmPackage() {
-    cd $TargetDir
-    cp refind-src-$Version.tar.gz ~/rpmbuild/SOURCES/
-    rpmbuild -ba $StartDir/refind.spec
-    mv ~/rpmbuild/RPMS/*/refind-$Version* ./
-    mv ~/rpmbuild/SRPMS/refind-$Version* ./
-    sudo alien --to-deb -k -c refind-$Version*x86_64.rpm
+    cd "$TargetDir"
+    cp refind-src-"$Version".tar.gz ~/rpmbuild/SOURCES/
+    rpmbuild -ba "$StartDir"/refind.spec
+    mv ~/rpmbuild/RPMS/*/refind-"$Version"* ./
+    mv ~/rpmbuild/SRPMS/refind-"$Version"* ./
+    sudo alien --to-deb -k -c refind-"$Version"*x86_64.rpm
     sudo chown rodsmith: refind*deb
-    rm ~/rpmbuild/SOURCES/refind-src-$Version.tar.gz
-    rm -rf ~/rpmbuild/BUILD/refind-$Version
-    rm -rf ~/rpmbuild/BUILDROOT/refind-$Version-*
+    rm ~/rpmbuild/SOURCES/refind-src-"$Version".tar.gz
+    rm -rf ~/rpmbuild/BUILD/refind-"$Version"
+    rm -rf ~/rpmbuild/BUILDROOT/refind-"$Version"-*
 } # MakeRpmPackage
 
 ###################################
@@ -226,18 +231,17 @@ man2html docs/man/mvrefind.8 > docs/refind/mvrefind.html
 man2html docs/man/refind-mkdefault.8 > docs/refind/refind-mkdefault.html
 man2html docs/man/refind-install.8 > docs/refind/refind-install.html
 
-mkdir -p ../snapshots/$Version
-TargetDir=`cd -P ../snapshots/$Version && pwd`
-echo $TargetDir
+mkdir -p ../snapshots/"$Version"
+TargetDir=$(cd -P ../snapshots/"$Version" && pwd)
+echo "$TargetDir"
 
-if [[ ! -n $SBSign && $SignIt == 1 ]] ; then
+if [[ -z $SBSign && $SignIt == 1 ]] ; then
    echo "Can't find sbsign binary! Aborting!"
    exit 1
 fi
 
-if [[ ! -n $KeysInfo && $SignIt == 1 ]] ; then
-   mount $KeysDir
-   if [[ $? -ne 0 ]] ; then
+if [[ -z $KeysInfo && $SignIt == 1 ]] ; then
+   if ! mount $KeysDir ; then
       echo "Error mounting $KeysDir! Aborting!"
       echo ""
       exit 1
@@ -260,8 +264,8 @@ fi
 
 # Clean up....
 if [[ $SignIt == 1 ]] ; then
-    umount $KeysDir
+    umount "$KeysDir"
 fi
 
 # Finish
-cd $StartDir
+cd "$StartDir"

@@ -2,7 +2,7 @@
  * include/version.h
  * Version number header file
  *
- * Copyright (c) 2017-2021 Roderick W. Smith
+ * Copyright (c) 2017-2022 Roderick W. Smith
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), a copy of which must be distributed with this
@@ -10,5 +10,5 @@
  *
  */
 
-#define REFIND_VERSION L"0.13.2"
+#define REFIND_VERSION L"0.13.3"
 

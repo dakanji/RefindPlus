@@ -507,8 +507,9 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
         LOG(2, LOG_LINE_NORMAL, L"Not writing variable '%s'; it's unchanged", name);
     }
     if (OldStatus == EFI_SUCCESS) {
-        LOG(3, LOG_LINE_NORMAL, L"Freeing OldBuf");
-        MyFreePool(&OldBuf);
+        LOG(4, LOG_LINE_NORMAL, L"Freeing OldBuf");
+        MyFreePool(OldBuf);
+        LOG(4, LOG_LINE_NORMAL, L"Have freed OldBuf");
     }
     if (EFI_ERROR(Status))
         LOG(1, LOG_LINE_NORMAL, L"Error %d when writing EFI variable '%s'", Status, name);

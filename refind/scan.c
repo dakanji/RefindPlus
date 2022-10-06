@@ -581,7 +581,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         Entry->OSType = 'N';
         ShortcutLetter = 'N';
         MergeStrings(&OSIconName, L"network", L',');
-    } 
+    }
 
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z'))
         ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
@@ -958,7 +958,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
            }
            NewLoader = NewLoader->NextEntry;
        } // while
-       if ((NewLoader != NULL) && (FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels)
+       if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels)
            AddMenuEntry(FirstKernel->me.SubScreen, &MenuEntryReturn);
 
        CleanUpLoaderList(LoaderList);
@@ -1024,7 +1024,7 @@ static VOID ScanNetboot() {
                 NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
                 AddLoaderEntry(iPXEFileName, Location, NetVolume, TRUE);
             } // if support files exist and are valid
-    } 
+    }
 } // VOID ScanNetboot()
 
 // Adds *FullFileName as a macOS loader, if it exists.
@@ -1414,7 +1414,12 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
     LOG(3, LOG_LINE_NORMAL, L"Checking validity of tool '%s' on '%s'", PathName,
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName);
-    DontScanTools = ReadHiddenTags(L"HiddenTools");
+    if (gHiddenTools == NULL) {
+        DontScanTools = ReadHiddenTags(L"HiddenTools");
+        gHiddenTools = StrDuplicate(DontScanTools);
+    } else {
+        DontScanTools = StrDuplicate(gHiddenTools);
+    }
     MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
         SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
@@ -1589,7 +1594,7 @@ VOID ScanForTools(VOID) {
                 } // while
                 FileName = NULL;
                 break;
-            
+
             case TAG_NETBOOT:
                 j = 0;
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {

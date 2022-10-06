@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 3/13/2021</p>
+<p>Last Web page update: 4/12/2022</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,53 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.13.3.1 (4/12/2022)</b>&mdash;This is a minor update to address two bugs in the <tt>refind-install</tt> script. The first bug caused it to fail to identify a mounted ESP in Linux. This in turn could cause package installation problems. The second bug caused <tt>refind-install</tt> to fail to re-use an existing EFI boot manager entry for rEFInd when the system was booting through Shim, thus creating duplicated entries. There are no changes to the rEFInd program itself with this version (although it's a fresh build from source).</li>
+
+<li><b>0.13.3 (4/10/2022)</b>&mdash;This version features several minor bug fixes and new features:
+
+<ul>
+
+    <li>rEFInd stopped compiling with GNU-EFI somewhere between GNU-EFI
+        versions 3.0.9 and 3.0.13; this version corrects that problem.</li>
+
+    <li>rEFInd could freeze when processing keystrokes in menus. This bug
+        is now fixed.</li>
+
+    <li>The option to return from the folded Linux kernel submenu was
+        missing; this bug is now fixed.</li>
+
+    <li>Bash script coding has been cleaned up.</li>
+
+    <li>The <tt>refind-install</tt> script contained a stray <tt>exit</tt>
+	command, which caused it to terminate prematurely. This problem has
+	been corrected.</li>
+
+    <li>rEFInd was reading the <tt>HiddenTools</tt> variable unnecessarily
+        often; this has been corrected.</li>
+
+    <li>When the <tt>timeout</tt> option was set to <tt>-1</tt> and no
+	keyboard was attached, rEFInd could freeze. This problem has been
+	fixed.</li>
+
+    <li>The arrow icons visible when more icons than the screen can handle
+	could be incompletely erased if icon sizes were set manually in
+	<tt>refind.conf</tt>. This bug has been fixed.</li>
+
+    <li>The Ubuntu icon has been updated to match the revision associated
+        with Ubuntu 22.04.</li>
+
+    <li>Log files now rotate &mdash; when a log file already exists, it is
+	renamed to <tt>refind.log-old</tt> and the new one is created as
+	<tt>refind.log.</tt> This enables recovery of a rEFInd log file even
+	after rEFInd freezes or otherwise badly misbehaves.</li>
+
+    <li>I am officially deprecating the <tt>tiano</tt> Makefile target,
+	which had been usable with the TianoCore UDK2014 build environment.
+	I'm doing this because it's no longer working with my development
+	system, and I don't think it's worth fixing at this point.</li>
+
+</ul></li>
 
 <li><b>0.13.2 (3/13/2021)</b>&mdash;I've fixed a number of bugs and added a few new features with this version:
 

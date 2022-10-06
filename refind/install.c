@@ -196,7 +196,7 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
 // Rename *FileName to add a "-old" extension, but only if that file doesn't
 // already exist. Called on the icons directory to preserve it in case the
 // user wants icons stored there that have been supplanted by new icons.
-static EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
     EFI_STATUS          Status = EFI_SUCCESS;
     CHAR16              *NewName;
 

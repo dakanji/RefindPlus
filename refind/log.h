@@ -31,6 +31,9 @@ extern CHAR16           *gLogTemp;
 #define LOG_LINE_SEPARATOR   2
 #define LOG_LINE_THIN_SEP    3
 
+#define LOGFILE L"refind.log"
+#define LOGFILE_OLD L"refind.log-old"
+
 // Note: gLogTemp is freed within WriteToLog()
 #define LOG(level, type, ...) \
     if (level <= GlobalConfig.LogLevel) { \

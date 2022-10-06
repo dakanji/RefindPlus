@@ -16,16 +16,29 @@
 
 #include "log.h"
 #include "global.h"
+#include "install.h"
 #include "lib.h"
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "screen.h"
 
-// EFI_STATUS DeleteFile(
-
 EFI_FILE_HANDLE  gLogHandle;
 CHAR16           *gLogTemp = NULL;
 BOOLEAN          gLogActive = FALSE;
+
+
+EFI_STATUS DeleteFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+    EFI_FILE_HANDLE FileHandle;
+    UINT64          FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;;
+    EFI_STATUS      Status;
+
+    Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle,
+                                 FileName, FileMode, 0);
+    if (Status == 0) {
+        Status = refit_call1_wrapper(FileHandle->Delete, FileHandle);
+    }
+    return Status;
+} // EFI_STATUS DeleteFile()
 
 // Open the logging file (refind.log).
 // Sets the global gLogHandle variable to point to the file.
@@ -42,17 +55,28 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
     UINT8           Utf16[2]; // String to hold ID for UTF-16 file start
 
     if (GlobalConfig.LogLevel > 0) {
-        if (Restart)
+        if (Restart) {
             FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;
-        else
+        } else {
             FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE;
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gLogHandle, L"refind.log",
+            if (FileExists(SelfDir, LOGFILE)) {
+                if (FileExists(SelfDir, LOGFILE_OLD))
+                    DeleteFile(SelfDir, LOGFILE_OLD);
+                BackupOldFile(SelfDir, LOGFILE);
+            }
+        }
+        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gLogHandle, LOGFILE,
                                      FileMode, 0);
         if (EFI_ERROR(Status)) {
             Status = egFindESP(&FoundEsp);
             if (!EFI_ERROR(Status)) {
+                if (!Restart && (FileExists(FoundEsp, LOGFILE))) {
+                    if (FileExists(FoundEsp, LOGFILE_OLD))
+                        DeleteFile(FoundEsp, LOGFILE_OLD);
+                    BackupOldFile(FoundEsp, LOGFILE);
+                }
                 Status = refit_call5_wrapper(FoundEsp->Open, FoundEsp,
-                                             &gLogHandle, L"refind.log",
+                                             &gLogHandle, LOGFILE,
                                              FileMode, 0);
             }
         }
