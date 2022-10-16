@@ -3715,7 +3715,7 @@ EFI_STATUS EFIAPI efi_main (
                 RebootIntoLoader (ourLoaderEntry);
 
                 #if REFIT_DEBUG > 0
-                UnexpectedReturn (L"Firmware Loader");
+                UnexpectedReturn (L"Firmware Reboot");
                 #endif
 
             break;
@@ -3768,7 +3768,6 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - Rotate CSR", OffsetNext);
-                LOG_MSG("\n");
                 #endif
 
                 // No end dash line ... Expected to return

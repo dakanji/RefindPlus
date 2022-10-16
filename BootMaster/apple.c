@@ -173,7 +173,10 @@ VOID RecordgCsrStatus (
             "%s    * %s%s",
             (NormaliseCall) ? OffsetNext : L"",
             MsgStr,
-            (NormaliseCall) ? L"" : L"\n\n"
+            L"\n\n"
+            // DA-TAG: Investigate This
+            //         Disabled for the above ... Seems not needed
+            //(NormaliseCall) ? L"" : L"\n\n"
         );
         #endif
 

@@ -8,8 +8,8 @@ The current development focus is on the following units:
 - **MacPro3,1**: Early 2008 Mac Pro
 - **MacPro4,1**: Early 2009 Mac Pro
 - **MacPro5,1**: Mid 2010 and Mid 2012 Mac Pros
-- **XServe2,1**: Early 2008 XServe
-- **XServe3,1**: Early 2009 XServe
+- **Xserve2,1**: Early 2008 Xserve
+- **Xserve3,1**: Early 2009 Xserve
 
 However, the enhancements are not limited in scope to these units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running MacOS.
 
@@ -41,7 +41,7 @@ However, the enhancements are not limited in scope to these units and may be of 
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
 
 ## Installation
-[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended for an automated installation of a RefindPlus/OpenCore chain-loading arrangement on MacPro3,1 to MacPro5,1 as well as on XServe2,1 and XServe3,1. However, the RefindPlus efi file can function as a drop-in replacement for the upstream efi file. Hence, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This permits implementing RefindPlus on other types of Mac as well as on other operating systems.
+[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended for an automated installation of a RefindPlus/OpenCore chain-loading arrangement on MacPro3,1 to MacPro5,1 as well as on Xserve2,1 and Xserve3,1. However, the RefindPlus efi file can function as a drop-in replacement for the upstream efi file. Hence, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This permits implementing RefindPlus on other types of Mac as well as on other operating systems.
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 

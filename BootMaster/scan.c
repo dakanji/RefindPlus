@@ -3495,26 +3495,26 @@ VOID ScanForTools (VOID) {
         MY_FREE_POOL(VolumeTag);
 
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_ABOUT:            ToolName = L"About RefindPlus";            break;
-            case TAG_BOOTORDER:        ToolName = L"Boot Order";                  break;
-            case TAG_CSR_ROTATE:       ToolName = L"Rotate CSR";                  break;
-            case TAG_EXIT:             ToolName = L"Exit RefindPlus";             break;
-            case TAG_FIRMWARE:         ToolName = L"Firmware Reboot";             break;
-            case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update";             break;
-            case TAG_GDISK:            ToolName = L"GDisk Tool";                  break;
-            case TAG_GPTSYNC:          ToolName = L"GPT Sync";                    break;
-            case TAG_HIDDEN:           ToolName = L"Hidden Tags";                 break;
-            case TAG_INFO_NVRAMCLEAN:  ToolName = L"Clean Nvram";                 break;
-            case TAG_INSTALL:          ToolName = L"Install RefindPlus";          break;
-            case TAG_MEMTEST:          ToolName = L"Memtest Tool";                break;
-            case TAG_MOK_TOOL:         ToolName = L"MOK Protocol";                break;
-            case TAG_NETBOOT:          ToolName = L"Net Boot";                    break;
-            case TAG_REBOOT:           ToolName = L"System Restart";              break;
-            case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)";              break;
-            case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)";              break;
-            case TAG_SHELL:            ToolName = L"UEFI Shell";                  break;
-            case TAG_SHUTDOWN:         ToolName = L"System Shutdown";             break;
-            default:                                                           continue;
+            case TAG_ABOUT:            ToolName = L"About RefindPlus"   ;      break;
+            case TAG_BOOTORDER:        ToolName = L"Boot Order"         ;      break;
+            case TAG_CSR_ROTATE:       ToolName = L"Rotate CSR"         ;      break;
+            case TAG_EXIT:             ToolName = L"Exit RefindPlus"    ;      break;
+            case TAG_FIRMWARE:         ToolName = L"Firmware Reboot"    ;      break;
+            case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update"    ;      break;
+            case TAG_GDISK:            ToolName = L"GDisk Tool"         ;      break;
+            case TAG_GPTSYNC:          ToolName = L"GPT Sync"           ;      break;
+            case TAG_HIDDEN:           ToolName = L"Restore Tags"       ;      break;
+            case TAG_INFO_NVRAMCLEAN:  ToolName = L"Clean Nvram"        ;      break;
+            case TAG_INSTALL:          ToolName = L"Install RefindPlus" ;      break;
+            case TAG_MEMTEST:          ToolName = L"Memtest Tool"       ;      break;
+            case TAG_MOK_TOOL:         ToolName = L"MOK Protocol"       ;      break;
+            case TAG_NETBOOT:          ToolName = L"Net Boot"           ;      break;
+            case TAG_REBOOT:           ToolName = L"System Restart"     ;      break;
+            case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)"     ;      break;
+            case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)"     ;      break;
+            case TAG_SHELL:            ToolName = L"UEFI Shell"         ;      break;
+            case TAG_SHUTDOWN:         ToolName = L"System Shutdown"    ;      break;
+            default:                                                        continue;
         } // switch
 
         #if REFIT_DEBUG > 0

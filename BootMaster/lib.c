@@ -1063,26 +1063,39 @@ VOID FreeVolume (
 // The returned variable is a constant that should NOT be freed.
 static
 CHAR16 * FSTypeName (
-    IN UINT32 TypeCode
+    IN REFIT_VOLUME *Volume
 ) {
-    CHAR16 *retval = NULL;
+    CHAR16 *retval = L"Unknown";
 
-    switch (TypeCode) {
-        case FS_TYPE_WHOLEDISK: retval = L"Whole Disk";  break;
-        case FS_TYPE_HFSPLUS:   retval = L"HFS+";        break;
-        case FS_TYPE_APFS:      retval = L"APFS";        break;
-        case FS_TYPE_NTFS:      retval = L"NTFS";        break;
-        case FS_TYPE_EXT4:      retval = L"Ext4";        break;
-        case FS_TYPE_EXT3:      retval = L"Ext3";        break;
-        case FS_TYPE_EXT2:      retval = L"Ext2";        break;
-        case FS_TYPE_FAT:       retval = L"FAT";         break;
-        case FS_TYPE_XFS:       retval = L"XFS";         break;
-        case FS_TYPE_JFS:       retval = L"JFS";         break;
-        case FS_TYPE_BTRFS:     retval = L"BtrFS";       break;
-        case FS_TYPE_ISO9660:   retval = L"ISO-9660";    break;
-        case FS_TYPE_REISERFS:  retval = L"ReiserFS";    break;
-        default:                retval = L"Unknown";     break;
+    switch (Volume->FSType) {
+        case FS_TYPE_WHOLEDISK: retval = L"Whole Disk";       break;
+        case FS_TYPE_HFSPLUS:   retval = L"HFS+"      ;       break;
+        case FS_TYPE_APFS:      retval = L"APFS"      ;       break;
+        case FS_TYPE_NTFS:      retval = L"NTFS"      ;       break;
+        case FS_TYPE_EXT4:      retval = L"Ext4"      ;       break;
+        case FS_TYPE_EXT3:      retval = L"Ext3"      ;       break;
+        case FS_TYPE_EXT2:      retval = L"Ext2"      ;       break;
+        case FS_TYPE_FAT:       retval = L"FAT"       ;       break;
+        case FS_TYPE_XFS:       retval = L"XFS"       ;       break;
+        case FS_TYPE_JFS:       retval = L"JFS"       ;       break;
+        case FS_TYPE_BTRFS:     retval = L"BtrFS"     ;       break;
+        case FS_TYPE_ISO9660:   retval = L"ISO-9660"  ;       break;
+        case FS_TYPE_REISERFS:  retval = L"ReiserFS"  ;       break;
     } // switch
+
+    if (MyStriCmp (retval, L"Unknown")) {
+        if (0);
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) retval = L"Mac Raid (ON)"     ;
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) retval = L"Mac Raid (OFF)"    ;
+        else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")         ) retval = L"ISO-9660 (Assumed)";
+        else if (FindSubStr (Volume->VolName, L"Fusion/FileVault Container") ) retval = L"HFS+ (Assumed)"    ;
+        else if (FindSubStr (Volume->VolName, L"APFS/FileVault Container")   ) retval = L"APFS (Assumed)"    ;
+        else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) retval = L"NTFS (Assumed)"    ;
+        else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) retval = L"NTFS (Assumed)"    ;
+    }
+
+    // DA-TAG: Most likely only just overwrites 'HFS+ (Assumed)'
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) retval = L"Container (HFS+)";
 
     return retval;
 } // CHAR16 *FSTypeName()
@@ -1527,8 +1540,8 @@ VOID SetVolumeBadgeIcon (
         switch (Volume->DiskKind) {
             case DISK_KIND_INTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
             case DISK_KIND_EXTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
-            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL);  break;
-            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET);      break;
+            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL) ; break;
+            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET)     ; break;
         } // switch
     }
 } // VOID SetVolumeBadgeIcon()
@@ -1611,8 +1624,8 @@ CHAR16 * GetVolumeName (
         #endif
     }
 
-    // NOTE: Do not free TypeName as FSTypeName returns a constant
-    TypeName = FSTypeName (Volume->FSType);
+    // 'FSTypeName' returns a constant ... Do not free 'TypeName'!
+    TypeName = FSTypeName (Volume);
 
     // No filesystem or acceptable partition name ... use fs type and size
     if (FoundName == NULL) {
@@ -1658,11 +1671,11 @@ CHAR16 * GetVolumeName (
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
                 FoundName = StrDuplicate (L"Recovery HD");
             }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidApplTvRec)) {
-                FoundName = StrDuplicate (L"AppleTV Recovery Partition");
-            }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) {
                 FoundName = StrDuplicate (L"Fusion/FileVault Container");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidApplTvRec)) {
+                FoundName = StrDuplicate (L"AppleTV Recovery Partition");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
                 FoundName = StrDuplicate (L"APFS/FileVault Container");
@@ -2093,9 +2106,9 @@ VOID VetMultiInstanceAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStrA = NULL;
-    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'";
-    CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
-    CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
+    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'"  ;
+    CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'"    ;
+    CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'"       ;
     CHAR16 *MsgStrE = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'";
 
     // Check if configured to show Apple Recovery
@@ -2331,24 +2344,24 @@ CHAR16 * GetApfsRoleString (
     CHAR16 *retval = NULL;
 
     switch (VolumeRole) {
-        case APPLE_APFS_VOLUME_ROLE_UNDEFINED:         retval = L"0x00 - Undefined";       break;
-        case APPLE_APFS_VOLUME_ROLE_SYSTEM:            retval = L"0x01 - System"   ;       break;
-        case APPLE_APFS_VOLUME_ROLE_USER:              retval = L"0x02 - UserHome" ;       break;
-        case APPLE_APFS_VOLUME_ROLE_RECOVERY:          retval = L"0x04 - Recovery" ;       break;
-        case APPLE_APFS_VOLUME_ROLE_VM:                retval = L"0x08 - VM"       ;       break;
-        case APPLE_APFS_VOLUME_ROLE_PREBOOT:           retval = L"0x10 - PreBoot"  ;       break;
-        case APPLE_APFS_VOLUME_ROLE_INSTALLER:         retval = L"0x20 - Installer";       break;
-        case APPLE_APFS_VOLUME_ROLE_DATA:              retval = L"0x40 - Data"     ;       break;
-        case APPLE_APFS_VOLUME_ROLE_UPDATE:            retval = L"0xC0 - Snapshot" ;       break;
-        case APFS_VOL_ROLE_XART:                       retval = L"0x?? - SecData"  ;       break;
-        case APFS_VOL_ROLE_HARDWARE:                   retval = L"0x?? - Firmware" ;       break;
-        case APFS_VOL_ROLE_BACKUP:                     retval = L"0x?? - BackupTM" ;       break;
-        case APFS_VOL_ROLE_RESERVED_7:                 retval = L"0x?? - Resrved07";       break;
-        case APFS_VOL_ROLE_RESERVED_8:                 retval = L"0x?? - Resrved08";       break;
-        case APFS_VOL_ROLE_ENTERPRISE:                 retval = L"0x?? - Enterprse";       break;
-        case APFS_VOL_ROLE_RESERVED_10:                retval = L"0x?? - Resrved10";       break;
-        case APFS_VOL_ROLE_PRELOGIN:                   retval = L"0x?? - PreLogin" ;       break;
-        default:                                       retval = L"0xFF - Unknown"  ;       break;
+        case APPLE_APFS_VOLUME_ROLE_UNDEFINED:       retval = L"0x00 - Undefined"  ;       break;
+        case APPLE_APFS_VOLUME_ROLE_SYSTEM:          retval = L"0x01 - System"     ;       break;
+        case APPLE_APFS_VOLUME_ROLE_USER:            retval = L"0x02 - UserHome"   ;       break;
+        case APPLE_APFS_VOLUME_ROLE_RECOVERY:        retval = L"0x04 - Recovery"   ;       break;
+        case APPLE_APFS_VOLUME_ROLE_VM:              retval = L"0x08 - VM"         ;       break;
+        case APPLE_APFS_VOLUME_ROLE_PREBOOT:         retval = L"0x10 - PreBoot"    ;       break;
+        case APPLE_APFS_VOLUME_ROLE_INSTALLER:       retval = L"0x20 - Installer"  ;       break;
+        case APPLE_APFS_VOLUME_ROLE_DATA:            retval = L"0x40 - Data"       ;       break;
+        case APPLE_APFS_VOLUME_ROLE_UPDATE:          retval = L"0xC0 - Snapshot"   ;       break;
+        case APFS_VOL_ROLE_XART:                     retval = L"0x?? - SecData"    ;       break;
+        case APFS_VOL_ROLE_HARDWARE:                 retval = L"0x?? - Firmware"   ;       break;
+        case APFS_VOL_ROLE_BACKUP:                   retval = L"0x?? - BackupTM"   ;       break;
+        case APFS_VOL_ROLE_RESERVED_7:               retval = L"0x?? - Resrved07"  ;       break;
+        case APFS_VOL_ROLE_RESERVED_8:               retval = L"0x?? - Resrved08"  ;       break;
+        case APFS_VOL_ROLE_ENTERPRISE:               retval = L"0x?? - Enterprse"  ;       break;
+        case APFS_VOL_ROLE_RESERVED_10:              retval = L"0x?? - Resrved10"  ;       break;
+        case APFS_VOL_ROLE_PRELOGIN:                 retval = L"0x?? - PreLogin"   ;       break;
+        default:                                     retval = L"0xFF - Unknown"    ;       break;
     } // switch
 
     return retval;
@@ -2567,32 +2580,12 @@ VOID ScanVolumes (VOID) {
             SkipSpacing = FALSE;
 
             // 'FSTypeName' returns a constant ... Do not free 'PartType'!
-            PartType = FSTypeName (Volume->FSType);
-
-            // Improve Volume Id
-            if (FindSubStr (PartType, L"Unknown")) {
-                if (0);
-                else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)"    ;
-                else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)"    ;
-                else if (FindSubStr (Volume->VolName, L"/FileVault Container")       ) PartType = L"APFS (Assumed)"    ;
-                else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")         ) PartType = L"ISO-9660 (Assumed)";
-
-                // Split checks as '/FileVault' may be Core Storage
-                if (0);
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)         ) PartType = L"HFS+ (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)        ) PartType = L"APFS (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)   ) PartType = L"Mac Raid (ON)" ;
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)  ) PartType = L"Mac Raid (OFF)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)  ) PartType = L"HFS+ (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) PartType = L"HFS+ Container";
-
-                // Update FS Types
-                if (0);
-                else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS;
-                else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS;
-                else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
-                else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
-            }
+            PartType = FSTypeName (Volume);
+            if (0);
+            else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS   ;
+            else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS   ;
+            else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
+            else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
 
             if (!DoneHeadings) {
                 LOG_MSG(
@@ -2625,15 +2618,18 @@ VOID ScanVolumes (VOID) {
             RoleStr = NULL;
             VolumeRole = 0;
             if (0);
-            else if (FindSubStr (Volume->VolName, L"APFS/FileVault")     ) RoleStr = L"0xCC - Container";
-            else if (MyStriCmp (Volume->VolName, L"EFI")                 ) RoleStr = L" * EFI Partition";
-            else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume")   ) RoleStr = L" * Physical Disk";
-            else if (MyStriCmp (Volume->VolName, L"Recovery HD")         ) RoleStr = L" * HFS Recovery" ;
-            else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")            ) RoleStr = L" * Bootcamp Win" ;
-            else if (MyStriCmp (Volume->VolName, L"Optical Disc Drive")  ) RoleStr = L" * Optical Drive";
-            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")) RoleStr = L" * Win BasicData";
-            else if (FindSubStr (Volume->VolName, L"System Reserved")    ) RoleStr = L" * Win Reserved" ;
-            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved") ) RoleStr = L" * MS Reserved"  ;
+            else if (FindSubStr (Volume->VolName, L"APFS/FileVault")         ) RoleStr = L"0xCC - Container" ;
+            else if (MyStriCmp (Volume->VolName, L"EFI")                     ) RoleStr = L" * EFI Partition" ;
+            else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume")       ) RoleStr = L" * Physical Disk" ;
+            else if (MyStriCmp (Volume->VolName, L"Recovery HD")             ) RoleStr = L" * HFS Recovery"  ;
+            else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")                ) RoleStr = L" * Bootcamp Win"  ;
+            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")    ) RoleStr = L" * Win BasicData" ;
+            else if (MyStriCmp (Volume->VolName, L"Boot OS X")               ) RoleStr = L" * Mac BootAssist";
+            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")     ) RoleStr = L" * Optical Drive" ;
+            else if (FindSubStr (Volume->VolName, L"System Reserved")        ) RoleStr = L" * Win Reserved"  ;
+            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved")     ) RoleStr = L" * MS Reserved"   ;
+            else if (FindSubStr (PartType, L"Mac Raid")                      ) RoleStr = L" * Raid Partition";
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * Recovery Part" ;
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
