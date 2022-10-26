@@ -354,14 +354,15 @@ EFI_STATUS SetHardwareNvramVariable (
     IN  EFI_GUID  *VendorGuid,
     IN  UINT32     Attributes,
     IN  UINTN      VariableSize,
-    IN  VOID      *VariableData
+    IN  VOID      *VariableData OPTIONAL
 ) {
     EFI_STATUS   Status;
     VOID        *OldBuf;
     UINTN        OldSize;
+    BOOLEAN      SettingMatch = FALSE;
 
     Status = EFI_LOAD_ERROR;
-    if (VariableData || VariableSize != 0) {
+    if (VariableData && VariableSize != 0) {
         Status = GetHardwareNvramVariable (
             VariableName, VendorGuid,
             &OldBuf, &OldSize
@@ -373,11 +374,13 @@ EFI_STATUS SetHardwareNvramVariable (
     }
 
     if (Status == EFI_SUCCESS) {
-        // Check for match
-        BOOLEAN SettingMatch = (
-            VariableSize == OldSize &&
-            CompareMem (VariableData, OldBuf, VariableSize) == 0
-        );
+        if (VariableData && VariableSize != 0) {
+            // Check for match
+            SettingMatch = (
+                VariableSize == OldSize &&
+                CompareMem (VariableData, OldBuf, VariableSize) == 0
+            );
+        }
         MY_FREE_POOL(OldBuf);
 
         if (SettingMatch) {
@@ -428,8 +431,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     #if REFIT_DEBUG > 0
-    BOOLEAN        CheckMute;
-    BOOLEAN        ForceNative;
+    BOOLEAN        CheckMute   = FALSE;
+    BOOLEAN        ForceNative = FALSE;
 
     MY_MUTELOGGER_SET;
     #endif
@@ -1619,7 +1622,7 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    BOOLEAN ForceNative;
+    BOOLEAN ForceNative = FALSE;
 
     CHAR16 *MsgStr = L"R E S C A N   A L L   I T E M S";
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -1724,7 +1727,7 @@ BOOLEAN SecureBootUninstall (VOID) {
     BOOLEAN     Success   =  TRUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     if (secure_mode()) {
@@ -1779,7 +1782,7 @@ VOID SetConfigFilename (
     EFI_LOADED_IMAGE  *Info;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -2158,8 +2161,8 @@ EFI_STATUS EFIAPI efi_main (
     EG_PIXEL   BGColor = COLOR_LIGHTBLUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
-    BOOLEAN ForceNative;
+    BOOLEAN CheckMute   = FALSE;
+    BOOLEAN ForceNative = FALSE;
     #endif
 
     /* Init Bootstrap */
@@ -3090,7 +3093,7 @@ EFI_STATUS EFIAPI efi_main (
                 StartTool (ourLoaderEntry);
 
                 #if REFIT_DEBUG > 0
-                BOOLEAN CheckMute;
+                BOOLEAN CheckMute = FALSE;
                 MY_MUTELOGGER_SET;
                 #endif
 
@@ -3126,9 +3129,8 @@ EFI_STATUS EFIAPI efi_main (
                 // Force nvram garbage collection on Macs
                 if (AppleFirmware) {
                     CHAR16 *BaseData = L"1";
-                    CHAR8 *DataNVRAM = AllocatePool (
-                        (StrLen (BaseData) + 1) * sizeof (CHAR8)
-                    );
+                    UINTN   SizeDataNVRAM = (StrLen (BaseData) + 1) * sizeof (CHAR8);
+                    CHAR8  *DataNVRAM = AllocatePool (SizeDataNVRAM);
                     if (DataNVRAM) {
                         // Convert Unicode String 'BaseData' to Ascii String 'DataNVRAM'
                         UnicodeStrToAsciiStr (BaseData, DataNVRAM);
@@ -3136,7 +3138,7 @@ EFI_STATUS EFIAPI efi_main (
                         REFIT_CALL_5_WRAPPER(
                             gRT->SetVariable, L"ResetNVRam",
                             &AppleGuid, StorageFlags,
-                            sizeof (DataNVRAM), DataNVRAM
+                            SizeDataNVRAM, DataNVRAM
                         );
                     }
                 }
@@ -3641,11 +3643,7 @@ EFI_STATUS EFIAPI efi_main (
                         OffsetNext, MsgStr,
                         (ourLegacyEntry->Volume)
                             ? ourLegacyEntry->Volume->OSName
-                            : (ourLoaderEntry->OSType == 'W')
-                                ? L"Windows Volume"
-                                : (ourLoaderEntry->OSType == 'L')
-                                    ? L"Linux Volume"
-                                    : L"NULL Volume Label"
+                            : L"NULL Volume Label"
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -3671,11 +3669,7 @@ EFI_STATUS EFIAPI efi_main (
                     OffsetNext, MsgStr,
                     (ourLegacyEntry->Volume)
                         ? ourLegacyEntry->Volume->OSName
-                        : (ourLoaderEntry->OSType == 'W')
-                            ? L"Windows Volume"
-                            : (ourLoaderEntry->OSType == 'L')
-                                ? L"Linux Volume"
-                                : L"NULL Volume Label"
+                        : L"NULL Volume Label"
                 );
                 MY_FREE_POOL(MsgStr);
                 #endif

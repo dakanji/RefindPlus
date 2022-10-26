@@ -791,7 +791,7 @@ BOOLEAN egInitUGADraw (
     EFI_HANDLE                    *HandleBuffer   = NULL;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     if (!LogOutput) {
         MY_MUTELOGGER_SET;
     }
@@ -910,7 +910,6 @@ VOID egInitScreen (VOID) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGop         = NULL;
 
     #if REFIT_DEBUG > 0
-    UINTN    SizeFB   = 0;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  PrevFlag = FALSE;
 
@@ -944,6 +943,7 @@ VOID egInitScreen (VOID) {
     }
 
     // Get GOPDraw Protocol
+    XFlag = EFI_NOT_STARTED;
     if (FoundHandleUGA && (SetPreferUGA || AcquireErrorGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
@@ -1094,8 +1094,6 @@ VOID egInitScreen (VOID) {
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                 LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
-
-                SizeFB = (GOPDraw->Mode->FrameBufferSize == 0) ? 0 : 1;
                 #endif
             }
             else {
@@ -1128,7 +1126,7 @@ VOID egInitScreen (VOID) {
             } // if/else !AllowTweakUEFI
         } // if/else Status == EFI_NOT_FOUND
 
-        if (XFlag != EFI_NOT_FOUND && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
+        if (XFlag != EFI_NOT_FOUND && XFlag != EFI_NOT_STARTED && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
             if (GOPDraw == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Cannot Implement Direct GOP Renderer");
@@ -1184,7 +1182,7 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
             } // if/else GOPDraw == NULL
-        } // if XFlag != EFI_NOT_FOUND
+        } // if XFlag != EFI_NOT_FOUND etc
 
         if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
             #if REFIT_DEBUG > 0
@@ -2256,7 +2254,7 @@ VOID egScreenShot (VOID) {
     EG_PIXEL      BGColorGood = COLOR_LIGHTBLUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     #if REFIT_DEBUG > 0

@@ -181,7 +181,7 @@ VOID RecordgCsrStatus (
         #endif
 
         #if REFIT_DEBUG > 0
-        BOOLEAN CheckMute;
+        BOOLEAN CheckMute = FALSE;
         MY_MUTELOGGER_SET;
         #endif
         egDisplayMessage (
@@ -314,7 +314,7 @@ EFI_STATUS NormaliseCSR (VOID) {
     NormaliseCall = TRUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
     #endif
     Status = GetCsrStatus (&OurCSR);  // Get csr-active-config value

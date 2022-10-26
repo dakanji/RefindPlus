@@ -220,7 +220,7 @@ BOOLEAN FindSubStr (
     //BREAD_CRUMB(L"%s:  3", FuncTag);
     NestedStrStr = TRUE;
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
     #endif
     if (MyStrStr (String, StrCharSet)) {

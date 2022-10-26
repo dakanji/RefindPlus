@@ -2161,13 +2161,17 @@ static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode
             s.data = cdirel->name;
             DPRINT(L"item key %lx:%x%lx, type %lx, namelen=%lx\n",
                     cdirel->key.object_id, cdirel->key.type, cdirel->key.offset, cdirel->type, s.size);
-            if(!err) {
+
+            // DA-TAG: Investigate This
+            //         err is always matched
+            //        would have hit break earlier otherwise
+            //if(!err) {
                 fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
                 FreePool (direl);
                 free_iterator (&desc);
                 shand->pos = key_out.offset;
                 return FSW_SUCCESS;
-            }
+            //}
         }
         r = next (vol, &desc, &elemaddr, &elemsize, &key_out);
         DPRINT(L"next2 out %lx:%x:%lx\n",

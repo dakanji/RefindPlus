@@ -744,7 +744,7 @@ VOID BeginExternalScreen (
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
-    BOOLEAN  CheckMute;
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
@@ -974,7 +974,7 @@ VOID PauseForKey (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
-    BOOLEAN  CheckMute;
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -1092,7 +1092,7 @@ VOID PauseSeconds (
     BOOLEAN Breakout  = FALSE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -1154,7 +1154,7 @@ VOID HaltSeconds (
     UINTN   i;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -1198,7 +1198,7 @@ VOID RefitDeadLoop (VOID) {
     UINTN   index;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
 
     MY_MUTELOGGER_SET;
     #endif

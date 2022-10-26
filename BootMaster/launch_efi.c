@@ -327,7 +327,7 @@ EFI_STATUS StartEFIImage (
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     if (!Volume) {
@@ -768,7 +768,7 @@ VOID RebootIntoLoader (
     CHAR16     *MsgStr    = NULL;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     #if REFIT_DEBUG > 0
@@ -1015,7 +1015,7 @@ VOID StartTool (
     CHAR16  *LoaderPath =  NULL;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     IsBoot        = FALSE;

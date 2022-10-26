@@ -1320,7 +1320,7 @@ VOID WarnIfLegacyProblems (VOID) {
                 CHAR16 *TmpMsgB = L"                                                                          ";
 
                 #if REFIT_DEBUG > 0
-                BOOLEAN CheckMute;
+                BOOLEAN CheckMute = FALSE;
                 MY_MUTELOGGER_SET;
                 #endif
                 SwitchToText (FALSE);

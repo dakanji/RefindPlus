@@ -695,7 +695,7 @@ VOID ReadConfig (
 
     #if REFIT_DEBUG > 0
     // Silence functions called from this
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
     #endif
 
@@ -1121,7 +1121,7 @@ VOID ReadConfig (
             if (!MyStriCmp (TokenList[1], FileName)) {
                 #if REFIT_DEBUG > 0
                 // DA-TAG: Always log this in case LogLevel is overriden
-                INTN RealLogLevel;
+                INTN RealLogLevel = 0;
                 INTN HighLogLevel = MaxLogLevel * 10;
                 if (GlobalConfig.LogLevel < MINLOGLEVEL) {
                     RealLogLevel = GlobalConfig.LogLevel;

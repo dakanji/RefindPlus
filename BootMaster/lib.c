@@ -603,7 +603,7 @@ EFI_STATUS EfivarGetRaw (
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
-    BOOLEAN  HybridLogger;
+    BOOLEAN  HybridLogger = FALSE;
     MY_HYBRIDLOGGER_SET;
     #endif
 
@@ -744,8 +744,8 @@ EFI_STATUS EfivarSetRaw (
     BOOLEAN      SettingMatch;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
-    BOOLEAN HybridLogger;
+    BOOLEAN CheckMute = FALSE;
+    BOOLEAN HybridLogger = FALSE;
     MY_HYBRIDLOGGER_SET;
     #endif
 
@@ -1790,7 +1790,7 @@ VOID ScanVolume (
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
     CHAR16  *StrSpacer = NULL;
-    BOOLEAN  HybridLogger;
+    BOOLEAN  HybridLogger = FALSE;
     MY_HYBRIDLOGGER_SET;
     #endif
 
@@ -3413,7 +3413,6 @@ EFI_STATUS DirNextEntry (
         //LOG_SEP(L"X");
 
         // No Filter or Unknown Filter -> Return Everything
-        break;
     } // for ;;
 
     //BREAD_CRUMB(L"%s:  3 - END:- return EFI_STATUS Status = '%r'", FuncTag,
@@ -3555,10 +3554,12 @@ BOOLEAN DirIterNext (
 
         //BREAD_CRUMB(L"%s:  3a 4", FuncTag);
         if (FilePattern == NULL || LastFileInfo->Attribute & EFI_FILE_DIRECTORY) {
-            //BREAD_CRUMB(L"%s:  3a 4a 1 -  - FOR LOOP:- BREAK ... FilePattern == NULL", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 4a 1 - END:- FilePattern == NULL ... return BOOLEAN TRUE", FuncTag);
+            //LOG_DECREMENT();
             //LOG_SEP(L"X");
 
-            break;
+            *DirEntry = LastFileInfo;
+            return TRUE;
         }
 
         //BREAD_CRUMB(L"%s:  3a 5", FuncTag);
@@ -3580,9 +3581,12 @@ BOOLEAN DirIterNext (
 
         //BREAD_CRUMB(L"%s:  3a 6", FuncTag);
         if (Found) {
-            //BREAD_CRUMB(L"%s:  3a 6a 1 -  - FOR LOOP:- BREAK ... Found == TRUE", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 6 - END:- Found == TRUE ... return BOOLEAN TRUE", FuncTag);
+            //LOG_DECREMENT();
             //LOG_SEP(L"X");
-            break;
+
+            *DirEntry = LastFileInfo;
+            return TRUE;
         }
         //BREAD_CRUMB(L"%s:  3a 7", FuncTag);
         MY_FREE_POOL(LastFileInfo);
@@ -3590,11 +3594,7 @@ BOOLEAN DirIterNext (
         //BREAD_CRUMB(L"%s:  3a 6 - FOR LOOP:- END", FuncTag);
         //LOG_SEP(L"X");
     } // for
-    BREAD_CRUMB(L"%s:  4", FuncTag);
-
-    *DirEntry = LastFileInfo;
-
-    BREAD_CRUMB(L"%s:  5 - END:- return BOOLEAN TRUE", FuncTag);
+    BREAD_CRUMB(L"%s:  4 - END:- return BOOLEAN TRUE", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 

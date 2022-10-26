@@ -148,7 +148,7 @@ VOID InitSelection (VOID) {
         TempSmallImage = egLoadImage (SelfDir, GlobalConfig.SelectionSmallFileName, TRUE);
 
         // DA-TAG: Impose maximum size for security
-        if (TempSmallImage->Width > 96 || TempSmallImage->Height > 96) {
+        if (TempSmallImage != NULL && (TempSmallImage->Width > 96 || TempSmallImage->Height > 96)) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"Discarding Input Small Selection Image ... Too Large");
             #endif
@@ -180,7 +180,7 @@ VOID InitSelection (VOID) {
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
 
         // DA-TAG: Impose maximum size for security
-        if (TempBigImage->Width > 216 || TempBigImage->Height > 216) {
+        if (TempBigImage != NULL && (TempBigImage->Width > 216 || TempBigImage->Height > 216)) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"Discarding Input Big Selection Image ... Too Large");
             #endif
@@ -492,6 +492,7 @@ INTN FindMenuShortcutEntry (
     BOOLEAN  FoundMatch;
 
     while ((Shortcut = FindCommaDelimited (Defaults, j)) != NULL) {
+        i = 0;
         FoundMatch = FALSE;
         ShortcutLength = StrLen (Shortcut);
         if (ShortcutLength < 2) {
@@ -579,7 +580,7 @@ VOID SaveScreen (VOID) {
     UINT64 BaseTimeWait = 3750;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     CHAR16 *LoopChange = NULL;
     CHAR16 *MsgStr = L"Activity Wait Threshold Exceeded ... Start Screensaver";
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -1309,7 +1310,7 @@ VOID TextMenuStyle (
     UINTN   MenuHeight;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     static UINTN    MenuPosY;
@@ -2198,7 +2199,7 @@ VOID PaintArrows (
     static BOOLEAN   LoadedArrows    = FALSE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;

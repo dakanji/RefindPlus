@@ -1800,7 +1800,7 @@ BOOLEAN ScanLoaderDir (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute;
+    BOOLEAN CheckMute = FALSE;
 
     ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, Path);
     #endif
@@ -1817,7 +1817,7 @@ BOOLEAN ScanLoaderDir (
         DirIterOpen (Volume->RootDir, Path, &DirIter);
 
         //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        BOOLEAN SkipDir = FALSE;
+        BOOLEAN SkipDir;
         while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
             //LOG_SEP(L"X");
             //BREAD_CRUMB(L"%s:  2a 2a 1 - WHILE LOOP:- START", FuncTag);
@@ -2150,7 +2150,7 @@ VOID ScanEfiFiles (
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
-    BOOLEAN  CheckMute;
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
     //#if REFIT_DEBUG > 1
@@ -2439,7 +2439,7 @@ VOID ScanEfiFiles (
     DirIterOpen (Volume->RootDir, L"EFI", &EfiDirIter);
     //BREAD_CRUMB(L"%s:  9a 1", FuncTag);
     CHAR16  *Extension;
-    BOOLEAN  SkipDir = FALSE;
+    BOOLEAN  SkipDir;
     while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
         Extension = FindExtension (EfiDirEntry->FileName);
 
