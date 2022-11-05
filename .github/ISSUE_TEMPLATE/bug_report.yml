@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
-        If you actually only wish to ask a question or make a comment, please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) instead.
+        Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead if you only wish to ask a question or make a comment.
   - type: dropdown
     id: version
     attributes:
@@ -76,7 +76,7 @@ body:
     attributes:
       label: Debug Log
       description: |
-        Run the RefindPlus "DBG" file and add debug log file(s).
+        Please run the RefindPlus "DBG" file and add debug logs.
         Kindly attach logs and do not paste the contents directly.
         You can attach logs by dragging/dropping on the field below.
       placeholder: |
@@ -91,6 +91,6 @@ body:
       description: |
         Any additional details that may provide clarity on the problem.
       placeholder: |
-        You can attach file(s) by dragging/dropping them on this field.
+        You can attach files by dragging/dropping them on this field.
         You can also add screenshots to shed more light on the problem.
         Screenshots can be saved by pressing the F10 key in RefindPlus.

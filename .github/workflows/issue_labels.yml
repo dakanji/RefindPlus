@@ -19,7 +19,7 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
-      - uses: mheap/github-action-required-labels@v1
+      - uses: mheap/github-action-required-labels@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -35,8 +35,8 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Cancelled
           github_token: ${{ github.token }}
@@ -48,7 +48,7 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
-      - uses: actions-cool/issues-similarity-analysis@v1.1.2
+      - uses: actions-cool/issues-similarity-analysis@v1.2.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           since-days: 270
@@ -65,8 +65,8 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Pending
           github_token: ${{ github.token }}
@@ -77,8 +77,8 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Pending
           github_token: ${{ github.token }}
@@ -90,8 +90,8 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Enhancement
           github_token: ${{ github.token }}
@@ -103,7 +103,7 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           labels: Cancelled
@@ -115,10 +115,14 @@ jobs:
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           labels: |
+            Tagged
             Pending
+            Incomplete
+            Invalid
             Queries
+            Unclear
           github_token: ${{ github.token }}

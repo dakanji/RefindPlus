@@ -1,6 +1,6 @@
 0.13.3.AC (PRE-RELEASE):
 -----------------------
-- Closes Misc Static Analysis Flags
+- Fixes Misc Static Analysis Flags
   * Some are related to filesystem drivers; for which updated versions are created accordingly
 - Improves UI Element Scaling
   * Some units use a low resolution display for the boot stage that result in distorted UI
@@ -13,8 +13,8 @@
 0.13.3.AB (06 Sep 2022):
 -----------------------
 - Adds `PreferUGA` Feature
-  * Sets RefindPlus to always use UGA for graphics output when available
-    - Default is to use GOP and fallback on UGA when GOP is not available
+  * Sets RefindPlus to always use UGA for its graphics output when available
+    - The default is to use GOP and to fall back on UGA when GOP is not available
   * The feature can be enabled using a new `prefer_uga` configuration token
 - Adds `FollowSymlinks` Feature
   * Allows following symbolic links to loaders

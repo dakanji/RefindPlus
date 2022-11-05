@@ -28,7 +28,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Assignment - Self - Add'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'add-assignees'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Assignment - Self - Remove'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-assignees'
           token: ${{ secrets.GITHUB_TOKEN }}

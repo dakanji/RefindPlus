@@ -39,7 +39,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Abandoned'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +52,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Cancelled'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Incomplete'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -91,7 +91,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Invalid'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -104,7 +104,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Pending'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -117,7 +117,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Parked'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -130,7 +130,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Prorogued'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +143,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Resolved'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Tagged'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -169,7 +169,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Queries'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -182,7 +182,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Upstream'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -195,7 +195,7 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Remove - Not-Planned'
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3.3.2
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}

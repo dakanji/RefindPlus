@@ -27,7 +27,7 @@ jobs:
     steps:
 
       - name: Close Resolved Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: ''
@@ -39,7 +39,7 @@ jobs:
           any-of-labels: 'Resolved'
 
       - name: Flag or Close Uncertain Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -54,7 +54,7 @@ jobs:
           any-of-labels: 'Uncertain'
 
       - name: Flag or Close Incomplete Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -66,10 +66,10 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
-          any-of-labels: 'Incomplete, Unclear'
+          any-of-labels: 'Incomplete,'
 
       - name: Flag or Close No-Response Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -84,7 +84,7 @@ jobs:
           any-of-labels: 'Queries'
 
       - name: Flag or Close Inactive Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -99,7 +99,7 @@ jobs:
           exempt-issue-labels: 'Parked, Help-Wanted'
 
       - name: Flag or Close Parked Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -114,7 +114,7 @@ jobs:
           any-of-labels: 'Parked'
 
       - name: Flag or Close Help-Wanted Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -128,8 +128,23 @@ jobs:
           remove-issue-stale-when-updated: true
           any-of-labels: 'Help-Wanted'
 
+      - name: Flag or Close Unclear Issues
+        uses: actions/stale@v6.0.1
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure as not clear.
+          close-issue-message: >
+            This item is being closed as not clear.
+          days-before-stale: 0
+          days-before-close: 7
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Tagged'
+          remove-issue-stale-when-updated: true
+          any-of-labels: 'Unclear'
+
       - name: Close Duplicate Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -141,7 +156,7 @@ jobs:
           any-of-labels: 'Duplicate, Known-Issue'
 
       - name: Close Invalid Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -153,7 +168,7 @@ jobs:
           any-of-labels: 'Invalid'
 
       - name: Close Wierd Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -165,7 +180,7 @@ jobs:
           any-of-labels: 'Cannot-Replicate'
 
       - name: Close Not-Planned Issues
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -177,7 +192,7 @@ jobs:
           any-of-labels: 'Not-Planned'
 
       - name: Catchall Closer
-        uses: actions/stale@v5.0.0
+        uses: actions/stale@v6.0.1
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -194,6 +209,18 @@ jobs:
 
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
+
+      - name: Lock Cancelled Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          add-issue-labels: 'Cancelled'
+          issue-inactive-days: '1'
+          include-any-issue-labels: ''
+          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted, Bug'
+          remove-issue-labels: 'Pending, Tagged, Queries'
+          process-only: 'issues'
 
       - name: Lock Duplicate Issues
         uses: dessant/lock-threads@v3.0.0
@@ -225,7 +252,8 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '2'
+          add-issue-labels: 'Abandoned'
+          issue-inactive-days: '3'
           include-any-issue-labels: 'Incomplete'
           remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
@@ -276,5 +304,15 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Not-Planned'
+          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          process-only: 'issues'
+
+      - name: Lock Unclear Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '7'
+          include-any-issue-labels: 'Unclear'
           remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
           process-only: 'issues'
