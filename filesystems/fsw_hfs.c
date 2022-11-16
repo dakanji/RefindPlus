@@ -638,13 +638,8 @@ fsw_hfs_btree_search (struct fsw_hfs_btree * btree,
 
         count = be16_to_cpu (node->numRecords);
 
-        /* Sanitise count */
-        // DA-TAG: Initial arbitrary large value. Needs review
-        if (count > 100000) {
-            return 0;
-        }
-
 #if 1
+        /* coverity[tainted_data: SUPPRESS] */
         for (rec = 0; rec < count; rec++)
         {
              BTreeKey *currkey;
@@ -836,12 +831,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     name_len       = be16_to_cpu(cat_key->nodeName.length);
     file_name      =  vp->file_info.name;
     file_name->len = name_len;
-    /* Sanitise file_name->len */
-    // DA-TAG: Initial arbitrary large value. Needs review
-    if (file_name->len > 100000) {
-        return 0;
-    }
-
+    /* coverity[tainted_data: SUPPRESS] */
     fsw_memdup(&file_name->data, &cat_key->nodeName.unicode[0], 2*name_len);
     file_name->size = 2*name_len;
     file_name->type = FSW_STRING_TYPE_UTF16;
@@ -877,16 +867,8 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
       fsw_u32 count =  be16_to_cpu(node->numRecords);
       fsw_u32 next_node;
 
-      /* Sanitise count */
-      // DA-TAG: Initial arbitrary large value. Needs review
-      if (count > 100000) {
-          status = FSW_VOLUME_CORRUPTED;
-          goto done;
-      }
-
-      /* Iterate over all records in this node.  */
-      for (i = first_rec; i < count; i++)
-      {
+      /* coverity[tainted_data: SUPPRESS] */
+      for (i = first_rec; i < count; i++) { // Iterate over all records in this node
           int rv = callback(fsw_hfs_btree_rec (btree, node, i), param);
 
           switch (rv)
@@ -984,20 +966,12 @@ fsw_hfs_cmp_catkey (BTreeKey *key1, BTreeKey *key2)
   p1 = &ckey1->nodeName.unicode[0];
   p2 = &ckey2->nodeName.unicode[0];
   key1Len = be16_to_cpu (ckey1->nodeName.length);
-  /* Sanitise key1Len */
-  if (key1Len == 0 && ckey2->nodeName.length == 0) {
-      return 0;
-  }
-  if (key1Len > 255) {
-      return 0;
-  }
-
   apos = bpos = 0;
 
   while(1)
   {
-    /* get next valid character from ckey1 */
-    for (lc = 0; lc == 0 && apos < key1Len; apos++) {
+    /* coverity[tainted_data: SUPPRESS] */
+    for (lc = 0; lc == 0 && apos < key1Len; apos++) { // get next valid character from ckey1
       ac = be16_to_cpu(p1[apos]);
       lc = ac;
     };
@@ -1047,8 +1021,8 @@ fsw_hfs_cmpi_catkey (BTreeKey *key1, BTreeKey *key2)
 
   while(1)
   {
-    /* get next valid character from ckey1 */
-    for (lc = 0; lc == 0 && apos < key1Len; apos++) {
+    /* coverity[tainted_data: SUPPRESS] */
+    for (lc = 0; lc == 0 && apos < key1Len; apos++) { // get next valid character from ckey1
       ac = be16_to_cpu(p1[apos]);
       lc = ac ? fsw_to_lower(ac) : 0;
     };

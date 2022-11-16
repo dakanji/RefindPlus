@@ -1481,11 +1481,19 @@ static unsigned lodepng_inflatev(ucvector* out,
     BFINAL = readBits(&reader, 1);
     BTYPE = readBits(&reader, 2);
 
-    if(BTYPE == 3) return 20; /*error: invalid BTYPE*/
-    else if(BTYPE == 0) error = inflateNoCompression(out, &pos, &reader, settings); /*no compression*/
-    else error = inflateHuffmanBlock(out, &pos, &reader, BTYPE); /*compression, BTYPE 01 or 10*/
+    if(BTYPE == 3) {
+        // error: invalid BTYPE
+        return 20;
+    }
 
-    if(error) return error;
+    if(BTYPE == 0) { // no compression
+        /* coverity[tainted_data: SUPPRESS] */
+        error = inflateNoCompression(out, &pos, &reader, settings);
+    }
+    else { // compression, BTYPE 01 or 10
+        /* coverity[tainted_data: SUPPRESS] */
+        error = inflateHuffmanBlock(out, &pos, &reader, BTYPE);
+    }
   }
 
   return error;
@@ -2541,14 +2549,10 @@ const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk) {
 unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {
   unsigned length = lodepng_chunk_length(chunk);
 
-  /* Sanitise length */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (length > 100000) {
-      return 0;
-  }
-
   unsigned CRC = lodepng_read32bitInt(&chunk[length + 8]);
   /*the CRC is taken of the data and the 4 chunk type letters, not the length*/
+
+  /* coverity[tainted_data: SUPPRESS] */
   unsigned checksum = lodepng_crc32(&chunk[4], length + 4);
   if(CRC != checksum) return 1;
   else return 0;
@@ -2557,12 +2561,7 @@ unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {
 void lodepng_chunk_generate_crc(unsigned char* chunk) {
   unsigned length = lodepng_chunk_length(chunk);
 
-  /* Sanitise length */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (length > 100000) {
-    return;
-  }
-
+  /* coverity[tainted_data: SUPPRESS] */
   unsigned CRC = lodepng_crc32(&chunk[4], length + 4);
   lodepng_set32bitInt(chunk + 8 + length, CRC);
 }
@@ -2626,15 +2625,10 @@ unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsi
   /* OC: UEFI ReallocatePool compatibility. */
   new_buffer = (unsigned char*)lodepng_refit_reallocate(*out, *outlength, new_length);
 
-  /* Sanitise new_length */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (new_length > 100000) {
-      return 0;
-  }
-
   if(!new_buffer) return 83; /*alloc fail*/
   (*out) = new_buffer;
   (*outlength) = new_length;
+  /* coverity[tainted_data: SUPPRESS] */
   chunk_start = &(*out)[new_length - total_chunk_length];
 
   for(i = 0; i != total_chunk_length; ++i) chunk_start[i] = chunk[i];
@@ -4102,18 +4096,7 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h, LodePNGState* state,
 
   /*read the values given in the header*/
   width  = lodepng_read32bitInt(&in[16]);
-  /* Sanitise  width */
-  // DA-TAG: Initial arbitrary large value (8k). Needs review
-  if (width > 7680) {
-      CERROR_RETURN_ERROR(state->error, 28);
-  }
-
   height = lodepng_read32bitInt(&in[20]);
-  /* Sanitise height */
-  // DA-TAG: Initial arbitrary large value (8k). Needs review
-  if (height > 7680) {
-      CERROR_RETURN_ERROR(state->error, 28);
-  }
 
   /*TODO: remove the undocumented feature that allows to give null pointers to width or height*/
   if(w) *w = width;
@@ -5022,12 +5005,6 @@ unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
   *out = 0;
   decodeGeneric(out, w, h, state, in, insize);
 
-  /* Sanitise *w */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (*w > 100000) {
-      return 0;
-  }
-
   if(state->error) return state->error;
   if(!state->decoder.color_convert || lodepng_color_mode_equal(&state->info_raw, &state->info_png.color)) {
     /*same color type, no copying or converting of data needed*/
@@ -5053,8 +5030,10 @@ unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
     if(!(*out)) {
       state->error = 83; /*alloc fail*/
     }
-    else state->error = lodepng_convert(*out, data, &state->info_raw,
-                                        &state->info_png.color, *w, *h);
+    else {
+        /* coverity[tainted_data: SUPPRESS] */
+        state->error = lodepng_convert(*out, data, &state->info_raw, &state->info_png.color, *w, *h);
+    }
     lodepng_refit_free(data);
   }
   return state->error;

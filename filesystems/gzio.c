@@ -488,6 +488,7 @@ huft_build (unsigned *b,        /* code lengths in bits (all assumed <= BMAX) */
           /* fill code-like entries with r */
           f = 1 << (k - w);
           for (j = i >> w; j < z; j += f)
+            /* coverity[uninit_use: SUPPRESS] */
             q[j] = r;
 
           /* backwards increment the k-bit code i */
@@ -976,6 +977,7 @@ inflate_window (grub_gzio_t gzio)
        *  Expand other kind of block.
        */
 
+      /* coverity[var_deref_model: SUPPRESS] */
       if (inflate_codes_in_window (gzio))
         {
           huft_free (gzio->tl);

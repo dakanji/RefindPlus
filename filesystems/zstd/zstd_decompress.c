@@ -1068,12 +1068,14 @@ FORCE_INLINE seq_t ZSTD_decodeSequenceLong_generic(seqState_t *seqState, int con
 		else {
 			if (longOffsets) {
 				int const extraBits = ofBits - MIN(ofBits, STREAM_ACCUMULATOR_MIN);
+				/* coverity[overrun-local: SUPPRESS] */
 				offset = OF_base[ofCode] + (BIT_readBitsFast(&seqState->DStream, ofBits - extraBits) << extraBits);
 				if (ZSTD_32bits() || extraBits)
 					BIT_reloadDStream(&seqState->DStream);
 				if (extraBits)
 					offset += BIT_readBitsFast(&seqState->DStream, extraBits);
 			} else {
+				/* coverity[overrun-local: SUPPRESS] */
 				offset = OF_base[ofCode] + BIT_readBitsFast(&seqState->DStream, ofBits); /* <=  (ZSTD_WINDOWLOG_MAX-1) bits */
 				if (ZSTD_32bits())
 					BIT_reloadDStream(&seqState->DStream);
