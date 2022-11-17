@@ -836,6 +836,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     file_name->size = 2*name_len;
     file_name->type = FSW_STRING_TYPE_UTF16;
     name_ptr        = (fsw_u16*)file_name->data;
+    /* coverity[tainted_data: SUPPRESS] */
     for (i=0; i<name_len; i++)
     {
         name_ptr[i] = be16_to_cpu(name_ptr[i]);

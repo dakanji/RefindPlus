@@ -400,6 +400,7 @@ static char* alloc_string(const char* in) {
 
 #if defined(LODEPNG_COMPILE_DECODER) || defined(LODEPNG_COMPILE_PNG)
 static unsigned lodepng_read32bitInt(const unsigned char* buffer) {
+    /* coverity[tainted_data: SUPPRESS] */
     unsigned retval = (((unsigned)buffer[0] << 24u) | ((unsigned)buffer[1] << 16u) |
                        ((unsigned)buffer[2] << 8u) | (unsigned)buffer[3]);
     return retval;
@@ -2549,6 +2550,7 @@ const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk) {
 unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {
   unsigned length = lodepng_chunk_length(chunk);
 
+  /* coverity[tainted_data: SUPPRESS] */
   unsigned CRC = lodepng_read32bitInt(&chunk[length + 8]);
   /*the CRC is taken of the data and the 4 chunk type letters, not the length*/
 
@@ -2631,6 +2633,7 @@ unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsi
   /* coverity[tainted_data: SUPPRESS] */
   chunk_start = &(*out)[new_length - total_chunk_length];
 
+  /* coverity[tainted_data: SUPPRESS] */
   for(i = 0; i != total_chunk_length; ++i) chunk_start[i] = chunk[i];
 
   return 0;

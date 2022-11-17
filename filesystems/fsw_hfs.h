@@ -16,7 +16,7 @@
  */
 /*
  * Modified for rEFInd by Roderick W Smith
- */ 
+ */
 /*
  * Modified for RefindPlus
  * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
@@ -143,6 +143,7 @@ struct fsw_hfs_volume
 static inline fsw_u16
 swab16(fsw_u16 x)
 {
+    /* coverity[tainted_data: SUPPRESS] */
     return (x<<8 | ((x & 0xff00)>>8));
 }
 
