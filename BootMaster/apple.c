@@ -33,10 +33,10 @@
 #include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16    *gCsrStatus     = NULL;
-BOOLEAN    MuteLogger     = FALSE;
-BOOLEAN    NormaliseCall  = FALSE;
-EFI_GUID   AppleGuid      = APPLE_GUID;
+CHAR16    *gCsrStatus         = NULL;
+BOOLEAN    MuteLogger         = FALSE;
+BOOLEAN    NormaliseCall      = FALSE;
+EFI_GUID   AppleVendorOsGuid  = APPLE_VENDOR_OS_VARIABLE_GUID;
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
@@ -52,7 +52,7 @@ EFI_STATUS GetCsrStatus (
     MY_FREE_POOL(gCsrStatus);
 
     Status = EfivarGetRaw (
-        &AppleGuid, L"csr-active-config",
+        &AppleVendorOsGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
@@ -202,7 +202,7 @@ VOID RecordgCsrStatus (
 VOID RotateCsrValue (VOID) {
     EFI_STATUS    Status;
     UINT32        CurrentValue, TargetCsr;
-    UINT32        StorageFlags = FULL_ACCESS_FLAGS;
+    UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
@@ -261,12 +261,12 @@ VOID RotateCsrValue (VOID) {
 
     Status = (TargetCsr != 0)
         ? EfivarSetRaw (
-            &AppleGuid, L"csr-active-config",
+            &AppleVendorOsGuid, L"csr-active-config",
             &TargetCsr, sizeof (UINT32), TRUE
         )
         : REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, L"csr-active-config",
-            &AppleGuid, StorageFlags, 0, NULL
+            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
         );
     if (EFI_ERROR(Status)) {
         MY_FREE_POOL(gCsrStatus);
@@ -342,7 +342,7 @@ EFI_STATUS NormaliseCSR (VOID) {
     RecordgCsrStatus (OurCSR, TRUE);
 
     EfivarSetRaw (
-        &AppleGuid, L"csr-active-config",
+        &AppleVendorOsGuid, L"csr-active-config",
         &OurCSR, sizeof (UINT32), TRUE
     );
 
@@ -913,6 +913,10 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     EFI_STATUS                       Status;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     static
     APPLE_FRAMEBUFFER_INFO_PROTOCOL
     OurAppleFramebufferInfo = {
@@ -920,7 +924,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     };
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = StrDuplicate (L"Attempt AppleFramebuffer Install");
+    MsgStr = StrDuplicate (L"Attempt AppleFramebuffer Install");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
     LOG_MSG(" ... ");
@@ -931,9 +935,11 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Uninstall Exiting:- '%r'", Status);
-            LOG_MSG("Uninstall Exiting:- '%r'", Status);
+            MsgStr = StrDuplicate (L"Uninstall Existing AppleFramebuffer");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+            LOG_MSG("%s:- '%r'", MsgStr, Status);
             LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
             #endif
 
             if (Status != EFI_NOT_FOUND) {
@@ -948,9 +954,11 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         );
         if (!EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Locate Exiting:- '%r'", Status);
-            LOG_MSG("Locate Exiting:- '%r'", Status);
+            MsgStr = StrDuplicate (L"Locate Existing AppleFramebuffer");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+            LOG_MSG("%s:- '%r'", MsgStr, Status);
             LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
             #endif
 
             return Protocol;
@@ -962,9 +970,11 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
     );
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Install Status:- '%r'", Status);
-    LOG_MSG("%r", Status);
+    MsgStr = StrDuplicate (L"AppleFramebuffer Install Status");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s:- '%r'", MsgStr, Status);
     LOG_MSG("\n\n");
+    MY_FREE_POOL(MsgStr);
     #endif
     if (EFI_ERROR (Status)) {
         return NULL;
@@ -980,22 +990,21 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
 VOID ClearRecoveryBootFlag (VOID) {
     EFI_STATUS  Status;
     UINTN       BufferSize;
-    VOID       *TmpBuffer    = NULL;
-    CHAR16     *VariableName = NULL;
-    UINT32      StorageFlags = FULL_ACCESS_FLAGS;
+    VOID       *TmpBuffer       = NULL;
+    CHAR16     *VariableName    = NULL;
+    UINT32      AccessFlagsFull = ACCESS_FLAGS_FULL;
 
     BufferSize   = 0;
     VariableName = L"recovery-boot-mode";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleGuid, NULL,
+        &AppleVendorOsGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleGuid, StorageFlags,
-            0, NULL
+            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }
@@ -1004,14 +1013,13 @@ VOID ClearRecoveryBootFlag (VOID) {
     VariableName = L"internet-recovery-mode";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleGuid, NULL,
+        &AppleVendorOsGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleGuid, StorageFlags,
-            0, NULL
+            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }
@@ -1020,14 +1028,13 @@ VOID ClearRecoveryBootFlag (VOID) {
     VariableName = L"RecoveryBootInitiator";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleGuid, NULL,
+        &AppleVendorOsGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleGuid, StorageFlags,
-            0, NULL
+            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }

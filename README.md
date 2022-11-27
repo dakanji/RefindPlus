@@ -4,14 +4,14 @@
 ## Overview
 RefindPlus is a variant of the [rEFInd Boot Manager](https://www.rodsbooks.com/refind) incorporating various fixes and additional features.
 
-The current development focus is on the following units:
+The main development focus is on the following units:
 - **MacPro3,1**: Early 2008 Mac Pro
 - **MacPro4,1**: Early 2009 Mac Pro
 - **MacPro5,1**: Mid 2010 and Mid 2012 Mac Pros
-- **XServe2,1**: Early 2008 XServe
-- **XServe3,1**: Early 2009 XServe
+- **Xserve2,1**: Early 2008 Xserve
+- **Xserve3,1**: Early 2009 Xserve
 
-However, the enhancements are not limited in scope to these units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running MacOS.
+However, the enhancements added to RefindPlus are not limited in scope to those units and include several UEFI-PC and other Apple Mac related enhancements that may be of interest to anyone requiring a capable and flexible boot manager.
 
 ## Headline Features
 - Maintains feature and configuration parity with the base upstream version.
@@ -41,13 +41,13 @@ However, the enhancements are not limited in scope to these units and may be of 
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
 
 ## Installation
-[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended for an automated installation of a RefindPlus/OpenCore chain-loading arrangement on MacPro3,1 to MacPro5,1 as well as on XServe2,1 and XServe3,1. However, the RefindPlus efi file can function as a drop-in replacement for the upstream efi file. Hence, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This permits implementing RefindPlus on other types of Mac as well as on other operating systems.
+[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus on Mac OS. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This manual process allows installing RefindPlus on any operating systems supported upstream. On Mac OS, MyBootMgr can optionally be used to set a RefindPlus|OpenCore chain-loading arrangement up on MacPro3,1 to MacPro5,1 as well as on Xserve2,1 and Xserve3,1.
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 
 RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
 
-Note that if you run RefindPlus without activating the additonal options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
+Note that if you run RefindPlus without activating the additonal options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
 
 ## Additional Functionality
 RefindPlus-Specific funtionality can be configured by adding the tokens below to the upstream configuration file. Additional information is provided in the sample RefindPlus configuration file.
@@ -119,6 +119,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
 
 ## Divergence
 Implementation differences with the upstream base version v0.13.3 are:
+- **NVRAM Variables:** RefindPlus defaults to the filesystem proxy and not the hardware NVRAM when `use_nvram` is not explicitly set.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_tags_help` configuration token to switch it off.
@@ -132,7 +133,7 @@ Implementation differences with the upstream base version v0.13.3 are:
 - **UEFI 2.x Emulation:** RefindPlus always emulates the `CreateEventEx` feature from UEFI 2.x on EFI 1.x units and additionally modifies the EFI Revision value to `UEFI 2.3`. This often allows running UEFI 2.x utilities on legacy units since several such utilities only require CreateEventEx to function. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_uefi_emulate` configuration token to switch it off.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users have the option to override this behaviour, in favour of the new upstream behaviour, by activating the RefindPlus-Specific `decline_esp_filter` configuration token.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same as upstream, which always proceeds to create and return a fully built object in such cases (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
-- **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other diregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled in addition to enabling the `enable_mouse` token.
+- **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other diregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).

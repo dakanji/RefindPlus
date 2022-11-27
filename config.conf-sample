@@ -87,8 +87,8 @@
 
 # Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
-# This feature can be disabled by activating this token. It is only active when the GOP
-# protocol is available and it is typically inactive when running a UGA protocol GPU.
+# This feature can be disabled by activating this token. It is only active when the UGA
+# protocol is available and is inactive when running a GPU with the GOP protocol.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out

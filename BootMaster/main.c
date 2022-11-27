@@ -118,7 +118,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SupplyUEFI = */ TRUE,
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
-    /* ProtectNVRAM = */ TRUE,
+    /* NvramProtect = */ TRUE,
     /* ScanAllESP = */ FALSE,
     /* TagsHelp = */ TRUE,
     /* TextHelp = */ TRUE,
@@ -206,7 +206,8 @@ REFIT_CONFIG GlobalConfig = {
 
 
 UINTN                  AppleFramebuffers    = 0;
-UINT32                 StorageFlags         = FULL_ACCESS_FLAGS;
+UINT32                 AccessFlagsBoot      = ACCESS_FLAGS_BOOT;
+UINT32                 AccessFlagsFull      = ACCESS_FLAGS_FULL;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                KernelNotStarted     = TRUE;
@@ -219,6 +220,7 @@ BOOLEAN                OneMainLoop          = FALSE;
 BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                IconScaleSet         = FALSE;
+BOOLEAN                ForceTextOnly        = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
 BOOLEAN                AllowTweakUEFI       = FALSE;
@@ -230,6 +232,7 @@ BOOLEAN                WarnMissingQVInfo    = FALSE;
 BOOLEAN                SecureBootFailure    = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_GUID               RefindPlusOldGuid    = REFINDPLUS_OLD_GUID;
+EFI_GUID               OpenCoreVendorGuid   = OPENCORE_VENDOR_GUID;
 EFI_SET_VARIABLE       OrigSetVariableRT;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
@@ -252,7 +255,7 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
-extern EFI_GUID                      AppleGuid;
+extern EFI_GUID                      AppleVendorOsGuid;
 
 extern EFI_FILE                     *gVarsDir;
 
@@ -553,7 +556,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     #endif
 
     // DA-TAG: Do not remove Current OEM Policy
-    //         ProtectNVRAM is currently limited to Apple Firmware, so not strictly needed
+    //         NvramProtect is currently limited to Apple Firmware, so not strictly needed
     //         However, best to add filter now in case that changes in future
     //
     // Clear any previously saved instances of blocked variable
@@ -586,13 +589,13 @@ VOID ConvertAddress (
     switch (Type) {
         case  0:  MsgStr = L"ExitBootServices"    ;   break;
         case  1:  MsgStr = L"VirtualAddressChange";   break;
-        default:  MsgStr = L"ExitBootServices"    ;   break; // Just in case and for expansion
+        default:  MsgStr = L"Default Event Type"  ;   break; // Just in case and for expansion
     }
 
     // DA-TAG: Embellished placebo log entries
     //         To flag logging and memory access halt
     LOG_MSG("\n\n");
-    LOG_MSG("Received OS Loader Input");
+    LOG_MSG("Received OS_Loader Input:");
     LOG_MSG("%s  - Handle Event:- '%s'", OffsetNext, MsgStr);
     LOG_MSG("%s    * Translate SetVariable Hook for Kernel ... Success", OffsetNext);
     LOG_MSG("%s    * Activate Local 'Kernel Started' State ... Success", OffsetNext);
@@ -633,7 +636,7 @@ VOID SetProtectNvram (
     IN EFI_SYSTEM_TABLE *SystemTable,
     IN BOOLEAN           Activate
 ) {
-    if (!GlobalConfig.ProtectNVRAM) {
+    if (!GlobalConfig.NvramProtect) {
         // Early Return
         return;
     }
@@ -970,7 +973,7 @@ VOID SetBootArgs (VOID) {
 
     VOID *VarData = NULL;
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGuid,
+        NameNVRAM, &AppleVendorOsGuid,
         &VarData, NULL
     );
 
@@ -998,7 +1001,7 @@ VOID SetBootArgs (VOID) {
     UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
     Status = EfivarSetRaw (
-        &AppleGuid, NameNVRAM,
+        &AppleVendorOsGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
 
@@ -1043,7 +1046,7 @@ EFI_STATUS NoCheckCompat (VOID) {
     }
 
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGuid,
+        NameNVRAM, &AppleVendorOsGuid,
         &VarData, NULL
     );
 
@@ -1077,7 +1080,7 @@ EFI_STATUS NoCheckCompat (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleGuid, NameNVRAM,
+                &AppleVendorOsGuid, NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -1106,7 +1109,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
     }
 
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGuid,
+        NameNVRAM, &AppleVendorOsGuid,
         &VarData, NULL
     );
 
@@ -1136,7 +1139,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleGuid, NameNVRAM,
+                &AppleVendorOsGuid, NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -1165,7 +1168,7 @@ EFI_STATUS NoNvramPanicLog (VOID) {
     }
 
     GetHardwareNvramVariable (
-        NameNVRAM, &AppleGuid,
+        NameNVRAM, &AppleVendorOsGuid,
         &VarData, NULL
     );
 
@@ -1199,7 +1202,7 @@ EFI_STATUS NoNvramPanicLog (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleGuid, NameNVRAM,
+                &AppleVendorOsGuid, NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -1225,7 +1228,7 @@ EFI_STATUS TrimCoerce (VOID) {
     }
 
     Status = EfivarSetRaw (
-        &AppleGuid, NameNVRAM,
+        &AppleVendorOsGuid, NameNVRAM,
         DataNVRAM, sizeof (DataNVRAM), TRUE
     );
 
@@ -1396,6 +1399,13 @@ static
 BOOLEAN ShowCleanNvramInfo (
     CHAR16 *ToolPurpose
 ) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit, k;
+    CHAR16            *FilePath = NULL;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenEntry = NULL;
+
     REFIT_MENU_SCREEN *CleanNvramInfoMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (CleanNvramInfoMenu == NULL) {
         // Early Return
@@ -1414,8 +1424,7 @@ BOOLEAN ShowCleanNvramInfo (
     AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found"   );
     AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
 
-    UINTN k = 0;
-    CHAR16 *FilePath = NULL;
+    k = 0;
     while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
         AddMenuInfoLineAlt (CleanNvramInfoMenu, StrDuplicate (FilePath));
         MY_FREE_POOL(FilePath);
@@ -1435,7 +1444,7 @@ BOOLEAN ShowCleanNvramInfo (
     MenuEntryCleanNvram->Tag   = TAG_GENERIC;
     AddMenuEntry (CleanNvramInfoMenu, MenuEntryCleanNvram);
 
-    BOOLEAN RetVal = GetReturnMenuEntry (&CleanNvramInfoMenu);
+    RetVal = GetReturnMenuEntry (&CleanNvramInfoMenu);
     if (!RetVal) {
         FreeMenuScreen (&CleanNvramInfoMenu);
 
@@ -1443,10 +1452,9 @@ BOOLEAN ShowCleanNvramInfo (
         return FALSE;
     }
 
-    INTN               DefaultEntry   = 1;
-    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
-    UINTN MenuExit = RunGenericMenu (CleanNvramInfoMenu, Style, &DefaultEntry, &ChosenEntry);
+    DefaultEntry = 1;
+    Style = GraphicsMenuStyle;
+    MenuExit = RunGenericMenu (CleanNvramInfoMenu, Style, &DefaultEntry, &ChosenEntry);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1469,6 +1477,10 @@ BOOLEAN ShowCleanNvramInfo (
 
 static
 VOID AboutRefindPlus (VOID) {
+    UINT32   CsrStatus;
+    CHAR16  *VendorString = NULL;
+    BOOLEAN  RetVal;
+
     REFIT_MENU_SCREEN *AboutMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (AboutMenu == NULL) {
         // Early Return
@@ -1479,10 +1491,8 @@ VOID AboutRefindPlus (VOID) {
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'About RefindPlus' Screen");
     #endif
 
-    UINT32   CsrStatus;
-    CHAR16  *VendorString = StrDuplicate (VendorInfo);
-
     // More than ~65 causes empty info page on 800x600 display
+    VendorString = StrDuplicate (VendorInfo);
     LimitStringLength (VendorString, MAX_LINE_LENGTH);
 
     AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT                 );
@@ -1529,6 +1539,7 @@ VOID AboutRefindPlus (VOID) {
             VendorString
         )
     );
+    MY_FREE_POOL(VendorString);
 
 #if defined (EFI32)
     AddMenuInfoLine (AboutMenu, L"Platform: x86 (32 bit)"   );
@@ -1577,7 +1588,7 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (AboutMenu, L"For information on rEFInd, visit:"    );
     AddMenuInfoLine (AboutMenu, L"http://www.rodsbooks.com/refind"      );
 
-    BOOLEAN RetVal = GetReturnMenuEntry (&AboutMenu);
+    RetVal = GetReturnMenuEntry (&AboutMenu);
     if (!RetVal) {
         FreeMenuScreen (&AboutMenu);
 
@@ -1588,7 +1599,6 @@ VOID AboutRefindPlus (VOID) {
     RunMenu (AboutMenu, NULL);
 
     FreeMenuScreen (&AboutMenu);
-    MY_FREE_POOL(VendorString);
 } // static VOID AboutRefindPlus()
 
 // Record the loader's name/description in the "PreviousBoot" UEFI variable
@@ -1656,8 +1666,8 @@ VOID RescanAll (
     FixIconScale();
 
     if (OverrideSB) {
-        GlobalConfig.TextOnly = TRUE;
         GlobalConfig.DirectBoot = FALSE;
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
         GlobalConfig.Timeout = MainMenu->TimeoutSeconds = 0;
     }
 
@@ -1923,7 +1933,7 @@ VOID AdjustDefaultSelection (VOID) {
 
     #if REFIT_DEBUG > 0
     if (!LoggedOnce) {
-        LOG_MSG("\n");
+        BRK_MIN("\n");
         LOG_MSG("INFO: No Change to Default Selection");
     }
     BRK_MOD("\n\n");
@@ -1973,11 +1983,11 @@ VOID LogRevisionInfo (
 // Also sets some variables that may be needed later
 static
 VOID LogBasicInfo (VOID) {
-    UINTN  EfiMajorVersion = gST->Hdr.Revision >> 16;
+    UINTN  EfiMajorVersion;
 
 #if REFIT_DEBUG > 0
     EFI_STATUS  Status;
-    CHAR16     *MsgStr = NULL;
+    CHAR16     *MsgStr;
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
@@ -1994,8 +2004,8 @@ VOID LogBasicInfo (VOID) {
     // Get AppleFramebuffer Count
     AppleFramebuffers = egCountAppleFramebuffers();
 
-
-    WarnVersionEFI = WarnRevisionUEFI = FALSE;
+    EfiMajorVersion = gST->Hdr.Revision >> 16;
+    WarnVersionEFI  = WarnRevisionUEFI = FALSE;
     if (((gST->Hdr.Revision >> 16) != EfiMajorVersion) ||
         ((gBS->Hdr.Revision >> 16) != EfiMajorVersion) ||
         ((gRT->Hdr.Revision >> 16) != EfiMajorVersion)
@@ -2024,7 +2034,7 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         * Disabled:- 'UseTextRenderer'",       OffsetNext);
             LOG_MSG("%s         * Disabled:- 'PassUgaThrough'",        OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UseDirectGop'",          OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'ProtectNVRAM'",          OffsetNext);
+            LOG_MSG("%s         * Disabled:- 'NvramProtect'",          OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SilenceAPFS'",           OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SupplyUEFI'",            OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SupplyAPFS'",            OffsetNext);
@@ -2042,50 +2052,55 @@ VOID LogBasicInfo (VOID) {
 #endif
     } // if/else WarnVersionEFI || WarnRevisionUEFI
 
+/**
+ * Function effectively ends here on RELEASE Builds
+**/
+
 #if REFIT_DEBUG > 0
     /* NVRAM Storage Info */
     BOOLEAN QVInfoSupport = FALSE;
     LOG_MSG("Non-Volatile Storage:");
-#endif
-
-    if (gRT->Hdr.Revision >> 16 > 1 && !AppleFirmware) {
-        if ((gRT->Hdr.HeaderSize <
-            MY_OFFSET_OF(EFI_RUNTIME_SERVICES, QueryVariableInfo) + sizeof(gRT->QueryVariableInfo))
-        ) {
+    if ((gST->Hdr.Revision >> 16 > 1) &&
+        (gBS->Hdr.Revision >> 16 > 1) &&
+        (gRT->Hdr.Revision >> 16 > 1)
+    ) {
+        UINTN CheckSize = MY_OFFSET_OF(EFI_RUNTIME_SERVICES, QueryVariableInfo) + sizeof(gRT->QueryVariableInfo);
+        if (gRT->Hdr.HeaderSize < CheckSize) {
             WarnMissingQVInfo = TRUE;
 
-#if REFIT_DEBUG > 0
             LOG_MSG("\n\n");
-            LOG_MSG("** WARN: Inconsistent UEFI 2.x Implementation Detected");
+            LOG_MSG("** WARN: Irregular UEFI 2.x Implementation Detected");
             LOG_MSG("%s         Program Behaviour is *NOT* Defined", OffsetNext);
         }
         else {
+            // Flag as 'TRUE' even on error to skip the "Skipped QVI Call" message later
+            QVInfoSupport = TRUE;
             Status = REFIT_CALL_4_WRAPPER(
-                gRT->QueryVariableInfo, EFI_VARIABLE_NON_VOLATILE,
+                gRT->QueryVariableInfo, AccessFlagsBoot,
                 &MaximumVariableStorageSize, &RemainingVariableStorageSize, &MaximumVariableSize
             );
             if (EFI_ERROR(Status)) {
                 LOG_MSG("\n\n");
-                LOG_MSG("** WARN: Could Not Retrieve Non-Volatile Storage Info");
+                LOG_MSG("** WARN: Could Not Retrieve Non-Volatile Storage Details");
             }
             else {
-                LOG_MSG("%s  - Total Storage         : %ld", OffsetNext,   MaximumVariableStorageSize);
-                LOG_MSG("%s  - Remaining Available   : %ld", OffsetNext, RemainingVariableStorageSize);
-                LOG_MSG("%s  - Maximum Variable Size : %ld", OffsetNext,          MaximumVariableSize);
+                if (AppleFirmware) {
+                    // DA-TAG: Investigate This
+                    //         Do not log output on Apple Firmware
+                    //         Currently gives inaccurate output
+                    LOG_MSG("%s*** Redacted Invalid Output ***", OffsetNext);
+                }
+                else {
+                    LOG_MSG("%s  - Total Storage         : %ld", OffsetNext,   MaximumVariableStorageSize);
+                    LOG_MSG("%s  - Remaining Available   : %ld", OffsetNext, RemainingVariableStorageSize);
+                    LOG_MSG("%s  - Maximum Variable Size : %ld", OffsetNext,          MaximumVariableSize);
+                }
             }
-            QVInfoSupport = TRUE;
-#endif
         }
     } // if gRT->Hdr.Revision
 
-/**
- * Function ends here on RELEASE Builds
-**/
-
-#if REFIT_DEBUG > 0
     if (!QVInfoSupport) {
         // QueryVariableInfo is not supported EFI 1.x Firmware
-        // Apparently also not on Apple firmware
         LOG_MSG("%s*** Skipped QueryVariableInfo Call ***", OffsetNext);
     }
     LOG_MSG("\n\n");
@@ -2161,8 +2176,9 @@ EFI_STATUS EFIAPI efi_main (
     EG_PIXEL   BGColor = COLOR_LIGHTBLUE;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute   = FALSE;
-    BOOLEAN ForceNative = FALSE;
+    CHAR16    *CurDateStr  = NULL;
+    BOOLEAN    CheckMute   = FALSE;
+    BOOLEAN    ForceNative = FALSE;
     #endif
 
     /* Init Bootstrap */
@@ -2220,11 +2236,20 @@ EFI_STATUS EFIAPI efi_main (
     InitBooterLog();
 
     #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    // Clear 'BootNext' if present
+    // Just in case ... Should have been cleared by the firmware
+    EfivarSetRaw (
+        &GlobalGuid, L"BootNext",
+        NULL, 0, TRUE
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
-    #endif
 
-    #if REFIT_DEBUG > 0
     /* Start Logging */
     LOG_MSG("B E G I N   P R O G R A M   B O O T S T R A P");
     LOG_MSG("\n");
@@ -2236,28 +2261,29 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Architecture */
     LOG_MSG("Arch/Type:- ");
-#if defined(EFI32)
-    LOG_MSG("'x86 (32 bit)'");
-#elif defined(EFIX64)
+#if defined(EFIX64)
     LOG_MSG("'x86 (64 bit)'");
 #elif defined(EFIAARCH64)
     LOG_MSG("'ARM (64 bit)'");
+#elif defined(EFI32)
+    LOG_MSG("'x86 (32 bit)'");
 #else
-    LOG_MSG("'Not Known'");
+    LOG_MSG("Unknown Arch");
 #endif
     LOG_MSG("\n");
 
     /* Build Engine */
     LOG_MSG("Made With:- ");
-#if defined(__MAKEWITH_GNUEFI)
+#if defined(__MAKEWITH_TIANO)
+    LOG_MSG("'TianoCore EDK II'");
+#elif defined(__MAKEWITH_GNUEFI)
     LOG_MSG("'GNU-EFI'");
 #else
-    LOG_MSG("'TianoCore EDK II'");
+    LOG_MSG("Unknown DevKit");
 #endif
     LOG_MSG("\n");
 
     /* TimeStamp */
-    CHAR16 *CurDateStr = NULL;
     if (Now.TimeZone == EFI_UNSPECIFIED_TIMEZONE) {
         CurDateStr = PoolPrint (
             L"%d-%02d-%02d %02d:%02d:%02d (GMT)",
@@ -2366,7 +2392,7 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.UseTextRenderer     = FALSE;
         GlobalConfig.PassUgaThrough      = FALSE;
         GlobalConfig.UseDirectGop        = FALSE;
-        GlobalConfig.ProtectNVRAM        = FALSE;
+        GlobalConfig.NvramProtect        = FALSE;
         GlobalConfig.SilenceAPFS         = FALSE;
         GlobalConfig.SupplyUEFI          = FALSE;
         GlobalConfig.SupplyAPFS          = FALSE;
@@ -2388,7 +2414,15 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
     LOG_MSG("%s      TagsHelp:- '%s'",     TAG_ITEM_C(GlobalConfig.TagsHelp       ));
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE      ));
-    LOG_MSG("%s      TextOnly:- '%s'",     TAG_ITEM_C(GlobalConfig.TextOnly       ));
+
+    LOG_MSG("%s      TextOnly:- ",         OffsetNext                              );
+    if (ForceTextOnly) {
+        LOG_MSG("'Forced'"                                                         );
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.TextOnly ? L"Active" : L"Inactive"            );
+    }
+
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop   ));
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
@@ -2398,43 +2432,43 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
+    LOG_MSG("%s      NvramProtect:- ",     OffsetNext                              );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'");
+        LOG_MSG("'Disabled'"                                                       );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
+        LOG_MSG("'%s'", GlobalConfig.NvramProtect ? L"Active" : L"Inactive"        );
     }
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext);
+    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                              );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'");
+        LOG_MSG("'Disabled'"                                                       );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive");
+        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"       );
     }
-    LOG_MSG("%s      RansomDrives:- ",     OffsetNext);
+    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                              );
     if (AppleFirmware) {
-        LOG_MSG("'Disabled'");
+        LOG_MSG("'Disabled'"                                                       );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive");
+        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"        );
     }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      FocusNvramFix:- ",    OffsetNext);
+    LOG_MSG("%s      FocusNvramFix:- ",    OffsetNext                              );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'");
+        LOG_MSG("'Disabled'"                                                       );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.FocusNvramFix ? L"Active" : L"Inactive");
+        LOG_MSG("'%s'", GlobalConfig.FocusNvramFix ? L"Active" : L"Inactive"       );
     }
     LOG_MSG("\n\n");
 
@@ -2605,7 +2639,7 @@ EFI_STATUS EFIAPI efi_main (
             MsgStr = StrDuplicate (L"Maintaining");
             #endif
 
-            GlobalConfig.TextOnly = TRUE;
+            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
         }
 
         #if REFIT_DEBUG > 0
@@ -3015,7 +3049,7 @@ EFI_STATUS EFIAPI efi_main (
             ChosenEntry->Tag = TAG_SHUTDOWN;
         }
 
-        // Stop ProtectNVRAM
+        // Stop NvramProtect
         SetProtectNvram (SystemTable, FALSE);
 
         switch (ChosenEntry->Tag) {
@@ -3089,6 +3123,23 @@ EFI_STATUS EFIAPI efi_main (
 
                 MY_FREE_POOL(FilePath);
 
+                // DA-TAG: Disable Misc Protected OpenCore NVRAM Variables
+                //         Initially limited to Apple firmware
+                if (AppleFirmware) {
+                    SetHardwareNvramVariable ( // "scan-policy"
+                        L"scan-policy", &OpenCoreVendorGuid,
+                        AccessFlagsBoot, 0, NULL
+                    );
+                    SetHardwareNvramVariable ( // "boot-redirect" (RequestBootVarRouting)
+                        L"boot-redirect", &OpenCoreVendorGuid,
+                        AccessFlagsBoot, 0, NULL
+                    );
+                    SetHardwareNvramVariable ( // "boot-protect"
+                        L"boot-protect", &OpenCoreVendorGuid,
+                        AccessFlagsFull, 0, NULL
+                    );
+                }
+
                 // No end dash line ... Handled in 'Reboot' below
                 StartTool (ourLoaderEntry);
 
@@ -3114,13 +3165,13 @@ EFI_STATUS EFIAPI efi_main (
                     // Clear Hardware NVRAM (RefindPlusGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusGuid,
-                        StorageFlags, 0, NULL
+                        AccessFlagsFull, 0, NULL
                     );
 
                     // Clear Hardware NVRAM (RefindPlusOldGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusOldGuid,
-                        StorageFlags, 0, NULL
+                        AccessFlagsFull, 0, NULL
                     );
 
                     FreePool (VarNVRAM);
@@ -3128,19 +3179,12 @@ EFI_STATUS EFIAPI efi_main (
 
                 // Force nvram garbage collection on Macs
                 if (AppleFirmware) {
-                    CHAR16 *BaseData = L"1";
-                    UINTN   SizeDataNVRAM = (StrLen (BaseData) + 1) * sizeof (CHAR8);
-                    CHAR8  *DataNVRAM = AllocatePool (SizeDataNVRAM);
-                    if (DataNVRAM) {
-                        // Convert Unicode String 'BaseData' to Ascii String 'DataNVRAM'
-                        UnicodeStrToAsciiStr (BaseData, DataNVRAM);
-
-                        REFIT_CALL_5_WRAPPER(
-                            gRT->SetVariable, L"ResetNVRam",
-                            &AppleGuid, StorageFlags,
-                            SizeDataNVRAM, DataNVRAM
-                        );
-                    }
+                    UINT8 ResetNVRam = 1;
+                    REFIT_CALL_5_WRAPPER(
+                        gRT->SetVariable, L"ResetNVRam",
+                        &AppleVendorOsGuid, AccessFlagsFull,
+                        sizeof (ResetNVRam), &ResetNVRam
+                    );
                 }
 
                 #if REFIT_DEBUG > 0
@@ -3440,7 +3484,7 @@ EFI_STATUS EFIAPI efi_main (
                     RunMacBootSupportFuncs();
 
                     if (!GlobalConfig.FocusNvramFix) {
-                        // Start ProtectNVRAM
+                        // Start NvramProtect
                         SetProtectNvram (SystemTable, TRUE);
                     }
                 }
@@ -3469,13 +3513,13 @@ EFI_STATUS EFIAPI efi_main (
 
                     MsgStr = PoolPrint (
                         L"NVRAM Filter:- '%s'",
-                        (GlobalConfig.ProtectNVRAM) ? L"Active" : L"Inactive"
+                        (GlobalConfig.NvramProtect) ? L"Active" : L"Inactive"
                     );
                     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    // Start ProtectNVRAM
+                    // Start NvramProtect
                     SetProtectNvram (SystemTable, TRUE);
                 }
                 else if (
@@ -3602,7 +3646,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     if (!GlobalConfig.FocusNvramFix) {
                         // Some UEFI Windows installers/updaters may not be in the standard path
-                        // So, activate ProtectNVRAM (if set and allowed) on unidentified loaders
+                        // So, activate NvramProtect (if set and allowed) on unidentified loaders
                         SetProtectNvram (SystemTable, TRUE);
                     }
                 }

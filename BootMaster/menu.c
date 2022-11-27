@@ -1212,12 +1212,15 @@ UINTN RunGenericMenu (
             !ClearedBuffer && !FlushFailReset &&
             MyStriCmp (Screen->Title, L"Main Menu")
         ) {
-            UINT64 MenuExitNumb = 636; // 512 + 124
-            UINT64 MenuExitGate = MenuExitNumb;
+            UINT64 MenuExitGate;
+            UINT64 MenuExitNumb = 750; // 500 + 250
             UINT64 MenuExitTime = GetCurrentMS();
             UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-            if (!AppleFirmware) {
+            if (AppleFirmware) {
+                MenuExitGate = MenuExitNumb / 2;
+            }
+            else {
                 MenuExitGate = MenuExitNumb * 3;
 
                 #if REFIT_DEBUG > 0

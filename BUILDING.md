@@ -113,7 +113,8 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 
 ### Build RefindPlus
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-- Drag the `RefindPlusBuilder.sh` file into Terminal
+- Open a new Terminal window
+- Drag the `RefindPlusBuilder.sh` file onto the Terminal window
   - Enter a space and `MyEdits`, or any other branch name, to the end of the line if you want to build on that branch
   - If nothing is entered, the script will build on the default `GOPFix` branch
 - Press `Enter`
@@ -123,7 +124,8 @@ If a period of time has passed since your last build or since you initially crea
 
 #### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-- Drag the `RepoUpdater.sh` file into Terminal
+- Open a new Terminal window
+- Drag the `RepoUpdater.sh` file onto the Terminal window
 - Press `Enter`
 
 **NB:** If you get an error after running the script, try running it again as subsequent runs should realign things.

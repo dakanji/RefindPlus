@@ -142,6 +142,8 @@ UINTN              DataVolumesCount        = 0;
 UINTN              HfsRecoveryCount        = 0;
 UINTN              VolumesCount            = 0;
 
+UINT64             ReadWriteCreate     = EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE;
+
 BOOLEAN            FoundExternalDisk   = FALSE;
 BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScannedOnce         = FALSE;
@@ -539,7 +541,7 @@ EFI_STATUS ReinitRefitLib (VOID) {
 // file-global gVarsDir variable and returns the status of the operation.
 EFI_STATUS FindVarsDir (VOID) {
     EFI_STATUS       Status;
-    CHAR16          *VarsFolder = L"refind-vars";
+    CHAR16          *VarsFolder;
     EFI_FILE_HANDLE  EspRootDir;
 
     if (gVarsDir != NULL) {
@@ -547,10 +549,11 @@ EFI_STATUS FindVarsDir (VOID) {
         return EFI_SUCCESS;
     }
 
+    VarsFolder = L"vars";
     Status = REFIT_CALL_5_WRAPPER(
         SelfDir->Open, SelfDir,
         &gVarsDir, VarsFolder,
-        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+        ReadWriteCreate, EFI_FILE_DIRECTORY
     );
 
     #if REFIT_DEBUG > 0
@@ -562,12 +565,13 @@ EFI_STATUS FindVarsDir (VOID) {
     #endif
 
     if (EFI_ERROR(Status)) {
+        VarsFolder = L"refind-vars";
         Status = egFindESP (&EspRootDir);
         if (!EFI_ERROR(Status)) {
             Status = REFIT_CALL_5_WRAPPER(
                 EspRootDir->Open, EspRootDir,
                 &gVarsDir, VarsFolder,
-                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+                ReadWriteCreate, EFI_FILE_DIRECTORY
             );
         }
 
@@ -738,7 +742,7 @@ EFI_STATUS EfivarSetRaw (
     IN  BOOLEAN    Persistent
 ) {
     EFI_STATUS   Status;
-    UINT32       StorageFlags;
+    UINT32       AccessFlagsBase;
     VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
@@ -830,16 +834,14 @@ EFI_STATUS EfivarSetRaw (
         #endif
     }
     else {
-        StorageFlags  = EFI_VARIABLE_BOOTSERVICE_ACCESS;
-        StorageFlags |= EFI_VARIABLE_RUNTIME_ACCESS;
-        if (Persistent) {
-            StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
-        }
-
         // Store the new value
+        AccessFlagsBase = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+        if (Persistent) {
+            AccessFlagsBase |= EFI_VARIABLE_NON_VOLATILE;
+        }
         Status = REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            VendorGUID, StorageFlags,
+            VendorGUID, AccessFlagsBase,
             VariableSize, VariableData
         );
 
@@ -1085,13 +1087,13 @@ CHAR16 * FSTypeName (
 
     if (MyStriCmp (retval, L"Unknown")) {
         if (0);
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) retval = L"Mac Raid (ON)"     ;
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) retval = L"Mac Raid (OFF)"    ;
         else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")         ) retval = L"ISO-9660 (Assumed)";
-        else if (FindSubStr (Volume->VolName, L"Fusion/FileVault Container") ) retval = L"HFS+ (Assumed)"    ;
         else if (FindSubStr (Volume->VolName, L"APFS/FileVault Container")   ) retval = L"APFS (Assumed)"    ;
+        else if (FindSubStr (Volume->VolName, L"Fusion/FileVault Container") ) retval = L"HFS+ (Assumed)"    ;
         else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) retval = L"NTFS (Assumed)"    ;
         else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) retval = L"NTFS (Assumed)"    ;
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) retval = L"Mac Raid (OFF)"    ;
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) retval = L"Mac Raid (ON)"     ;
     }
 
     // DA-TAG: Most likely only just overwrites 'HFS+ (Assumed)'
@@ -1239,8 +1241,9 @@ VOID SetFilesystemData (
                     Volume->FSType = FS_TYPE_NTFS;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                 }
-                else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
-                    (CompareMem(MagicString + 0x36,      FAT16_SIGNATURE, 8) == 0)
+                else if (
+                    (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
+                    (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)
                 ) {
                     Volume->FSType = FS_TYPE_FAT;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
@@ -1353,10 +1356,14 @@ VOID ScanVolumeBootcode (
             Volume->OSIconName   = L"grub,linux";
             Volume->OSName       = L"Linux (Legacy)";
         }
-        else if ((*((UINT32 *)(Buffer + 502)) == 0 &&
-            *((UINT32 *)(Buffer + 506)) == 50000 &&
-            *((UINT16 *)(Buffer + 510)) == 0xaa55) ||
-            FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
+        else if (
+            (
+                *((UINT32 *)(Buffer + 502)) == 0 &&
+                *((UINT32 *)(Buffer + 506)) == 50000 &&
+                *((UINT16 *)(Buffer + 510)) == 0xaa55
+            ) || (
+                FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
+            )
         ) {
             Volume->HasBootCode  = TRUE;
             Volume->OSIconName   = L"freebsd";
@@ -2226,7 +2233,7 @@ VOID VetSyncAPFS (VOID) {
     if (PreBootVolumesCount == 0) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Could Not Positively Identify Any APFS Partition ... Disabling SyncAFPS"
+            L"Could Not Positively Identify APFS Partitions ... Disabling SyncAFPS"
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2353,14 +2360,14 @@ CHAR16 * GetApfsRoleString (
         case APPLE_APFS_VOLUME_ROLE_INSTALLER:       retval = L"0x20 - Installer"  ;       break;
         case APPLE_APFS_VOLUME_ROLE_DATA:            retval = L"0x40 - Data"       ;       break;
         case APPLE_APFS_VOLUME_ROLE_UPDATE:          retval = L"0xC0 - Snapshot"   ;       break;
-        case APFS_VOL_ROLE_XART:                     retval = L"0x?? - SecData"    ;       break;
-        case APFS_VOL_ROLE_HARDWARE:                 retval = L"0x?? - Firmware"   ;       break;
-        case APFS_VOL_ROLE_BACKUP:                   retval = L"0x?? - BackupTM"   ;       break;
-        case APFS_VOL_ROLE_RESERVED_7:               retval = L"0x?? - Resrved07"  ;       break;
-        case APFS_VOL_ROLE_RESERVED_8:               retval = L"0x?? - Resrved08"  ;       break;
-        case APFS_VOL_ROLE_ENTERPRISE:               retval = L"0x?? - Enterprse"  ;       break;
-        case APFS_VOL_ROLE_RESERVED_10:              retval = L"0x?? - Resrved10"  ;       break;
-        case APFS_VOL_ROLE_PRELOGIN:                 retval = L"0x?? - PreLogin"   ;       break;
+        case APFS_VOL_ROLE_XART:                     retval = L"0x0? - SecData"    ;       break;
+        case APFS_VOL_ROLE_HARDWARE:                 retval = L"0x1? - Firmware"   ;       break;
+        case APFS_VOL_ROLE_BACKUP:                   retval = L"0x2? - BackupTM"   ;       break;
+        case APFS_VOL_ROLE_RESERVED_7:               retval = L"0x3? - Resrved07"  ;       break;
+        case APFS_VOL_ROLE_RESERVED_8:               retval = L"0x4? - Resrved08"  ;       break;
+        case APFS_VOL_ROLE_ENTERPRISE:               retval = L"0x5? - Enterprse"  ;       break;
+        case APFS_VOL_ROLE_RESERVED_10:              retval = L"0x6? - Resrved10"  ;       break;
+        case APFS_VOL_ROLE_PRELOGIN:                 retval = L"0x7? - PreLogin"   ;       break;
         default:                                     retval = L"0xFF - Unknown"    ;       break;
     } // switch
 
@@ -2374,20 +2381,20 @@ VOID ScanVolumes (VOID) {
     REFIT_VOLUME           *Volume = NULL;
     REFIT_VOLUME           *WholeDiskVolume;
     MBR_PARTITION_INFO     *MbrTable;
-    UINTN                   HandleCount = 0;
+    UINTN                   SectorSum, i;
     UINTN                   HandleIndex;
     UINTN                   VolumeIndex;
     UINTN                   VolumeIndex2;
     UINTN                   PartitionIndex;
-    UINTN                   SectorSum, i;
+    UINTN                   HandleCount = 0;
     UINT8                  *SectorBuffer1;
     UINT8                  *SectorBuffer2;
     CHAR16                 *RoleStr = NULL;
     CHAR16                 *PartType = NULL;
-    BOOLEAN                 CheckedAPFS;
     BOOLEAN                 DupFlag;
-    EFI_GUID               *UuidList;
+    BOOLEAN                 CheckedAPFS;
     EFI_GUID                VolumeGuid;
+    EFI_GUID               *UuidList;
     APPLE_APFS_VOLUME_ROLE  VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
@@ -2579,14 +2586,6 @@ VOID ScanVolumes (VOID) {
             }
             SkipSpacing = FALSE;
 
-            // 'FSTypeName' returns a constant ... Do not free 'PartType'!
-            PartType = FSTypeName (Volume);
-            if (0);
-            else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS   ;
-            else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS   ;
-            else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
-            else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
-
             if (!DoneHeadings) {
                 LOG_MSG(
                     "%-39s%-39s%-21s%-39s%-20s%s",
@@ -2615,6 +2614,14 @@ VOID ScanVolumes (VOID) {
             }
             #endif
 
+            // 'FSTypeName' returns a constant ... Do not free 'PartType'!
+            PartType = FSTypeName (Volume);
+            if (0);
+            else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS   ;
+            else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS   ;
+            else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
+            else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
+
             RoleStr = NULL;
             VolumeRole = 0;
             if (0);
@@ -2622,14 +2629,14 @@ VOID ScanVolumes (VOID) {
             else if (MyStriCmp (Volume->VolName, L"EFI")                     ) RoleStr = L" * EFI Partition" ;
             else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume")       ) RoleStr = L" * Physical Disk" ;
             else if (MyStriCmp (Volume->VolName, L"Recovery HD")             ) RoleStr = L" * HFS Recovery"  ;
-            else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")                ) RoleStr = L" * Bootcamp Win"  ;
+            else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")                ) RoleStr = L" * Win BootCamp"  ;
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")    ) RoleStr = L" * Win BasicData" ;
             else if (MyStriCmp (Volume->VolName, L"Boot OS X")               ) RoleStr = L" * Mac BootAssist";
-            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")     ) RoleStr = L" * Optical Drive" ;
+            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")     ) RoleStr = L" * Drive Optical" ;
             else if (FindSubStr (Volume->VolName, L"System Reserved")        ) RoleStr = L" * Win Reserved"  ;
             else if (FindSubStr (Volume->VolName, L"Microsoft Reserved")     ) RoleStr = L" * MS Reserved"   ;
             else if (FindSubStr (PartType, L"Mac Raid")                      ) RoleStr = L" * Raid Partition";
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * Recovery Part" ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * Recv Partition";
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
@@ -2952,6 +2959,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
+    UINTN    LogLineType;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
@@ -3028,7 +3036,7 @@ VOID GetVolumeBadgeIcons (VOID) {
                 Volume->VolName
             );
 
-            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
             ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
@@ -3059,6 +3067,7 @@ VOID SetVolumeIcons (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
+    UINTN    LogLineType;
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
     #endif
@@ -3143,7 +3152,7 @@ VOID SetVolumeIcons (VOID) {
                 Volume->VolName
             );
 
-            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
             ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif

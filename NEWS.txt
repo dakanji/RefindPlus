@@ -1,7 +1,18 @@
 0.13.3.AC (PRE-RELEASE):
 -----------------------
+- Fixes `QueryVariableInfo` Handling
+  * Now properly handled on `UEFI-Mac` units
+  * The output is however not currently presented as Apple firmare does not return accurate data
 - Fixes Misc Static Analysis Flags
   * Some are related to filesystem drivers; for which updated versions are created accordingly
+- Improves Mac Recovery Tool Scan
+  * Now skips some invalid entries such as APFS Recovery partitions
+- Improves ScreenShot Feature
+  * Now clears the keystroke buffer in `egScreenShot` to mitigate against stuck keys
+- Improves Clean NVRAM Feature
+  * Particularly regarding clearing OpenCore related NVRAM Variables
+- Improves Time Bound Primed Buffer Mitigation
+  * Rationalises intervention threshold
 - Improves UI Element Scaling
   * Some units use a low resolution display for the boot stage that result in distorted UI
   * RefindPlus can now detect this and automatically scale UI elements down accordingly

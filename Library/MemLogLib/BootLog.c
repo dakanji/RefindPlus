@@ -163,7 +163,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         REFIT_CALL_5_WRAPPER(
             mRootDir->Open, mRootDir,
             &LogProtocol, mDebugLog,
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
+            ReadWriteCreate, 0
         );
     }
 
@@ -185,7 +185,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
                 REFIT_CALL_5_WRAPPER(
                     mRootDir->Open, mRootDir,
                     &LogProtocol, mDebugLog,
-                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
+                    ReadWriteCreate, 0
                 );
             }
 

@@ -432,7 +432,7 @@ EFI_STATUS egSaveFile (
     Status = REFIT_CALL_5_WRAPPER(
         BaseDir->Open, BaseDir,
         &FileHandle, FileName,
-        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
+        ReadWriteCreate, 0
     );
     if (EFI_ERROR(Status)) {
         // Early Return

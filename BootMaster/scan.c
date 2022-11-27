@@ -311,46 +311,25 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
 
         CHAR16 *NameOS = L"";
         // DA-TAG: Maintain space after NameOS
-        if (Entry->OSType == 'M') {
-            NameOS = L"MacOS ";
-        }
-        else if (Entry->OSType == 'L') {
-            NameOS = L"Linux ";
-        }
-        else if (Entry->OSType == 'W') {
-            if (FindSubStr (SubScreen->Title, L"UEFI")) {
-                NameOS = L"Windows (UEFI) ";
-            }
-            else if (FindSubStr (SubScreen->Title, L"Legacy")) {
-                NameOS = L"Windows (Legacy) ";
-            }
-            else {
-                NameOS = L"Windows ";
-            }
-        }
-        else if (Entry->OSType == 'R') {
-            NameOS = L"rEFit Variant ";
-        }
-        else if (Entry->OSType == 'G') {
-            NameOS = L"Grub ";
-        }
-        else if (Entry->OSType == 'X') {
-            NameOS = L"XoM ";
-        }
-        else if (Entry->OSType == 'E') {
-            NameOS = L"Elilo ";
-        }
-        else if (FindSubStr (SubScreen->Title, L"OpenCore")) {
-            NameOS = L"OpenCore ";
-        }
-        else if (FindSubStr (SubScreen->Title, L"Clover")) {
-            NameOS = L"Clover ";
-        }
-        SubEntry->me.Title    = PoolPrint (L"Boot %swith Default Options", NameOS);
+        if (0);
+        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Windows (Legacy)";
+        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"))   NameOS = L"Windows (UEFI)";
+        else if (Entry->OSType == 'W')                                             NameOS = L"Windows";
+        else if (Entry->OSType == 'M')                                             NameOS = L"MacOS";
+        else if (Entry->OSType == 'L')                                             NameOS = L"Linux";
+        else if (Entry->OSType == 'G')                                             NameOS = L"Grub";
+        else if (Entry->OSType == 'X')                                             NameOS = L"XoM";
+        else if (Entry->OSType == 'E')                                             NameOS = L"Elilo";
+        else if (Entry->OSType == 'R')                                             NameOS = L"rEFit Variant";
+        else if (FindSubStr (SubScreen->Title, L"OpenCore"))                       NameOS = L"OpenCore Item";
+        else if (FindSubStr (SubScreen->Title, L"Clover"))                         NameOS = L"Clover Item";
+
+        SubEntry->me.Title    = PoolPrint (L"Boot %s with Default Options", NameOS);
         MainOptions           = StrDuplicate (SubEntry->LoadOptions);
         SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
-        MY_FREE_POOL(MainOptions);
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+
+        MY_FREE_POOL(MainOptions);
     }
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -1312,8 +1291,12 @@ LOADER_ENTRY * AddLoaderEntry (
             &VolumeRole
         );
         #endif
+        if (EFI_ERROR(Status) && Status != EFI_NOT_STARTED) {
+            // Early Return on Invalid APFS Volume
+            return NULL;
+        }
 
-        if (!EFI_ERROR(Status)) {
+        if (Status != EFI_NOT_STARTED) {
             if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
                 VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
                 VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
@@ -2214,9 +2197,17 @@ VOID ScanEfiFiles (
             &VolumeRole
         );
         #endif
+        if (EFI_ERROR(Status) && Status != EFI_NOT_STARTED) {
+            //BREAD_CRUMB(L"%s:  3a 1 X - END:- VOID ... Exit on Invalid APFS Volume", FuncTag);
+            //LOG_DECREMENT();
+            //LOG_SEP(L"X");
+
+            // Early Return on Invalid APFS Volume
+            return;
+        }
 
         //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
-        if (!EFI_ERROR(Status)) {
+        if (Status != EFI_NOT_STARTED) {
             //BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
                 VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
@@ -2780,15 +2771,11 @@ VOID ScanFirmwareDefined (
                 CurrentEntry->BootEntry.DevPath,
                 CurrentEntry->BootEntry.Label,
                 CurrentEntry->BootEntry.BootNum,
-                Row,
-                Icon
+                Row, Icon
             );
         }
 
         CurrentEntry = CurrentEntry->NextBootEntry;
-
-        // Assume the next item is to be scanned
-        ScanIt = TRUE;
     } // while
 
     MY_FREE_POOL(DontScanFirmware);
@@ -2808,7 +2795,7 @@ VOID ScanFirmwareDefined (
 
 // default volume badge icon based on disk kind
 EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
-    EG_IMAGE * Badge = NULL;
+    EG_IMAGE *Badge;
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
@@ -2823,7 +2810,8 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
     switch (DiskType) {
         case BBS_HARDDISK: Badge = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL); break;
         case BBS_USB:      Badge = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL); break;
-        case BBS_CDROM:    Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);  break;
+        case BBS_CDROM:    Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL) ; break;
+        default:           Badge = NULL;
     } // switch
 
     return Badge;
@@ -2862,7 +2850,7 @@ LOADER_ENTRY * AddToolEntry (
 // Locates boot loaders.
 // NOTE: This assumes that GlobalConfig.LegacyType is correctly set.
 VOID ScanForBootloaders (VOID) {
-    UINTN     i;
+    UINTN     i, SetOptions;
     BOOLEAN   DeleteItem;
     BOOLEAN   ScanForLegacy       = FALSE;
     BOOLEAN   AmendedDontScan     = FALSE;
@@ -2875,6 +2863,7 @@ VOID ScanForBootloaders (VOID) {
     CHAR16    ShortCutKey;
 
     #if REFIT_DEBUG > 0
+    UINTN    KeyNum;
     CHAR16  *MsgStr = NULL;
     #endif
 
@@ -3032,7 +3021,7 @@ VOID ScanForBootloaders (VOID) {
     } // if GlobalConfig.SyncAPFS
 
     // Get count of options set to be scanned
-    UINTN SetOptions = 0;
+    SetOptions = 0;
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         switch (GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
@@ -3148,7 +3137,7 @@ VOID ScanForBootloaders (VOID) {
                 LOG_MSG("Scan Firmware:");
                 #endif
 
-                ScanFirmwareDefined(0, NULL, NULL);
+                ScanFirmwareDefined (0, NULL, NULL);
                 break;
         } // switch
     } // for
@@ -3200,7 +3189,7 @@ VOID ScanForBootloaders (VOID) {
         LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
 
-        UINTN KeyNum = 0;
+        KeyNum = 0;
         #endif
 
         for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
@@ -4133,7 +4122,7 @@ VOID ScanForTools (VOID) {
                         MY_FREE_POOL(FileName);
                         MY_FREE_POOL(VolumeTag);
                         MY_FREE_POOL(RecoverVol);
-                    } // for k = 0
+                    } // for j = 0
                 } // if SingleAPFS
 
                 #if REFIT_DEBUG > 0

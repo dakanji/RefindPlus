@@ -51,7 +51,7 @@
 # MacOS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# APFS filesystem capability is provided (if required) when commented out
+# APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
 #
 #decline_apfs_load
 
@@ -87,8 +87,8 @@
 
 # Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
-# This feature can be disabled by activating this token. It is only active when the GOP
-# protocol is available and it is typically inactive when running a UGA protocol GPU.
+# This feature can be disabled by activating this token. It is only active when the UGA
+# protocol is available and is inactive when running a GPU with the GOP protocol.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
@@ -118,7 +118,7 @@
 # result in an overrun that will damage the BootROM (also stored on the NVRAM) and
 # results in an inability to boot. This token is only activated on Apple Firmware.
 #
-# The "ProtectNVRAM" feature is enabled when commented out
+# The "NvramProtect" feature is enabled when commented out
 #
 #decline_nvram_protect
 
@@ -173,7 +173,7 @@
 # as Legacy Macs as several such tools only require CreateEventEx to work.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# UEFI 2.x emulation is enabled when commented out
+# UEFI 2.x emulation is enabled via "SupplyUEFI" when commented out
 #
 #decline_uefi_emulate
 
@@ -236,11 +236,11 @@
 #
 #disable_rescan_dxe
 
-# When this option is activated, the ProtectNVRAM feature will only
+# When this option is activated, the NvramProtect feature will only
 # be activated, if set, when explicitly booting into UEFI Windows.
 # This setting is only activated when Apple Firmware is detected.
 #
-# Inactive when commented out (Does not focus ProtectNVRAM on UEFI Windows)
+# Inactive when commented out (Does not focus NvramProtect on UEFI Windows)
 #
 #focus_nvram_fix
 
@@ -331,7 +331,7 @@
 # may not be operational and should be set to match the specific allowed size
 # for such units. Given the dificulty involved in finding this allowed size,
 # this setting should not be set by most users. Note that this setting is
-# only active on Apple firmware, requires the "ProtectNVRAM" feature and
+# only active on Apple firmware, requires the "NvramProtect" feature and
 # that it is disabled when it is set to a value lower than 1024 bytes.
 # Additionally, this option is only activated on direct MacOS boots.
 #

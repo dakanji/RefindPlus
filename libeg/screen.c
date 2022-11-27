@@ -69,6 +69,7 @@
 #endif
 
 extern UINTN    AppleFramebuffers;
+extern BOOLEAN  ForceTextOnly;
 extern BOOLEAN  AllowTweakUEFI;
 extern BOOLEAN  AcquireErrorGOP;
 extern EG_PIXEL MenuBackgroundPixel;
@@ -862,16 +863,14 @@ BOOLEAN egInitUGADraw (
                             UGAHeight = Height;
 
                             #if REFIT_DEBUG > 0
-                            LOG_MSG(
-                                "%s    *** Select GPU Handle[%02d] @ %5d x %-5d",
-                                OffsetNext, i, UGAWidth, UGAHeight
+                            LOG_MSG("%s    *** Select GPU Handle[%02d] @ %5d x %-5d",
+                                OffsetNext, i, Width, Height
                             );
                             #endif
                         }
                         else {
                             #if REFIT_DEBUG > 0
-                            LOG_MSG(
-                                "%s    *** Ignore GPU Handle[%02d] @ %5d x %-5d",
+                            LOG_MSG("%s    *** Ignore GPU Handle[%02d] @ %5d x %-5d",
                                 OffsetNext, i, Width, Height
                             );
                             #endif
@@ -1287,7 +1286,7 @@ VOID egInitScreen (VOID) {
             if (EFI_ERROR(Status)) {
                 // Graphics not available
                 UGADraw               = NULL;
-                GlobalConfig.TextOnly = TRUE;
+                GlobalConfig.TextOnly = ForceTextOnly = TRUE;
             }
             else {
                 egHasGraphics  = FlagUGA = TRUE;
@@ -1319,6 +1318,7 @@ VOID egInitScreen (VOID) {
     #endif
 
 // DA-TAG: Limit to TianoCore
+BOOLEAN NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
     if (GOPDraw != NULL) {
         if (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly) {
@@ -1340,6 +1340,10 @@ VOID egInitScreen (VOID) {
             // Install AppleFramebuffers and Update AppleFramebuffer Count
             RP_AppleFbInfoInstallProtocol (TRUE);
             AppleFramebuffers = egCountAppleFramebuffers();
+
+            if (AppleFramebuffers > 0) {
+                NewAppleFramebuffers = TRUE;
+            }
         }
     }
 #endif
@@ -1362,7 +1366,12 @@ VOID egInitScreen (VOID) {
         MsgStr = StrDuplicate (L"No");
         #endif
     }
-    else if (!FlagUGA || !AppleFirmware || AppleFramebuffers > 0) {
+    else if (NewAppleFramebuffers) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Possibly via New Framebuffers ... Try 'TextOnly' if Not");
+        #endif
+    }
+    else if (!FlagUGA || !AppleFirmware) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Yes");
         #endif
@@ -1372,7 +1381,7 @@ VOID egInitScreen (VOID) {
         UGADraw               =  NULL;
         GOPDraw               =  NULL;
         egHasGraphics         = FALSE;
-        GlobalConfig.TextOnly =  TRUE;
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
 
         Status = EFI_ALREADY_STARTED;
         if (!GlobalConfig.UseTextRenderer) {
@@ -1382,7 +1391,7 @@ VOID egInitScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Yes (Without Display ... Force Text Mode%s)",
+            L"Yes (Without Display ... Forcing Text Mode%s)",
             (Status == EFI_ALREADY_STARTED)
                 ? L""
                 : L" and Renderer"
@@ -2255,6 +2264,9 @@ VOID egScreenShot (VOID) {
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
+
+    // Clear the Keystroke Buffer (Silently)
+    ReadAllKeyStrokes();
     #endif
 
     #if REFIT_DEBUG > 0

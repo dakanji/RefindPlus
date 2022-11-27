@@ -92,6 +92,7 @@ static BOOLEAN     haveError = FALSE;
 extern BOOLEAN            IsBoot;
 extern BOOLEAN            IconScaleSet;
 extern BOOLEAN            egHasGraphics;
+extern BOOLEAN            ForceTextOnly;
 extern BOOLEAN            FlushFailedTag;
 
 
@@ -102,7 +103,7 @@ VOID FixIconScale (VOID) {
     }
     IconScaleSet = TRUE;
 
-    // Scale icons as required
+    // Scale UI Elements as required
     if (GlobalConfig.ScaleUI == 1) {
         GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
         GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
@@ -221,7 +222,7 @@ VOID InitScreen (VOID) {
         AllowGraphicsMode = FALSE;
 
         if (!GlobalConfig.DirectBoot && GlobalConfig.ScreensaverTime != -1) {
-            DrawScreenHeader (L"Initialising...");
+            DrawScreenHeader (L"Select a Tool or Loader");
         }
     }
 
@@ -378,31 +379,31 @@ VOID SetupScreen (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
 
-            // Scale icons for HiDPI or LoRez graphics as required
+            // Scale UI Elements for HiDPI or LoRez graphics as required
             #if REFIT_DEBUG > 0
             if (GlobalConfig.ScaleUI == 99) {
-                MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
+                MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain UI Scale");
             }
             else if (GlobalConfig.ScaleUI == 1) {
                 MsgStr = StrDuplicate (
                     (IconScaleSet)
-                        ? L"HiDPI Flag ... Maintain Scaled Icons"
-                        : L"HiDPI Flag ... Scale Icons Up"
+                        ? L"HiDPI Flag ... Maintain UI Scale"
+                        : L"HiDPI Flag ... Scale UI Elements Up"
                 );
             }
             else if (GlobalConfig.ScaleUI == -1) {
                 if (IconScaleSet) {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
-                            ? L"LoRez Flag ... Maintain Scaled Icons"
-                            : L"BaseRez Flag ... Maintain Scaled Icons"
+                            ? L"LoRez Flag ... Maintain UI Scale"
+                            : L"BaseRez Flag ... Maintain UI Scale"
                     );
                 }
                 else {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
-                            ? L"LoRez Flag ... Scale Icons Down"
-                            : L"BaseRez Flag ... Scale Icons Down"
+                            ? L"LoRez Flag ... Scale UI Elements Down"
+                            : L"BaseRez Flag ... Scale UI Elements Down"
                     );
                 }
             }
@@ -410,26 +411,26 @@ VOID SetupScreen (VOID) {
                 if (ScreenShortest > HIDPI_SHORT && ScreenLongest > HIDPI_LONG) {
                     MsgStr = StrDuplicate (
                         (IconScaleSet)
-                            ? L"HiDPI Mode ... Maintain Scaled Icons"
-                            : L"HiDPI Mode ... Scale Icons Up"
+                            ? L"HiDPI Mode ... Maintain UI Scale"
+                            : L"HiDPI Mode ... Scale UI Elements Up"
                     );
                 }
                 else {
                     if (ScreenShortest > LOREZ_LIMIT && ScreenLongest > LOREZ_LIMIT) {
-                        MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
+                        MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain UI Scale");
                     }
                     else if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
                         MsgStr = StrDuplicate (
                             (IconScaleSet)
-                                ? L"LoRez Mode ... Maintain Scaled Icons"
-                                : L"LoRez Mode ... Scale Icons Down"
+                                ? L"LoRez Mode ... Maintain UI Scale"
+                                : L"LoRez Mode ... Scale UI Elements Down"
                         );
                     }
                     else {
                         MsgStr = StrDuplicate (
                             (IconScaleSet)
-                                ? L"BaseRez Mode ... Maintain Scaled Icons"
-                                : L"BaseRez Mode ... Scale Icons Down"
+                                ? L"BaseRez Mode ... Maintain UI Scale"
+                                : L"BaseRez Mode ... Scale UI Elements Down"
                         );
                     }
                 }
@@ -522,7 +523,7 @@ VOID SetupScreen (VOID) {
         }
         #endif
 
-        GlobalConfig.TextOnly = TRUE;
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
         AllowGraphicsMode = FALSE;
         SwitchToText (FALSE);
     }

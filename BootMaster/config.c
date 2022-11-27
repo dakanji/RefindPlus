@@ -83,6 +83,7 @@ BOOLEAN FoundFontImage = TRUE;
     BOOLEAN ForensicLogging = FALSE;
 #endif
 
+extern BOOLEAN         ForceTextOnly;
 
 //
 // Read a file into a buffer
@@ -1299,7 +1300,7 @@ VOID ReadConfig (
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ProtectNVRAM = (!AppleFirmware)
+            GlobalConfig.NvramProtect = (!AppleFirmware)
                 ? FALSE
                 : (DeclineSetting) ? FALSE : TRUE;
         }
@@ -1420,7 +1421,7 @@ VOID ReadConfig (
         MY_MUTELOGGER_SET;
         #endif
 
-        GlobalConfig.TextOnly = TRUE;
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
     }
 
     SilenceAPFS = GlobalConfig.SilenceAPFS;

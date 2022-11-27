@@ -178,7 +178,8 @@
 #define DEFAULT_ICONS_DIR           L"icons"
 
 // NVRAM ACCESS FLAGS
-#define FULL_ACCESS_FLAGS   EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
+#define ACCESS_FLAGS_FULL   EFI_VARIABLE_NON_VOLATILE|EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+#define ACCESS_FLAGS_BOOT   EFI_VARIABLE_NON_VOLATILE|EFI_VARIABLE_BOOTSERVICE_ACCESS;
 
 // Names of binaries that can manage MOKs
 #if defined (EFIX64)
@@ -267,6 +268,7 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define NULL_GUID_VALUE              {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 #define REFINDPLUS_GUID              {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
 #define REFINDPLUS_OLD_GUID          {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
+#define OPENCORE_VENDOR_GUID         {0x4D1FDA02, 0x38C7, 0x4A6A, {0x9C, 0xC6, 0x4B, 0xCC, 0xA8, 0xB3, 0x01, 0x02}};
 #define ESP_GUID_VALUE               {0xC12A7328, 0xF81F, 0x11D2, {0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B}};
 #define HFS_GUID_VALUE               {0x48465300, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
 #define APFS_GUID_VALUE              {0x7C3457EF, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
@@ -433,7 +435,7 @@ typedef struct {
     BOOLEAN           SupplyUEFI;
     BOOLEAN           SilenceAPFS;
     BOOLEAN           SyncAPFS;
-    BOOLEAN           ProtectNVRAM;
+    BOOLEAN           NvramProtect;
     BOOLEAN           ScanAllESP;
     BOOLEAN           TagsHelp;
     BOOLEAN           TextHelp;
@@ -505,6 +507,8 @@ extern UINTN                PreBootVolumesCount;
 extern UINTN                SystemVolumesCount;
 extern UINTN                DataVolumesCount;
 extern UINTN                HfsRecoveryCount;
+
+extern UINT64               ReadWriteCreate;
 
 extern BOOLEAN              SetSysTab;
 extern BOOLEAN              SingleAPFS;
@@ -588,12 +592,12 @@ extern CHAR16 *gLogTemp;
 #if REFIT_DEBUG > 0
 extern VOID LogPadding (BOOLEAN Increment);
 
-#   define ALT_LOG(level, type, ...)                                                           \
-        do {                                                                                   \
-            if (KernelNotStarted) {                                                            \
-                gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (level, type, &gLogTemp);                                          \
-            }                                                                                  \
+#   define ALT_LOG(level, type, ...)                                             \
+        do {                                                                     \
+            if (KernelNotStarted) {                                              \
+                gLogTemp = PoolPrint (__VA_ARGS__);                              \
+                DeepLoggger (level, type, &gLogTemp);                            \
+            }                                                                    \
         } while (0)
 #   define LOG_MSG(...) DebugLog (__VA_ARGS__);
 #   define OUT_TAG() WayPointer (L"<<----- * ----->>");
@@ -616,11 +620,11 @@ extern VOID LogPadding (BOOLEAN Increment);
 #   define BRK_MOD(...)
 #   define BRK_MIN(...)
 #elif REFIT_DEBUG < 2
-#   define BRK_MIN(...)                                                                        \
-        do {                                                                                   \
-            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                                        \
-                DebugLog (__VA_ARGS__);                                                        \
-            }                                                                                  \
+#   define BRK_MIN(...)                                                          \
+        do {                                                                     \
+            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                          \
+                DebugLog (__VA_ARGS__);                                          \
+            }                                                                    \
         } while (0)
 #   define BRK_MOD(...) DebugLog (__VA_ARGS__);
 #   define BRK_MAX(...)
@@ -631,37 +635,37 @@ extern VOID LogPadding (BOOLEAN Increment);
 #else
 #   define LOG_INCREMENT(...) LogPadding (TRUE);
 #   define LOG_DECREMENT(...) LogPadding (FALSE);
-#   define BREAD_CRUMB(...)                                                                    \
-        do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \
-                gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (2, LOG_LINE_FORENSIC, &gLogTemp);                                 \
-            }                                                                                  \
+#   define BREAD_CRUMB(...)                                                      \
+        do {                                                                     \
+            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {       \
+                gLogTemp = PoolPrint (__VA_ARGS__);                              \
+                DeepLoggger (2, LOG_LINE_FORENSIC, &gLogTemp);                   \
+            }                                                                    \
         } while (0)
-#   define LOG_SEP(...)                                                                        \
-        do {                                                                                   \
-            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {                     \
-                gLogTemp = PoolPrint (__VA_ARGS__);                                            \
-                DeepLoggger (2, LOG_BLOCK_SEP, &gLogTemp);                                     \
-            }                                                                                  \
+#   define LOG_SEP(...)                                                          \
+        do {                                                                     \
+            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {       \
+                gLogTemp = PoolPrint (__VA_ARGS__);                              \
+                DeepLoggger (2, LOG_BLOCK_SEP, &gLogTemp);                       \
+            }                                                                    \
         } while (0)
-#   define BRK_MAX(...)                                                                        \
-        do {                                                                                   \
-            if (GlobalConfig.LogLevel > MAXLOGLEVEL) {                                         \
-                DebugLog (__VA_ARGS__);                                                        \
-            }                                                                                  \
+#   define BRK_MAX(...)                                                          \
+        do {                                                                     \
+            if (GlobalConfig.LogLevel > MAXLOGLEVEL) {                           \
+                DebugLog (__VA_ARGS__);                                          \
+            }                                                                    \
         } while (0)
-#   define BRK_MOD(...)                                                                        \
-        do {                                                                                   \
-            if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {                                        \
-                DebugLog (__VA_ARGS__);                                                        \
-            }                                                                                  \
+#   define BRK_MOD(...)                                                          \
+        do {                                                                     \
+            if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {                          \
+                DebugLog (__VA_ARGS__);                                          \
+            }                                                                    \
         } while (0)
-#   define BRK_MIN(...)                                                                        \
-        do {                                                                                   \
-            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                                        \
-                DebugLog (__VA_ARGS__);                                                        \
-            }                                                                                  \
+#   define BRK_MIN(...)                                                          \
+        do {                                                                     \
+            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                          \
+                DebugLog (__VA_ARGS__);                                          \
+            }                                                                    \
         } while (0)
 #endif
 /* Misc Extra Items - END */

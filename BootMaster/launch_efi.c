@@ -83,7 +83,7 @@ CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
 extern BOOLEAN  IsBoot;
-extern EFI_GUID AppleGuid;
+extern EFI_GUID AppleVendorOsGuid;
 
 static
 VOID WarnSecureBootError(
@@ -909,7 +909,7 @@ EFI_STATUS ApfsRecoveryBoot (
     NameNVRAM = L"internet-recovery-mode";
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
-        &AppleGuid, NameNVRAM,
+        &AppleVendorOsGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -922,7 +922,7 @@ EFI_STATUS ApfsRecoveryBoot (
     // Set Recovery Initiator
     NameNVRAM = L"RecoveryBootInitiator";
     Status = EfivarSetRaw (
-        &AppleGuid, NameNVRAM,
+        &AppleVendorOsGuid, NameNVRAM,
         (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
