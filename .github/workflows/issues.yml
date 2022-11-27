@@ -38,6 +38,18 @@ jobs:
           stale-issue-label: 'Tagged'
           any-of-labels: 'Resolved'
 
+      - name: Close Cancelled Issues
+        uses: actions/stale@v6.0.1
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item is being closed as cancelled.
+          days-before-stale: 0
+          days-before-close: 0
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Tagged'
+          any-of-labels: 'Cancelled'
+
       - name: Flag or Close Uncertain Issues
         uses: actions/stale@v6.0.1
         with:
@@ -49,7 +61,7 @@ jobs:
           days-before-stale: 15
           days-before-close: 22
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Stale'
+          stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Uncertain'
 
@@ -79,7 +91,7 @@ jobs:
           days-before-stale: 3
           days-before-close: 5
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
+          stale-issue-label: 'Stale'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Queries'
 
@@ -94,7 +106,7 @@ jobs:
           days-before-stale: 20
           days-before-close: 28
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Stale'
+          stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
           exempt-issue-labels: 'Parked, Help-Wanted'
 
@@ -109,7 +121,7 @@ jobs:
           days-before-stale: 60
           days-before-close: 88
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Stale'
+          stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Parked'
 
@@ -210,16 +222,28 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
+      - name: Lock Abandoned Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          add-issue-labels: 'Abandoned'
+          issue-inactive-days: '3'
+          include-any-issue-labels: 'Stale'
+          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted, Bug'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
+          process-only: 'issues'
+
       - name: Lock Cancelled Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          add-issue-labels: 'Cancelled'
+          add-issue-labels: ''
           issue-inactive-days: '1'
-          include-any-issue-labels: ''
+          include-any-issue-labels: 'Cancelled'
           exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted, Bug'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Duplicate Issues
@@ -232,7 +256,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Inactive Issues
@@ -244,7 +268,7 @@ jobs:
           issue-inactive-days: '3'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Pending, Tagged, Queries'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Incomplete Issues
@@ -255,7 +279,7 @@ jobs:
           add-issue-labels: 'Abandoned'
           issue-inactive-days: '3'
           include-any-issue-labels: 'Incomplete'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -267,7 +291,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Cannot-Replicate'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Known Issues
@@ -279,7 +303,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Known-Issue'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
@@ -292,7 +316,7 @@ jobs:
           issue-inactive-days: '2'
           include-any-issue-labels: 'Resolved'
           add-issue-labels: ''
-          remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Not-Planned Issues
@@ -304,7 +328,7 @@ jobs:
             This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
           include-any-issue-labels: 'Not-Planned'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'
 
       - name: Lock Unclear Issues
@@ -314,5 +338,5 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: 'Unclear'
-          remove-issue-labels: 'Pending, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
           process-only: 'issues'

@@ -119,7 +119,6 @@ In addition to the new functionality listed above, the following upsteam tokens 
 
 ## Divergence
 Implementation differences with the upstream base version v0.13.3 are:
-- **NVRAM Variables:** RefindPlus defaults to the filesystem proxy and not the hardware NVRAM when `use_nvram` is not explicitly set.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_tags_help` configuration token to switch it off.
