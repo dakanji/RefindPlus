@@ -62,7 +62,6 @@ decline_apfs_mute     |Disables supressesion of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
 decline_esp_filter    |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
-decline_nvme_load     |Disables the built in NvmExpress Driver
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
 decline_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 decline_tags_help     |Disables feature that ensures hidden tags can always be unhidden
@@ -91,6 +90,7 @@ renderer_text         |Provides a text renderer for text output when otherwise u
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
+supply_nvme           |Enables a built in NvmExpress Driver
 transient_boot        |Disables saving the last booted loader if not required
 unicode_collation     |Provides finetuned support for languages that use unicode text
 
@@ -124,7 +124,6 @@ Implementation differences with the upstream base version v0.13.3 are:
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_tags_help` configuration token to switch it off.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_reload_gop` configuration token to switch it off.
-- **NVMe Driver Provision:** RefindPlus installs a built in NvmExpressDxe driver when it detects an absence of NvmExpress capability on units with PCIe slots. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_nvme_load` configuration token to switch it off.
 - **AppleFramebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using a built in `SupplyAppleFB` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apple_fb` configuration token to switch it off.
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_load` configuration token to switch it off.
 - **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_mute` configuration token to switch it off.

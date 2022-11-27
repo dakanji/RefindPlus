@@ -839,7 +839,19 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
         }
 
         // Check EFI_ALREADY_STARTED to reuse the original NVME_CONTROLLER_PRIVATE_DATA.
-        if (Status != EFI_ALREADY_STARTED) {
+        if (Status == EFI_ALREADY_STARTED) {
+            Status = REFIT_CALL_6_WRAPPER(
+                gBS->OpenProtocol, Controller,
+                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &Passthru,
+                This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
+            );
+            if (EFI_ERROR(Status)) {
+                break;
+            }
+
+            Private = NVME_CONTROLLER_PRIVATE_DATA_FROM_PASS_THRU (Passthru);
+        }
+        else {
             Private = AllocateZeroPool (sizeof (NVME_CONTROLLER_PRIVATE_DATA));
             if (Private == NULL) {
                 Status = EFI_OUT_OF_RESOURCES;
@@ -934,18 +946,6 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
 
             NvmeRegisterShutdownNotification ();
         }
-        else {
-            Status = REFIT_CALL_6_WRAPPER(
-                gBS->OpenProtocol, Controller,
-                &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &Passthru,
-                This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_GET_PROTOCOL
-            );
-            if (EFI_ERROR(Status)) {
-                break;
-            }
-
-            Private = NVME_CONTROLLER_PRIVATE_DATA_FROM_PASS_THRU (Passthru);
-        }
 
         if (RemainingDevicePath == NULL) {
             // Enumerate all NVME namespaces in the controller
@@ -972,23 +972,20 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
         return EFI_SUCCESS;
     } while (0);
 
-    if ((Private != NULL) && (Private->Mapping != NULL)) {
-        PciIo->Unmap (PciIo, Private->Mapping);
-    }
-
-    if ((Private != NULL) && (Private->Buffer != NULL)) {
-        PciIo->FreeBuffer (PciIo, 6, Private->Buffer);
-    }
-
     if (Private != NULL) {
-        FREE_NVME_POOL(Private->ControllerData);
-    }
+        if (Private->Mapping != NULL) {
+            PciIo->Unmap (PciIo, Private->Mapping);
+        }
 
-    if (Private != NULL) {
+        if (Private->Buffer != NULL) {
+            PciIo->FreeBuffer (PciIo, 6, Private->Buffer);
+        }
+
         if (Private->TimerEvent != NULL) {
             REFIT_CALL_1_WRAPPER(gBS->CloseEvent, Private->TimerEvent);
         }
 
+        FREE_NVME_POOL(Private->ControllerData);
         FREE_NVME_POOL(Private);
     }
 
@@ -1228,7 +1225,6 @@ EFI_STATUS EFIAPI NvmExpressUnload (
 
   @retval EFI_SUCCESS               Driver loaded.
   @retval EFI_LOAD_ERROR            Driver Binding not sucessful.
-  @retval EFI_PROTOCOL_ERROR        Protocol interface install failed.
   @retval EFI_ALREADY_STARTED       Driver instance previously loaded.
 
 **/
@@ -1237,11 +1233,18 @@ EFI_STATUS EFIAPI NvmExpressLoad (
     IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
     EFI_STATUS   Status;
-    VOID        *TestDriverBinding;
+    VOID        *DummyProtocol;
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->LocateProtocol, &gEfiDriverBindingProtocolGuid,
-        NULL, &TestDriverBinding
+        gBS->HandleProtocol, ImageHandle,
+        &gEfiNvmExpressPassThruProtocolGuid, (VOID *) &DummyProtocol
+    );
+    if (!EFI_ERROR(Status)) {
+        return EFI_ALREADY_STARTED;
+    }
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol, &gEfiNvmExpressPassThruProtocolGuid,
+        NULL, (VOID *) &DummyProtocol
     );
     if (!EFI_ERROR(Status)) {
         return EFI_ALREADY_STARTED;
@@ -1266,9 +1269,6 @@ EFI_STATUS EFIAPI NvmExpressLoad (
         gBS->InstallMultipleProtocolInterfaces, &ImageHandle,
         &gEfiDriverSupportedEfiVersionProtocolGuid, &gNvmExpressDriverSupportedEfiVersion, NULL
     );
-    if (EFI_ERROR(Status)) {
-        Status = EFI_PROTOCOL_ERROR;
-    }
 
     return Status;
 }

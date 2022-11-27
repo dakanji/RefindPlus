@@ -103,15 +103,6 @@
 #
 #decline_esp_filter
 
-# Supply NVME driver. By default, RefindPlus is set up to always load
-# a built in version of the NvmExpressDxe driver which provides NVMe
-# support when unavailable. This is disabled when this token is on.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# NVMe support is provided (if required) when commented out
-#
-#decline_nvme_load
-
 # Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
 # By default, RefindPlus will prevent writes of certain items by processes such as
 # UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
@@ -449,6 +440,15 @@
 # Inactive when commented out (Does not change boot arguments)
 #
 #set_boot_args "-v"
+
+# Supply NVME driver. When this token is set, RefindPlus will
+# use its 'SupplyNVME' feature to load a built in NvmExpressDxe
+# driver to supply support when this is possible but unavailable.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not supply NVMe support)
+#
+#supply_nvme
 
 # RefindPlus defaults to storing the name of the last booted loader in
 # the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This

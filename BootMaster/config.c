@@ -1236,6 +1236,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"prefer_uga")) {
             GlobalConfig.PreferUGA = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"supply_nvme")) {
+            GlobalConfig.SupplyNVME = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"focus_nvram_fix")
             ||  MyStriCmp  (TokenList[0], L"decline_macos_filter")
         ) {
@@ -1250,13 +1253,6 @@ VOID ReadConfig (
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ReloadGOP = (DeclineSetting) ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_nvme_load")
-            ||  MyStriCmp  (TokenList[0], L"decline_nvmeload")
-        ) {
-            // DA_TAG: Accomodate Deprecation
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyNVME = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfs_load")
             ||  MyStriCmp  (TokenList[0], L"decline_apfsload")
