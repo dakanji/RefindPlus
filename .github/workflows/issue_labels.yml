@@ -39,7 +39,7 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Cancelled
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
   similarity_analysis:
@@ -69,7 +69,7 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Pending
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   add_label_user_reopen:
     name: Reopen Issue Label
@@ -81,7 +81,7 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Pending
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   add_label_user_open_enhance:
     name: Enhancement Request Label
@@ -94,7 +94,7 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1.1.0
         with:
           labels: Enhancement
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # Del Labels - https://github.com/actions-ecosystem/action-remove-labels
   del_label_user_reopen:
@@ -107,7 +107,7 @@ jobs:
       - uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           labels: Cancelled
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   del_label_user_close:
     name: Remove Misc Labels
@@ -125,4 +125,4 @@ jobs:
             Invalid
             Queries
             Unclear
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

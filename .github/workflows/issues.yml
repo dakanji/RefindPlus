@@ -29,46 +29,30 @@ jobs:
       - name: Close Resolved Issues
         uses: actions/stale@v6.0.1
         with:
-          repo-token: ${{ github.token }}
           stale-issue-message: ''
           close-issue-message: ''
           days-before-stale: 0
-          days-before-close: 0
+          days-before-close: 1
           exempt-assignees: ''
           stale-issue-label: 'Tagged'
           any-of-labels: 'Resolved'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Close Cancelled Issues
+      - name: Close Cancelled/Duplicate/Invalid/Wierd/Not-Planned Issues
         uses: actions/stale@v6.0.1
         with:
-          repo-token: ${{ github.token }}
           close-issue-message: >
-            This item is being closed as cancelled.
+            This item is being closed as a fix will not be attempted or the issue could not be replicated or is invalid or is a duplicate/known/cancelled issue.
           days-before-stale: 0
-          days-before-close: 0
+          days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
-          any-of-labels: 'Cancelled'
-
-      - name: Flag or Close Uncertain Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          stale-issue-message: >
-            This item has been flagged for closure as uncertain.
-          close-issue-message: >
-            This item is being closed as uncertain.
-          days-before-stale: 15
-          days-before-close: 22
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          remove-issue-stale-when-updated: true
-          any-of-labels: 'Uncertain'
+          any-of-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Flag or Close Incomplete Issues
         uses: actions/stale@v6.0.1
         with:
-          repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to missing required information.
           close-issue-message: >
@@ -79,11 +63,11 @@ jobs:
           stale-issue-label: 'Tagged'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Incomplete,'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Flag or Close No-Response Issues
         uses: actions/stale@v6.0.1
         with:
-          repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to a lack of response.
           close-issue-message: >
@@ -94,124 +78,21 @@ jobs:
           stale-issue-label: 'Stale'
           remove-issue-stale-when-updated: true
           any-of-labels: 'Queries'
-
-      - name: Flag or Close Inactive Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          stale-issue-message: >
-            This item has been flagged for closure due to inactivity.
-          close-issue-message: >
-            This item is being closed due to inactivity.
-          days-before-stale: 20
-          days-before-close: 28
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          remove-issue-stale-when-updated: true
-          exempt-issue-labels: 'Parked, Help-Wanted'
-
-      - name: Flag or Close Parked Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          stale-issue-message: >
-            This item has been flagged for closure due to inactivity.
-          close-issue-message: >
-            This item is being closed due to inactivity.
-          days-before-stale: 60
-          days-before-close: 88
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          remove-issue-stale-when-updated: true
-          any-of-labels: 'Parked'
-
-      - name: Flag or Close Help-Wanted Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          stale-issue-message: >
-            This item has been flagged for closure due to inactivity.
-          close-issue-message: >
-            This item is being closed due to inactivity.
-          days-before-stale: 120
-          days-before-close: 180
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          remove-issue-stale-when-updated: true
-          any-of-labels: 'Help-Wanted'
-
-      - name: Flag or Close Unclear Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          stale-issue-message: >
-            This item has been flagged for closure as not clear.
-          close-issue-message: >
-            This item is being closed as not clear.
-          days-before-stale: 0
-          days-before-close: 7
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          remove-issue-stale-when-updated: true
-          any-of-labels: 'Unclear'
-
-      - name: Close Duplicate Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          close-issue-message: >
-            This item is being closed as a known issue.
-          days-before-stale: 0
-          days-before-close: 0
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          any-of-labels: 'Duplicate, Known-Issue'
-
-      - name: Close Invalid Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          close-issue-message: >
-            This item is being closed as an invalid item.
-          days-before-stale: 0
-          days-before-close: 0
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          any-of-labels: 'Invalid'
-
-      - name: Close Wierd Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          close-issue-message: >
-            This item is being closed as the issue could not be replicated.
-          days-before-stale: 0
-          days-before-close: 0
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          any-of-labels: 'Cannot-Replicate'
-
-      - name: Close Not-Planned Issues
-        uses: actions/stale@v6.0.1
-        with:
-          repo-token: ${{ github.token }}
-          close-issue-message: >
-            This item is being closed as a fix will not be attempted.
-          days-before-stale: 0
-          days-before-close: 0
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          any-of-labels: 'Not-Planned'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Catchall Closer
         uses: actions/stale@v6.0.1
         with:
-          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to inactivity.
           close-issue-message: >
-            This item is being closed as abandoned.
-          days-before-stale: 180
-          days-before-close: 180
+            This item is being closed due to inactivity.
+          days-before-stale: 30
+          days-before-close: 30
+          exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
+          remove-issue-stale-when-updated: true
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Lock Threads - https://github.com/dessant/lock-threads
   lock:
@@ -222,121 +103,54 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
-      - name: Lock Abandoned Issues
+      - name: Lock Misc Issues
         uses: dessant/lock-threads@v3.0.0
         with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          add-issue-labels: 'Abandoned'
-          issue-inactive-days: '3'
-          include-any-issue-labels: 'Stale'
-          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted, Bug'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
-          process-only: 'issues'
-
-      - name: Lock Cancelled Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          add-issue-labels: ''
-          issue-inactive-days: '1'
-          include-any-issue-labels: 'Cancelled'
-          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted, Bug'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
-          process-only: 'issues'
-
-      - name: Lock Duplicate Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
-          issue-comment: >
-            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Duplicate'
+          include-any-issue-labels: 'Duplicate, Cancelled, Cannot-Replicate, Known-Issue, Resolved, Not-Planned'
           remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Lock Inactive Issues
+      - name: Lock Incomplete/Abandoned Issues
         uses: dessant/lock-threads@v3.0.0
         with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          add-issue-labels: 'Resolved'
-          issue-inactive-days: '3'
-          include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
-          process-only: 'issues'
-
-      - name: Lock Incomplete Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Abandoned'
-          issue-inactive-days: '3'
-          include-any-issue-labels: 'Incomplete'
+          issue-inactive-days: '5'
+          include-any-issue-labels: 'Stale, Incomplete'
           remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
-          process-only: 'issues'
-
-      - name: Lock Invalid Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
           issue-comment: >
-            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Invalid, Cannot-Replicate'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
-          process-only: 'issues'
-
-      - name: Lock Known Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          issue-comment: >
-            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Known-Issue'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
-          process-only: 'issues'
-
-      - name: Lock Resolved Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          issue-comment: >
-            This thread is being locked as resolved. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Resolved'
-          add-issue-labels: ''
-          remove-issue-labels: 'Parked, Prorogued, Help-Wanted, Pending, Stale, Tagged, Queries, Uncertain'
-          process-only: 'issues'
-
-      - name: Lock Not-Planned Issues
-        uses: dessant/lock-threads@v3.0.0
-        with:
-          github-token: ${{ github.token }}
-          issue-lock-reason: ''
-          issue-comment: >
-            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion.
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Not-Planned'
-          remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Lock Unclear Issues
         uses: dessant/lock-threads@v3.0.0
         with:
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '7'
-          include-any-issue-labels: 'Unclear'
+          include-any-issue-labels: 'Invalid, Unclear'
           remove-issue-labels: 'Pending, Stale, Tagged, Queries, Uncertain'
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion or raise a new issue if appropriate.
+          process-only: 'issues'
+
+      - name: Lock Inactive Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
+          issue-inactive-days: '3'
+          include-any-issue-labels: ''
+          exclude-any-issue-labels: 'Unclear, Parked, Prorogued, Help-Wanted'
+          remove-issue-labels: 'Pending, Stale, Tagged, Queries'
+          issue-comment: >
+            This thread is being locked. Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for further related discussion or raise a new issue if appropriate.
           process-only: 'issues'

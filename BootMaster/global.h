@@ -306,7 +306,7 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE Mode);
 
 // global types
 typedef struct _uint32_list {
-    UINT32               Value;
+    UINT32                Value;
     struct _uint32_list  *Next;
 } UINT32_LIST;
 
@@ -553,7 +553,7 @@ LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 
 
 /* Misc Extra Items - START */
-#define MY_OFFSET_OF(st, m) ((UINTN)((char *) &((st *)0)->m - (char *)0))
+#define MY_OFFSET_OF(st, m) ((UINTN)((char *) &((st *)0x100000)->m - (char *)0x100000))
 
 #define LOG_BLOCK_SEP         (0)
 #define LOG_BLANK_LINE_SEP    (1)
@@ -572,7 +572,8 @@ LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 #define LOG_LINE_EXIT        (14)
 
 VOID DebugLog (
-    IN  const CHAR8 *FormatString, ...
+    IN  const CHAR8 *FormatString,
+    ...
 );
 
 VOID DeepLoggger (

@@ -1555,8 +1555,8 @@ VOID AboutRefindPlus (VOID) {
         AboutMenu,
         PoolPrint (
             L"EFI Revision: %s %d.%02d",
-            ((gST->Hdr.Revision >> 16) == 1) ? L"EFI" : L"UEFI",
-            gST->Hdr.Revision >> 16,
+            ((gST->Hdr.Revision >> 16U) == 1) ? L"EFI" : L"UEFI",
+            gST->Hdr.Revision >> 16U,
             gST->Hdr.Revision & ((1 << 16) - 1)
         )
     );
@@ -1965,8 +1965,8 @@ VOID LogRevisionInfo (
     LOG_MSG(
         "%s:- '%-4s %d.%02d'",
         Name,
-        DoEFICheck ? ((Hdr->Revision >> 16 == 1) ? L"EFI" : L"UEFI") : L"Ver",
-        Hdr->Revision >> 16,
+        DoEFICheck ? (((Hdr->Revision >> 16U) == 1) ? L"EFI" : L"UEFI") : L"Ver",
+        Hdr->Revision >> 16U,
         Hdr->Revision & 0xffff
     );
 
@@ -2004,11 +2004,11 @@ VOID LogBasicInfo (VOID) {
     // Get AppleFramebuffer Count
     AppleFramebuffers = egCountAppleFramebuffers();
 
-    EfiMajorVersion = gST->Hdr.Revision >> 16;
+    EfiMajorVersion = (gST->Hdr.Revision >> 16U);
     WarnVersionEFI  = WarnRevisionUEFI = FALSE;
-    if (((gST->Hdr.Revision >> 16) != EfiMajorVersion) ||
-        ((gBS->Hdr.Revision >> 16) != EfiMajorVersion) ||
-        ((gRT->Hdr.Revision >> 16) != EfiMajorVersion)
+    if (((gST->Hdr.Revision >> 16U) != EfiMajorVersion) ||
+        ((gBS->Hdr.Revision >> 16U) != EfiMajorVersion) ||
+        ((gRT->Hdr.Revision >> 16U) != EfiMajorVersion)
     ) {
         WarnVersionEFI = TRUE;
     }
@@ -2060,9 +2060,9 @@ VOID LogBasicInfo (VOID) {
     /* NVRAM Storage Info */
     BOOLEAN QVInfoSupport = FALSE;
     LOG_MSG("Non-Volatile Storage:");
-    if ((gST->Hdr.Revision >> 16 > 1) &&
-        (gBS->Hdr.Revision >> 16 > 1) &&
-        (gRT->Hdr.Revision >> 16 > 1)
+    if (((gST->Hdr.Revision >> 16U) > 1) &&
+        ((gBS->Hdr.Revision >> 16U) > 1) &&
+        ((gRT->Hdr.Revision >> 16U) > 1)
     ) {
         UINTN CheckSize = MY_OFFSET_OF(EFI_RUNTIME_SERVICES, QueryVariableInfo) + sizeof(gRT->QueryVariableInfo);
         if (gRT->Hdr.HeaderSize < CheckSize) {
@@ -2216,8 +2216,8 @@ EFI_STATUS EFIAPI efi_main (
         VendorInfo = PoolPrint (
             L"%s %d.%02d",
             gST->FirmwareVendor,
-            gST->FirmwareRevision >> 16,
-            gST->FirmwareRevision & ((1 << 16) - 1)
+            gST->FirmwareRevision >> 16U,
+            gST->FirmwareRevision & ((1 << 16U) - 1)
         );
     }
 
