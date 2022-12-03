@@ -1,5 +1,10 @@
 0.13.3.AC (PRE-RELEASE):
 -----------------------
+- Adds `NvramProtectEx` Feature
+  * Extends the `NvramProtect` feature (if set) to Mac OS and `Unknown` UEFI boots
+  * The feature can be enabled using a new `nvram_protect_ex` configuration token
+    - Replaces the `FocusNvramFix` feature which has been removed
+    - Effectively restores the `EnableMacosFilter` feature previously replaced by `FocusNvramFix`
 - Fixes `QueryVariableInfo` Handling
   * Now properly handled on `UEFI-Mac` units
   * The output is however not currently presented as Apple firmare does not return accurate data

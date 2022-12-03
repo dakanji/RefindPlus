@@ -216,14 +216,6 @@
 #
 #disable_rescan_dxe
 
-# When this option is activated, the NvramProtect feature will only
-# be activated, if set, when explicitly booting into UEFI Windows.
-# This setting is only activated when Apple Firmware is detected.
-#
-# Inactive when commented out (Does not focus NvramProtect on UEFI Windows)
-#
-#focus_nvram_fix
-
 # When this option is activated, RefindPlus will process symlinked loaders.
 # Symlinks are ignored by default as they may result in undesirable outcomes.
 # This token may however be useful on Linux setups that use symlinked loaders.
@@ -304,6 +296,14 @@
 # Defaults to zero when commented out (Does not adjust the icon rows)
 #
 #icon_row_tune 5
+
+# When this option is activate, the RefindPlus "NvramProtect" feature will be
+# extended, if set, to cover booting into Mac OS and "unknown" UEFI files.
+# NB: This setting is only active, if set, on Apple Firmware.
+#
+# Inactive when commented out (Does not extend  NvramProtect)
+#
+#nvram_protect_ex
 
 # Allow/Prevent saving NVRAM variables based on an allowable variable size limit.
 # NVRAM variables larger than the specified limit will be discard. This setting

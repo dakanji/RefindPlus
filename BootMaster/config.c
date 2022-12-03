@@ -1242,11 +1242,8 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"supply_uefi")) {
             GlobalConfig.SupplyUEFI = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"focus_nvram_fix")
-            ||  MyStriCmp  (TokenList[0], L"decline_macos_filter")
-        ) {
-            // DA_TAG: Accomodate Deprecation ... No Need for DeclineSetting
-            GlobalConfig.FocusNvramFix = (!AppleFirmware)
+        else if (MyStriCmp (TokenList[0], L"nvram_protect_ex")) {
+            GlobalConfig.NvramProtectEx = (!AppleFirmware)
                 ? FALSE
                 : HandleBoolean (TokenList, TokenCount);
         }

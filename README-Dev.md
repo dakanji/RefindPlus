@@ -71,7 +71,6 @@ disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
-focus_nvram_fix       |Limits the `NvramProtect` feature to explicit UEFI Windows boots
 follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
@@ -79,6 +78,7 @@ hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not re
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Finetunes the resulting `icon_row_move` outcome
+nvram_protect_ex      |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 prefer_uga            |Prefers UGA use (when available) regardless of GOP availability

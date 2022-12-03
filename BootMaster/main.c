@@ -110,7 +110,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableNvramPanicLog = */ FALSE,
     /* DecoupleKeyF10 = */ FALSE,
     /* DisableAMFI = */ FALSE,
-    /* FocusNvramFix = */ FALSE,
+    /* NvramProtectEx = */ FALSE,
     /* FollowSymlinks = */ FALSE,
     /* PreferUGA = */ FALSE,
     /* SupplyNVME = */ FALSE,
@@ -2463,12 +2463,12 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      FocusNvramFix:- ",    OffsetNext                              );
+    LOG_MSG("%s      NvramProtectEx:- ",    OffsetNext                             );
     if (!AppleFirmware) {
         LOG_MSG("'Disabled'"                                                       );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.FocusNvramFix ? L"Active" : L"Inactive"       );
+        LOG_MSG("'%s'", GlobalConfig.NvramProtectEx ? L"Active" : L"Inactive"      );
     }
     LOG_MSG("\n\n");
 
@@ -3483,7 +3483,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     RunMacBootSupportFuncs();
 
-                    if (!GlobalConfig.FocusNvramFix) {
+                    if (GlobalConfig.NvramProtectEx) {
                         // Start NvramProtect
                         SetProtectNvram (SystemTable, TRUE);
                     }
@@ -3644,7 +3644,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    if (!GlobalConfig.FocusNvramFix) {
+                    if (GlobalConfig.NvramProtectEx) {
                         // Some UEFI Windows installers/updaters may not be in the standard path
                         // So, activate NvramProtect (if set and allowed) on unidentified loaders
                         SetProtectNvram (SystemTable, TRUE);

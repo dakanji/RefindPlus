@@ -427,7 +427,7 @@ typedef struct {
     BOOLEAN           DisableNvramPanicLog;
     BOOLEAN           DecoupleKeyF10;
     BOOLEAN           DisableAMFI;
-    BOOLEAN           FocusNvramFix;
+    BOOLEAN           NvramProtectEx;
     BOOLEAN           FollowSymlinks;
     BOOLEAN           PreferUGA;
     BOOLEAN           SupplyNVME;
