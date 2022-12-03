@@ -1239,6 +1239,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"supply_nvme")) {
             GlobalConfig.SupplyNVME = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"supply_uefi")) {
+            GlobalConfig.SupplyUEFI = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"focus_nvram_fix")
             ||  MyStriCmp  (TokenList[0], L"decline_macos_filter")
         ) {
@@ -1274,13 +1277,6 @@ VOID ReadConfig (
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SyncAPFS = (DeclineSetting) ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_uefi_emulate")
-            ||  MyStriCmp  (TokenList[0], L"decline_uefiemulate")
-        ) {
-            // DA_TAG: Accomodate Deprecation
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyUEFI = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apple_fb")
             ||  MyStriCmp  (TokenList[0], L"decline_applefb")

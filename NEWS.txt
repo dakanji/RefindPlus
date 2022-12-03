@@ -19,9 +19,10 @@
   * Alternatively, users can use the `scale_ui` token to scale UI elements down
   * The threshold below which the display is considered `LoRez` is 1025px
   * Ensures correct icon scales are maintained on `RescanAll` calls
-- Amends `SupplyNVME` Feature
-  * No longer supplied by default but when activated
+- Amends `SupplyNVME` and `SupplyUEFI` Features
+  * No longer supplied by default but when specifically activated
   * Hence, the "Opt-Out" `decline_nvme_load` token has been replaced by an "Opt-In `supply_nvme` token
+  * The "Opt-Out" `decline_uefi_emulate` token has also been replaced by an "Opt-In `supply_uefi` token
   * A previous failure to be activated when NVME support was absent has been fixed
 
 

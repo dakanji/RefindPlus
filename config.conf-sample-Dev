@@ -125,7 +125,7 @@
 # This permits running modern GPUs on some legacy units when they would
 # otherwise fail to work. The change is reverted automatically once it
 # is longer required to allow GPU activation except when the related
-# "decline_uefi_emulate" token is deactivated (overrides reverts).
+# "supply_uefi" setting is activate, as this overrides this revert.
 #
 # GPU Option ROMs are reinstalled (if required) when commented out
 #
@@ -156,17 +156,6 @@
 # The "TextHelp" feature is enabled when commented out
 #
 #decline_text_help
-
-# Emulate UEFI 2.x support. By default, RefindPlus is set up to always
-# emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
-# available. It additionally modifies the EFI Revision value to UEFI 2.3.
-# This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
-# as Legacy Macs as several such tools only require CreateEventEx to work.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# UEFI 2.x emulation is enabled via "SupplyUEFI" when commented out
-#
-#decline_uefi_emulate
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -449,6 +438,17 @@
 # Inactive when commented out (Does not supply NVMe support)
 #
 #supply_nvme
+
+# Emulate UEFI 2.x support. The RefindPlus "SupplyUEFI" feature can
+# emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
+# available. It additionally modifies the EFI Revision value to UEFI 2.3.
+# This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
+# as Legacy Macs as several such tools only require CreateEventEx to work.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# UEFI 2.x emulation is not provided when commented out
+#
+#supply_uefi
 
 # RefindPlus defaults to storing the name of the last booted loader in
 # the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
