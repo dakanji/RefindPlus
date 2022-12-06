@@ -595,7 +595,7 @@ extern VOID LogPadding (BOOLEAN Increment);
 
 #   define ALT_LOG(level, type, ...)                                             \
         do {                                                                     \
-            if (KernelNotStarted) {                                              \
+            if (!gKernelStarted) {                                               \
                 gLogTemp = PoolPrint (__VA_ARGS__);                              \
                 DeepLoggger (level, type, &gLogTemp);                            \
             }                                                                    \
@@ -638,14 +638,14 @@ extern VOID LogPadding (BOOLEAN Increment);
 #   define LOG_DECREMENT(...) LogPadding (FALSE);
 #   define BREAD_CRUMB(...)                                                      \
         do {                                                                     \
-            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {       \
+            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {        \
                 gLogTemp = PoolPrint (__VA_ARGS__);                              \
                 DeepLoggger (2, LOG_LINE_FORENSIC, &gLogTemp);                   \
             }                                                                    \
         } while (0)
 #   define LOG_SEP(...)                                                          \
         do {                                                                     \
-            if (KernelNotStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {       \
+            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {        \
                 gLogTemp = PoolPrint (__VA_ARGS__);                              \
                 DeepLoggger (2, LOG_BLOCK_SEP, &gLogTemp);                       \
             }                                                                    \

@@ -210,8 +210,7 @@ UINT32                 AccessFlagsBoot      = ACCESS_FLAGS_BOOT;
 UINT32                 AccessFlagsFull      = ACCESS_FLAGS_FULL;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
-BOOLEAN                KernelNotStarted     = TRUE;
-BOOLEAN                KernelNowRunning     = FALSE;
+BOOLEAN                gKernelStarted       = FALSE;
 BOOLEAN                IsBoot               = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
@@ -480,7 +479,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     #if REFIT_DEBUG > 0
     CHAR16 *LogStatus = NULL;
-    if (!KernelNowRunning) {
+    if (!gKernelStarted) {
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
@@ -494,7 +493,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
 
-    if (!KernelNowRunning) {
+    if (!gKernelStarted) {
         // Do not free LogNameTmp
         CHAR16 *LogNameTmp = NULL;
         if (GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid)) {
@@ -576,51 +575,18 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 } // EFI_STATUS EFIAPI gRTSetVariableEx()
 
 static
-VOID ConvertAddress (
-    IN UINTN       Type
-) {
-    if (KernelNowRunning) {
-        // Early Return
-        return;
-    }
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    switch (Type) {
-        case  0:  MsgStr = L"ExitBootServices"    ;   break;
-        case  1:  MsgStr = L"VirtualAddressChange";   break;
-        default:  MsgStr = L"Default Event Type"  ;   break; // Just in case and for expansion
-    }
-
-    // DA-TAG: Embellished placebo log entries
-    //         To flag logging and memory access halt
-    LOG_MSG("\n\n");
-    LOG_MSG("Received OS_Loader Input:");
-    LOG_MSG("%s  - Handle Event:- '%s'", OffsetNext, MsgStr);
-    LOG_MSG("%s    * Translate SetVariable Hook for Kernel ... Success", OffsetNext);
-    LOG_MSG("%s    * Activate Local 'Kernel Started' State ... Success", OffsetNext);
-    LOG_MSG("\n");
-    LOG_MSG("Terminating RefindPlus Memory/Filesystem Activity");
-    END_TAG();
-    #endif
-
-    gRT->ConvertPointer (0, (VOID **) &OrigSetVariableRT);
-
+VOID FlagKernelActive (VOID ) {
     // DA-TAG: Flag that the kernel has started
-    //         To disable post-boot memory access
-    //         Two flags to pass static analysis
-    //         'KernelNotStarted' used globally
-    //         'KernelNowRunning' used only in this file
-    KernelNotStarted = FALSE;
-    KernelNowRunning = TRUE;
-} // static VOID ConvertAddress()
+    //         To disable BootServices access
+    gKernelStarted = TRUE;
+} // static VOID FlagKernelActive()
 
 static
 VOID EFIAPI HandleExitBootServicesEvent (
     IN EFI_EVENT   Event,
     IN VOID       *Context
 ) {
-    ConvertAddress (0);
+    FlagKernelActive();
 } // static VOID EFIAPI HandleExitBootServicesEvent()
 
 static
@@ -628,7 +594,8 @@ VOID EFIAPI HandleVirtualAddressChangeEvent (
     IN EFI_EVENT   Event,
     IN VOID       *Context
 ) {
-    ConvertAddress (1);
+    gRT->ConvertPointer (EFI_OPTIONAL_PTR, (VOID **) &OrigSetVariableRT);
+    FlagKernelActive();
 } // static VOID EFIAPI HandleExitBootServicesEvent()
 
 static

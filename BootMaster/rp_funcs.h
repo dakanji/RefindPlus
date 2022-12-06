@@ -8,12 +8,12 @@
 #ifndef _RP_FUNCS_H
 #define _RP_FUNCS_H
 
-extern BOOLEAN KernelNotStarted;
+extern BOOLEAN gKernelStarted;
 
 // Control NativeLogger ... Especially Nested Instances
 #define MY_NATIVELOGGER_SET                             \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             ForceNative = FALSE;                        \
             if (!MuteLogger) {                          \
                 ForceNative  = TRUE;                    \
@@ -23,7 +23,7 @@ extern BOOLEAN KernelNotStarted;
     } while (0)
 #define MY_NATIVELOGGER_OFF                             \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (ForceNative) {                          \
                 NativeLogger = FALSE;                   \
             }                                           \
@@ -33,7 +33,7 @@ extern BOOLEAN KernelNotStarted;
 // Control MuteLogger ... Especially Nested Instances
 #define MY_MUTELOGGER_SET                               \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             CheckMute = FALSE;                          \
             if (!MuteLogger) {                          \
                 CheckMute  = TRUE;                      \
@@ -43,7 +43,7 @@ extern BOOLEAN KernelNotStarted;
     } while (0)
 #define MY_MUTELOGGER_OFF                               \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (CheckMute) {                            \
                 MuteLogger = FALSE;                     \
             }                                           \
@@ -53,7 +53,7 @@ extern BOOLEAN KernelNotStarted;
 // Control HybridLogger ... Especially Nested Instances
 #define MY_HYBRIDLOGGER_SET                             \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             HybridLogger = FALSE;                       \
             if (NativeLogger) {                         \
                 HybridLogger =  TRUE;                   \
@@ -63,7 +63,7 @@ extern BOOLEAN KernelNotStarted;
     } while (0)
 #define MY_HYBRIDLOGGER_OFF                             \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (HybridLogger) {                         \
                 NativeLogger =  TRUE;                   \
                 HybridLogger = FALSE;                   \
@@ -73,7 +73,7 @@ extern BOOLEAN KernelNotStarted;
 
 #define MY_FAKE_FREE(Pointer)                           \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (Pointer != NULL) {                      \
                 Pointer = NULL;                         \
             }                                           \
@@ -83,7 +83,7 @@ extern BOOLEAN KernelNotStarted;
 // Dereference to NULL When Actually Needed
 #define MY_SOFT_FREE(Pointer)                           \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (Pointer != NULL) {                      \
                 Pointer = NULL;                         \
             }                                           \
@@ -92,7 +92,7 @@ extern BOOLEAN KernelNotStarted;
 
 #define MY_FREE_POOL(Pointer)                           \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (Pointer != NULL) {                      \
                 FreePool (Pointer);                     \
                 Pointer = NULL;                         \
@@ -102,7 +102,7 @@ extern BOOLEAN KernelNotStarted;
 
 #define MY_FREE_IMAGE(Image)                            \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (Image != NULL) {                        \
                 if (Image->PixelData != NULL) {         \
                     FreePool (Image->PixelData);        \
@@ -116,7 +116,7 @@ extern BOOLEAN KernelNotStarted;
 
 #define MY_FREE_FILE(File)                              \
     do {                                                \
-        if (KernelNotStarted) {                         \
+        if (!gKernelStarted) {                          \
             if (File != NULL) {                         \
                 if (File->Buffer != NULL) {             \
                     FreePool (File->Buffer);            \

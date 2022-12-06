@@ -265,7 +265,7 @@ VOID SaveMessageToDebugLogFile (
 VOID WayPointer (
     IN CHAR16 *Msg
 ) {
-    if (!KernelNotStarted) {
+    if (gKernelStarted) {
         // Early Return
         return;
     }
@@ -386,7 +386,7 @@ VOID EFIAPI DebugLog (
     ...
 ) {
     // Abort if Kernel has started
-    if(!KernelNotStarted) return;
+    if(gKernelStarted) return;
 
     // Make sure writing is allowed/possible
     if (MuteLogger

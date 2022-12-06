@@ -10,6 +10,9 @@
   * The output is however not currently presented as Apple firmare does not return accurate data
 - Fixes Misc Static Analysis Flags
   * Some are related to filesystem drivers; for which updated versions are created accordingly
+- Improves 'SetVariable' Hook/Event Handling
+  * Misc improvements including improved memory management
+  * Relevant to the `NvramProtect` feature
 - Improves Mac Recovery Tool Scan
   * Now skips some invalid entries such as APFS Recovery partitions
 - Improves ScreenShot Feature
