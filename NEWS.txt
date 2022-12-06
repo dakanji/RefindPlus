@@ -4,10 +4,10 @@
   * Extends the `NvramProtect` feature (if set) to Mac OS and `Unknown` UEFI boots
   * The feature can be enabled using a new `nvram_protect_ex` configuration token
     - Replaces the `FocusNvramFix` feature which has been removed
-    - Effectively restores the `EnableMacosFilter` feature previously replaced by `FocusNvramFix`
+    - Essentially restores the `EnableMacosFilter` feature previously replaced by `FocusNvramFix`
 - Fixes `QueryVariableInfo` Handling
   * Now properly handled on `UEFI-Mac` units
-  * The output is however not currently presented as Apple firmare does not return accurate data
+  * The output is not currently presented however as Apple firmare does not return accurate information
 - Fixes Misc Static Analysis Flags
   * Some are related to filesystem drivers; for which updated versions are created accordingly
 - Improves 'SetVariable' Hook/Event Handling
@@ -18,7 +18,7 @@
 - Improves ScreenShot Feature
   * Now clears the keystroke buffer in `egScreenShot` to mitigate against stuck keys
 - Improves Clean NVRAM Feature
-  * Particularly regarding clearing OpenCore related NVRAM Variables
+  * Particularly regarding clearing OpenCore related variables
 - Improves Time Bound Primed Buffer Mitigation
   * Rationalises intervention threshold
 - Improves UI Element Scaling
@@ -32,6 +32,9 @@
   * Hence, the "Opt-Out" `decline_nvme_load` token has been replaced by an "Opt-In `supply_nvme` token
   * The "Opt-Out" `decline_uefi_emulate` token has also been replaced by an "Opt-In `supply_uefi` token
   * A previous failure to be activated when NVME support was absent has been fixed
+- Renames Misc Configuration Tokens
+  * `decline_tags_help` to `decline_help_tags`
+  * `decline_text_help` to `decline_help_text`
 
 
 0.13.3.AB (06 Sep 2022):

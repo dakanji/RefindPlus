@@ -107,7 +107,7 @@
 # By default, RefindPlus will prevent writes of certain items by processes such as
 # UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
 # result in an overrun that will damage the BootROM (also stored on the NVRAM) and
-# results in an inability to boot. This token is only activated on Apple Firmware.
+# results in an inability to boot. This token is only activated on Apple firmware.
 #
 # The "NvramProtect" feature is enabled when commented out
 #
@@ -140,22 +140,22 @@
 #
 # The "hidden_tags" tool is always made available when commented out
 #
-#decline_tags_help
+#decline_help_tags
 
 # RefindPlus defaults to using complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
 # coulr of first pixel in the pixel array (top left pixel). This may not always embody
 # all pixels in banners with multiple colours. Thus, the selected complementary colour
 # for the text may not be suitable for all portions of the title banner in such cases.
-# In such cases, users may wish to disable the "TextHelp" feature by activating this
+# In such cases, users may wish to disable the "HelpText" feature by activating this
 # token, which will make the text either white or black, based on the brightness of
 # colour of the first pixel in the pixel array instead. NB: Only applies to custom
 # title banners and complementary colours are always used for text when using the
 # default RefindPlus title banner, as this always has a single solid colour.
 #
-# The "TextHelp" feature is enabled when commented out
+# The "HelpText" feature is enabled when commented out
 #
-#decline_text_help
+#decline_help_text
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -299,9 +299,9 @@
 
 # When this option is activate, the RefindPlus "NvramProtect" feature will be
 # extended, if set, to cover booting into Mac OS and "unknown" UEFI files.
-# NB: This setting is only active, if set, on Apple Firmware.
+# NB: This setting is only active, if set, on Apple firmware.
 #
-# Inactive when commented out (Does not extend  NvramProtect)
+# Inactive when commented out (Does not extend NvramProtect)
 #
 #nvram_protect_ex
 
@@ -1122,12 +1122,12 @@
 #
 #include manual.conf
 
-# Sample manual configuration stanzas. Each begins with a "menuentry"
-# keyword followed by a name that is to appear in the menu (use
-# quotes if the name contains spaces) and an open curly brace,
-# ("{"). Each entry ends with a close curly brace ("}").
-# Common keywords in stanza are:
+# Manual configuration stanzas. Each one begins with a "menuentry"
+# keyword followed by a name that will appear in the menu screen
+# (use quotes if the name has spaces) and an open curly brace,
+# ("{"). Each stanza ends with a close curly brace, ("}").
 #
+# Common keywords in manual stanzas are:
 #  disabled    - use alone or set to "yes" to disable this entry.
 #  ostype      - OS type code to determine boot options available by
 #                pressing Insert. Valid values are "MacOS", "Linux",

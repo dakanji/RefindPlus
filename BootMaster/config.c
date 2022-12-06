@@ -1300,19 +1300,21 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_tags_help")
+        else if (MyStriCmp (TokenList[0], L"decline_help_tags")
+            ||  MyStriCmp  (TokenList[0], L"decline_tags_help")
             ||  MyStriCmp  (TokenList[0], L"decline_tagshelp")
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.TagsHelp = (DeclineSetting) ? FALSE : TRUE;
+            GlobalConfig.HelpTags = (DeclineSetting) ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_text_help")
-            ||  MyStriCmp  (TokenList[0], L"decline_texthelp")
+        else if (MyStriCmp (TokenList[0], L"decline_help_text")
+            ||  MyStriCmp  (TokenList[0], L"decline_text_help")
+            ||  MyStriCmp  (TokenList[0], L"decline_tagshelp")
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.TextHelp = (DeclineSetting) ? FALSE : TRUE;
+            GlobalConfig.HelpText = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"csr_normalise")
             ||  MyStriCmp  (TokenList[0], L"normalise_csr")
@@ -1347,7 +1349,7 @@ VOID ReadConfig (
         GlobalConfig.EnableMouse = FALSE;
     }
 
-    if (GlobalConfig.TagsHelp) {
+    if (GlobalConfig.HelpTags) {
         // "TagHelp" feature is active ... Set "found" flag to false
         BOOLEAN HiddenTagsFlag = FALSE;
         // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool

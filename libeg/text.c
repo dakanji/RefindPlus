@@ -170,7 +170,7 @@ VOID egRenderText (
             if (LightFontImage == NULL) return;
 
             EG_PIXEL OurFont = {0xFF, 0xFF, 0xFF, 0};
-            if (DefaultBanner || GlobalConfig.TextHelp) {
+            if (DefaultBanner || GlobalConfig.HelpText) {
                 OurFont = FontComplement();
             }
 
