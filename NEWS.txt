@@ -1,4 +1,4 @@
-0.13.3.AC (PRE-RELEASE):
+0.13.3.AC (06 Dec 2022):
 -----------------------
 - Adds `NvramProtectEx` Feature
   * Extends the `NvramProtect` feature (if set) to Mac OS and `Unknown` UEFI boots
