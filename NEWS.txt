@@ -1,3 +1,8 @@
+0.13.3.AD (PRE_RELEASE):
+-----------------------
+- PENDING
+
+
 0.13.3.AC (06 Dec 2022):
 -----------------------
 - Adds `NvramProtectEx` Feature
