@@ -1247,6 +1247,10 @@ VOID ReadConfig (
                 ? FALSE
                 : HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"enable_esp_filter")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;
+        }
         else if (MyStriCmp (TokenList[0], L"decline_reload_gop")
             ||  MyStriCmp  (TokenList[0], L"decline_reloadgop")
         ) {
@@ -1292,13 +1296,6 @@ VOID ReadConfig (
             GlobalConfig.NvramProtect = (!AppleFirmware)
                 ? FALSE
                 : (DeclineSetting) ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_esp_filter")
-            ||  MyStriCmp  (TokenList[0], L"decline_espfilter")
-        ) {
-            // DA_TAG: Accomodate Deprecation
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ScanAllESP = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_help_tags")
             ||  MyStriCmp  (TokenList[0], L"decline_tags_help")
