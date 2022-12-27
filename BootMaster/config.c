@@ -1341,6 +1341,12 @@ VOID ReadConfig (
     } // for ;;
     FreeTokenLine (&TokenList, &TokenCount);
 
+    // Forced Default Settings
+    if (AppleFirmware)  GlobalConfig.RansomDrives   = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
+    if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
+
     // Prioritise EnableTouch
     if (GlobalConfig.EnableTouch) {
         GlobalConfig.EnableMouse = FALSE;
