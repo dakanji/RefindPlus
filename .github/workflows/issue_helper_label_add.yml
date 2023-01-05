@@ -35,11 +35,11 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   label_add_abandoned:
     name: Label - Add - Abandoned
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Abandoned'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,11 +48,11 @@ jobs:
 
   label_add_cannot-cancelled:
     name: Label - Add - Cancelled
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Cancelled'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,11 +61,11 @@ jobs:
 
   label_add_cannot-replicate:
     name: Label - Add - Cannot-Replicate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -74,11 +74,11 @@ jobs:
 
   label_add_incomplete:
     name: Label - Add - Incomplete
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Incomplete'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -87,11 +87,11 @@ jobs:
 
   label_add_invalid:
     name: Label - Add - Invalid
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Invalid'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -100,11 +100,11 @@ jobs:
 
   label_add_pending:
     name: Label - Add - Pending
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Pending'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,11 +113,11 @@ jobs:
 
   label_add_parked:
     name: Label - Add - Parked
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Parked'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -126,11 +126,11 @@ jobs:
 
   label_add_prorogued:
     name: Label - Add - Prorogued
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Prorogued'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -139,11 +139,11 @@ jobs:
 
   label_add_resolved:
     name: Label - Add - Resolved
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Resolved'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -152,11 +152,11 @@ jobs:
 
   label_add_tagged:
     name: Label - Add - Tagged
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Tagged'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -165,11 +165,11 @@ jobs:
 
   label_add_queries:
     name: Label - Add - Queries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Queries'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -178,11 +178,11 @@ jobs:
 
   label_add_upstream:
     name: Label - Add - Upstream
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Upstream'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -191,11 +191,11 @@ jobs:
 
   label_add_wontfix:
     name: Label - Add - Not-Planned
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Not-Planned'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}

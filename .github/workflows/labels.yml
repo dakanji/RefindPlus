@@ -15,10 +15,10 @@ jobs:
   # Auto Labels - https://github.com/dessant/label-actions
   auto_labels:
     name: Handle Labels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-      - uses: dessant/label-actions@v2.2.0
+      - uses: dessant/label-actions@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config-path: '.github/label-config.yml'

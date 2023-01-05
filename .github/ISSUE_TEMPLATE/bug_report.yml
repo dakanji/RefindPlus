@@ -76,12 +76,13 @@ body:
     attributes:
       label: Debug Log
       description: |
-        Please run the RefindPlus "DBG" file and add debug logs.
+        Please run the RefindPlus 'DBG' efi and add debug logs.
         Kindly attach logs and do not paste the contents directly.
         You can attach logs by dragging/dropping on the field below.
       placeholder: |
         Reports not requiring log files are typically best under Discussions.
         Reports without log files will be automatically closed in most cases.
+        Debug logs at Log Level '0' are preferred unless otherwise indicated.
     validations:
       required: true
   - type: textarea
@@ -89,7 +90,7 @@ body:
     attributes:
       label: Additional Context
       description: |
-        Any additional details that may provide clarity on the problem.
+        Additional details that may provide clarity on the problem.
       placeholder: |
         You can attach files by dragging/dropping them on this field.
         You can also add screenshots to shed more light on the problem.

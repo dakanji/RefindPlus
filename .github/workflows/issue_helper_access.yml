@@ -27,11 +27,11 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_open:
     name: Issue - Open
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Open'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'open-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,11 +39,11 @@ jobs:
 
   issue_close:
     name: Issue - Close
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Close'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'close-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -51,11 +51,11 @@ jobs:
 
   issue_comment_delete:
     name: Issue - Comment - Delete
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Comment - Delete'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'delete-comment'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -63,11 +63,11 @@ jobs:
 
   issue_thread_lock:
     name: Issue - Thread - Lock
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Thread - Lock'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'lock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -75,11 +75,11 @@ jobs:
 
   issue_thread_unlock:
     name: Issue - Thread - Unlock
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Thread - Unlock'
     steps:
-      - uses: actions-cool/issues-helper@v3.3.2
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'unlock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}

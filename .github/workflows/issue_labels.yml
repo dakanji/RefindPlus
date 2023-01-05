@@ -15,7 +15,7 @@ jobs:
   # Check Labels - https://github.com/mheap/github-action-required-labels
   add_label_user_close_check:
     name: Close Issue Label - Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
@@ -29,14 +29,14 @@ jobs:
 
   # Add  Labels  - https://github.com/actions-ecosystem/action-add-labels
   add_label_user_close_act:
-    name: Close Issue Label - Act
+    name: Close Issue Label - Cancel
     needs: add_label_user_close_check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-add-labels@v1.1.0
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Cancelled
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,15 +44,15 @@ jobs:
   # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
   similarity_analysis:
     name: Check Similarity
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
-      - uses: actions-cool/issues-similarity-analysis@v1.2.3
+      - uses: actions-cool/issues-similarity-analysis@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          since-days: 270
-          filter-threshold: 0.6
+          since-days: 450
+          filter-threshold: 0.45
           comment-title: '### Similarity Analysis'
           comment-body: '[Score: ${similarity}] #${number}'
           show-footer: false
@@ -61,24 +61,24 @@ jobs:
   add_label_user_open:
     name: Default Issue Label
     needs: similarity_analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-add-labels@v1.1.0
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Pending
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   add_label_user_reopen:
     name: Reopen Issue Label
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-add-labels@v1.1.0
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Pending
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -86,12 +86,12 @@ jobs:
   add_label_user_open_enhance:
     name: Enhancement Request Label
     needs: similarity_analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-add-labels@v1.1.0
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Enhancement
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -99,30 +99,79 @@ jobs:
   # Del Labels - https://github.com/actions-ecosystem/action-remove-labels
   del_label_user_reopen:
     name: Remove Cancelled Label
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-remove-labels@v1.3.0
+      - uses: actions-ecosystem/action-remove-labels@v1
         with:
           labels: Cancelled
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   del_label_user_close:
     name: Remove Misc Labels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-remove-labels@v1.3.0
+      - uses: actions-ecosystem/action-remove-labels@v1
         with:
           labels: |
+            Stale
             Tagged
             Pending
+            Cannot-Replicate
+            Known-Issue
             Incomplete
+            Uncertain
+            Unclear
             Invalid
             Queries
             Unclear
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  bounce_issue_check1:
+    name: Bounce Issue - Check1
+    runs-on: ubuntu-20.04
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+      - uses: mheap/github-action-required-labels@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 1
+          labels: "Bug, Enhancement"
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  bounce_issue_check2:
+    name: Bounce Issue - Check2
+    runs-on: ubuntu-20.04
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+      - uses: mheap/github-action-required-labels@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 0
+          labels: "Not-Planned"
+
+  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  bounce_issue_act:
+    name: Bounce Issue - Act
+    needs: [bounce_issue_check1, bounce_issue_check2]
+    runs-on: ubuntu-20.04
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'open-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
