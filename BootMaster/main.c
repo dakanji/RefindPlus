@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -1485,7 +1485,7 @@ VOID AboutRefindPlus (VOID) {
     );
 
     AddMenuInfoLine (AboutMenu, L""                                                       );
-    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2022 Dayo Akanji and Others"         );
+    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others"         );
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith"     );
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer"   );
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others");
@@ -1998,13 +1998,8 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         Priority = Stability Over Features",   OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ProvideConsoleGOP'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReMapOpenProtocol'",     OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'UseTextRenderer'",       OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'PassUgaThrough'",        OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UseDirectGop'",          OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'NvramProtect'",          OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'SilenceAPFS'",           OffsetNext);
             LOG_MSG("%s         * Disabled:- 'SupplyUEFI'",            OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'SupplyAPFS'",            OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReloadGOP'",             OffsetNext);
 #endif
         }
@@ -2355,14 +2350,10 @@ EFI_STATUS EFIAPI efi_main (
     if (!AllowTweakUEFI) {
         // DA-TAG: Investigate This
         //         Items that may conflict with EFI version mismatch
+        //         NB: 'ReMapOpenProtocol' additionally disabled elsewhere
         GlobalConfig.ProvideConsoleGOP   = FALSE;
-        GlobalConfig.UseTextRenderer     = FALSE;
-        GlobalConfig.PassUgaThrough      = FALSE;
         GlobalConfig.UseDirectGop        = FALSE;
-        GlobalConfig.NvramProtect        = FALSE;
-        GlobalConfig.SilenceAPFS         = FALSE;
         GlobalConfig.SupplyUEFI          = FALSE;
-        GlobalConfig.SupplyAPFS          = FALSE;
         GlobalConfig.ReloadGOP           = FALSE;
     }
 

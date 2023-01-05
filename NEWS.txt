@@ -1,5 +1,8 @@
 0.13.3.AD (PRE_RELEASE):
 -----------------------
+- Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
+  * The DBG build had an invalid memory allocation instance that results in a hang when logging detection
+  * Improved overall handling by reducing the items disabled on detection
 - Fixes `Forced Default` Config Settings
   * Forced Defaults, typically based on firmware type, could be skipped under some circumstances
   * This gap has now been closed

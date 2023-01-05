@@ -1084,7 +1084,7 @@ VOID egInitScreen (VOID) {
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Assess Graphics Output Protocol ... ok",
+                    L"Assess Graphics Output Protocol ... ok%s",
                     (!AllowTweakUEFI)
                         ? L" (  A S S U M E D  )"
                         : L""
