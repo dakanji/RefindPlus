@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -487,15 +487,31 @@ INTN FindMenuShortcutEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16            *Defaults
 ) {
-    UINTN    ShortcutLength, i, j = 0;
+    UINTN    i, j;
     CHAR16  *Shortcut;
     BOOLEAN  FoundMatch;
 
+    j = 0;
+    FoundMatch = FALSE;
     while ((Shortcut = FindCommaDelimited (Defaults, j)) != NULL) {
-        i = 0;
-        FoundMatch = FALSE;
-        ShortcutLength = StrLen (Shortcut);
-        if (ShortcutLength < 2) {
+        if (StrLen (Shortcut) > 1) {
+            for (i = 0; i < Screen->EntryCount; i++) {
+                if (MyStriCmp (Shortcut, Screen->Entries[i]->Title)) {
+                    FoundMatch = TRUE;
+                    break;
+                }
+            } // for
+
+            if (!FoundMatch) {
+                for (i = 0; i < Screen->EntryCount; i++) {
+                    if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
+                        FoundMatch = TRUE;
+                        break;
+                    }
+                } // for
+            }
+        }
+        else {
             if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z') {
                 Shortcut[0] -= ('a' - 'A');
             }
@@ -510,22 +526,7 @@ INTN FindMenuShortcutEntry (
                     }
                 } // for
             }
-        }
-        else {
-            for (i = 0; i < Screen->EntryCount; i++) {
-                if (MyStriCmp (Shortcut, Screen->Entries[i]->Title)) {
-                    FoundMatch = TRUE;
-                    break;
-                }
-            } // for
-
-            for (i = 0; i < Screen->EntryCount; i++) {
-                if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
-                    FoundMatch = TRUE;
-                    break;
-                }
-            } // for
-        } // if/else ShortcutLength < 2
+        } // if/else StrLen (Shortcut) > 1
 
         MY_FREE_POOL(Shortcut);
 

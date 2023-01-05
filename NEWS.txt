@@ -6,6 +6,8 @@
 - Fixes `Forced Default` Config Settings
   * Forced Defaults, typically based on firmware type, could be skipped under some circumstances
   * This gap has now been closed
+- Improves `DefaultSelection` Feature
+  * A substring match is now only attempted if an exact match fails
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
