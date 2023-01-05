@@ -1,6 +1,10 @@
 /** @file
     Provides simple log services to memory buffer.
 **/
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ */
 
 #ifndef __MEMLOG_LIB_H__
 #define __MEMLOG_LIB_H__
@@ -81,5 +85,11 @@ UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID);
 
 UINT64 GetCurrentMS (VOID);
 
+#if REFIT_DEBUG > 0
+VOID EFIAPI DebugLog (
+    IN const CHAR8 *FormatString,
+    ...
+);
+#endif
 
 #endif // __MEMLOG_LIB_H__

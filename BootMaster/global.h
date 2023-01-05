@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -571,11 +571,6 @@ LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 #define LOG_LINE_FORENSIC    (13)
 #define LOG_LINE_EXIT        (14)
 
-VOID DebugLog (
-    IN  const CHAR8 *FormatString,
-    ...
-);
-
 VOID DeepLoggger (
     IN  INTN     level,
     IN  INTN     type,
@@ -592,6 +587,10 @@ extern CHAR16 *gLogTemp;
 
 #if REFIT_DEBUG > 0
 extern VOID LogPadding (BOOLEAN Increment);
+extern VOID EFIAPI DebugLog (
+    IN const CHAR8 *FormatString,
+    ...
+);
 
 #   define ALT_LOG(level, type, ...)                                             \
         do {                                                                     \

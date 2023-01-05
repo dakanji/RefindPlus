@@ -1,5 +1,9 @@
 0.13.3.AD (PRE_RELEASE):
 -----------------------
+- Fixes Misc Alt Build Function Duplication Issues
+  * Addresses issues reported using the build process at https://github.com/xaionaro/edk2-builder-docker
+    - Updates `LodePNG` to Version 20221108
+    - Deduplicates `DebugLog` function and aligns calling convention
 - Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
   * The DBG build had an invalid memory allocation instance that results in a hang when logging detection
   * Improved overall handling by reducing the items disabled on detection
