@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -71,7 +71,7 @@
 extern UINTN    AppleFramebuffers;
 extern BOOLEAN  ForceTextOnly;
 extern BOOLEAN  AllowTweakUEFI;
-extern BOOLEAN  AcquireErrorGOP;
+extern BOOLEAN  ObtainHandleGOP;
 extern EG_PIXEL MenuBackgroundPixel;
 
 
@@ -808,7 +808,10 @@ BOOLEAN egInitUGADraw (
     #if REFIT_DEBUG > 0
     LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
     #endif
-    if (EFI_ERROR(Status)) {
+    if (!EFI_ERROR(Status)) {
+        FoundHandleUGA = TRUE;
+    }
+    else {
         // Try Locating by Handle
         Status = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer, ByProtocol,
@@ -943,7 +946,7 @@ VOID egInitScreen (VOID) {
 
     // Get GOPDraw Protocol
     XFlag = EFI_NOT_STARTED;
-    if (FoundHandleUGA && (SetPreferUGA || AcquireErrorGOP)) {
+    if (FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
         LOG_MSG("INFO: Skip GOP Search ... ");
@@ -1205,7 +1208,7 @@ VOID egInitScreen (VOID) {
             FreePool (MsgStr);
         }
         #endif
-    } // if/else FoundHandleUGA && (SetPreferUGA || AcquireErrorGOP)
+    } // if/else FoundHandleUGA
 
     // Get Screen Size
     egHasGraphics = FALSE;
@@ -1298,10 +1301,10 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (
                 (EFI_ERROR(Status))
                     ? L"Graphics Not Available ... Fall Back on Text Mode"
-                    : (FoundHandleUGA && AcquireErrorGOP)
-                        ? L"Leveraging Universal Graphics Adapter"
-                        : (SetPreferUGA)
-                            ? L"Enforcing Universal Graphics Adapter"
+                    : (SetPreferUGA)
+                        ? L"Forcing Universal Graphics Adapter"
+                        : (FoundHandleUGA && !ObtainHandleGOP)
+                            ? L"Leveraging Universal Graphics Adapter"
                             : L"GOP Not Available ... Fall Back on UGA"
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1368,10 +1371,16 @@ BOOLEAN NewAppleFramebuffers = FALSE;
     }
     else if (NewAppleFramebuffers) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Possibly via New Framebuffers ... Try 'TextOnly' if Not");
+        MsgStr = PoolPrint (
+            L"Unlikely but Possible via Installed Framebuffer%s",
+            (GlobalConfig.TextOnly)
+                ? L""
+                : L" ... Try \"TextOnly\" if No Display"
+        );
+
         #endif
     }
-    else if (!FlagUGA || !AppleFirmware) {
+    else if (!FlagUGA || !AppleFirmware || (FlagUGA && AppleFramebuffers > 0)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Yes");
         #endif

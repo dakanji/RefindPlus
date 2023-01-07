@@ -1,5 +1,7 @@
 0.13.3.AD (PRE_RELEASE):
 -----------------------
+- Fixes UGA Graphics
+  * Addresses issues with UGA-Only GPUs being always forced into TextOnly mode
 - Fixes Misc Alt Build Function Duplication Issues
   * Addresses issues reported using the build process at https://github.com/xaionaro/edk2-builder-docker
     - Updates `LodePNG` to Version 20221108

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -34,6 +34,7 @@ BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
 BOOLEAN ForceRescanDXE  = FALSE;
 BOOLEAN AcquireErrorGOP = FALSE;
+BOOLEAN ObtainHandleGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
 BOOLEAN DevicePresence  = FALSE;
 
@@ -486,7 +487,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-
                 if (FoundGOP && GopDevicePathStr != NULL) {
                     DevicePathStr = ConvertDevicePathToText (
                         DevicePathFromHandle (AllHandleBuffer[i]),
@@ -502,9 +502,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     MY_FREE_POOL(DevicePathStr);
                 }
-
                 #endif
-                // Temp from Clover END
 
                 if (MakeConnection) {
                     XStatus = RefitConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
@@ -642,10 +640,13 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     }
 
     do {
-        FoundGOP = FALSE;
+        ObtainHandleGOP = FoundGOP = FALSE;
 
         // Connect All drivers
         BdsLibConnectMostlyAllEfi();
+
+        // Update GOP FLag
+        ObtainHandleGOP = FoundGOP;
 
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
