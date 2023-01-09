@@ -1,14 +1,36 @@
 
 # Configuration for Label Actions - https://github.com/dessant/label-actions
 
+# The `Accepted` label is added to issues
+Accepted:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Uncertain'
+      - 'Cancelled'
+      - 'Resolved'
+      - 'Not-Yet-Seen'
+      - 'Parked'
+      - 'Stale'
+      - 'Tagged'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
+
 # The `Uncertain` label is added to issues
 Uncertain:
   issues:
     # Remove labels
     unlabel:
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -28,8 +50,9 @@ Bug:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -47,8 +70,9 @@ Cancelled:
     # Remove labels
     unlabel:
       - 'Uncertain'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Queries'
       - 'Unclear'
@@ -70,8 +94,9 @@ Discussion:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Bug'
@@ -92,8 +117,9 @@ Documentation:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -112,8 +138,9 @@ Duplicate:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -132,8 +159,9 @@ Enhancement:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -153,8 +181,9 @@ Tagged:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -171,8 +200,9 @@ Good-First-Issue:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -192,7 +222,10 @@ Help-Wanted:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
+      - 'Not-Yet-Seen'
+      - 'Parked'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -211,8 +244,9 @@ Incomplete:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -231,8 +265,9 @@ Invalid:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -251,8 +286,9 @@ Known-Issue:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -270,8 +306,9 @@ Parked:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Stale'
       - 'Tagged'
       - 'Queries'
@@ -293,8 +330,9 @@ Upstream:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Stale'
       - 'Tagged'
       - 'Unclear'
@@ -312,8 +350,9 @@ Queries:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Tagged'
       - 'Stale'
@@ -332,7 +371,8 @@ Resolved:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
-      - 'Pending'
+      - 'Accepted'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Tagged'
@@ -359,8 +399,9 @@ Stale:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Tagged'
       - 'Queries'
@@ -375,8 +416,9 @@ Unclear:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Invalid'
@@ -393,8 +435,9 @@ Not-Planned:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -405,6 +448,8 @@ Not-Planned:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
+    # Close thread
+    close: true
 
 # The `Not-Planned` label is removed from issues
 -Not-Planned:
@@ -420,8 +465,9 @@ Cannot-Replicate:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'
@@ -439,8 +485,9 @@ Prorogued:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
-      - 'Pending'
+      - 'Not-Yet-Seen'
       - 'Parked'
       - 'Stale'
       - 'Queries'

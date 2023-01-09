@@ -12,7 +12,7 @@ on:
         - 'Label - Add - Cannot-Replicate'
         - 'Label - Add - Incomplete'
         - 'Label - Add - Invalid'
-        - 'Label - Add - Pending'
+        - 'Label - Add - Not-Yet-Seen'
         - 'Label - Add - Parked'
         - 'Label - Add - Prorogued'
         - 'Label - Add - Resolved'
@@ -99,17 +99,17 @@ jobs:
           labels: 'Invalid'
 
   label_add_pending:
-    name: Label - Add - Pending
+    name: Label - Add - Not-Yet-Seen
     runs-on: ubuntu-20.04
 
-    if: github.event.inputs.operation == 'Label - Add - Pending'
+    if: github.event.inputs.operation == 'Label - Add - Not-Yet-Seen'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Pending'
+          labels: 'Not-Yet-Seen'
 
   label_add_parked:
     name: Label - Add - Parked

@@ -12,7 +12,7 @@ on:
         - 'Label - Remove - Cannot-Replicate'
         - 'Label - Remove - Incomplete'
         - 'Label - Remove - Invalid'
-        - 'Label - Remove - Pending'
+        - 'Label - Remove - Not-Yet-Seen'
         - 'Label - Remove - Parked'
         - 'Label - Remove - Prorogued'
         - 'Label - Remove - Resolved'
@@ -99,17 +99,17 @@ jobs:
           labels: 'Invalid'
 
   label_remove_pending:
-    name: Label - Remove - Pending
+    name: Label - Remove - Not-Yet-Seen
     runs-on: ubuntu-20.04
 
-    if: github.event.inputs.operation == 'Label - Remove - Pending'
+    if: github.event.inputs.operation == 'Label - Remove - Not-Yet-Seen'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Pending'
+          labels: 'Not-Yet-Seen'
 
   label_remove_parked:
     name: Label - Remove - Parked

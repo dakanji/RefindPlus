@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          labels: Pending
+          labels: Not-Yet-Seen
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   add_label_user_reopen:
@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-add-labels@v1
         with:
-          labels: Pending
+          labels: Not-Yet-Seen
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   add_label_user_open_enhance:
@@ -121,7 +121,7 @@ jobs:
           labels: |
             Stale
             Tagged
-            Pending
+            Not-Yet-Seen
             Cannot-Replicate
             Known-Issue
             Incomplete
@@ -162,10 +162,25 @@ jobs:
           count: 0
           labels: "Not-Planned"
 
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  bounce_issue_check3:
+    name: Bounce Issue - Check3
+    runs-on: ubuntu-20.04
+
+    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    steps:
+      - uses: mheap/github-action-required-labels@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: maximum
+          count: 1
+          labels: "Accepted"
+
   # Reopen Issue - https://github.com/actions-cool/issues-helper
   bounce_issue_act:
     name: Bounce Issue - Act
-    needs: [bounce_issue_check1, bounce_issue_check2]
+    needs: [bounce_issue_check1, bounce_issue_check2, bounce_issue_check3]
     runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
