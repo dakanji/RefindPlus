@@ -71,8 +71,31 @@ jobs:
           labels: Not-Yet-Seen
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  add_label_base_reopen:
+    name: Reopen Issue Label - Base
+    runs-on: ubuntu-20.04
+
+    if: github.actor == 'dakanji' && github.event.action == 'reopened'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: |
+            Not-Planned
+            Tagged
+            Stale
+            Cannot-Replicate
+            Known-Issue
+            Incomplete
+            Uncertain
+            Unclear
+            Invalid
+            Queries
+            Unclear
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   add_label_user_reopen:
-    name: Reopen Issue Label
+    name: Reopen Issue Label - User
     runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'

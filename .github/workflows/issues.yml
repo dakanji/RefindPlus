@@ -102,13 +102,27 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
+      - name: Lock Not-Planned issues
+        uses: dessant/lock-threads@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-lock-reason: ''
+          issue-inactive-days: '0'
+          include-any-issue-labels: 'Not-Planned'
+          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          issue-comment: |-
+            This thread is being locked.
+
+            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+          process-only: 'issues'
+
       - name: Lock Invalid/Cancelled Issues
         uses: dessant/lock-threads@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '1'
-          include-any-issue-labels: 'Invalid, Cancelled, Resolved, Not-Planned'
+          include-any-issue-labels: 'Invalid, Cancelled, Resolved'
           remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
