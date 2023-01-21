@@ -45,6 +45,7 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
+          close-reason: 'complete'
           actions: 'close-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}

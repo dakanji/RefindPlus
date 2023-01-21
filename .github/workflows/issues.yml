@@ -27,8 +27,10 @@ jobs:
     steps:
 
       - name: Handle Cancelled/Duplicate/Invalid/Wierd/Not-Planned Issues
-        uses: actions/stale@v6
+        uses: actions/stale@v7
         with:
+          ignore-issue-updates: true
+          close-issue-reason: 'complete'
           close-issue-message: ''
           days-before-stale: 1
           days-before-close: 0
@@ -37,9 +39,14 @@ jobs:
           any-of-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Handle Incomplete Issues
-        uses: actions/stale@v6
+        uses: actions/stale@v7
         with:
+          close-issue-reason: 'complete'
           stale-issue-message: >
             This item is being flagged for closure due to missing required information.
           close-issue-message: >
@@ -52,9 +59,14 @@ jobs:
           any-of-labels: 'Incomplete,'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Handle No-Response Issues
-        uses: actions/stale@v6
+        uses: actions/stale@v7
         with:
+          close-issue-reason: 'complete'
           stale-issue-message: >
             This item is being flagged for closure due to a lack of response.
           close-issue-message: >
@@ -67,9 +79,15 @@ jobs:
           any-of-labels: 'Queries'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Handle Resolved Issues
-        uses: actions/stale@v6
+        uses: actions/stale@v7
         with:
+          ignore-issue-updates: true
+          close-issue-reason: 'complete'
           stale-issue-message: ''
           close-issue-message: ''
           days-before-stale: 0
@@ -79,9 +97,14 @@ jobs:
           any-of-labels: 'Resolved'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Catchall Closer
-        uses: actions/stale@v6
+        uses: actions/stale@v7
         with:
+          close-issue-reason: 'complete'
           stale-issue-message: >
             This item is being flagged for closure due to inactivity.
           close-issue-message: >
@@ -116,6 +139,10 @@ jobs:
             Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Lock Invalid/Cancelled Issues
         uses: dessant/lock-threads@v4
         with:
@@ -129,6 +156,10 @@ jobs:
 
             Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
 
       - name: Lock Misc Issues
         uses: dessant/lock-threads@v4
@@ -145,6 +176,10 @@ jobs:
             Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Lock Incomplete/Abandoned Issues
         uses: dessant/lock-threads@v4
         with:
@@ -160,6 +195,10 @@ jobs:
             Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
+
       - name: Lock Unclear Issues
         uses: dessant/lock-threads@v4
         with:
@@ -173,6 +212,10 @@ jobs:
 
             Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 120s
 
       - name: Lock Inactive Issues
         uses: dessant/lock-threads@v4
