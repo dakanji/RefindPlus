@@ -132,6 +132,6 @@ Implementation differences with the upstream base version v0.13.3 are:
 - **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other diregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
 
 ## Roll Your Own
-Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
+Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x86_64 Only).
 
 [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for the ReadMe File related to the current (work in progress) code base.

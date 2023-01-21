@@ -43,12 +43,12 @@
 #
 #csr_normalise
 
-# Supply APFS filesystem capability. By default, RefindPlus is set up to jumpstart
-# MacOS APFS filesystem drivers, apfs.efi, which are available in system folders of
-# MacOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# MacOS version which ensures that any changes made to APFS drivers for each specific
-# MacOS version are accommodated, compared to using one driver no matter what specific
-# MacOS version is being loaded. This default is deactivated whenever this token is set.
+# Supply APFS filesystem capability. By default, RefindPlus is set up to jump start
+# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
+# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# Mac OS version which ensures that any changes made to APFS drivers for each specific
+# Mac OS version are accommodated, compared to using one driver no matter what specific
+# Mac OS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
@@ -1010,8 +1010,7 @@
 #scan_all_linux_kernels
 
 # Delay for the specified number of seconds before scanning disks.
-# This can help some users who find that some of their disks
-# are not detected until after pressing the "ESC" key.
+# This may help when disks are not detected until "ESC" is pressed.
 #
 # Inactive when commented out (Does not wait before scanning disks)
 #

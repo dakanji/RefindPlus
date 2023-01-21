@@ -1,6 +1,6 @@
 /*
  * BootMaster/launch_legacy.c
- * Functions related to Legacy (BIOS) Booting
+ * Functions related to Legacy BIOS Booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -430,7 +430,7 @@ EFI_STATUS StartLegacyImageList (
     }
 
     Print (
-        L"Starting 'Mac-Style' Legacy (BIOS) Loader\nUsing Load Options:- '%s'\n\n",
+        L"Starting 'Mac-Style' Legacy BIOS Loader\nUsing Load Options:- '%s'\n\n",
         FullLoadOptions ? FullLoadOptions : L"NULL"
     );
 
@@ -447,7 +447,7 @@ EFI_STATUS StartLegacyImageList (
         }
     } // for
 
-    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy (BIOS) Loader")) {
+    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy BIOS Loader")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
@@ -476,7 +476,7 @@ EFI_STATUS StartLegacyImageList (
 
     // Close open file handles
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy (BIOS) Loader");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy BIOS Loader");
     #endif
 
     UninitRefitLib();
@@ -535,13 +535,13 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Starting 'Mac-style' Legacy (BIOS) OS:- '%s'",
+        L"Starting 'Mac-Style' Legacy BIOS Loader:- '%s'",
         SelectionName
     );
     #endif
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    BeginExternalScreen (TRUE, L"Booting 'Mac-style' Legacy (BIOS) OS");
+    BeginExternalScreen (TRUE, L"Booting 'Mac-Style' Legacy BIOS Loader");
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
@@ -663,7 +663,7 @@ VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
-    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy (BIOS) OS";
+    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy BIOS Loader";
     CHAR16 *MsgStrB = PoolPrint (L"Booting %s", MsgStrA);
     CHAR16 *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
 
@@ -731,7 +731,7 @@ VOID AddLegacyEntry (
 
     if (LoaderTitle == NULL) {
         if (!Volume->OSName) {
-            LoaderTitle = L"Legacy (BIOS) OS";
+            LoaderTitle = L"Legacy BIOS Loader";
         }
         else {
             LoaderTitle = Volume->OSName;
@@ -746,7 +746,7 @@ VOID AddLegacyEntry (
         : (Volume->DiskKind == DISK_KIND_OPTICAL)
             ? L"CD" : L"HD";
 
-    LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint (L"Boot %s on %s", LoaderTitle, VolDesc);
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MY_FREE_POOL(LegacyTitle);
@@ -871,7 +871,7 @@ VOID AddLegacyEntryUEFI (
     }
 
     Entry->me.Title = PoolPrint (
-        L"Boot Legacy (BIOS) OS from %s",
+        L"Boot Legacy BIOS Loader on %s",
         BdsOption->Description
     );
 
@@ -906,7 +906,7 @@ VOID AddLegacyEntryUEFI (
     }
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-    SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
+    SubScreen->Title      = PoolPrint (L"Legacy BIOS Options for %s", BdsOption->Description);
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
     SubScreen->Hint2      = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
         ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
@@ -936,7 +936,7 @@ VOID AddLegacyEntryUEFI (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", OffsetNext, BdsOption->Description);
+    LOG_MSG("%s  - Found 'UEFI-Style' Legacy BIOS Loader on '%s'", OffsetNext, BdsOption->Description);
     #endif
 } // static VOID AddLegacyEntryUEFI()
 
@@ -1073,9 +1073,6 @@ VOID ScanLegacyVolume (
     UINTN   VolumeIndex2;
     BOOLEAN ShowVolume, HideIfOthersFound;
 
-    ShowVolume        = FALSE;
-    HideIfOthersFound = FALSE;
-
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"ScanLegacyVolume";
     #endif
@@ -1084,13 +1081,15 @@ VOID ScanLegacyVolume (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
+    ShowVolume        = FALSE;
+    HideIfOthersFound = FALSE;
     if (Volume->HasBootCode) {
         ShowVolume = TRUE;
-        if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
+        if (Volume->OSName == NULL &&
             Volume->BlockIOOffset == 0 &&
-            Volume->OSName == NULL
+            Volume->BlockIO == Volume->WholeDiskBlockIO
         ) {
-            // Whole disk (MBR) entry found ... Hide this volume
+            // Whole disk (MBR) entry ... Hide if other bootable entries are on the same disk
             HideIfOthersFound = TRUE;
         }
     }
@@ -1098,7 +1097,8 @@ VOID ScanLegacyVolume (
     if (HideIfOthersFound) {
         // Check for other bootable entries on the same disk
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
-            if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
+            if (VolumeIndex2 != VolumeIndex &&
+                Volumes[VolumeIndex2]->HasBootCode &&
                 Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
             ) {
                 ShowVolume = FALSE;
@@ -1130,7 +1130,7 @@ VOID ScanLegacyDisc (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for Optical Discs with Mode:- 'Legacy (BIOS)'"
+        L"Scan for Optical Discs with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1177,7 +1177,7 @@ VOID ScanLegacyInternal (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for Internal Disk Volumes with Mode:- 'Legacy (BIOS)'"
+        L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1210,7 +1210,7 @@ VOID ScanLegacyExternal (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for External Disk Volumes with Mode:- 'Legacy (BIOS)'"
+        L"Scan for External Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1301,7 +1301,7 @@ VOID WarnIfLegacyProblems (VOID) {
 
         if (found) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Legacy (BIOS) Support Enabled in RefindPlus but Unavailable in EFI");
+            MsgStr = StrDuplicate (L"Legacy BIOS Support Enabled in RefindPlus but Unavailable in EFI");
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
             LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
             LOG_MSG("\n\n");
@@ -1316,7 +1316,7 @@ VOID WarnIfLegacyProblems (VOID) {
             );
 
             if (!GlobalConfig.DirectBoot) {
-                CHAR16 *TmpMsgA = L"** WARN: Legacy (BIOS) Boot Issues                                        ";
+                CHAR16 *TmpMsgA = L"** WARN: Legacy BIOS Boot Issues                                          ";
                 CHAR16 *TmpMsgB = L"                                                                          ";
 
                 #if REFIT_DEBUG > 0

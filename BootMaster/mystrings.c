@@ -9,7 +9,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -714,8 +714,9 @@ BOOLEAN LimitStringLength (
     }
 
     UINTN     i;
-    CHAR16   *SubString, *TempString;
-    BOOLEAN   HasChanged = FALSE;
+    CHAR16   *SubString;
+    CHAR16   *TempString;
+    BOOLEAN   HasChanged;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"LimitStringLength";
@@ -725,12 +726,22 @@ BOOLEAN LimitStringLength (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    // SubString will be NULL or point WITHIN TheString
-    NestedStrStr = TRUE;
-    SubString = MyStrStr (TheString, L"  ");
-    NestedStrStr = FALSE;
+    if (StrLen (TheString) < Limit) {
+        BREAD_CRUMB(L"%s:  1a 1 - END:- return BOOLEAN HasChanged = 'FALSE'", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        return FALSE;
+    }
 
     //BREAD_CRUMB(L"%s:  2 - WHILE LOOP:- START/ENTER", FuncTag);
+    NestedStrStr = TRUE;
+    NestedStrStr = FALSE;
+    HasChanged   = FALSE;
+    // SubString will be NULL or point WITHIN TheString
+    SubString = MyStrStr (TheString, L"  ");
+
+    //BREAD_CRUMB(L"%s:  3 - WHILE LOOP:- START/ENTER", FuncTag);
     while (SubString != NULL) {
         i = 0;
         while (SubString[i] == L' ') {
@@ -756,17 +767,18 @@ BOOLEAN LimitStringLength (
 
         SubString = MyStrStr (TheString, L"  ");
     } // while
-    //BREAD_CRUMB(L"%s:  3 - WHILE LOOP:- END/EXIT", FuncTag);
+    //BREAD_CRUMB(L"%s:  4 - WHILE LOOP:- END/EXIT", FuncTag);
 
     // Truncate if still too long.
     BOOLEAN WasTruncated = TruncateString (TheString, Limit);
-    //BREAD_CRUMB(L"%s:  4", FuncTag);
+
+    //BREAD_CRUMB(L"%s:  5", FuncTag);
     if (!HasChanged) {
-        //BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
         HasChanged = WasTruncated;
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- return BOOLEAN HasChanged = '%s'", FuncTag,
+    BREAD_CRUMB(L"%s:  6 - END:- return BOOLEAN HasChanged = '%s'", FuncTag,
         HasChanged ? L"TRUE" : L"FALSE"
     );
     LOG_DECREMENT();
@@ -967,14 +979,16 @@ BOOLEAN IsIn (
     IN CHAR16 *SmallString,
     IN CHAR16 *List
 ) {
-   UINTN     i = 0;
-   BOOLEAN   Found = FALSE;
-   CHAR16    *OneElement;
+    UINTN     i;
+    BOOLEAN   Found;
+    CHAR16   *OneElement;
 
-   if (!SmallString || !List) {
-       return FALSE;
-   }
+    if (!SmallString || !List) {
+        return FALSE;
+    }
 
+    i = 0;
+    Found = FALSE;
     while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
         if (MyStriCmp (OneElement, SmallString)) {
             Found = TRUE;
@@ -992,28 +1006,32 @@ BOOLEAN IsInSubstring (
     IN CHAR16 *BigString,
     IN CHAR16 *List
 ) {
-    UINTN   i = 0, ElementLength;
-    BOOLEAN Found = FALSE;
+    BOOLEAN  Found;
+    UINTN    ElementLength, i;
     CHAR16  *OneElement;
 
     if (!BigString || !List) {
         return FALSE;
     }
 
+    i = 0;
+    Found = FALSE;
     while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
-        ElementLength = StrLen(OneElement);
+        ElementLength = StrLen (OneElement);
         if (
-            ElementLength <= StrLen(BigString) &&
-            ElementLength > 0 &&
+            ElementLength > 0                   &&
+            ElementLength <= StrLen (BigString) &&
             StriSubCmp (OneElement, BigString)
         ) {
             Found = TRUE;
-        } // if
+        }
 
-        if ((ElementLength <= StrLen (BigString)) &&
-            (StriSubCmp (OneElement, BigString))
-        ) {
-            Found = TRUE;
+        if (!Found) {
+            if (ElementLength <= StrLen (BigString) &&
+                StriSubCmp (OneElement, BigString)
+            ) {
+                Found = TRUE;
+            }
         }
         MY_FREE_POOL(OneElement);
     } // while
@@ -1029,7 +1047,6 @@ BOOLEAN ReplaceSubstring (
     IN     CHAR16  *SearchString,
     IN     CHAR16  *ReplString
 ) {
-    BOOLEAN WasReplaced = FALSE;
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
     #if REFIT_DEBUG > 1
@@ -1044,59 +1061,63 @@ BOOLEAN ReplaceSubstring (
         *MainString  ? *MainString  : L"NULL"
     );
     if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
-        BREAD_CRUMB(L"%s:  return 'FALSE'", FuncTag);
+        BREAD_CRUMB(L"%s:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;
     }
+
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     NestedStrStr = TRUE;
     FoundSearchString = MyStrStr (*MainString, SearchString);
     NestedStrStr = FALSE;
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
-    if (FoundSearchString) {
-        //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-        NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen(*MainString));
-
-        //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        if (NewString) {
-            //BREAD_CRUMB(L"%s:  2a 2a 1", FuncTag);
-            EndString = &(FoundSearchString[StrLen (SearchString)]);
-            FoundSearchString[0] = L'\0';
-
-            //BREAD_CRUMB(L"%s:  2a 2a 2", FuncTag);
-            if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
-                //BREAD_CRUMB(L"%s:  2a 2a 2a 1", FuncTag);
-                FoundSearchString[-1] = L'\0';
-                ReplString = SearchString;
-            }
-
-            //BREAD_CRUMB(L"%s:  2a 2a 3", FuncTag);
-            StrCpy (NewString, *MainString);
-
-            //BREAD_CRUMB(L"%s:  2a 2a 4", FuncTag);
-            MergeStrings (&NewString, ReplString, L'\0');
-
-            //BREAD_CRUMB(L"%s:  2a 2a 5", FuncTag);
-            MergeStrings (&NewString, EndString, L'\0');
-
-            //BREAD_CRUMB(L"%s:  2a 2a 6", FuncTag);
-            MY_FREE_POOL(MainString);
-            *MainString = NewString;
-
-            //BREAD_CRUMB(L"%s:  2a 2a 7 - WasReplaced = TRUE", FuncTag);
-            WasReplaced = TRUE;
-        }
-        //BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    if (!FoundSearchString) {
+        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString Not Found!!", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+        return FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  3 - END:- return BOOLEAN WasReplaced = '%s'", FuncTag,
-        WasReplaced ? L"TRUE" : L"FALSE"
-    );
+    BREAD_CRUMB(L"%s:  4", FuncTag);
+    NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen (*MainString));
+    if (!NewString) {
+        BREAD_CRUMB(L"%s:  4a - END:- return BOOLEAN 'FALSE' ... Out of Resources!!", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+        return FALSE;
+    }
+
+    BREAD_CRUMB(L"%s:  5", FuncTag);
+    EndString = &(FoundSearchString[StrLen (SearchString)]);
+    FoundSearchString[0] = L'\0';
+
+    BREAD_CRUMB(L"%s:  6", FuncTag);
+    if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
+        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        FoundSearchString[-1] = L'\0';
+        ReplString = SearchString;
+    }
+
+    BREAD_CRUMB(L"%s:  7", FuncTag);
+    StrCpy (NewString, *MainString);
+
+    BREAD_CRUMB(L"%s:  8", FuncTag);
+    MergeStrings (&NewString, ReplString, L'\0');
+
+    BREAD_CRUMB(L"%s:  9", FuncTag);
+    MergeStrings (&NewString, EndString, L'\0');
+
+    BREAD_CRUMB(L"%s:  10", FuncTag);
+    MY_FREE_POOL(MainString);
+    *MainString = NewString;
+
+    BREAD_CRUMB(L"%s:  11 - END:- return BOOLEAN 'TRUE'", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 
-    return WasReplaced;
+    return TRUE;
 } // BOOLEAN ReplaceSubstring()
 
 // Returns TRUE if *Input contains nothing but valid hexadecimal characters,
@@ -1104,9 +1125,11 @@ BOOLEAN ReplaceSubstring (
 BOOLEAN IsValidHex (
     CHAR16 *Input
 ) {
-    BOOLEAN IsHex = TRUE;
-    UINTN   i = 0;
+    UINTN   i;
+    BOOLEAN IsHex;
 
+    i = 0;
+    IsHex = TRUE;
     while (IsHex && (Input[i] != L'\0')) {
         if (
             !(
@@ -1134,14 +1157,16 @@ UINT64 StrToHex (
     UINTN   Pos,
     UINTN   NumChars
 ) {
-    UINT64 retval = 0x00;
-    UINTN  NumDone = 0, InputLength;
+    UINTN  NumDone, InputLength;
+    UINT64 retval;
     CHAR16 a;
 
     if ((Input == NULL) || (NumChars == 0) || (NumChars > 16)) {
         return 0;
     }
 
+    NumDone = 0;
+    retval = 0x00;
     InputLength = StrLen (Input);
     while ((Pos <= InputLength) && (NumDone < NumChars)) {
         a = Input[Pos];
@@ -1178,8 +1203,8 @@ BOOLEAN IsGuid (
     CHAR16 *UnknownString
 ) {
     UINTN   Length, i;
-    BOOLEAN retval = TRUE;
     CHAR16  a;
+    BOOLEAN retval;
 
     if (UnknownString == NULL) {
         return FALSE;
@@ -1187,29 +1212,29 @@ BOOLEAN IsGuid (
 
     Length = StrLen (UnknownString);
     if (Length != 36) {
-        retval = FALSE;
+        return FALSE;
     }
-    else {
-        for (i = 0; i < Length; i++) {
-            a = UnknownString[i];
-            if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-                if (a != L'-') {
-                    retval = FALSE;
-                    break;
-                }
+
+    retval = TRUE;
+    for (i = 0; i < Length; i++) {
+        a = UnknownString[i];
+        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+            if (a != L'-') {
+                retval = FALSE;
+                break;
             }
-            // DA-TAG: Investigate This
-            //         Condition below can apparently never be met (coverity scan)
-            //         Comment out until review
-            //else if (((a < L'a') || (a > L'f')) &&
-            //    ((a < L'A') || (a > L'F')) &&
-            //    ((a < L'0') && (a > L'9'))
-            //) {
-            //    retval = FALSE;
-            //    break;
-            //}
-        } // for
-    }
+        }
+        // DA-TAG: Investigate This
+        //         Condition below can apparently never be met (coverity scan)
+        //         Comment out until review
+        //else if (((a < L'a') || (a > L'f')) &&
+        //    ((a < L'A') || (a > L'F')) &&
+        //    ((a < L'0') && (a > L'9'))
+        //) {
+        //    retval = FALSE;
+        //    break;
+        //}
+    } // for
 
     return retval;
 } // BOOLEAN IsGuid()
@@ -1282,7 +1307,7 @@ EFI_GUID StringAsGuid (
 CHAR16 * GetTimeString (VOID) {
     EFI_STATUS  Status;
     EFI_TIME    CurrentTime;
-    CHAR16     *TimeStr = NULL;
+    CHAR16     *TimeStr;
 
     Status  = REFIT_CALL_2_WRAPPER(gST->RuntimeServices->GetTime, &CurrentTime, NULL);
     TimeStr = EFI_ERROR(Status)
@@ -1301,9 +1326,13 @@ CHAR16 * GetTimeString (VOID) {
 VOID DeleteStringList (
     STRING_LIST *StringList
 ) {
-    STRING_LIST *Previous = NULL;
-    STRING_LIST *Current  = StringList;
+    STRING_LIST *Current, *Previous;
 
+    if (StringList == NULL) {
+        return;
+    }
+
+    Current = StringList;
     while (Current != NULL) {
         MY_FREE_POOL(Current->Value);
         Previous = Current;
@@ -1340,11 +1369,9 @@ CHAR16 * MyAsciiStrCopyToUnicode (
 
     if (UnicodeString != NULL) {
         UnicodeStringWalker = UnicodeString;
-
         while (*AsciiString != '\0' && Length--) {
             *(UnicodeStringWalker++) = *(AsciiString++);
         } // while
-
         *UnicodeStringWalker = L'\0';
     }
 

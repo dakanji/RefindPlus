@@ -724,7 +724,6 @@ BOOLEAN LoadDrivers (VOID) {
                     : L"",
                 MsgNotFound
             );
-            BRK_MAX("\n");
             #endif
         }
 
@@ -735,7 +734,7 @@ BOOLEAN LoadDrivers (VOID) {
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
-        BRK_MOD("\n\n");
+        LOG_MSG("\n\n");
         LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
         BRK_MAX("\n");
         #endif
@@ -767,8 +766,13 @@ BOOLEAN LoadDrivers (VOID) {
                         L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, SelfDirectory
                     );
-                    LOG_MSG("%s  - %s", OffsetNext, MsgNotFound);
-                    BRK_MAX("\n");
+                    LOG_MSG(
+                        "%s  - %s",
+                        (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                            ? OffsetNext
+                            : L"",
+                        MsgNotFound
+                    );
                     #endif
                 }
             }

@@ -1,6 +1,6 @@
 /*
  * BootMaster/launch_legacy.h
- * Functions related to Legacy (BIOS) booting
+ * Functions related to Legacy BIOS booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
@@ -40,6 +40,12 @@
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
  *
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"

@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -160,15 +160,20 @@ BOOLEAN            FirstVolume         =  TRUE;
 BOOLEAN            FoundMBR            = FALSE;
 #endif
 
-EFI_GUID           GuidESP             =            ESP_GUID_VALUE;
-EFI_GUID           GuidHFS             =            HFS_GUID_VALUE;
-EFI_GUID           GuidAPFS            =           APFS_GUID_VALUE;
-EFI_GUID           GuidNull            =           NULL_GUID_VALUE;
-EFI_GUID           GuidApplTvRec       =    APPLE_TV_RECOVERY_GUID;
-EFI_GUID           GuidMacRaidOn       =    MAC_RAID_ON_GUID_VALUE;
-EFI_GUID           GuidMacRaidOff      =   MAC_RAID_OFF_GUID_VALUE;
-EFI_GUID           GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
-EFI_GUID           GuidContainerHFS    =  CONTAINER_HFS_GUID_VALUE;
+EFI_GUID           GuidESP             =              ESP_GUID_VALUE;
+EFI_GUID           GuidHFS             =              HFS_GUID_VALUE;
+EFI_GUID           GuidAPFS            =             APFS_GUID_VALUE;
+EFI_GUID           GuidNull            =             NULL_GUID_VALUE;
+EFI_GUID           GuidLinux           =            LINUX_GUID_VALUE;
+EFI_GUID           GuidHomeGPT         =         GPT_HOME_GUID_VALUE;
+EFI_GUID           GuidServerGPT       =       GPT_SERVER_GUID_VALUE;
+EFI_GUID           GuidBasicData       =       BASIC_DATA_GUID_VALUE;
+EFI_GUID           GuidApplTvRec       =      APPLE_TV_RECOVERY_GUID;
+EFI_GUID           GuidMacRaidOn       =      MAC_RAID_ON_GUID_VALUE;
+EFI_GUID           GuidMacRaidOff      =     MAC_RAID_OFF_GUID_VALUE;
+EFI_GUID           GuidWindowsRE       = WIN_RECOVERY_ENV_GUID_VALUE;
+EFI_GUID           GuidRecoveryHD      =  MAC_RECOVERY_HD_GUID_VALUE;
+EFI_GUID           GuidContainerHFS    =    CONTAINER_HFS_GUID_VALUE;
 
 
 extern EFI_GUID    RefindPlusOldGuid;
@@ -188,6 +193,11 @@ extern BOOLEAN     LogNewLine;
 // 68 KiB -- ReiserFS superblock begins at 64 KiB
 #define SAMPLE_SIZE 69632
 
+#define PARTITION_TABLE_TXT    L"Found MBR Partition Table"
+#define LEGACY_CODE_TXT        L"Found Legacy Boot Code"
+#define ENTRY_BELOW_TXT        L" on Entry Below:"
+#define AND_JOIN_TXT           L" and "
+#define UNKNOWN_OS             L"Unknown OS"
 
 #define NAME_FIX(Name) FindSubStr ((*Volume)->VolName, Name)) VolumeName = Name
 
@@ -701,6 +711,7 @@ EFI_STATUS EfivarGetRaw (
         }
 
         #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
@@ -1172,8 +1183,8 @@ VOID SetFilesystemData (
                     // none of these features. Assume it is ext2
                     Volume->FSType = FS_TYPE_EXT2;
                 }
-                CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
 
+                CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
                 return;
             }
         } // search for ext2/3/4 magic
@@ -1186,7 +1197,6 @@ VOID SetFilesystemData (
             ) {
                 Volume->FSType = FS_TYPE_REISERFS;
                 CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
-
                 return;
             }
         } // search for ReiserFS magic
@@ -1195,7 +1205,6 @@ VOID SetFilesystemData (
             MagicString = (char*) (Buffer + 65536 + 64);
             if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_BTRFS;
-
                 return;
             }
         } // search for Btrfs magic
@@ -1213,7 +1222,6 @@ VOID SetFilesystemData (
             MagicString = (char*) (Buffer + 32768);
             if (CompareMem (MagicString, JFS_SIGNATURE, 4) == 0) {
                 Volume->FSType = FS_TYPE_JFS;
-
                 return;
             }
         } // search for JFS magic
@@ -1224,7 +1232,6 @@ VOID SetFilesystemData (
                 (*Magic16 == HFSPLUS_MAGIC2)
             ) {
                 Volume->FSType = FS_TYPE_HFSPLUS;
-
                 return;
             }
         } // search for HFS+ magic
@@ -1280,14 +1287,14 @@ VOID ScanVolumeBootcode (
     IN OUT BOOLEAN       *Bootable
 ) {
     EFI_STATUS           Status;
-    UINTN                i;
+    UINTN                i, SizeMBR;
     UINT8                Buffer[SAMPLE_SIZE];
-    BOOLEAN              MbrTableFound = FALSE;
+    BOOLEAN              MbrTableFound;
     MBR_PARTITION_INFO  *MbrTable;
 
     #if REFIT_DEBUG > 0
-    UINTN   LogLineType;
-    CHAR16 *StrSpacer = NULL;
+    UINTN    LogLineType;
+    CHAR16  *StrSpacer;
     #endif
 
     *Bootable           = FALSE;
@@ -1300,216 +1307,230 @@ VOID ScanVolumeBootcode (
         return;
     }
     if (Volume->BlockIO->Media->BlockSize > SAMPLE_SIZE) {
-        // our buffer is too small
+        // Buffer is too small
         return;
     }
 
-    // look at the boot sector (this is used for both hard disks and El Torito images!)
+    // Look at the boot sector (this is used for both hard disks and El Torito images!)
     Status = REFIT_CALL_5_WRAPPER(
         Volume->BlockIO->ReadBlocks, Volume->BlockIO,
         Volume->BlockIO->Media->MediaId, Volume->BlockIOOffset,
         SAMPLE_SIZE, Buffer
     );
+    if (EFI_ERROR(Status)) {
+        return;
+    }
 
-    if (!EFI_ERROR(Status)) {
-        SetFilesystemData (Buffer, SAMPLE_SIZE, Volume);
-
-        if (GlobalConfig.LegacyType != LEGACY_TYPE_MAC) {
-            #if REFIT_DEBUG > 0
-            if (SelfVolRun && ScanMBR) {
-                if (Status == EFI_NO_MEDIA) {
-                    MediaCheck = TRUE;
-                }
-                ScannedOnce = FALSE;
-                CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector");
-                LOG_MSG("\n\n");
-                LOG_MSG("** WARN: '%r' %s", Status, MsgStr);
-                LOG_MSG("\n");
-                CheckError (Status, MsgStr);
-                MY_FREE_POOL(MsgStr);
-            }
-            #endif
-
-            return;
-        }
-
-        if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) &&
-            (FindMem (Buffer, 512, "EXFAT", 5) == -1)
-        ) {
-            *Bootable            = TRUE;
-             Volume->HasBootCode = TRUE;
-        }
-
-        // detect specific boot codes
-        if (CompareMem (Buffer + 2, "LILO",           4) == 0 ||
-            CompareMem (Buffer + 6, "LILO",           4) == 0 ||
-            CompareMem (Buffer + 3, "SYSLINUX",       8) == 0 ||
-            FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"linux";
-            Volume->OSName       = L"Linux (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
-            // GRUB
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"grub,linux";
-            Volume->OSName       = L"Linux (Legacy)";
-        }
-        else if (
-            (
-                *((UINT32 *)(Buffer + 502)) == 0 &&
-                *((UINT32 *)(Buffer + 506)) == 50000 &&
-                *((UINT16 *)(Buffer + 510)) == 0xaa55
-            ) || (
-                FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
-            )
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"freebsd";
-            Volume->OSName       = L"FreeBSD (Legacy)";
-        }
-        else if ((*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
-            (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large",         21) >= 0) &&
-            (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0)
-        ) {
-            // If more differentiation needed, also search for
-            // "Invalid partition table" &/or "Missing boot loader".
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"freebsd";
-            Volume->OSName       = L"FreeBSD (Legacy)";
-        }
-        else if (FindMem (Buffer, 512,    "!Loading",            8) >= 0 ||
-            FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"openbsd";
-            Volume->OSName       = L"OpenBSD (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
-            *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"netbsd";
-            Volume->OSName       = L"NetBSD (Legacy)";
-        }
-        else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
-            // Windows NT/200x/XP
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"win";
-            Volume->OSName       = L"Windows (NT/XP)";
-        }
-        else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
-            // Windows Vista/7/8/10
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"win8,win";
-            Volume->OSName       = L"Windows (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
-            FindMem (Buffer,      512, "KERNEL  SYS", 11) >= 0
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"freedos";
-            Volume->OSName       = L"FreeDOS (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "OS2LDR",  6) >= 0 ||
-            FindMem (Buffer,      512, "OS2BOOT", 7) >= 0
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"ecomstation";
-            Volume->OSName       = L"eComStation (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"beos";
-            Volume->OSName       = L"BeOS (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"zeta,beos";
-            Volume->OSName       = L"ZETA (Legacy)";
-        }
-        else if (FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
-            FindMem (Buffer,      512, "\x06" "system\x0c" "haiku_loader",     20) >= 0
-        ) {
-            Volume->HasBootCode  = TRUE;
-            Volume->OSIconName   = L"haiku,beos";
-            Volume->OSName       = L"Haiku (Legacy)";
-        } // CompareMem
-
-        /**
-         * NOTE: If you add an operating system with a name that starts with 'W' or 'L',
-         *       you need to fix AddLegacyEntry in BootMaster/launch_legacy.c.
-         *       DA-TAGGED
-        **/
-
-        if (Volume->HasBootCode) {
-            // verify Windows boot sector on Macs
-            if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC &&
-                Volume->FSType == FS_TYPE_NTFS
-            ) {
-                Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
-            }
-            else if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
-                // dummy FAT boot sector (created by OS X's newfs_msdos)
-                Volume->HasBootCode = FALSE;
-            }
-            else if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0) {
-                // dummy FAT boot sector (created by Linux's mkdosfs)
-                Volume->HasBootCode = FALSE;
-            }
-            else if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0) {
-                // dummy FAT boot sector (created by Windows)
-                Volume->HasBootCode = FALSE;
-            }
-        }
-
+    SetFilesystemData (Buffer, SAMPLE_SIZE, Volume);
+    if (GlobalConfig.LegacyType != LEGACY_TYPE_MAC) {
         #if REFIT_DEBUG > 0
-        if (Volume->HasBootCode) {
-            if (DoneHeadings) {
-                LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
-                StrSpacer   = (SkipSpacing) ? L" and "      : L"";
-                ALT_LOG(1, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
-                SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
+        if (SelfVolRun && ScanMBR) {
+            if (Status == EFI_NO_MEDIA) {
+                MediaCheck = TRUE;
             }
+            ScannedOnce = FALSE;
+            CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector");
+            LOG_MSG("\n\n");
+            LOG_MSG("** WARN: '%r' %s", Status, MsgStr);
+            LOG_MSG("\n");
+            CheckError (Status, MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         #endif
 
-        // check for MBR partition table
-        if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
-            MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
-            for (i = 0; i < 4; i++) {
-                if (MbrTable[i].StartLBA && MbrTable[i].Size) {
-                    MbrTableFound = TRUE;
-                }
-            }
+        return;
+    }
 
-            for (i = 0; i < 4; i++) {
-                if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80) {
-                    MbrTableFound = FALSE;
-                }
-            }
+    if ((Buffer[0] != 0) &&
+        (*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
+        (FindMem (Buffer, 512, "EXFAT", 5) == -1)
+    ) {
+        *Bootable = Volume->HasBootCode = TRUE;
+    }
 
-            if (MbrTableFound) {
-                UINTN SizeMBR = 4 * 16;
-                Volume->MbrPartitionTable = AllocatePool (SizeMBR);
-                if (Volume->MbrPartitionTable) {
-                    CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
+    // Detect specific boot codes
+    if (CompareMem (Buffer + 2, "LILO",           4) == 0 ||
+        CompareMem (Buffer + 6, "LILO",           4) == 0 ||
+        CompareMem (Buffer + 3, "SYSLINUX",       8) == 0 ||
+        FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"linux";
+        Volume->OSName       = L"Linux (Legacy)";
+    }
+    else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
+        // GRUB
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"grub,linux";
+        Volume->OSName       = L"Linux (Legacy)";
+    }
+    else if (
+        (
+            *((UINT32 *)(Buffer + 502)) == 0 &&
+            *((UINT32 *)(Buffer + 506)) == 50000 &&
+            *((UINT16 *)(Buffer + 510)) == 0xaa55
+        ) || (
+            FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
+        )
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"freebsd";
+        Volume->OSName       = L"FreeBSD (Legacy)";
+    }
+    else if (
+        (*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
+        (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large",         21) >= 0) &&
+        (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0)
+    ) {
+        // If more differentiation needed, also search for
+        // "Invalid Partition Table" &/or "Missing boot loader".
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"freebsd";
+        Volume->OSName       = L"FreeBSD (Legacy)";
+    }
+    else if (
+        FindMem (Buffer, 512,         "!Loading",            8) >= 0 ||
+        FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"openbsd";
+        Volume->OSName       = L"OpenBSD (Legacy)";
+    }
+    else if (
+        FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
+        *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"netbsd";
+        Volume->OSName       = L"NetBSD (Legacy)";
+    }
+    else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
+        // Windows NT/200x/XP
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"win";
+        Volume->OSName       = L"Windows (NT/XP)";
+    }
+    else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
+        // Windows Vista/7/8/10
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"win8,win";
+        Volume->OSName       = L"Windows (Legacy)";
+    }
+    else if (
+        FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
+        FindMem (Buffer, 512, "KERNEL  SYS", 11) >= 0
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"freedos";
+        Volume->OSName       = L"FreeDOS (Legacy)";
+    }
+    else if (
+        FindMem (Buffer, 512, "OS2LDR",  6) >= 0 ||
+        FindMem (Buffer, 512, "OS2BOOT", 7) >= 0
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"ecomstation";
+        Volume->OSName       = L"eComStation (Legacy)";
+    }
+    else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"beos";
+        Volume->OSName       = L"BeOS (Legacy)";
+    }
+    else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"zeta,beos";
+        Volume->OSName       = L"ZETA (Legacy)";
+    }
+    else if (
+        FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
+        FindMem (Buffer, 512, "\x06" "system\x0c" "haiku_loader",     20) >= 0
+    ) {
+        Volume->HasBootCode  = TRUE;
+        Volume->OSIconName   = L"haiku,beos";
+        Volume->OSName       = L"Haiku (Legacy)";
+    } // CompareMem
 
-                    #if REFIT_DEBUG > 0
-                    FoundMBR = TRUE;
+    /**
+     * NOTE: If you add an operating system with a name that starts with 'W' or 'L',
+     *       you need to fix AddLegacyEntry in BootMaster/launch_legacy.c.
+     *       DA-TAGGED
+    **/
 
-                    if (DoneHeadings) {
-                        LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
-                        StrSpacer   = (SkipSpacing) ? L" and "      : L"";
-                        ALT_LOG(1, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
-                    }
-                    #endif
-                }
-            }
+    if (Volume->HasBootCode) {
+        // Verify Windows boot sector on Macs
+        if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC && Volume->FSType == FS_TYPE_NTFS) {
+            Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
         }
-    } // if !EFI_ERROR Status
+        else if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
+            // Dummy FAT boot sector (created by OS X's newfs_msdos)
+            Volume->HasBootCode = FALSE;
+        }
+        else if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0) {
+            // Dummy FAT boot sector (created by Linux's mkdosfs)
+            Volume->HasBootCode = FALSE;
+        }
+        else if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0) {
+            // Dummy FAT boot sector (created by Windows)
+            Volume->HasBootCode = FALSE;
+        }
+    }
+
+    if (!Volume->HasBootCode) {
+        *Bootable = FALSE;
+    }
+
+    // Check for MBR partition table
+    if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
+        *Bootable = Volume->HasBootCode = FALSE;
+        return;
+    }
+
+    MbrTableFound = FALSE;
+    MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
+    for (i = 0; i < 4; i++) {
+        if (MbrTable[i].StartLBA && MbrTable[i].Size) {
+            MbrTableFound = TRUE;
+            break;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80) {
+            MbrTableFound = FALSE;
+            break;
+        }
+    }
+
+    if (MbrTableFound) {
+        SizeMBR = 4 * 16;
+        Volume->MbrPartitionTable = AllocatePool (SizeMBR);
+        if (!Volume->MbrPartitionTable) {
+            *Bootable = Volume->HasBootCode = FALSE;
+            return;
+        }
+        CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
+
+        #if REFIT_DEBUG > 0
+        FoundMBR = TRUE;
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    if (DoneHeadings) {
+        if (Volume->HasBootCode) {
+            LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+            StrSpacer   = (SkipSpacing) ? AND_JOIN_TXT  : L"";
+            ALT_LOG(1, LogLineType, L"%s%s", StrSpacer, LEGACY_CODE_TXT);
+            SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
+        }
+        if (MbrTableFound) {
+            LogLineType = (SkipSpacing) ? LOG_LINE_SAME : LOG_LINE_SPECIAL;
+            StrSpacer   = (SkipSpacing) ? AND_JOIN_TXT  : L"";
+            ALT_LOG(1, LogLineType, L"%s%s", StrSpacer, PARTITION_TABLE_TXT);
+            SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
+        }
+    }
+    #endif
 } // VOID ScanVolumeBootcode()
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
@@ -1547,8 +1568,8 @@ VOID SetVolumeBadgeIcon (
         switch (Volume->DiskKind) {
             case DISK_KIND_INTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
             case DISK_KIND_EXTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
-            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL) ; break;
-            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET)     ; break;
+            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL ); break;
+            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET     ); break;
         } // switch
     }
 } // VOID SetVolumeBadgeIcon()
@@ -1575,7 +1596,8 @@ CHAR16 * SizeInIEEEUnits (
 
     if (Prefixes[Index] == ' ') {
         Units = StrDuplicate (L"-byte");
-    } else {
+    }
+    else {
         Units = StrDuplicate (L"  iB");
         Units[1] = Prefixes[Index];
     }
@@ -1669,7 +1691,19 @@ CHAR16 * GetVolumeName (
             FoundName = StrDuplicate (L"Network Volume (Assumed)");
         }
         else {
-            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
+            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                FoundName = StrDuplicate (L"APFS/FileVault Container");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT)) {
+                FoundName = StrDuplicate (L"GPT Home Partition");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT)) {
+                FoundName = StrDuplicate (L"GPT Server Partition");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux)) {
+                FoundName = StrDuplicate (L"Linux Volume");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
                 FoundName = StrDuplicate (L"Apple Raid Partition (Online)");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
@@ -1683,9 +1717,6 @@ CHAR16 * GetVolumeName (
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidApplTvRec)) {
                 FoundName = StrDuplicate (L"AppleTV Recovery Partition");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                FoundName = StrDuplicate (L"APFS/FileVault Container");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
                 FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
@@ -1796,7 +1827,7 @@ VOID ScanVolume (
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
-    CHAR16  *StrSpacer = NULL;
+    CHAR16  *StrSpacer;
     BOOLEAN  HybridLogger = FALSE;
     MY_HYBRIDLOGGER_SET;
     #endif
@@ -2069,7 +2100,7 @@ VOID ScanExtendedPartition (
                 break;
             }
             else {
-                // found a logical partition
+                // Found a logical partition
                 Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
                 Volume->DiskKind          = WholeDiskVolume->DiskKind;
                 Volume->IsMbrPartition    = TRUE;
@@ -2192,7 +2223,7 @@ VOID VetMultiInstanceAPFS (VOID) {
             // DA-TAG: Multiple installations in a single APFS Container
             //         Misc features are disabled
             #if REFIT_DEBUG > 0
-            MsgStrA = L"Multi-Instance APFS Container Found";
+            MsgStrA = L"APFS Container with Multiple Mac OS Instances Found";
             LOG_MSG("INFO: %s", MsgStrA);
 
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrE);
@@ -2544,6 +2575,7 @@ VOID ScanVolumes (VOID) {
             if (DupFlag) {
                 // This is a duplicate filesystem item
                 Volume->IsReadable = FALSE;
+                break;
             }
         } // for
 
@@ -2564,7 +2596,7 @@ VOID ScanVolumes (VOID) {
         if (SelfVolRun) {
             #if REFIT_DEBUG > 0
             if (SkipSpacing) {
-                LOG_MSG(" on Disk Entry Below:");
+                LOG_MSG("%s", ENTRY_BELOW_TXT);
             }
 
             if (!DoneHeadings) {
@@ -2598,15 +2630,19 @@ VOID ScanVolumes (VOID) {
                     if (GlobalConfig.LogLevel > 0) {
                         if (FoundMBR || Volume->HasBootCode) {
                             if (Volume->HasBootCode) {
-                                LOG_MSG("Found Legacy Boot Code");
+                                LOG_MSG(
+                                    "%s for %s",
+                                    LEGACY_CODE_TXT,
+                                    (Volume->OSName) ? Volume->OSName : UNKNOWN_OS
+                                );
                             }
                             if (FoundMBR) {
                                 if (Volume->HasBootCode) {
-                                    LOG_MSG(" and ");
+                                    LOG_MSG("%s", AND_JOIN_TXT);
                                 }
-                                LOG_MSG("Found MBR Partition Table");
+                                LOG_MSG("%s", PARTITION_TABLE_TXT);
                             }
-                            LOG_MSG(" on Disk Entry Below:");
+                            LOG_MSG("%s", ENTRY_BELOW_TXT);
                             LOG_MSG("\n");
                         }
                     }
@@ -2617,26 +2653,33 @@ VOID ScanVolumes (VOID) {
             // 'FSTypeName' returns a constant ... Do not free 'PartType'!
             PartType = FSTypeName (Volume);
             if (0);
-            else if (FindSubStr (PartType, L"NTFS")    ) Volume->FSType = FS_TYPE_NTFS   ;
-            else if (FindSubStr (PartType, L"APFS")    ) Volume->FSType = FS_TYPE_APFS   ;
-            else if (FindSubStr (PartType, L"HFS+")    ) Volume->FSType = FS_TYPE_HFSPLUS;
+            else if (FindSubStr (PartType, L"NTFS"    )) Volume->FSType = FS_TYPE_NTFS   ;
+            else if (FindSubStr (PartType, L"APFS"    )) Volume->FSType = FS_TYPE_APFS   ;
+            else if (FindSubStr (PartType, L"HFS+"    )) Volume->FSType = FS_TYPE_HFSPLUS;
             else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
 
             RoleStr = NULL;
             VolumeRole = 0;
             if (0);
-            else if (FindSubStr (Volume->VolName, L"APFS/FileVault")         ) RoleStr = L"0xCC - Container" ;
-            else if (MyStriCmp (Volume->VolName, L"EFI")                     ) RoleStr = L" * EFI Partition" ;
-            else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume")       ) RoleStr = L" * Physical Disk" ;
-            else if (MyStriCmp (Volume->VolName, L"Recovery HD")             ) RoleStr = L" * HFS Recovery"  ;
-            else if (MyStriCmp (Volume->VolName, L"BOOTCAMP")                ) RoleStr = L" * Win BootCamp"  ;
-            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")    ) RoleStr = L" * Win BasicData" ;
-            else if (MyStriCmp (Volume->VolName, L"Boot OS X")               ) RoleStr = L" * Mac BootAssist";
-            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")     ) RoleStr = L" * Drive Optical" ;
-            else if (FindSubStr (Volume->VolName, L"System Reserved")        ) RoleStr = L" * Win Reserved"  ;
-            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved")     ) RoleStr = L" * MS Reserved"   ;
-            else if (FindSubStr (PartType, L"Mac Raid")                      ) RoleStr = L" * Raid Partition";
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * Recv Partition";
+            else if (FindSubStr (Volume->VolName, L"APFS/FileVault"         )) RoleStr = L"0xCC - Container" ;
+            else if (FindSubStr (Volume->VolName, L"System Reserved"        )) RoleStr = L" * Win Reserved"  ;
+            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"     )) RoleStr = L" * Drive Optical" ;
+            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved"     )) RoleStr = L" * MS Reserved"   ;
+            else if (FindSubStr (PartType,        L"Mac Raid"               )) RoleStr = L" * Part MacRaid"  ;
+            else if (MyStriCmp (Volume->VolName,  L"Whole Disk Volume"      )) RoleStr = L" * Physical Disk" ;
+            else if (MyStriCmp (Volume->VolName,  L"Recovery HD"            )) RoleStr = L" * HFS Recovery"  ;
+            else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Win BootCamp"  ;
+            else if (MyStriCmp (Volume->VolName,  L"Basic Data Partition"   )) RoleStr = L" * Win BasicData" ;
+            else if (MyStriCmp (Volume->VolName,  L"Boot OS X"              )) RoleStr = L" * Mac BootAssist";
+            else if (MyStriCmp (Volume->VolName,  L"EFI"                    )) RoleStr = L" * EFI Partition" ;
+            else if (MyStriCmp (Volume->VolName,  L"ESP"                    )) RoleStr = L" * EFI Partition" ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * EFI Partition" ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux     )) RoleStr = L" * Part LinuxFS"  ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT   )) RoleStr = L" * Part HomeGPT"  ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT )) RoleStr = L" * Part ServerGPT";
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) RoleStr = L" * Part BasicData";
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidWindowsRE )) RoleStr = L" * Win Recovery"  ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * HFS Recovery"  ;
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
@@ -2670,10 +2713,29 @@ VOID ScanVolumes (VOID) {
                     // DA-TAG: Update FreeSyncVolumes() if expanding this
                     if (ValidAPFS) {
                         if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
-                            // Create or add to a list of APFS Recovery Volumes
+                            // Set as 'UnReadable' to boost load speed
+                            Volume->IsReadable = FALSE;
+                            // Create or add to a list representing APFS VolumeGroups
                             AddListElement (
                                 (VOID ***) &RecoveryVolumes,
                                 &RecoveryVolumesCount,
+                                CopyVolume (Volume)
+                            );
+
+                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
+                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
+                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
+                            ) {
+                                ValidAPFS = FALSE;
+                            }
+                        }
+                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
+                            // Set as 'UnReadable' to boost load speed
+                            Volume->IsReadable = FALSE;
+                            // Create or add to a list representing APFS VolumeGroups
+                            AddListElement (
+                                (VOID ***) &DataVolumes,
+                                &DataVolumesCount,
                                 CopyVolume (Volume)
                             );
 
@@ -2699,23 +2761,9 @@ VOID ScanVolumes (VOID) {
                                 ValidAPFS = FALSE;
                             }
                         }
-                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
-                            // Create or add to a list representing APFS VolumeGroups
-                            AddListElement (
-                                (VOID ***) &DataVolumes,
-                                &DataVolumesCount,
-                                CopyVolume (Volume)
-                            );
-
-                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
-                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
-                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
-                            ) {
-                                ValidAPFS = FALSE;
-                            }
-                        }
-                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
-                            || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                        else if (
+                            VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
+                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
                         ) {
                             // Create or add to a list of APFS System Volumes
                             AddListElement (
@@ -2739,6 +2787,10 @@ VOID ScanVolumes (VOID) {
                             ) {
                                 ValidAPFS = FALSE;
                             }
+                        }
+                        else {
+                            // Set any other APFS  Volume as 'UnReadable' to boost load speed
+                            Volume->IsReadable = FALSE;
                         }
                     } // if ValidAPFS
                 } // if !EFI_ERROR(Status)
@@ -2946,6 +2998,11 @@ VOID ScanVolumes (VOID) {
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
         VetSyncAPFS();
     }
+    else {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("\n\n");
+        #endif
+    }
 
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE; /* Explicit For FB Infer */
@@ -3009,6 +3066,11 @@ VOID GetVolumeBadgeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
+        // Skip 'UnReadable' volumes
+        if (!Volume->IsReadable) {
+            continue;
+        }
+
         // Skip volumes in 'DontScanVolumes' list
         if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
             continue;
@@ -3029,31 +3091,29 @@ VOID GetVolumeBadgeIcons (VOID) {
             }
         }
 
-        if (Volume->IsReadable) {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (
-                L"Setting VolumeBadge for '%s'",
-                Volume->VolName
-            );
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"Setting VolumeBadge for '%s'",
+            Volume->VolName
+        );
 
-            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
-            ALT_LOG(1, LogLineType, L"%s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-            #endif
+        LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+        ALT_LOG(1, LogLineType, L"%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
 
-            // Set volume badge icon
-            SetVolumeBadgeIcon (Volume);
+        // Set volume badge icon
+        SetVolumeBadgeIcon (Volume);
 
-            #if REFIT_DEBUG > 0
-            MsgStr = (Volume->VolBadgeImage == NULL)
-                ? StrDuplicate (L"VolumeBadge Not Found")
-                : StrDuplicate (L"VolumeBadge Found");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MY_FREE_POOL(MsgStr);
+        #if REFIT_DEBUG > 0
+        MsgStr = (Volume->VolBadgeImage == NULL)
+            ? StrDuplicate (L"VolumeBadge Not Found")
+            : StrDuplicate (L"VolumeBadge Found");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
 
-            LoopOnce = TRUE;
-            #endif
-        } // if Volume->IsReadable
+        LoopOnce = TRUE;
+        #endif
     } // for
 
     BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
@@ -3125,6 +3185,11 @@ VOID SetVolumeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
+        // Skip 'UnReadable' volumes
+        if (!Volume->IsReadable) {
+            continue;
+        }
+
         // Skip volumes in 'DontScanVolumes' list
         if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
             continue;
@@ -3145,60 +3210,58 @@ VOID SetVolumeIcons (VOID) {
             }
         }
 
-        if (Volume->IsReadable) {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (
-                L"Setting '.VolumeIcon' Icon for '%s'",
-                Volume->VolName
-            );
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"Setting '.VolumeIcon' Icon for '%s'",
+            Volume->VolName
+        );
 
-            LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
-            ALT_LOG(1, LogLineType, L"%s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-            #endif
+        LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+        ALT_LOG(1, LogLineType, L"%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
 
-            // Load custom volume icon for internal/external disks if present
-            if (!Volume->VolIconImage) {
-                if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
-                    (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.HiddenIconsExternal)
-                ) {
-                    Volume->VolIconImage = egLoadIconAnyType (
-                        Volume->RootDir,
-                        L"",
-                        L".VolumeIcon",
-                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                    );
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'hidden_icons_external'",
-                            Volume->VolName
-                        );
-                    }
-                    else {
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Skipped '%s' ... Not Internal Volume",
-                            Volume->VolName
-                        );
-                    }
-                    #endif
-                }
+        // Load custom volume icon for internal/external disks if present
+        if (!Volume->VolIconImage) {
+            if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
+                (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.HiddenIconsExternal)
+            ) {
+                Volume->VolIconImage = egLoadIconAnyType (
+                    Volume->RootDir,
+                    L"",
+                    L".VolumeIcon",
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
             }
             else {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Skipped '%s' ... Icon Already Set",
-                    Volume->VolName
-                );
+                if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'hidden_icons_external'",
+                        Volume->VolName
+                    );
+                }
+                else {
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Skipped '%s' ... Not Internal Volume",
+                        Volume->VolName
+                    );
+                }
                 #endif
             }
-
+        }
+        else {
             #if REFIT_DEBUG > 0
-            LoopOnce = TRUE;
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Skipped '%s' ... Icon Already Set",
+                Volume->VolName
+            );
             #endif
-        } // if Volume->IsReadable
+        }
+
+        #if REFIT_DEBUG > 0
+        LoopOnce = TRUE;
+        #endif
     } // for
 
     BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
@@ -3542,17 +3605,17 @@ BOOLEAN DirIterNext (
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     for (;;) {
-        //LOG_SEP(L"X");
-        //BREAD_CRUMB(L"%s:  3a 1 - FOR LOOP:- START", FuncTag);
+        LOG_SEP(L"X");
+        BREAD_CRUMB(L"%s:  3a 1 - FOR LOOP:- START", FuncTag);
 
-        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         DirIter->LastStatus = DirNextEntry (
             DirIter->DirHandle,
             &LastFileInfo,
             FilterMode
         );
 
-        //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
         if (EFI_ERROR(DirIter->LastStatus) || LastFileInfo == NULL) {
             BREAD_CRUMB(L"%s:  3a 3a 1 - END:- return BOOLEAN FALSE ... ERROR DirIter->LastStatus", FuncTag);
             LOG_DECREMENT();
@@ -3561,47 +3624,43 @@ BOOLEAN DirIterNext (
             return FALSE;
         }
 
-        //BREAD_CRUMB(L"%s:  3a 4", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 4", FuncTag);
         if (FilePattern == NULL || LastFileInfo->Attribute & EFI_FILE_DIRECTORY) {
-            //BREAD_CRUMB(L"%s:  3a 4a 1 - END:- FilePattern == NULL ... return BOOLEAN TRUE", FuncTag);
-            //LOG_DECREMENT();
-            //LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  3a 4a 1 - END:- FilePattern == NULL ... return BOOLEAN TRUE", FuncTag);
+            LOG_DECREMENT();
+            LOG_SEP(L"X");
 
             *DirEntry = LastFileInfo;
             return TRUE;
         }
 
-        //BREAD_CRUMB(L"%s:  3a 5", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 5", FuncTag);
         i     =     0;
         Found = FALSE;
         while (!Found && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
-            //LOG_SEP(L"X");
-            //BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START", FuncTag);
-
-            //BREAD_CRUMB(L"%s:  3a 5a 2", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START", FuncTag);
             if (RP_MetaiMatch (LastFileInfo->FileName, OnePattern)) {
-                //BREAD_CRUMB(L"%s:  3a 5a 2a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 5a 1a 1", FuncTag);
                 Found = TRUE;
             }
             MY_FREE_POOL(OnePattern);
-            //BREAD_CRUMB(L"%s:  3a 5a 3 - WHILE LOOP:- END", FuncTag);
-            //LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  3a 5a 2 - WHILE LOOP:- END", FuncTag);
         } // while
 
-        //BREAD_CRUMB(L"%s:  3a 6", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 6", FuncTag);
         if (Found) {
-            //BREAD_CRUMB(L"%s:  3a 6 - END:- Found == TRUE ... return BOOLEAN TRUE", FuncTag);
-            //LOG_DECREMENT();
-            //LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  3a 6 - END:- Found == TRUE ... return BOOLEAN TRUE", FuncTag);
+            LOG_DECREMENT();
+            LOG_SEP(L"X");
 
             *DirEntry = LastFileInfo;
             return TRUE;
         }
-        //BREAD_CRUMB(L"%s:  3a 7", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 7", FuncTag);
         MY_FREE_POOL(LastFileInfo);
 
-        //BREAD_CRUMB(L"%s:  3a 6 - FOR LOOP:- END", FuncTag);
-        //LOG_SEP(L"X");
+        BREAD_CRUMB(L"%s:  3a 8 - FOR LOOP:- END", FuncTag);
+        LOG_SEP(L"X");
     } // for
     BREAD_CRUMB(L"%s:  4 - END:- return BOOLEAN TRUE", FuncTag);
     LOG_DECREMENT();

@@ -3,9 +3,13 @@
  *
  *  Created by Slice  2011-08.19
  *  Edited by apianti 2012-09-08
- *
- *  Refactored by Dayo Akanji for RefindPlus
  */
+ /**
+  * Modified for RefindPlus
+  * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+ **/
 
 #include "../../include/tiano_includes.h"
 #include "MemLogLib.h"
@@ -414,7 +418,9 @@ VOID EFIAPI DebugLog (
     TimeStamp = TRUE;
 } // VOID EFIAPI DebugLog()
 
-VOID LogPadding (BOOLEAN Increment) {
+VOID LogPadding (
+    BOOLEAN Increment
+) {
     if (MuteLogger) {
         // Early Return
         return;

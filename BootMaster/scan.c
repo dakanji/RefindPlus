@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -634,7 +634,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Windows from Hard Disk");
+                SubEntry->me.Title        = StrDuplicate (L"Boot Windows on Hard Disk");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -h");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -642,7 +642,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Windows from Optical Disc");
+                SubEntry->me.Title        = StrDuplicate (L"Boot Windows on Optical Disc");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -c");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -960,7 +960,7 @@ VOID SetLoaderDefaults (
         }
 
         BREAD_CRUMB(L"%s:  5a 2", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"linux", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"linux", L',');
         Entry->OSType = 'L';
 
         BREAD_CRUMB(L"%s:  5a 3", FuncTag);
@@ -974,7 +974,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refindplus")) {
         BREAD_CRUMB(L"%s:  5b 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"refindplus", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"refindplus", L',');
 
         BREAD_CRUMB(L"%s:  5b 2", FuncTag);
         Entry->OSType = 'R';
@@ -982,7 +982,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refind")) {
         BREAD_CRUMB(L"%s:  5c 1 - A", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"refind", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"refind", L',');
 
         BREAD_CRUMB(L"%s:  5c 2 - A", FuncTag);
         Entry->OSType = 'R';
@@ -990,7 +990,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refit")) {
         BREAD_CRUMB(L"%s:  5c 1 - B", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"refit", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"refit", L',');
 
         BREAD_CRUMB(L"%s:  5c 2 - B", FuncTag);
         Entry->OSType = 'R';
@@ -1004,7 +1004,7 @@ VOID SetLoaderDefaults (
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
             BREAD_CRUMB(L"%s:  5d 1a 1", FuncTag);
-            if (GetImage) MergeStrings (&OSIconName, L"refind", L',');
+            if (GetImage) MergeUniqueStrings (&OSIconName, L"refind", L',');
 
             BREAD_CRUMB(L"%s:  5d 1a 2", FuncTag);
             Entry->OSType = 'R';
@@ -1012,7 +1012,7 @@ VOID SetLoaderDefaults (
         }
         else {
             BREAD_CRUMB(L"%s:  5d 1b 1", FuncTag);
-            if (GetImage) MergeStrings (&OSIconName, L"mac", L',');
+            if (GetImage) MergeUniqueStrings (&OSIconName, L"mac", L',');
 
             BREAD_CRUMB(L"%s:  5d 1b 2", FuncTag);
             Entry->OSType = 'M';
@@ -1023,14 +1023,14 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"diags.efi")) {
         BREAD_CRUMB(L"%s:  5e 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"hwtest", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"hwtest", L',');
     }
     else if (MyStriCmp (NameClues, L"e.efi") ||
         MyStriCmp (NameClues, L"elilo.efi")  ||
         FindSubStr (NameClues, L"elilo")
     ) {
         BREAD_CRUMB(L"%s:  5f 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"elilo,linux", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
 
         BREAD_CRUMB(L"%s:  5f 2", FuncTag);
@@ -1044,7 +1044,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (NameClues, L"grub")) {
         BREAD_CRUMB(L"%s:  5g 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"grub,linux", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"grub,linux", L',');
 
         BREAD_CRUMB(L"%s:  5g 2", FuncTag);
         Entry->OSType = 'G';
@@ -1057,7 +1057,7 @@ VOID SetLoaderDefaults (
         MyStriCmp (NameClues, L"bkpbootmgfw.efi")
     ) {
         BREAD_CRUMB(L"%s:  5h 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"win8", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"win8", L',');
 
         BREAD_CRUMB(L"%s:  5h 2", FuncTag);
         Entry->OSType = 'W';
@@ -1066,7 +1066,7 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"xom.efi")) {
         BREAD_CRUMB(L"%s:  5i 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"xom,win,win8", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"xom,win,win8", L',');
 
         BREAD_CRUMB(L"%s:  5i 2", FuncTag);
         Entry->OSType = 'X';
@@ -1075,21 +1075,21 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"opencore")) {
         BREAD_CRUMB(L"%s:  5j 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"opencore", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"opencore", L',');
 
         BREAD_CRUMB(L"%s:  5j 2", FuncTag);
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
     }
     else if (MyStriCmp (NameClues, L"clover")) {
         BREAD_CRUMB(L"%s:  5k 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"clover", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"clover", L',');
 
         BREAD_CRUMB(L"%s:  5k 2", FuncTag);
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
     }
     else if (FindSubStr (NameClues, L"ipxe")) {
         BREAD_CRUMB(L"%s:  5l 1", FuncTag);
-        if (GetImage) MergeStrings (&OSIconName, L"network", L',');
+        if (GetImage) MergeUniqueStrings (&OSIconName, L"network", L',');
 
         BREAD_CRUMB(L"%s:  5l 2", FuncTag);
         Entry->OSType = 'N';
@@ -1132,14 +1132,15 @@ CHAR16 * GetVolumeGroupName (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    UINTN   i;
-    CHAR16 *VolumeGroupName = NULL;
+    UINTN   TestLen, NameLen, FlagLen, i;
+    CHAR16 *VolumeGroupName, *DataTag, *TempStr;
 
     if (!GlobalConfig.SyncAPFS) {
         // Early Return
         return NULL;
     }
 
+    VolumeGroupName = NULL;
     if (SingleAPFS) {
         for (i = 0; i < SystemVolumesCount; i++) {
             if (GuidsAreEqual (&(SystemVolumes[i]->PartGuid), &(Volume->PartGuid))) {
@@ -1149,7 +1150,7 @@ CHAR16 * GetVolumeGroupName (
         } // for
     }
 
-    if (!VolumeGroupName) {
+    if (VolumeGroupName == NULL) {
         for (i = 0; i < SystemVolumesCount; i++) {
             if (
                 FindSubStr (
@@ -1163,7 +1164,7 @@ CHAR16 * GetVolumeGroupName (
         } // for
     }
 
-    if (!VolumeGroupName) {
+    if (VolumeGroupName == NULL) {
         for (i = 0; i < DataVolumesCount; i++) {
             if (
                 FindSubStr (
@@ -1171,7 +1172,20 @@ CHAR16 * GetVolumeGroupName (
                     GuidAsString (&(DataVolumes[i]->VolUuid))
                 )
             ) {
-                VolumeGroupName = StrDuplicate (DataVolumes[i]->VolName);
+                // DA-TAG: Using 'DATA' volume name as last resort
+                DataTag = L" - Data";
+                TempStr = StrDuplicate (DataVolumes[i]->VolName);
+                if (FindSubStr (TempStr, DataTag)) {
+                    FlagLen = StrLen (DataTag);
+                    NameLen = StrLen (TempStr);
+                    if (NameLen > FlagLen) {
+                        TestLen = NameLen - FlagLen;
+                        TruncateString (TempStr, TestLen);
+                    }
+                }
+
+                VolumeGroupName = PoolPrint (L"Fallback Label ... %s", TempStr);
+                MY_FREE_POOL(TempStr);
                 break;
             }
         } // for
@@ -1261,8 +1275,11 @@ LOADER_ENTRY * AddLoaderEntry (
 ) {
     EFI_STATUS     Status;
     LOADER_ENTRY  *Entry;
-    CHAR16        *TitleEntry  = NULL;
-    CHAR16        *DisplayName = NULL;
+    CHAR16        *TitleEntry  =  NULL;
+    CHAR16        *DisplayName =  NULL;
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute          = FALSE;
+    #endif
 
     if (Volume == NULL) {
         // Early Return
@@ -1278,7 +1295,8 @@ LOADER_ENTRY * AddLoaderEntry (
             return NULL;
         }
     }
-    else if (Volume->FSType == FS_TYPE_APFS) {
+
+    if (Volume->FSType == FS_TYPE_APFS) {
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
@@ -1335,7 +1353,22 @@ LOADER_ENTRY * AddLoaderEntry (
     }
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
-    TitleEntry   = (LoaderTitle) ? LoaderTitle : LoaderPath;
+
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    if (FindSubStr(Volume->VolName, L"OS X Install") ||
+        FindSubStr(Volume->VolName, L"Mac OS Install")
+    ) {
+        TitleEntry = L"MacOS Installer";
+    }
+    else {
+        TitleEntry = (LoaderTitle) ? LoaderTitle : LoaderPath;
+    }
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
     Entry->Title = StrDuplicate (TitleEntry);
 
     #if REFIT_DEBUG > 0
@@ -1348,8 +1381,8 @@ LOADER_ENTRY * AddLoaderEntry (
 
     Entry->me.Title = (DisplayName || Volume->VolName)
         ? PoolPrint (
-            L"Boot %s from %s",
-            (LoaderTitle) ? LoaderTitle : LoaderPath,
+            L"Boot %s on %s",
+            TitleEntry,
             (DisplayName) ? DisplayName : Volume->VolName
         )
         : PoolPrint (
@@ -1491,7 +1524,8 @@ VOID CleanUpLoaderList (
 
 // Returns FALSE if the specified file/volume matches the GlobalConfig.DontScanDirs
 // or GlobalConfig.DontScanVolumes specification, or if Path points to a volume
-// other than the one specified by Volume, or if the specified path is SelfDir.
+// other than the one specified by Volume, or if the specified path is 'SelfDir',
+// or if the volume has been otherwise flagged as being 'unreadable',
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
 BOOLEAN ShouldScan (
@@ -1504,6 +1538,11 @@ BOOLEAN ShouldScan (
     CHAR16  *PathCopy    = NULL;
     CHAR16  *DontScanDir = NULL;
     BOOLEAN  ScanIt      = TRUE;
+
+    // Skip 'UnReadable' volumes
+    if (!Volume->IsReadable) {
+        return FALSE;
+    }
 
     if (MyStriCmp (Path, SelfDirPath)
         && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
@@ -1565,10 +1604,10 @@ BOOLEAN ShouldScan (
     } // if Volume->FSType
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
-    if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
-        || IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)
-        || IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)
-        || IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
+    if (IsIn (VolGuid,          GlobalConfig.DontScanVolumes) ||
+        IsIn (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
+        IsIn (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
+        IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
     ) {
         ScanIt = FALSE;
     }
@@ -1579,8 +1618,8 @@ BOOLEAN ShouldScan (
     PathCopy = StrDuplicate (Path);
     if (SplitVolumeAndFilename (&PathCopy, &VolName)) {
         if (VolName) {
-            if (!MyStriCmp (VolName, Volume->FsName)
-                || !MyStriCmp(VolName, Volume->PartName)
+            if (!MyStriCmp (VolName, Volume->FsName) ||
+                !MyStriCmp (VolName, Volume->PartName)
             ) {
                 ScanIt = FALSE;
             }
@@ -2112,7 +2151,7 @@ BOOLEAN ScanMacOsLoader (
     MY_FREE_POOL(FileName);
 
     return ScanFallbackLoader;
-} // VOID ScanMacOsLoader()
+} // static BOOLEAN ScanMacOsLoader()
 
 static
 VOID ScanEfiFiles (
@@ -3363,7 +3402,7 @@ BOOLEAN FindTool (
                         FileName, Volumes[VolumeIndex]->VolName
                     );
                     ToolStr = PoolPrint (
-                        L"Added Tool:- '%-18s    :::    %s'",
+                        L"Added Tool:- '%-18s     :::     %s'",
                         Description, PathName
                     );
 
@@ -3674,26 +3713,17 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_HIDDEN:
-                if (GlobalConfig.HiddenTags) {
+                if (!GlobalConfig.HiddenTags) {
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG_MSG(" * NOTE *     %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+                else {
                     MenuEntryHiddenTags = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                    if (MenuEntryHiddenTags) {
-                        MenuEntryHiddenTags->Title          = StrDuplicate (ToolName);
-                        MenuEntryHiddenTags->Tag            = TAG_HIDDEN;
-                        MenuEntryHiddenTags->Row            = 1;
-                        MenuEntryHiddenTags->ShortcutDigit  = 0;
-                        MenuEntryHiddenTags->ShortcutLetter = 0;
-                        MenuEntryHiddenTags->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-
-                        AddMenuEntry (MainMenu, MenuEntryHiddenTags);
-
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
-                    }
-                    else {
+                    if (!MenuEntryHiddenTags) {
                         #if REFIT_DEBUG > 0
                         if (!FoundTool) {
                             ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
@@ -3702,13 +3732,23 @@ VOID ScanForTools (VOID) {
                             MY_FREE_POOL(ToolStr);
                         }
                         #endif
+
+                        break;
                     }
-                }
-                else {
+
+                    MenuEntryHiddenTags->Title          = StrDuplicate (ToolName);
+                    MenuEntryHiddenTags->Tag            = TAG_HIDDEN;
+                    MenuEntryHiddenTags->Row            = 1;
+                    MenuEntryHiddenTags->ShortcutDigit  = 0;
+                    MenuEntryHiddenTags->ShortcutLetter = 0;
+                    MenuEntryHiddenTags->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
+
+                    AddMenuEntry (MainMenu, MenuEntryHiddenTags);
+
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG(" * NOTE *     %s", ToolStr);
+                    LOG_MSG("%s", ToolStr);
                     MY_FREE_POOL(ToolStr);
                     #endif
                 }
@@ -3750,7 +3790,7 @@ VOID ScanForTools (VOID) {
                         }
                         else {
                             #if REFIT_DEBUG > 0
-                            // Fake 'FoundTool'
+                            // Fake 'FoundTool' to bypass downstream logging
                             FoundTool = TRUE;
 
                             ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
@@ -3795,7 +3835,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3852,7 +3892,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3896,7 +3936,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -3942,7 +3982,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -4011,7 +4051,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (
-                                L"Added Tool:- '%-18s    :::    %s for %s'",
+                                L"Added Tool:- '%-18s     :::     %s for %s'",
                                 ToolName, FileName, VolumeTag
                             );
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4106,7 +4146,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (
-                            L"Added Tool:- '%-18s    :::    %s for %s'",
+                            L"Added Tool:- '%-18s     :::     %s for %s'",
                             ToolName, FileName, VolumeTag
                         );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4135,8 +4175,8 @@ VOID ScanForTools (VOID) {
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG(
-                        "*_ %s _*    %s",
-                        (FlagAPFS) ? L"NOTE" : L"WARN",
+                        "%s    %s",
+                        (FlagAPFS) ? L" * NOTE * " : L"*_ WARN _*",
                         ToolStr
                     );
                     MY_FREE_POOL(ToolStr);
@@ -4180,7 +4220,7 @@ VOID ScanForTools (VOID) {
                             MY_FREE_POOL(Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- '%-18s    :::    %s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 LOG_MSG("%s%s", OffsetNext, Spacer);
@@ -4244,61 +4284,34 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_CSR_ROTATE:
+                MuteLogger = TRUE;
                 Status = GetCsrStatus (&CsrValue);
-                if ((Status == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
-                    MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                    if (MenuEntryRotateCsr) {
-                        FoundTool = TRUE;
-
-                        MenuEntryRotateCsr->Title          = StrDuplicate (ToolName);
-                        MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
-                        MenuEntryRotateCsr->Row            = 1;
-                        MenuEntryRotateCsr->ShortcutDigit  = 0;
-                        MenuEntryRotateCsr->ShortcutLetter = 0;
-                        MenuEntryRotateCsr->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
-
-                        AddMenuEntry (MainMenu, MenuEntryRotateCsr);
-
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
-                    }
-                }
-
-                #if REFIT_DEBUG > 0
-                if (!FoundTool) {
-                    ToolStr = PoolPrint (
-                        L"%s:- '%s' ... %r",
-                        (!GlobalConfig.CsrValues) ? L"Did Not Enable Tool" : L"Aborted Tool Search",
-                        ToolName, Status
-                    );
+                MuteLogger = FALSE;
+                if ((Status != EFI_SUCCESS) || (!GlobalConfig.CsrValues)) {
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG(
-                        "*_ %s _*    %s",
-                        (!GlobalConfig.CsrValues) ? L"NOTE" : L"WARN",
-                        ToolStr
-                    );
+                    LOG_MSG(" * NOTE *     %s ... %r", ToolStr, Status);
                     MY_FREE_POOL(ToolStr);
+                    #endif
                 }
-                #endif
+                else {
+                    MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                    if (!MenuEntryRotateCsr) {
+                        BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
+                        LOG_DECREMENT();
+                        LOG_SEP(L"X");
+                        return;
+                    }
 
-            break;
-            case TAG_INSTALL:
-                MenuEntryInstall = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (MenuEntryInstall) {
-                    FoundTool = TRUE;
+                    MenuEntryRotateCsr->Title          = StrDuplicate (ToolName);
+                    MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
+                    MenuEntryRotateCsr->Row            = 1;
+                    MenuEntryRotateCsr->ShortcutDigit  = 0;
+                    MenuEntryRotateCsr->ShortcutLetter = 0;
+                    MenuEntryRotateCsr->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
 
-                    MenuEntryInstall->Title          = StrDuplicate (ToolName);
-                    MenuEntryInstall->Tag            = TAG_INSTALL;
-                    MenuEntryInstall->Row            = 1;
-                    MenuEntryInstall->ShortcutDigit  = 0;
-                    MenuEntryInstall->ShortcutLetter = 0;
-                    MenuEntryInstall->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
-
-                    AddMenuEntry (MainMenu, MenuEntryInstall);
+                    AddMenuEntry (MainMenu, MenuEntryRotateCsr);
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
@@ -4308,45 +4321,56 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
 
-                #if REFIT_DEBUG > 0
-                if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("*_ WARN _*    %s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
+            break;
+            case TAG_INSTALL:
+                MenuEntryInstall = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (!MenuEntryInstall) {
+                    BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
+                    LOG_DECREMENT();
+                    LOG_SEP(L"X");
+                    return;
                 }
+
+                MenuEntryInstall->Title          = StrDuplicate (ToolName);
+                MenuEntryInstall->Tag            = TAG_INSTALL;
+                MenuEntryInstall->Row            = 1;
+                MenuEntryInstall->ShortcutDigit  = 0;
+                MenuEntryInstall->ShortcutLetter = 0;
+                MenuEntryInstall->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+
+                AddMenuEntry (MainMenu, MenuEntryInstall);
+
+                #if REFIT_DEBUG > 0
+                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG_MSG("%s", ToolStr);
+                MY_FREE_POOL(ToolStr);
                 #endif
 
             break;
             case TAG_BOOTORDER:
                 MenuEntryBootorder = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (MenuEntryBootorder) {
-                    FoundTool = TRUE;
-
-                    MenuEntryBootorder->Title          = StrDuplicate (ToolName);
-                    MenuEntryBootorder->Tag            = TAG_BOOTORDER;
-                    MenuEntryBootorder->Row            = 1;
-                    MenuEntryBootorder->ShortcutDigit  = 0;
-                    MenuEntryBootorder->ShortcutLetter = 0;
-                    MenuEntryBootorder->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-
-                    AddMenuEntry (MainMenu, MenuEntryBootorder);
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
+                if (!MenuEntryBootorder) {
+                    BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
+                    LOG_DECREMENT();
+                    LOG_SEP(L"X");
+                    return;
                 }
+
+                MenuEntryBootorder->Title          = StrDuplicate (ToolName);
+                MenuEntryBootorder->Tag            = TAG_BOOTORDER;
+                MenuEntryBootorder->Row            = 1;
+                MenuEntryBootorder->ShortcutDigit  = 0;
+                MenuEntryBootorder->ShortcutLetter = 0;
+                MenuEntryBootorder->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+
+                AddMenuEntry (MainMenu, MenuEntryBootorder);
 
                 #if REFIT_DEBUG > 0
-                if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("*_ WARN _*    %s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                }
+                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG_MSG("%s", ToolStr);
+                MY_FREE_POOL(ToolStr);
                 #endif
 
             break;

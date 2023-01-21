@@ -714,7 +714,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
+    MsgStr = PoolPrint (L"System Table Convert ... %r", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);

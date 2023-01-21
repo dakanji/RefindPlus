@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -648,7 +648,7 @@ BOOLEAN ConfirmReboot (
     ConfirmRebootMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
     ConfirmRebootMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
 
-    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
+    AddMenuInfoLineAlt (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
 
     BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
     if (!RetVal) {
@@ -982,7 +982,7 @@ VOID StartLoader (
     IsBoot        = TRUE;
     BootSelection = SelectionName;
     LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"Launching Loader:- '%s'", SelectionName);
+    MsgStr        = PoolPrint (L"Loading:- '%s'", SelectionName);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1020,7 +1020,7 @@ VOID StartTool (
 
     IsBoot        = FALSE;
     LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"Launching Tool:- '%s'", Entry->me.Title);
+    MsgStr        = PoolPrint (L"Launching Child (Tool) Image:- '%s'", Entry->me.Title);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1029,11 +1029,8 @@ VOID StartTool (
     BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
 
     #if REFIT_DEBUG > 0
-    if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        LOG_MSG("INFO: Switched Graphics to Text Mode");
-        LOG_MSG("%s      %s", OffsetNext, MsgStr);
-        LOG_MSG("\n\n");
-    }
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    LOG_MSG("\n");
     #endif
 
     if (FindSubStr (Entry->me.Title, L"APFS Instance")) {

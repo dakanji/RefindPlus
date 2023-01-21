@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -122,9 +122,9 @@ CHAR16 * FindInitrd (
 
     BREAD_CRUMB(L"%s:  5", FuncTag);
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path          ? Path          : L"NULL");
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName      ? FileName      : L"NULL");
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion ? KernelVersion : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Path                  : %s", Path          ? Path          : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"FileName              : %s", FileName      ? FileName      : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : %s", KernelVersion ? KernelVersion : L"NULL");
     #endif
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
@@ -335,7 +335,7 @@ CHAR16 * GetMainLinuxOptions (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
+    CHAR16 *Options, *FullOptions, *InitrdName, *KernelVersion;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"GetMainLinuxOptions";
@@ -350,20 +350,31 @@ CHAR16 * GetMainLinuxOptions (
     InitrdName = FindInitrd (LoaderPath, Volume);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    KernelVersion = FindNumbers (InitrdName);
+    Options = NULL;
+    if (InitrdName) {
+        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        KernelVersion = FindNumbers (InitrdName);
+
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        if (Options) {
+            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
+            ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
+        }
+    }
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
-    ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
+    FullOptions = NULL;
+    if (InitrdName || Options) {
+        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        FullOptions = AddInitrdToOptions (Options, InitrdName);
+    }
 
     BREAD_CRUMB(L"%s:  5", FuncTag);
-    FullOptions = AddInitrdToOptions (Options, InitrdName);
-
-    BREAD_CRUMB(L"%s:  6", FuncTag);
     MY_FREE_POOL(Options);
     MY_FREE_POOL(InitrdName);
     MY_FREE_POOL(KernelVersion);
 
-    BREAD_CRUMB(L"%s:  7 - END:- return CHAR16 *FullOptions = '%s'", FuncTag,
+    BREAD_CRUMB(L"%s:  6 - END:- return CHAR16 *FullOptions = '%s'", FuncTag,
         FullOptions ? FullOptions : L"NULL"
     );
     LOG_DECREMENT();

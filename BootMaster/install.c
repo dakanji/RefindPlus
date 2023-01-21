@@ -11,7 +11,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -123,7 +123,7 @@ REFIT_VOLUME * PickOneESP (
     #endif
 
     if (!AllESPs) {
-        DisplaySimpleMessage (L"Information", L"No Eligible ESPs Found");
+        DisplaySimpleMessage (NULL, L"No Eligible ESPs Found");
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"No Eligible ESPs Found");
@@ -1098,9 +1098,7 @@ VOID InstallRefindPlus (VOID) {
     }
 
     MsgStr = L"RefindPlus Successfully Installed";
-    DisplaySimpleMessage (
-        L"Information", MsgStr
-    );
+    DisplaySimpleMessage (NULL, MsgStr);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1286,7 +1284,7 @@ UINTN PickOneBootOption (
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
     if (!Entries) {
-        DisplaySimpleMessage (L"Information", L"Firmware BootOrder List is Unavailable!!");
+        DisplaySimpleMessage (NULL, L"Firmware BootOrder List is Unavailable!!");
     }
     else {
         REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -1437,7 +1435,7 @@ VOID ManageBootorder (VOID) {
         );
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
-        DisplaySimpleMessage (L"Information", Message);
+        DisplaySimpleMessage (NULL, Message);
         MY_FREE_POOL(Name);
         MY_FREE_POOL(Message);
     }
@@ -1445,7 +1443,7 @@ VOID ManageBootorder (VOID) {
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
         SetBootDefault (BootNum);
         Message = PoolPrint (L"Boot%04x is Now the Default EFI Boot Option.", BootNum);
-        DisplaySimpleMessage (L"Information", Message);
+        DisplaySimpleMessage (NULL, Message);
         MY_FREE_POOL(Message);
     }
 

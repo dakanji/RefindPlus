@@ -18,7 +18,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -165,6 +165,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     CHAR8           InitError[50];
 
     if (mMemLog != NULL) {
+        // Early return
         return  EFI_SUCCESS;
     }
 
@@ -174,13 +175,14 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         NULL, (VOID **) &mMemLog
     );
     if (Status == EFI_SUCCESS && mMemLog != NULL) {
-        // We are inited with an existing MEM_LOG
+        // Early return ... We are inited with an existing MEM_LOG
         return EFI_SUCCESS;
     }
 
     // Set up and publish new MEM_LOG
     mMemLog = AllocateZeroPool ( sizeof (MEM_LOG) );
     if (mMemLog == NULL) {
+        // Early return
         return EFI_OUT_OF_RESOURCES;
     }
     mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
@@ -256,21 +258,21 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         do {
             CpuPause();
 
-            // check how many AcpiTicks have passed since we started
+            // Check how many AcpiTicks have passed since we started
             AcpiTick1 = IoRead32 (TimerAddr);
             if (AcpiTick0 <= AcpiTick1) {
-                // no overflow
+                // No overflow
                 AcpiTicksDelta = AcpiTick1 - AcpiTick0;
             }
             else if (AcpiTick0 - AcpiTick1 <= 0x00FFFFFF) {
-                // overflow, 24-bit timer
+                // Overflow, 24-bit timer
                 AcpiTicksDelta = (0x00FFFFFF - AcpiTick0) + AcpiTick1;
             }
             else {
-                // overflow, 32-bit timer
+                // Overflow, 32-bit timer
                 AcpiTicksDelta = (0xFFFFFFFF - AcpiTick0) + AcpiTick1;
             }
-        } while (AcpiTicksDelta < AcpiTicksTarget); // keep checking Acpi ticks until target is reached
+        } while (AcpiTicksDelta < AcpiTicksTarget); // Keep checking Acpi ticks until target is reached
 
         Tsc1 = AsmReadTsc();
 
@@ -320,6 +322,7 @@ VOID EFIAPI MemLogVA (
     CHAR8           *LastMessage;
 
     if (Format == NULL) {
+        // Early return
         return;
     }
 
@@ -335,7 +338,7 @@ VOID EFIAPI MemLogVA (
         // not enough place for max line - make buffer bigger
         // but not too big (if something gets out of control)
         if (mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE > MEM_LOG_MAX_SIZE) {
-            // Out of resources!
+            // Early return ... Out of resources
             return;
         }
 
@@ -347,6 +350,7 @@ VOID EFIAPI MemLogVA (
         );
 
         if (mMemLog->Buffer == NULL) {
+            // Early return
             return;
         }
 
@@ -406,6 +410,7 @@ VOID EFIAPI MemLog (
     VA_LIST           Marker;
 
     if (Format == NULL) {
+        // Early return
         return;
     }
 
@@ -423,6 +428,7 @@ CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
 
     Status = MemLogInit();
     if (EFI_ERROR(Status)) {
+        // Early return
         return NULL;
     }
 
@@ -438,6 +444,7 @@ UINTN EFIAPI GetMemLogLen (VOID) {
 
     Status = MemLogInit();
     if (EFI_ERROR(Status)) {
+        // Early return
         return 0;
     }
 
@@ -454,6 +461,7 @@ VOID EFIAPI SetMemLogCallback (
 
     Status = MemLogInit();
     if (EFI_ERROR(Status)) {
+        // Early return
         return;
     }
 
@@ -468,6 +476,7 @@ UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID) {
 
     Status = MemLogInit();
     if (EFI_ERROR(Status)) {
+        // Early return
         return 0;
     }
 

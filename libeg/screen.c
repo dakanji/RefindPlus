@@ -600,7 +600,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
-    // check if requested mode is equal to current mode
+    // Check if requested mode is equal to current mode
     if (BestMode == GOPDraw->Mode->Mode) {
         Status = EFI_SUCCESS;
 
@@ -622,7 +622,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
             egScreenHeight = Height;
         }
         else {
-            // we cannot set BestMode - search for first one that we can use
+            // Cannot set BestMode ... Search for first usable one
             Status = egSetGopMode (1);
 
             #if REFIT_DEBUG > 0
@@ -670,7 +670,8 @@ VOID egDetermineScreenSize (VOID) {
         );
 
         if (EFI_ERROR(Status)) {
-            UGADraw = NULL;   // graphics not available
+            // Graphics not Available
+            UGADraw = NULL;
         }
         else {
             egScreenWidth  = ScreenW;
@@ -884,7 +885,7 @@ BOOLEAN egInitUGADraw (
             MY_FREE_POOL(HandleBuffer);
 
         } // if !EFI_ERROR(Status)
-    } // if EFI_ERROR(Status
+    } // if/else !EFI_ERROR(Status
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = (EFI_ERROR(Status))
@@ -937,7 +938,7 @@ VOID egInitScreen (VOID) {
             &TmpUgaDepth, &TmpUgaRefreshRate
         );
         if (EFI_ERROR(Status)) {
-            UGADraw =  NULL;
+            UGADraw = NULL;
         }
         else {
             SetPreferUGA = TRUE;
@@ -1265,18 +1266,16 @@ VOID egInitScreen (VOID) {
 #endif
 
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
         if ((GOPDraw != NULL) &&
             (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly)
         ) {
+            MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
             PrevFlag = TRUE;
         }
-        else {
-            LOG_MSG("\n\n");
-        }
-        MY_FREE_POOL(MsgStr);
         #endif
 
         if (GOPDraw == NULL) {
@@ -1324,7 +1323,7 @@ VOID egInitScreen (VOID) {
 BOOLEAN NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
     if (GOPDraw != NULL) {
-        if (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly) {
+        if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
             // Implement Text Renderer
             Status = OcUseBuiltinTextOutput (
                 (egHasGraphics)
@@ -1332,6 +1331,19 @@ BOOLEAN NewAppleFramebuffers = FALSE;
                     : EfiConsoleControlScreenText
             );
         }
+
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        if (PrevFlag) {
+            LOG_MSG("%s      ", OffsetNext);
+        }
+        else {
+            LOG_MSG("INFO: ");
+        }
+        LOG_MSG("%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
     }
     else if (UGADraw != NULL) {
         if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
@@ -1349,20 +1361,15 @@ BOOLEAN NewAppleFramebuffers = FALSE;
             }
         }
     }
+    if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
+        // Implement Text Renderer
+        Status = OcUseBuiltinTextOutput (
+            (egHasGraphics)
+                ? EfiConsoleControlScreenGraphics
+                : EfiConsoleControlScreenText
+        );
+    }
 #endif
-
-    #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    if (PrevFlag) {
-        LOG_MSG("%s      ", OffsetNext);
-    }
-    else {
-        LOG_MSG("INFO: ");
-    }
-    LOG_MSG("%s", MsgStr);
-    MY_FREE_POOL(MsgStr);
-    #endif
 
     if (!egHasGraphics) {
         #if REFIT_DEBUG > 0
@@ -1372,7 +1379,7 @@ BOOLEAN NewAppleFramebuffers = FALSE;
     else if (NewAppleFramebuffers) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Unlikely but Possible via Installed Framebuffer%s",
+            L"Unlikely but Possibly via Reinstalled Framebuffer%s",
             (GlobalConfig.TextOnly)
                 ? L""
                 : L" ... Try \"TextOnly\" if No Display"
@@ -1380,7 +1387,7 @@ BOOLEAN NewAppleFramebuffers = FALSE;
 
         #endif
     }
-    else if (!FlagUGA || !AppleFirmware || (FlagUGA && AppleFramebuffers > 0)) {
+    else if (!FlagUGA || !AppleFirmware || AppleFramebuffers > 0) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Yes");
         #endif
@@ -1982,44 +1989,47 @@ VOID egDrawImage (
     EG_IMAGE *CompImage = NULL;
     BOOLEAN   SetImage  = FALSE;
 
-    // NOTE: Weird seemingly redundant tests because some placement code can "wrap around" and
-    //   send "negative" values, which of course become very large unsigned ints that can then
-    //   wrap around AGAIN if values are added to them.
-    if ((!egHasGraphics)
-        || ((ScreenPosX + Image->Width)  > egScreenWidth)
-        || ((ScreenPosY + Image->Height) > egScreenHeight)
-        || (ScreenPosX > egScreenWidth)
-        || (ScreenPosY > egScreenHeight)
+    // DA-TAg: Investigate This
+    //         Weird seemingly redundant tests because some placement code can "wrap around" and
+    //         send "negative" values, which of course become very large unsigned ints that can then
+    //         wrap around AGAIN if values are added to them.
+    if (!egHasGraphics                                ||
+        ScreenPosX > egScreenWidth                    ||
+        ScreenPosY > egScreenHeight                   ||
+        (ScreenPosX + Image->Width)  > egScreenWidth  ||
+        (ScreenPosY + Image->Height) > egScreenHeight
     ) {
         return;
     }
 
-    if ((GlobalConfig.ScreenBackground == NULL) ||
-        ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))
+    if (GlobalConfig.ScreenBackground == NULL ||
+        (
+            (Image->Width == egScreenWidth) && (Image->Height == egScreenHeight)
+        )
     ) {
-       CompImage = Image;
+        CompImage = Image;
     }
     else if (GlobalConfig.ScreenBackground == Image) {
-       CompImage = GlobalConfig.ScreenBackground;
+        CompImage = GlobalConfig.ScreenBackground;
     }
     else {
-       CompImage = egCropImage (
-           GlobalConfig.ScreenBackground,
-           ScreenPosX, ScreenPosY,
-           Image->Width, Image->Height
-       );
+        CompImage = egCropImage (
+            GlobalConfig.ScreenBackground,
+            ScreenPosX, ScreenPosY,
+            Image->Width, Image->Height
+        );
 
-       if (CompImage == NULL) {
-           #if REFIT_DEBUG > 0
-          LOG_MSG("Error! Cannot Crop Image in egDrawImage()!\n");
-          #endif
+        if (CompImage == NULL) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("Error! Cannot Crop Image in egDrawImage()!\n");
+            #endif
 
-          return;
-       }
+            return;
+        }
 
-       egComposeImage (CompImage, Image, 0, 0);
+        egComposeImage (CompImage, Image, 0, 0);
 
-       SetImage = TRUE;
+        SetImage = TRUE;
     }
 
     if (GOPDraw != NULL) {

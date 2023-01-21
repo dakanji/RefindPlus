@@ -278,11 +278,6 @@ VOID SetupScreen (VOID) {
     if ((GlobalConfig.RequestedScreenWidth > 0) &&
         (GlobalConfig.RequestedScreenHeight > 0)
     ) {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("Sync Resolution:");
-        LOG_MSG("\n");
-        #endif
-
         ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth)
             ? ScreenW
             : GlobalConfig.RequestedScreenWidth;
@@ -512,15 +507,14 @@ VOID SetupScreen (VOID) {
                 : StrDuplicate (L"Screen is in Text Only Mode");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
         }
         else {
             MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("WARN: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
         }
+        MY_FREE_POOL(MsgStr);
+        LOG_MSG("\n\n");
         #endif
 
         GlobalConfig.TextOnly = ForceTextOnly = TRUE;
@@ -867,7 +861,7 @@ VOID DrawScreenHeader (
         gST->ConOut->SetCursorPosition, gST->ConOut,
         3, 1
     );
-    Print (L"RefindPlus Boot Manager ... %s", Title);
+    Print (L"RefindPlus ... %s", Title);
 
     // Reposition cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
