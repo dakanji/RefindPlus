@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -1542,9 +1542,12 @@ VOID AddSubmenu (
         MY_FREE_POOL(SubEntry->InitrdPath);
     }
 
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+    AddSubMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-    FreeMenuScreen (&Entry->me.SubScreen);
+    // DA-TAG: Investigate This
+    //         Freeing the SubScreen below causes a hang
+    //FreeMenuScreen (&Entry->me.SubScreen);
+
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
 

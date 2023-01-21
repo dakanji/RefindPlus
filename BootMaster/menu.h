@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -139,6 +139,7 @@ VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuInfoLineAlt (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 VOID AddMenuEntryCopy (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
+VOID AddSubMenuEntry (IN REFIT_MENU_SCREEN *SubScreen, IN REFIT_MENU_ENTRY *SubEntry);
 VOID MainMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,

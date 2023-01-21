@@ -1,5 +1,7 @@
 0.13.3.AD (PRE_RELEASE):
 -----------------------
+- Fixes Manual Stanza SubMenuEntries
+  * A memory conflict meant that including such entries resulted in RefindPlus hanging
 - Fixes UGA Graphics
   * Addresses issues with UGA-Only GPUs being always forced into TextOnly mode
 - Fixes Misc Alt Build Function Duplication Issues

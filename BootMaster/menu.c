@@ -457,6 +457,30 @@ VOID AddMenuInfoLine (
     );
 } // VOID AddMenuInfoLine()
 
+VOID AddSubMenuEntry (
+    IN REFIT_MENU_SCREEN *SubScreen,
+    IN REFIT_MENU_ENTRY  *SubEntry
+) {
+    if (!SubScreen || !SubEntry) {
+        // Early Return
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Set SubMenu Entry in %s - %s",
+        SubScreen->Title,
+        SubEntry->Title
+    );
+    #endif
+
+    AddListElement (
+        (VOID ***) &(SubScreen->Entries),
+        &(SubScreen->EntryCount),
+        SubEntry
+    );
+} // VOID AddSubMenuEntry()
+
 VOID AddMenuEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN REFIT_MENU_ENTRY  *Entry
