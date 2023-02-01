@@ -927,14 +927,28 @@ VOID ReadConfig (
             }
             #endif
         }
-        else if (MyStriCmp (TokenList[0], L"disable_rescan_dxe")) {
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.RescanDXE = (DeclineSetting) ? FALSE : TRUE;
+        else if (StriSubCmp (L"rescan_dxe", TokenList[0])) {
+            if (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch) {
+                // DA-TAG: Force 'RescanDXE'
+                //         Update other instances if changing
+                GlobalConfig.RescanDXE = TRUE;
+            }
+            else {
+                DeclineSetting = HandleBoolean (TokenList, TokenCount);
+                if (MyStriCmp (TokenList[0], L"enable_rescan_dxe")) {
+                    GlobalConfig.RescanDXE = DeclineSetting;
+                }
+                else if (MyStriCmp (TokenList[0], L"disable_rescan_dxe")) {
+                    // DA_TAG: Duplication Purely to Accomodate Deprecation
+                    //         Change top level 'substring' check when dropped
+                    GlobalConfig.RescanDXE = (DeclineSetting) ? FALSE : TRUE;
+                }
+            }
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'disable_rescan_dxe'", OffsetNext);
+                LOG_MSG("%s  - Update:- 'enable_rescan_dxe'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
