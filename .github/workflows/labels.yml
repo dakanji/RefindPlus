@@ -23,3 +23,46 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config-path: '.github/label-config.yml'
           process-only: ''
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  handle_enhance_check1:
+    name: Handle Enhance - Check1
+    runs-on: ubuntu-20.04
+
+    if: github.actor == 'dakanji'
+    steps:
+      - uses: mheap/github-action-required-labels@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 1
+          labels: "Enhancement"
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  handle_enhance_check2:
+    name: Handle Enhance - Check2
+    needs: [handle_enhance_check1]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: mheap/github-action-required-labels@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 1
+          labels: "Invalid"
+
+  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  handle_enhance_act1:
+    name: Handle Enhance - Act
+    needs: [handle_enhance_check2]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}

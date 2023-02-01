@@ -8,7 +8,7 @@ on:
         required: true
         default: 'all'
   schedule:
-    - cron: '4 4 */4 * *'
+    - cron: '5 5 */5 * *'
 
 permissions:
   issues: write
@@ -30,7 +30,7 @@ jobs:
         uses: actions/stale@v7
         with:
           ignore-issue-updates: true
-          close-issue-reason: 'complete'
+          close-issue-reason: 'completed'
           close-issue-message: ''
           days-before-stale: 1
           days-before-close: 0
@@ -46,7 +46,7 @@ jobs:
       - name: Handle Incomplete Issues
         uses: actions/stale@v7
         with:
-          close-issue-reason: 'complete'
+          close-issue-reason: 'completed'
           stale-issue-message: >
             This item is being flagged for closure due to missing required information.
           close-issue-message: >
@@ -66,7 +66,7 @@ jobs:
       - name: Handle No-Response Issues
         uses: actions/stale@v7
         with:
-          close-issue-reason: 'complete'
+          close-issue-reason: 'completed'
           stale-issue-message: >
             This item is being flagged for closure due to a lack of response.
           close-issue-message: >
@@ -87,7 +87,7 @@ jobs:
         uses: actions/stale@v7
         with:
           ignore-issue-updates: true
-          close-issue-reason: 'complete'
+          close-issue-reason: 'completed'
           stale-issue-message: ''
           close-issue-message: ''
           days-before-stale: 0
@@ -104,7 +104,7 @@ jobs:
       - name: Catchall Closer
         uses: actions/stale@v7
         with:
-          close-issue-reason: 'complete'
+          close-issue-reason: 'completed'
           stale-issue-message: >
             This item is being flagged for closure due to inactivity.
           close-issue-message: >
@@ -132,7 +132,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '0'
           include-any-issue-labels: 'Not-Planned'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
@@ -150,7 +150,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '1'
           include-any-issue-labels: 'Invalid, Cancelled, Resolved'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
@@ -169,7 +169,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Cannot-Replicate, Known-Issue'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
@@ -188,7 +188,7 @@ jobs:
           add-issue-labels: 'Abandoned'
           issue-inactive-days: '5'
           include-any-issue-labels: 'Stale, Incomplete'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
@@ -206,7 +206,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: 'Unclear'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
@@ -226,7 +226,7 @@ jobs:
           issue-inactive-days: '3'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Unclear, Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Not-Yet-Seen, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
 
