@@ -17,13 +17,13 @@ However, the enhancements added to RefindPlus are not limited in scope to those 
 - Maintains feature and configuration parity with the base upstream version.
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
-- Provides UGADraw on modern GOP based GPUs to permit booting legacy EfiBoot operating systems.
+- Provides UGADraw on modern GOP based GPUs to permit booting legacy EFI Boot operating systems.
 - Provides improved support for languages that use unicode text
 - Emulates UEFI 2.3 on EFI 1.x units to permit running UEFI 2.x utilities on such units
 - Adds a debug version that provides extensive logging.
   * The release version is kept as an optimised version for day to day use.
 - Fixes upstream inability to print to screen on Macs
-  * This prevented receiving program messages as well as leveraging advanced features such as EfiShell.
+  * This prevented receiving program messages as well as leveraging advanced features such as EFI shell.
 - Provides NVMe capability, if required, via a built in NvmExpress driver.
   * Removes the need to add NVMe drivers on units without NVMe support.
   * Basically allows working as if NVMe is natively supported by the firmware
@@ -45,9 +45,9 @@ However, the enhancements added to RefindPlus are not limited in scope to those 
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 
-RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample-Dev](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample-Dev). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
+RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additional options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample-Dev](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample-Dev). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
 
-Note that if you run RefindPlus without activating the additonal options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
+Note that if you run RefindPlus without activating the additional options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the upstream release version plus any such updates.
 
 ## Additional Functionality
 RefindPlus-Specific funtionality can be configured by adding the tokens below to the upstream configuration file. Additional information is provided in the sample RefindPlus configuration file.
@@ -58,7 +58,7 @@ continue_on_warning   |Proceed as if a key was pressed after screen warnings (fo
 csr_dynamic           |Actively enables or disables the SIP Policy on Macs
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_apfs_load     |Disables built in provision of APFS filesystem capability
-decline_apfs_mute     |Disables supressesion of verbose APFS text on boot
+decline_apfs_mute     |Disables suppression of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
 decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
@@ -77,10 +77,10 @@ hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volum
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 icon_row_move         |Repositions the main screen icon rows (vertically)
-icon_row_tune         |Finetunes the resulting `icon_row_move` outcome
+icon_row_tune         |Fine tunes the resulting `icon_row_move` outcome
 nvram_protect_ex      |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
-pass_uga_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
+pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
 prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
 provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
@@ -92,10 +92,10 @@ set_boot_args         |Allows setting arbitrary MacOS boot arguments
 supply_nvme           |Enables a built in NvmExpress Driver
 supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
 transient_boot        |Disables selection of the last booted loader if not required
-unicode_collation     |Provides finetuned support for languages that use unicode text
+unicode_collation     |Provides fine tuned support for languages that use unicode text
 
 ## Modified Functionality
-In addition to the new functionality listed above, the following upsteam tokens have been modified:
+In addition to the new functionality listed above, the following upstream tokens have been modified:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
 - **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
@@ -123,13 +123,13 @@ Implementation differences with the upstream base version v0.13.3 are:
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_help_tags` configuration token to switch it off.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_reload_gop` configuration token to switch it off.
-- **AppleFramebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using a built in `SupplyAppleFB` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apple_fb` configuration token to switch it off.
+- **AppleFramebuffer Provision:** RefindPlus defaults to always providing Apple frame buffers on Macs, when not available under certain circumstances. This is done using a built in `SupplyAppleFB` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apple_fb` configuration token to switch it off.
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_load` configuration token to switch it off.
-- **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_mute` configuration token to switch it off.
+- **APFS Verbose Text Suppression:** RefindPlus defaults to always suppresses verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_mute` configuration token to switch it off.
 - **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted MacOS. Hence, a single option for booting MacOS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_apfs_sync` configuration token to switch it off.
 - **Apple NVRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Apple NVRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Apple Macs. This filtering only happens when Apple firmware is detected and is not applied to other types of firmware. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_nvram_protect` configuration token to switch it off.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same as upstream, which always proceeds to create and return a fully built object in such cases (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample-Dev](https://github.com/dakanji/RefindPlus/blob/fc18306b33b64d8473c96364cca6a557cc53530f/config.conf-sample-Dev#L1124-L1130) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
-- **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other diregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
+- **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
 - **DXE Driver Rescan:** The upstream implementation rescans for DXE drivers in a loop until all such available instances are connected. This is because some DXE drivers in some types of firmware are only revealed after other handles are connected. However, while this process is always done, and a minimum of two (2) handle connection runs always executed, most types of firmware do not have such `hidden` DXE drivers and the process can significantly reduce load speed or result in undesirable/defective DXE drivers being connected. RefindPlus therefore defaults to only running a single handle connection loop which satisfies most types of available firmware. However, users that require additional dispatch loops to reveal and connect such DXE drivers can activate the RefindPlus-Specific `enable_rescan_dxe` token. Additionally, pressing the `ESC` key to trigger the `RescanAll` feature would, as part of the process, temporarily activate a dispatch loop for DXE drivers in the firmware.
 
 ## Roll Your Own

@@ -41,35 +41,48 @@ jobs:
           labels: Cancelled
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
-  similarity_analysis:
-    name: Check Similarity
+  add_label_user_open_enhance:
+    name: Enhancement Request Label
     runs-on: ubuntu-20.04
 
-    if: github.actor != 'dakanji' && github.event.action == 'opened'
+    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
     steps:
-      - uses: actions-cool/issues-similarity-analysis@v1
+      - uses: actions/checkout@v3
+      - uses: actions-ecosystem/action-add-labels@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          since-days: 450
-          filter-threshold: 0.45
-          comment-title: '### Similarity Analysis'
-          comment-body: '[Score: ${similarity}] #${number}'
-          show-footer: false
+          labels: Enhancement
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # Add Labels - https://github.com/actions-ecosystem/action-add-labels
   add_label_user_open:
     name: Default Issue Label
-    needs: similarity_analysis
+    needs: [add_label_user_open_enhance]
     runs-on: ubuntu-20.04
 
-    if: github.actor != 'dakanji' && github.event.action == 'opened'
+    if: ${{ always() }} && github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
       - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Triage
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
+  similarity_analysis:
+    name: Check Similarity
+    needs: [add_label_user_open]
+    runs-on: ubuntu-20.04
+
+    if: ${{ always() }} && github.actor != 'dakanji' && github.event.action == 'opened'
+    steps:
+      - uses: actions-cool/issues-similarity-analysis@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          since-days: 450
+          filter-threshold: 0.51
+          comment-title: '### Similar Items'
+          comment-body: '${index}. [Score: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
+          show-footer: false
 
   add_label_base_reopen:
     name: Reopen Issue Label - Base
@@ -88,9 +101,9 @@ jobs:
             Known-Issue
             Incomplete
             Uncertain
+            Resolved
             Unclear
             Invalid
-            Queries
             Unclear
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -104,19 +117,6 @@ jobs:
       - uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: Triage
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  add_label_user_open_enhance:
-    name: Enhancement Request Label
-    needs: similarity_analysis
-    runs-on: ubuntu-20.04
-
-    if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          labels: Enhancement
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   # Del Labels - https://github.com/actions-ecosystem/action-remove-labels

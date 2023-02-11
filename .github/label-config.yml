@@ -115,6 +115,7 @@ Discussion:
       - 'Known-Issue'
       - 'Enhancement'
       - 'Cannot-Replicate'
+
 # The `Documentation` label is added to issues or pull requests
 Documentation:
   issues:
@@ -158,6 +159,11 @@ Duplicate:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
+    # Close and lock thread
+    close: true
+    # Add Comment
+    comment: >
+      Closed as a duplicate issue
 
 # The `Enhancement` label is added to issues
 Enhancement:
@@ -311,6 +317,11 @@ Known-Issue:
       - 'Duplicate'
       - 'Incomplete'
       - 'Cannot-Replicate'
+    # Close and lock thread
+    close: true
+    # Add Comment
+    comment: >
+      Closed as a known issue
 
 # The `Parked` label is added to issues
 Parked:
@@ -379,6 +390,9 @@ Queries:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
+  issues:
+    # Reopen and unlock issue
+    reopen: true
 
 # The `Resolved` label is added to issues
 Resolved:
@@ -469,8 +483,12 @@ Not-Planned:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Close thread
+      - 'Cannot-Replicate'
+    # Close and lock thread
     close: true
+    # Add Comment
+    comment: >
+      Closed as not planned
 
 # The `Not-Planned` label is removed from issues
 -Not-Planned:
@@ -499,6 +517,11 @@ Cannot-Replicate:
       - 'Duplicate'
       - 'Incomplete'
       - 'Known-Issue'
+    # Close and lock thread
+    close: true
+    # Add Comment
+    comment: >
+      Closed as unable to replicate the issue
 
 # The `Prorogued` label is added to issues
 Prorogued:
