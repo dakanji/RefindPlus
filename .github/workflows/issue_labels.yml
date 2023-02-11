@@ -59,7 +59,7 @@ jobs:
     needs: [add_label_user_open_enhance]
     runs-on: ubuntu-20.04
 
-    if: ${{ always() }} && github.actor != 'dakanji' && github.event.action == 'opened'
+    if: github.actor != 'dakanji' && github.event.action == 'opened'
     steps:
       - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-add-labels@v1
@@ -67,22 +67,26 @@ jobs:
           labels: Triage
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
-  similarity_analysis:
-    name: Check Similarity
-    needs: [add_label_user_open]
-    runs-on: ubuntu-20.04
+# Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
+similarity_analysis:
+  name: Check Similarity
+  runs-on: ubuntu-20.04
 
-    if: ${{ always() }} && github.actor != 'dakanji' && github.event.action == 'opened'
-    steps:
-      - uses: actions-cool/issues-similarity-analysis@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          since-days: 450
-          filter-threshold: 0.51
-          comment-title: '### Similar Items'
-          comment-body: '${index}. [Score: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
-          show-footer: false
+  if: github.actor != 'dakanji' && github.event.action == 'opened'
+  steps:
+    - name: Post-Step-Pause
+      run: |
+        sleep 8s
+
+    - name: Analyse-Similarity
+      uses: actions-cool/issues-similarity-analysis@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        since-days: 450
+        filter-threshold: 0.51
+        comment-title: '### Similar Items'
+        comment-body: '${index}. [Score: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
+        show-footer: false
 
   add_label_base_reopen:
     name: Reopen Issue Label - Base
