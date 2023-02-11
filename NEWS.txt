@@ -14,6 +14,9 @@
 - Fixes `Forced Default` Config Settings
   * Forced Defaults, typically based on firmware type, could be skipped under some circumstances
   * This gap has now been closed
+- Fixes Invalid `ShowTools` Entry Handling
+  * Such invalid entries were previously only flagged and not actually handled
+  * These are now additionally skipped
 - Improves `DefaultSelection` Feature
   * A substring match is now only attempted if an exact match fails
 - Improves CSR Handling

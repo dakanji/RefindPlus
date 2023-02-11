@@ -693,7 +693,7 @@ VOID ReadConfig (
     CHAR16           *Flag;
     CHAR16           *TempStr  = NULL;
     CHAR16           *MsgStr   = NULL;
-    UINTN             TokenCount, i;
+    UINTN             TokenCount, i, j;
     INTN              MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
 
     // Control 'Include' Depth
@@ -1128,31 +1128,34 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"showtools")) {
             SetMem (GlobalConfig.ShowTools, NUM_TOOLS * sizeof (UINTN), 0);
             GlobalConfig.HiddenTags = FALSE;
-            // DA-TAG: Start Index is 1 Here
+            BOOLEAN DoneTool = FALSE;
+            // DA-TAG: Start Index is 1 Here ('i' for NUM_TOOLS)
             for (i = 1; (i < TokenCount) && (i < NUM_TOOLS); i++) {
+                // Set Showtools Index
+                j = (DoneTool) ? j + 1 : 0;
                 Flag = TokenList[i];
                 if (0);
-                else if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[i - 1] = TAG_EXIT;
-                else if (MyStriCmp (Flag, L"shell")           ) GlobalConfig.ShowTools[i - 1] = TAG_SHELL;
-                else if (MyStriCmp (Flag, L"gdisk")           ) GlobalConfig.ShowTools[i - 1] = TAG_GDISK;
-                else if (MyStriCmp (Flag, L"about")           ) GlobalConfig.ShowTools[i - 1] = TAG_ABOUT;
-                else if (MyStriCmp (Flag, L"reboot")          ) GlobalConfig.ShowTools[i - 1] = TAG_REBOOT;
-                else if (MyStriCmp (Flag, L"gptsync")         ) GlobalConfig.ShowTools[i - 1] = TAG_GPTSYNC;
-                else if (MyStriCmp (Flag, L"install")         ) GlobalConfig.ShowTools[i - 1] = TAG_INSTALL;
-                else if (MyStriCmp (Flag, L"netboot")         ) GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
-                else if (MyStriCmp (Flag, L"memtest")         ) GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
-                else if (MyStriCmp (Flag, L"memtest86")       ) GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
-                else if (MyStriCmp (Flag, L"shutdown")        ) GlobalConfig.ShowTools[i - 1] = TAG_SHUTDOWN;
-                else if (MyStriCmp (Flag, L"mok_tool")        ) GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
-                else if (MyStriCmp (Flag, L"firmware")        ) GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
-                else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
-                else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
-                else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
-                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[i - 1] = TAG_INFO_NVRAMCLEAN;
-                else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_WINDOWS;
-                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_APPLE;
+                else if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[j] = TAG_EXIT;
+                else if (MyStriCmp (Flag, L"shell")           ) GlobalConfig.ShowTools[j] = TAG_SHELL;
+                else if (MyStriCmp (Flag, L"gdisk")           ) GlobalConfig.ShowTools[j] = TAG_GDISK;
+                else if (MyStriCmp (Flag, L"about")           ) GlobalConfig.ShowTools[j] = TAG_ABOUT;
+                else if (MyStriCmp (Flag, L"reboot")          ) GlobalConfig.ShowTools[j] = TAG_REBOOT;
+                else if (MyStriCmp (Flag, L"gptsync")         ) GlobalConfig.ShowTools[j] = TAG_GPTSYNC;
+                else if (MyStriCmp (Flag, L"install")         ) GlobalConfig.ShowTools[j] = TAG_INSTALL;
+                else if (MyStriCmp (Flag, L"netboot")         ) GlobalConfig.ShowTools[j] = TAG_NETBOOT;
+                else if (MyStriCmp (Flag, L"memtest")         ) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"memtest86")       ) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"shutdown")        ) GlobalConfig.ShowTools[j] = TAG_SHUTDOWN;
+                else if (MyStriCmp (Flag, L"mok_tool")        ) GlobalConfig.ShowTools[j] = TAG_MOK_TOOL;
+                else if (MyStriCmp (Flag, L"firmware")        ) GlobalConfig.ShowTools[j] = TAG_FIRMWARE;
+                else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[j] = TAG_BOOTORDER;
+                else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[j] = TAG_CSR_ROTATE;
+                else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[j] = TAG_FWUPDATE_TOOL;
+                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[j] = TAG_INFO_NVRAMCLEAN;
+                else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[j] = TAG_RECOVERY_WINDOWS;
+                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[j] = TAG_RECOVERY_APPLE;
                 else if (MyStriCmp (Flag, L"hidden_tags")) {
-                    GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
+                    GlobalConfig.ShowTools[j] = TAG_HIDDEN;
                     GlobalConfig.HiddenTags = TRUE;
                 }
                 else {
@@ -1161,7 +1164,12 @@ VOID ReadConfig (
                     ALT_LOG(1, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
                     MuteLogger = TRUE;
                     #endif
+
+                    // Handle Showtools Index and Skip 'DoneTool' Reset
+                    j = (DoneTool) ? j - 1 : 0;
+                    continue;
                 }
+                DoneTool = TRUE;
             } // for
 
             #if REFIT_DEBUG > 0
