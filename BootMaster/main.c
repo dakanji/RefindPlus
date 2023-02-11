@@ -259,10 +259,11 @@ extern EFI_GUID                      AppleVendorOsGuid;
 
 extern EFI_FILE                     *gVarsDir;
 
-extern BOOLEAN                       ForceRescanDXE;
+extern BOOLEAN                       HasMacOS;
 extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
+extern BOOLEAN                       ForceRescanDXE;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -700,72 +701,96 @@ EFI_STATUS FilterCSR (VOID) {
 
 static
 VOID AlignCSR (VOID) {
-    UINT32  CsrStatus;
-    BOOLEAN RotateCsr = FALSE;
+    EFI_STATUS Status;
+    UINT32     CsrStatus;
+    BOOLEAN    CsrEnabled;
+    BOOLEAN    RotateCsr;
 
-    if ((GlobalConfig.DynamicCSR == 0) ||
-        (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1)
-    ) {
-        // Early return if improperly set or configured not to set CSR
-        return;
-    }
-
-    // Prime 'Status' for logging
     #if REFIT_DEBUG > 0
-    EFI_STATUS Status = EFI_ALREADY_STARTED;
+    BOOLEAN    HandleCsr = TRUE;
     #endif
 
-    // Try to get current CSR status
-    if (GetCsrStatus (&CsrStatus) != EFI_SUCCESS) {
-        // Early Return
+    if (!AppleFirmware && !HasMacOS) {
+        // Early Exit ... Apple Firmware or Mac OS not detected
         return;
     }
 
-    // Record CSR status in the 'gCsrStatus' variable
-    RecordgCsrStatus (CsrStatus, FALSE);
+    if (GlobalConfig.DynamicCSR == 0) {
+        // Early Exit ... Configured not to align CSR
+        return;
+    }
 
-    // Check 'gCsrStatus' variable for 'Enabled' term
-    BOOLEAN CsrEnabled = (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
+    do {
+        if (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1) {
+            #if REFIT_DEBUG > 0
+            HandleCsr = FALSE;
+            Status = EFI_INVALID_PARAMETER;
+            #endif
 
-    if (GlobalConfig.DynamicCSR == -1) {
-        // Set to always disable
-        //
-        // Seed the log buffer
-        #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Disable");
-        #endif
-
-        if (CsrEnabled) {
-            // Switch SIP/SSV off as currently enabled
-            RotateCsr = TRUE;
+            // Break Early ... Improperly configured
+            break;
         }
-    }
-    else {
-        // Set to always enable ... GlobalConfig.DynamicCSR == 1
-        //
-        // Seed the log buffer
-        #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Enable");
-        #endif
 
-        if (!CsrEnabled) {
-            // Switch SIP/SSV on as currently disbled
-            RotateCsr = TRUE;
+        // Try to get current CSR status
+        Status = GetCsrStatus (&CsrStatus);
+        if (Status != EFI_SUCCESS) {
+            #if REFIT_DEBUG > 0
+            HandleCsr = FALSE;
+            #endif
+
+            // Break Early ... Invalid CSR Status
+            break;
         }
-    }
 
-    if (RotateCsr) {
-        // Rotate SIP/SSV from current setting
-        RotateCsrValue ();
+        // Record CSR status in the 'gCsrStatus' variable
+        RecordgCsrStatus (CsrStatus, FALSE);
 
-        // Set 'Status' to 'Success'
+        // Check 'gCsrStatus' variable for 'Enabled' term
+        CsrEnabled = (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
+
+        RotateCsr = FALSE;
+        if (GlobalConfig.DynamicCSR == -1) {
+            // Always disable
+            if (CsrEnabled) {
+                // Switch SIP/SSV off as currently enabled
+                RotateCsr = TRUE;
+            }
+        }
+        else {
+            // Always enable
+            if (!CsrEnabled) {
+                // Switch SIP/SSV on as currently disbled
+                RotateCsr = TRUE;
+            }
+        }
+
+        if (RotateCsr) {
+            // Rotate SIP/SSV from current setting
+            RotateCsrValue();
+
+            // Break Early
+            break;
+        }
+
         #if REFIT_DEBUG > 0
-        Status = EFI_SUCCESS;
+        // Set Status to 'Already Started' if we get here
+        Status = EFI_ALREADY_STARTED;
         #endif
-    }
+    } while (0);
 
     // Finalise and flush the log buffer
     #if REFIT_DEBUG > 0
+    if (!HandleCsr) {
+        LOG_MSG("WARN: Dynamic");
+    }
+    else {
+        if (GlobalConfig.DynamicCSR == -1) {
+            LOG_MSG("INFO: Disable");
+        }
+        else {
+            LOG_MSG("INFO: Enable");
+        }
+    }
     LOG_MSG(" SIP/SSV ... %r", Status);
     LOG_MSG("\n\n");
     #endif
@@ -2387,6 +2412,23 @@ EFI_STATUS EFIAPI efi_main (
     }
     else {
         LOG_MSG("'%s'", GlobalConfig.RescanDXE ? L"Active" : L"Inactive"           );
+    }
+
+    LOG_MSG("%s      AlignCSR:- ",         OffsetNext                              );
+    if (!AppleFirmware && !HasMacOS) {
+        LOG_MSG("'Disabled'"                                                       );
+    }
+    else if (GlobalConfig.DynamicCSR == 1) {
+        LOG_MSG("'Active ... CSR Enable'"                                          );
+    }
+    else if (GlobalConfig.DynamicCSR == 0) {
+        LOG_MSG("'Inactive'"                                                       );
+    }
+    else if (GlobalConfig.DynamicCSR == -1) {
+        LOG_MSG("'Active ... CSR Disable'"                                         );
+    }
+    else {
+        LOG_MSG("'Error ... Invalid'"                                              );
     }
 
     LOG_MSG("%s      TextOnly:- ",         OffsetNext                              );

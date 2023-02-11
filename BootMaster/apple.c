@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -57,17 +57,21 @@ EFI_STATUS GetCsrStatus (
     );
     if (EFI_ERROR(Status)) {
         if (Status != EFI_NOT_FOUND) {
-            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Setting");
+            gCsrStatus = StrDuplicate (L"Retrieval Error");
         }
         else {
-            gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
-            *CsrStatus = SIP_ENABLED_EX;
+            if (NormaliseCall) {
+                gCsrStatus = StrDuplicate (L"Assumed Enabled");
+            }
+            else {
+                gCsrStatus = StrDuplicate (L"Enabled (Cleared/Empty)");
 
-            if (!NormaliseCall) {
-                // Return 'Success' if not called from NormaliseCSR
-                // Error return needed for accurate logging
+                // Return 'Success' status if not called from NormaliseCSR
                 Status = EFI_SUCCESS;
             }
+
+            // Assume to be 'Enabled' if not found
+            *CsrStatus = SIP_ENABLED_EX;
         }
 
         // Early Return ... Return Status
@@ -75,14 +79,14 @@ EFI_STATUS GetCsrStatus (
     }
 
     if (CsrLength != sizeof (UINT32)) {
-        gCsrStatus = StrDuplicate (L"Bad SIP/SSV Buffer Size");
+        gCsrStatus = StrDuplicate (L"Storage Error");
 
         // Early Return ... Return Error
         return EFI_BAD_BUFFER_SIZE;
     }
 
-    gCsrStatus = StrDuplicate (L"Found SIP/SSV Setting but not Interpreted");
     *CsrStatus = *ReturnValue;
+    RecordgCsrStatus (*CsrStatus, FALSE);
 
     return Status;
 } // EFI_STATUS GetCsrStatus()
@@ -196,6 +200,13 @@ VOID RecordgCsrStatus (
     }
 } // VOID RecordgCsrStatus()
 
+EFI_STATUS FlagNoCSR (VOID) {
+    MY_FREE_POOL(gCsrStatus);
+    gCsrStatus = StrDuplicate (L"CSR Values Not Configured");
+
+    return EFI_NOT_READY;
+} // EFI_STATUS FlagNoCSR()
+
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
@@ -208,6 +219,23 @@ VOID RotateCsrValue (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
     #endif
+
+    if (!GlobalConfig.CsrValues) {
+        FlagNoCSR();
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
+        #endif
+
+        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+        egDisplayMessage (
+            gCsrStatus, &BGColor, CENTER,
+            4, L"PauseSeconds"
+        );
+
+        // Early Return
+        return;
+    }
 
     Status = GetCsrStatus (&CurrentValue);
     if (EFI_ERROR(Status) || !GlobalConfig.CsrValues) {

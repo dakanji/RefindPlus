@@ -19,7 +19,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -216,6 +216,7 @@ extern CHAR16 *gCsrStatus;
 EFI_STATUS SetAppleOSInfo();
 EFI_STATUS GetCsrStatus (IN OUT UINT32 *CsrValue);
 EFI_STATUS NormaliseCSR (VOID);
+EFI_STATUS FlagNoCSR (VOID);
 
 VOID ClearRecoveryBootFlag (VOID);
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);

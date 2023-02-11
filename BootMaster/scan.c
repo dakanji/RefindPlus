@@ -114,6 +114,7 @@
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 extern EFI_GUID GuidAPFS;
+extern EFI_GUID AppleVendorOsGuid;
 
 #if REFIT_DEBUG > 0
 static CHAR16  *Spacer   = L"                ";
@@ -121,6 +122,7 @@ static CHAR16  *Spacer   = L"                ";
 BOOLEAN  LogNewLine      = FALSE;
 #endif
 
+BOOLEAN  HasMacOS        = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
@@ -136,6 +138,34 @@ LOADER_LIST {
 //
 // misc functions
 //
+
+static
+VOID VetCSR (VOID) {
+    EFI_STATUS  Status;
+    UINTN       CsrLength;
+    UINT32     *ReturnValue;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    // Check the NVRAM for previously set values ... Expecting an error
+    Status = EfivarGetRaw (
+        &AppleVendorOsGuid, L"csr-active-config",
+        (VOID **) &ReturnValue, &CsrLength
+    );
+    if (!EFI_ERROR(Status)) {
+        // No Error ... Clear the Variable (Basically Enable SIP/SSV)
+        EfivarSetRaw (
+            &AppleVendorOsGuid, L"csr-active-config",
+            NULL, 0, TRUE
+        );
+    }
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+} // static VOID VetCSR()
 
 // Creates a copy of a menu screen.
 // Returns a pointer to the copy of the menu screen.
@@ -2127,6 +2157,7 @@ BOOLEAN ScanMacOsLoader (
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
         else {
+            HasMacOS = TRUE;
             if (GlobalConfig.SyncAPFS) {
                 for (i = 0; i < SystemVolumesCount; i++) {
                     if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
@@ -2631,6 +2662,11 @@ VOID ScanInternal (VOID) {
     } // for
 
     FirstLoaderScan = FALSE;
+
+    if (!AppleFirmware && !HasMacOS) {
+        // Disable DynamicCSR ... Apple Firmware or Mac OS not detected
+        GlobalConfig.DynamicCSR = 0;
+    }
 
     BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -4284,42 +4320,72 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_CSR_ROTATE:
-                MuteLogger = TRUE;
-                Status = GetCsrStatus (&CsrValue);
-                MuteLogger = FALSE;
-                if ((Status != EFI_SUCCESS) || (!GlobalConfig.CsrValues)) {
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG(" * NOTE *     %s ... %r", ToolStr, Status);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
+                if (!AppleFirmware && !HasMacOS) {
+                    VetCSR();
+
+                    MY_FREE_POOL(gCsrStatus);
+                    gCsrStatus = StrDuplicate (L"Incompatible Setup");
+                    Status = EFI_UNSUPPORTED;
+                }
+                else if (GlobalConfig.DynamicCSR == -1) {
+                    MY_FREE_POOL(gCsrStatus);
+                    gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Disable");
+                    Status = EFI_NOT_STARTED;
+                }
+                else if (GlobalConfig.DynamicCSR == 1) {
+                    MY_FREE_POOL(gCsrStatus);
+                    gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Enable");
+                    Status = EFI_NOT_STARTED;
+                }
+                else if (GlobalConfig.CsrValues) {
+                    // Only attempt to enable if CSR Values are set
+                    MuteLogger = TRUE;
+                    // Sets 'gCsrStatus' and returns a Status Code based on outcome
+                    Status = GetCsrStatus (&CsrValue);
+                    MuteLogger = FALSE;
                 }
                 else {
-                    MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                    if (!MenuEntryRotateCsr) {
-                        BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
-                        LOG_DECREMENT();
-                        LOG_SEP(L"X");
-                        return;
-                    }
+                    // Sets 'gCsrStatus' and always returns 'EFI_NOT_READY'
+                    Status = FlagNoCSR();
+                }
 
-                    MenuEntryRotateCsr->Title          = StrDuplicate (ToolName);
-                    MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
-                    MenuEntryRotateCsr->Row            = 1;
-                    MenuEntryRotateCsr->ShortcutDigit  = 0;
-                    MenuEntryRotateCsr->ShortcutLetter = 0;
-                    MenuEntryRotateCsr->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
-
-                    AddMenuEntry (MainMenu, MenuEntryRotateCsr);
-
+                if (Status != EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (
+                        L"Did Not Enable Tool:- '%s' ... %r (%s)",
+                        ToolName, Status, gCsrStatus
+                    );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("%s", ToolStr);
+                    LOG_MSG(" * NOTE *     %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
                     #endif
+
+                    break;
                 }
+
+                MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (!MenuEntryRotateCsr) {
+                    BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
+                    LOG_DECREMENT();
+                    LOG_SEP(L"X");
+                    return;
+                }
+
+                MenuEntryRotateCsr->Title          = StrDuplicate (ToolName);
+                MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
+                MenuEntryRotateCsr->Row            = 1;
+                MenuEntryRotateCsr->ShortcutDigit  = 0;
+                MenuEntryRotateCsr->ShortcutLetter = 0;
+                MenuEntryRotateCsr->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
+
+                AddMenuEntry (MainMenu, MenuEntryRotateCsr);
+
+                #if REFIT_DEBUG > 0
+                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG_MSG("%s", ToolStr);
+                MY_FREE_POOL(ToolStr);
+                #endif
 
             break;
             case TAG_INSTALL:

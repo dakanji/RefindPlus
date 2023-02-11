@@ -16,6 +16,9 @@
   * This gap has now been closed
 - Improves `DefaultSelection` Feature
   * A substring match is now only attempted if an exact match fails
+- Improves CSR Handling
+  * Multiple tweaks to improve handling CSR settings
+  * Includes improvements to the `DynamicCSR` feature
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
