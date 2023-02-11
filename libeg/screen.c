@@ -1600,7 +1600,6 @@ BOOLEAN egSetScreenSize (
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
             LOG_MSG("\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
             PrintUglyText (MsgStr, NEXTLINE);
