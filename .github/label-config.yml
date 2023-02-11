@@ -390,7 +390,6 @@ Queries:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-  issues:
     # Reopen and unlock issue
     reopen: true
 
