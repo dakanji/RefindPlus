@@ -38,6 +38,7 @@ jobs:
           mode: exactly
           count: 1
           labels: "Enhancement"
+          exit_type: success
 
   # Reopen Issue - https://github.com/actions-cool/issues-helper
   handle_enhance_act:
@@ -45,6 +46,7 @@ jobs:
     needs: [handle_enhance_check]
     runs-on: ubuntu-20.04
 
+    if: needs.handle_enhance_check.outputs.status == 'success'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:

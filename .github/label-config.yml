@@ -12,8 +12,8 @@ Accepted:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -34,8 +34,8 @@ Uncertain:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -85,11 +85,11 @@ Cancelled:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Close and lock thread
+    # Close thread
     close: true
     # Add Comment
     comment: >
-      Cancelled by/for: @{issue-author}
+      This item has been cancelled by/for: @{issue-author}
 
 # The `Discussion` label is added to issues
 Discussion:
@@ -103,9 +103,9 @@ Discussion:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
+      - 'Tagged'
       - 'Stale'
       - 'Bug'
-      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -116,7 +116,34 @@ Discussion:
       - 'Enhancement'
       - 'Cannot-Replicate'
 
-# The `Documentation` label is added to issues or pull requests
+# The `Dismissed` label is added to issues
+Dismissed:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Uncertain'
+      - 'Cancelled'
+      - 'Accepted'
+      - 'Resolved'
+      - 'Triage'
+      - 'Not-Planned'
+      - 'Parked'
+      - 'Tagged'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
+    # Close thread
+    close: true
+    # Lock thread
+    lock: true
+    # Add Comment
+
+# The `Documentation` label is added to issues
 Documentation:
   issues:
     # Remove labels
@@ -128,8 +155,8 @@ Documentation:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -151,7 +178,6 @@ Duplicate:
       - 'Not-Planned'
       - 'Parked'
       - 'Stale'
-      - 'Tagged'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -159,11 +185,14 @@ Duplicate:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Close and lock thread
+    # Add labels
+    label:
+      - 'Tagged'
+    # Close thread
     close: true
     # Add Comment
     comment: >
-      Closed as a duplicate issue
+      This item is a duplicate of an existing item
 
 # The `Enhancement` label is added to issues
 Enhancement:
@@ -177,8 +206,8 @@ Enhancement:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -220,8 +249,8 @@ Good-First-Issue:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -243,8 +272,8 @@ Help-Wanted:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -317,11 +346,11 @@ Known-Issue:
       - 'Duplicate'
       - 'Incomplete'
       - 'Cannot-Replicate'
-    # Close and lock thread
+    # Close thread
     close: true
     # Add Comment
     comment: >
-      Closed as a known issue
+      This item is a known issue
 
 # The `Parked` label is added to issues
 Parked:
@@ -334,8 +363,8 @@ Parked:
       - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -359,8 +388,8 @@ Upstream:
       - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
-      - 'Stale'
       - 'Tagged'
+      - 'Stale'
       - 'Unclear'
       - 'Invalid'
       - 'Prorogued'
@@ -401,12 +430,11 @@ Resolved:
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
+      - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
       - 'Stale'
-      - 'Tagged'
-      - 'Queries'
       - 'Unclear'
       - 'Invalid'
       - 'Prorogued'
@@ -414,6 +442,9 @@ Resolved:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
+    # Add labels
+    label:
+      - 'Tagged'
     # Close thread
     close: true
 
@@ -482,12 +513,11 @@ Not-Planned:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-      - 'Cannot-Replicate'
-    # Close and lock thread
+    # Close thread
     close: true
     # Add Comment
     comment: >
-      Closed as not planned
+      This item cannot be looked into at this time
 
 # The `Not-Planned` label is removed from issues
 -Not-Planned:
@@ -516,11 +546,11 @@ Cannot-Replicate:
       - 'Duplicate'
       - 'Incomplete'
       - 'Known-Issue'
-    # Close and lock thread
+    # Close thread
     close: true
     # Add Comment
     comment: >
-      Closed as unable to replicate the issue
+      This item could not be replicated
 
 # The `Prorogued` label is added to issues
 Prorogued:
@@ -534,6 +564,7 @@ Prorogued:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
+      - 'Tagged'
       - 'Stale'
       - 'Queries'
       - 'Unclear'

@@ -67,9 +67,13 @@ jobs:
         uses: actions/stale@v7
         with:
           close-issue-reason: 'completed'
-          stale-issue-message: >
+          stale-issue-message: |-
+            Dear @${{ github.event.issue.user.login }},
+
             This item is being flagged for closure due to a lack of response.
-          close-issue-message: >
+          close-issue-message: |-
+            Dear @${{ github.event.issue.user.login }},
+
             This item is being closed due to a lack of response.
           days-before-stale: 3
           days-before-close: 5
@@ -136,7 +140,7 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
@@ -154,7 +158,7 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
@@ -173,7 +177,7 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
@@ -190,9 +194,9 @@ jobs:
           include-any-issue-labels: 'Stale, Incomplete'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
-            This thread is being locked.
+            Dear @${{ github.event.issue.user.login }},
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            This thread is being locked as it appears to have abandoned.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
@@ -210,7 +214,7 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
@@ -230,5 +234,5 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
           process-only: 'issues'

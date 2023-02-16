@@ -26,6 +26,7 @@ jobs:
           mode: exactly
           count: 0
           labels: "Bug, Enhancement"
+          exit_type: success
 
   # Add  Labels  - https://github.com/actions-ecosystem/action-add-labels
   add_label_user_close_act:
@@ -33,7 +34,7 @@ jobs:
     needs: add_label_user_close_check
     runs-on: ubuntu-20.04
 
-    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    if: needs.add_label_user_close_check.outputs.status == 'success'
     steps:
       - uses: actions/checkout@v3
       - uses: actions-ecosystem/action-add-labels@v1
@@ -169,6 +170,7 @@ jobs:
           mode: exactly
           count: 1
           labels: "Bug"
+          exit_type: success
 
   # Reopen Issue - https://github.com/actions-cool/issues-helper
   bounce_bug_act1:
@@ -176,7 +178,7 @@ jobs:
     needs: [bounce_bug_check1]
     runs-on: ubuntu-20.04
 
-    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    if: needs.bounce_bug_check1.outputs.status == 'success'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
@@ -215,6 +217,7 @@ jobs:
           mode: exactly
           count: 1
           labels: "Enhancement"
+          exit_type: success
 
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_enhance_check2:
@@ -222,7 +225,7 @@ jobs:
     needs: [bounce_enhance_check1]
     runs-on: ubuntu-20.04
 
-    if: github.actor != 'dakanji' && github.event.action == 'closed'
+    if: needs.bounce_enhance_check1.outputs.status == 'success'
     steps:
       - uses: mheap/github-action-required-labels@v2
         env:

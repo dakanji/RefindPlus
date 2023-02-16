@@ -12,6 +12,8 @@ on:
         - 'Issue - Thread - Lock'
         - 'Issue - Thread - Unlock'
         - 'Issue - Comment - Delete'
+        - 'Issue - OpenUnlock'
+        - 'Issue - CloseLock'
       item_id:
         description: 'Item ID'
         required: true
@@ -23,6 +25,86 @@ concurrency:
   group: lock
 
 jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_open_unlock1:
+    name: Issue - OpenUnlock1
+    runs-on: ubuntu-20.04
+
+    if: github.event.inputs.operation == 'Issue - OpenUnlock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Invalid,Resolved,Duplicate,Not-Planned,Incomplete,Known-Issue'
+
+  issue_open_unlock2:
+    name: Issue - OpenUnlock2
+    needs: [issue_open_unlock1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'open-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_open_unlock3:
+    name: Issue - OpenUnlock3
+    needs: [issue_open_unlock2]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_close_lock1:
+    name: Issue - CloseLock1
+    runs-on: ubuntu-20.04
+
+    if: github.event.inputs.operation == 'Issue - CloseLock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Queries,Triage,Tagged,Stale'
+
+  issue_close_lock2:
+    name: Issue - CloseLock2
+    needs: [issue_close_lock1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_close_lock3:
+    name: Issue - CloseLock3
+    needs: [issue_close_lock2]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
 
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_open:
