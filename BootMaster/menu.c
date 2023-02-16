@@ -134,10 +134,14 @@ extern EFI_GUID            RefindPlusGuid;
 
 static
 VOID InitSelection (VOID) {
-    EG_IMAGE  *TempSmallImage    = NULL;
-    EG_IMAGE  *TempBigImage      = NULL;
-    BOOLEAN    LoadedSmallImage  = FALSE;
-    UINTN      ImgMax            = 256;
+    EG_IMAGE  *TempBigImage;
+    EG_IMAGE  *TempSmallImage;
+    UINTN      MaxAllowedSize;
+
+    #if REFIT_DEBUG > 0
+    CHAR16    *MsgStr;
+    #endif
+
 
     if (!AllowGraphicsMode || SelectionImages[0] != NULL || SelectionImages[1] != NULL) {
         // Early Return ... Already Run Once
@@ -145,30 +149,41 @@ VOID InitSelection (VOID) {
     }
 
     // Load small selection image
-    if (GlobalConfig.SelectionSmallFileName != NULL) {
+    MaxAllowedSize = 256;
+    if (GlobalConfig.SelectionSmallFileName == NULL) {
+        TempSmallImage = NULL;
+    }
+    else {
         TempSmallImage = egLoadImage (SelfDir, GlobalConfig.SelectionSmallFileName, TRUE);
 
         // DA-TAG: Impose maximum size for security
-        if (TempSmallImage != NULL && (TempSmallImage->Width > ImgMax || TempSmallImage->Height > ImgMax)) {
+        if ((TempSmallImage != NULL) &&
+            (
+                TempSmallImage->Width  > MaxAllowedSize ||
+                TempSmallImage->Height > MaxAllowedSize
+            )
+        ) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"Discarding Input Small Selection Image ... Too Large");
+            MsgStr = PoolPrint (
+                L"Discarding Custom Small Selection Image ... Too Large @ %d x %d",
+                TempSmallImage->Height, TempSmallImage->Width
+            );
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             MY_FREE_IMAGE(TempSmallImage);
         }
     }
-
     if (TempSmallImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_small'");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Small Selection Image");
         #endif
 
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE, NULL);
     }
-    else {
-        LoadedSmallImage = TRUE;
-    }
-
     if ((TempSmallImage->Width != TileSizes[1]) || (TempSmallImage->Height != TileSizes[1])) {
         SelectionImages[1] = egScaleImage (TempSmallImage, TileSizes[1], TileSizes[1]);
     }
@@ -177,37 +192,40 @@ VOID InitSelection (VOID) {
     }
 
     // Load big selection image
-    if (GlobalConfig.SelectionBigFileName != NULL) {
+    if (GlobalConfig.SelectionBigFileName == NULL) {
+        TempBigImage = NULL;
+    }
+    else {
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
 
         // DA-TAG: Impose maximum size for security
-        if (TempBigImage != NULL && (TempBigImage->Width > ImgMax || TempBigImage->Height > ImgMax)) {
+        if ((TempBigImage != NULL) &&
+            (
+                (TempBigImage->Width  * 100) > (MaxAllowedSize * 125) ||
+                (TempBigImage->Height * 100) > (MaxAllowedSize * 125)
+            )
+        ) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"Discarding Input Big Selection Image ... Too Large");
+            MsgStr = PoolPrint (
+                L"Discarding Custom Big Selection Image ... Too Large @ %d x %d",
+                TempBigImage->Height, TempBigImage->Width
+            );
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             MY_FREE_IMAGE(TempBigImage);
         }
     }
-
     if (TempBigImage == NULL) {
-        if (LoadedSmallImage) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Scaling Selection Image from LoadedSmallImage");
-            #endif
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Big Selection Image");
+        #endif
 
-           // Derive the big selection image from the small one
-           TempBigImage = egCopyImage (TempSmallImage);
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_big'");
-            #endif
-
-           TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE, NULL);
-        }
+       TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE, NULL);
     }
-
     if ((TempBigImage->Width != TileSizes[0]) || (TempBigImage->Height != TileSizes[0])) {
         SelectionImages[0] = egScaleImage (TempBigImage, TileSizes[0], TileSizes[0]);
     }
@@ -217,7 +235,7 @@ VOID InitSelection (VOID) {
 
     MY_FREE_IMAGE(TempSmallImage);
     MY_FREE_IMAGE(TempBigImage);
-} // VOID InitSelection()
+} // static VOID InitSelection()
 
 //
 // Scrolling functions

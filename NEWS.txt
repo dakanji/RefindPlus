@@ -22,6 +22,9 @@
 - Improves CSR Handling
   * Multiple tweaks to improve handling CSR settings
   * Includes improvements to the `DynamicCSR` feature
+- Amends `Big Selection Image` Size Filtering
+  * The maximum Big Selection image size is increased to 320px from 256px
+  * The Small Selection image maximum is maintained at 256px
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
