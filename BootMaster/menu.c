@@ -3350,6 +3350,112 @@ VOID HideTag (
     FreeMenuScreen (&HideTagMenu);
 } // VOID HideTag()
 
+// Present a menu for the user to confirm restart
+BOOLEAN ConfirmRestart (VOID) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmRestartMenu;
+
+    ConfirmRestartMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ConfirmRestartMenu == NULL) {
+        // Resource Exhaustion ... Execute Restart Immediately
+        TerminateScreen();
+        REFIT_CALL_4_WRAPPER(
+            gRT->ResetSystem, EfiResetCold,
+            EFI_SUCCESS, 0, NULL
+        );
+    }
+
+    // Prime RetVal
+    RetVal = FALSE;
+
+    // Build the menu page
+    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm Restart");
+    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
+    ConfirmRestartMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
+    ConfirmRestartMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+
+    AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?");
+
+    AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryYes);
+    AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryNo);
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmRestartMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmRestart'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        RetVal = TRUE;
+    }
+
+    FreeMenuScreen (&ConfirmRestartMenu);
+
+    return RetVal;
+} // BOOLEAN ConfirmRestart()
+
+// Present a menu for the user to confirm shutdown
+BOOLEAN ConfirmShutdown (VOID) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmShutdownMenu;
+
+    ConfirmShutdownMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ConfirmShutdownMenu == NULL) {
+        // Resource Exhaustion ... Execute Shutdown Immediately
+        TerminateScreen();
+        REFIT_CALL_4_WRAPPER(
+            gRT->ResetSystem, EfiResetShutdown,
+            EFI_SUCCESS, 0, NULL
+        );
+    }
+
+    // Prime RetVal
+    RetVal = FALSE;
+
+    // Build the menu page
+    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm Shutdown");
+    ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
+    ConfirmShutdownMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
+    ConfirmShutdownMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+
+    AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?");
+
+    AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryYes);
+    AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryNo);
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmShutdownMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmShutdown'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        RetVal = TRUE;
+    }
+
+    FreeMenuScreen (&ConfirmShutdownMenu);
+
+    return RetVal;
+} // BOOLEAN ConfirmShutdown()
+
 UINTN RunMenu (
     IN  REFIT_MENU_SCREEN  *Screen,
     OUT REFIT_MENU_ENTRY  **ChosenEntry

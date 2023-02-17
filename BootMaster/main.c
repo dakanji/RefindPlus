@@ -3216,6 +3216,42 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_REBOOT:    // Reboot
                 TypeStr = L"Running System Restart";
 
+                // If 'RunOurTool' is TRUE, then we have dropped down from 'Clean Nvram' above
+                // Do not show confirmation menu in such cases
+                if (RunOurTool == FALSE) {
+                    // Now set 'RunOurTool' for this tool
+                    RunOurTool = ConfirmRestart();
+                    if (RunOurTool == FALSE) {
+                        #if REFIT_DEBUG > 0
+                        MsgStr = PoolPrint (L"Aborted %s", TypeStr);
+                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                        LOG_MSG("INFO: %s", MsgStr);
+                        LOG_MSG("\n\n");
+                        MY_FREE_POOL(MsgStr);
+                        #endif
+
+                        // Early Exit
+                        break;
+                    }
+                }
+
+                // If 'FoundTool' is TRUE, then we have dropped down from 'Clean Nvram' above
+                // Only display 'TypeStr' message in such cases
+                if (FoundTool == TRUE) {
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_SET;
+                    #endif
+                    egDisplayMessage (
+                        TypeStr, &BGColor, CENTER,
+                        3, L"PauseSeconds"
+                    );
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_OFF;
+                    #endif
+                }
+
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -3228,17 +3264,6 @@ EFI_STATUS EFIAPI efi_main (
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
                 OUT_TAG();
-                #endif
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                egDisplayMessage (
-                    TypeStr, &BGColor, CENTER,
-                    3, L"PauseSeconds"
-                );
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
                 #endif
 
                 // Terminate Screen
@@ -3263,6 +3288,21 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_SHUTDOWN: // Shut Down
                 TypeStr = L"Running System Shutdown";
 
+                RunOurTool = ConfirmShutdown();
+                if (RunOurTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (L"Aborted %s", TypeStr);
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    LOG_MSG("INFO: %s", MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+
+                    // Early Exit
+                    break;
+                }
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
@@ -3276,17 +3316,6 @@ EFI_STATUS EFIAPI efi_main (
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
                 OUT_TAG();
-                #endif
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                egDisplayMessage (
-                    TypeStr, &BGColor, CENTER,
-                    3, L"PauseSeconds"
-                );
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
                 #endif
 
                 // Terminate Screen

@@ -22,6 +22,8 @@
 - Improves CSR Handling
   * Multiple tweaks to improve handling CSR settings
   * Includes improvements to the `DynamicCSR` feature
+- Improves `System Shutdown/Restart` Handling
+  * Now displays a confirmation input screen before execution
 - Amends `Big Selection Image` Size Filtering
   * The maximum Big Selection image size is increased to 320px from 256px
   * The Small Selection image maximum is maintained at 256px
