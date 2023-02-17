@@ -10,7 +10,8 @@ on:
         - 'Label - Add - Abandoned'
         - 'Label - Add - Cancelled'
         - 'Label - Add - Cannot-Replicate'
-        - 'Label - Add - Incomplete'
+        - 'Label - Add - Incomplete - Issues'
+        - 'Label - Add - Incomplete - Enhancement'
         - 'Label - Add - Invalid'
         - 'Label - Add - Triage'
         - 'Label - Add - Parked'
@@ -72,18 +73,81 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Cannot-Replicate'
 
-  label_add_incomplete:
-    name: Label - Add - Incomplete
+  label_add_incomplete_issue:
+    name: Label - Add - Incomplete - Issues
     runs-on: ubuntu-20.04
 
-    if: github.event.inputs.operation == 'Label - Add - Incomplete'
+    if: github.event.inputs.operation == 'Label - Add - Incomplete - Issues'
     steps:
-      - uses: actions-cool/issues-helper@v3
+
+      - name: Label - Add - Incomplete - Issues - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            Dear @${{ github.event.issue.user.login }},
+
+            Thank you for taking the time to report a problem with RefindPlus.
+            However, at least one required item is missing.
+            This is typically debug log(s).
+
+            Please kindly amend your post accordingly.
+
+      - name: Label - Add - Incomplete - Issues - 2
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Incomplete'
+
+      - name: Label - Add - Incomplete - Issues - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage'
+
+  label_add_incomplete_enhancement:
+    name: Label - Add - Incomplete - Enhancement
+    runs-on: ubuntu-20.04
+
+    if: github.event.inputs.operation == 'Label - Add - Incomplete - Enhancement'
+    steps:
+
+      - name: Label - Add - Incomplete - Enhancement - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            Dear @${{ github.event.issue.user.login }},
+
+            Thank you for taking the time to suggest improvements to RefindPlus.
+            However, at least one required item is missing.
+            This is typically useful background information.
+
+            Please kindly amend your post accordingly.
+
+      - name: Label - Add - Incomplete - Enhancement - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Incomplete'
+
+      - name: Label - Add - Incomplete - Enhancement - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage'
 
   label_add_invalid:
     name: Label - Add - Invalid
