@@ -1032,10 +1032,10 @@
 
 # Custom background image for selected item. There is a big one (144 x 144)
 # for the OS icons, and a small one (64 x 64) for the function icons in the
-# second row. If only a small image is given, that one is also used for the
-# big icons by stretching it in the middle. If only a big one is given, the
-# built-in default will be used for the small icons. If an image other than
-# an optimally sized one is specified, this may be scaled in an "ugly" way.
+# second row. When images other than optimally sized ones are specified, they
+# may be scaled in an "ugly" way. When a specified image is not available, the
+# built-in default will be used instead. This replacement with a default image
+# applies to both the specified "small" and "big" selection images separately.
 #
 # As with the "banner" setting below, these options take filenames of
 # uncompressed BMP, JPEG, PNG or ICNS image files with a colour depth
@@ -1043,9 +1043,11 @@
 # transparency support. As with the "banner" setting below, paths
 # are relative to the directory containing the RefindPlus efi.
 #
-# NB: The file used for 'selection_small' must be no larger
+# NB: The file used for 'selection_small' must be no more
 # than 256px on the longest side while that used as the
 # 'selection_big' image must be no larger than 320px.
+# Custom selection images larger these thresholds
+# will be replaced with default embedded images.
 #
 # Uses default selection images when commented out
 #
@@ -1120,11 +1122,20 @@
 # file is loaded as if its tokens appeared at the point of the "include"
 # option. So, to override a setting in the main file, the secondary file
 # must be referenced AFTER the setting to be overridden. NB: A secondary
-# configuration file cannot "include" a tertiary configuration file.
+# configuration file CANNOT "include" tertiary configuration files.
+#
+# Manual configuration stanzas (see next item) may also be specified within
+# separate files and loaded as if their tokens appeared at the point of the
+# "include" option. Multiple such manual configuration stanza files can be
+# defined in addition to, or instead of, secondary configuration files as
+# described above. NB: Included manual configuration stanza files cannot
+# "include" tertiary, or other manual configuration stanza, files.
 #
 # Inactive when commented out (secondary file is not loaded)
 #
 #include manual.conf
+#include stanza-01.conf
+#include stanza-02.conf
 
 # Manual configuration stanzas. Each one begins with a "menuentry"
 # keyword followed by a name that will appear in the menu screen
@@ -1151,7 +1162,6 @@
 #                quotes if more than one option should be passed or
 #                if any options use characters that might be changed
 #                by RefindPlus' parsing procedures (=, /, #, or tab).
-#
 #  add_options - As "options" above but only applicable when under a
 #                "submenuentry" keyword. It adds the options to those
 #                set for the main "menuentry" keyword.

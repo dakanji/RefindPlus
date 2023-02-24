@@ -90,6 +90,244 @@ UINTN   SelectedGOP    = 0;
 UINTN   egScreenWidth  = 800;
 UINTN   egScreenHeight = 600;
 
+// DA-TAG: Investigate This
+//         The code block within the 'MAKEWITH_TIANO' bock below is directly from OpenCore
+//         Licensed under the BSD 3 license
+//         Added directly as missing in OpenCorePkg version in RefindPlusUDK
+//         Hook directly if/when OpenCorePkg is updated
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore - START
+typedef struct {
+  EFI_UGA_DRAW_PROTOCOL           *Uga;
+  EFI_GRAPHICS_OUTPUT_PROTOCOL     GraphicsOutput;
+} RP_GOP_PROTOCOL;
+
+
+static
+EFI_STATUS EFIAPI RP_GopDrawQueryMode (
+    IN  EFI_GRAPHICS_OUTPUT_PROTOCOL           *This,
+    IN  UINT32                                  ModeNumber,
+    OUT UINTN                                  *SizeOfInfo,
+    OUT EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  **Info
+) {
+    if (ModeNumber != 0) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    if ((SizeOfInfo == NULL) || (Info == NULL)) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    *SizeOfInfo = This->Mode->SizeOfInfo;
+    *Info       = AllocateCopyPool (This->Mode->SizeOfInfo, This->Mode->Info);
+    if (*Info == NULL) {
+        return EFI_DEVICE_ERROR;
+    }
+
+    return EFI_SUCCESS;
+} // static EFI_STATUS EFIAPI RP_GopDrawQueryMode()
+
+static
+EFI_STATUS EFIAPI OcGopDrawSetMode (
+    IN  EFI_GRAPHICS_OUTPUT_PROTOCOL  *This,
+    IN  UINT32                         ModeNumber
+) {
+    if (ModeNumber != 0) {
+        return EFI_UNSUPPORTED;
+    }
+
+    // Assuming 0 is the only mode that is accepted, which is already set.
+    return EFI_SUCCESS;
+} // static EFI_STATUS EFIAPI OcGopDrawSetMode()
+
+static
+EFI_STATUS EFIAPI RP_GopDrawBlt (
+    IN  EFI_GRAPHICS_OUTPUT_PROTOCOL       *This,
+    IN  EFI_GRAPHICS_OUTPUT_BLT_PIXEL      *BltBuffer    OPTIONAL,
+    IN  EFI_GRAPHICS_OUTPUT_BLT_OPERATION   BltOperation,
+    IN  UINTN                               SourceX,
+    IN  UINTN                               SourceY,
+    IN  UINTN                               DestinationX,
+    IN  UINTN                               DestinationY,
+    IN  UINTN                               Width,
+    IN  UINTN                               Height,
+    IN  UINTN                               Delta         OPTIONAL
+) {
+    RP_GOP_PROTOCOL  *OcGopDraw;
+
+    OcGopDraw = BASE_CR (This, RP_GOP_PROTOCOL, GraphicsOutput);
+
+    return REFIT_CALL_10_WRAPPER(
+        OcGopDraw->Uga->Blt, OcGopDraw->Uga,
+        (EFI_UGA_PIXEL *)BltBuffer, (EFI_UGA_BLT_OPERATION)BltOperation,
+        SourceX, SourceY,
+        DestinationX, DestinationY,
+        Width, Height, Delta
+    );
+} // static EFI_STATUS EFIAPI RP_GopDrawBlt()
+
+static
+EFI_STATUS RP_ProvideGopPassThrough (
+    IN BOOLEAN  ForAll
+) {
+    EFI_STATUS                        Status;
+    UINTN                             HandleCount;
+    EFI_HANDLE                       *HandleBuffer;
+    UINTN                             Index;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL     *GraphicsOutput;
+    EFI_UGA_DRAW_PROTOCOL            *UgaDraw;
+    RP_GOP_PROTOCOL                  *OcGopDraw;
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
+    EFI_PHYSICAL_ADDRESS              FramebufferBase;
+    UINT32                            FramebufferSize;
+    UINT32                            ScreenRowBytes;
+    UINT32                            ScreenWidth;
+    UINT32                            ScreenHeight;
+    UINT32                            ScreenDepth;
+    UINT32                            HorizontalResolution;
+    UINT32                            VerticalResolution;
+    EFI_GRAPHICS_PIXEL_FORMAT         PixelFormat;
+    UINT32                            ColorDepth;
+    UINT32                            RefreshRate;
+    BOOLEAN                           HasAppleFramebuffer;
+
+    // We should not proxy UGA when there is no AppleFramebuffer,
+    // but on systems where there is nothing, it is the only option.
+    // REF: https://github.com/acidanthera/bugtracker/issues/1498
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
+        NULL, (VOID *)&FramebufferInfo
+    );
+    HasAppleFramebuffer = !EFI_ERROR (Status);
+
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiUgaDrawProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (EFI_ERROR (Status)) {
+        return Status;
+    }
+
+    for (Index = 0; Index < HandleCount; ++Index) {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[Index],
+            &gEfiUgaDrawProtocolGuid, (VOID **)&UgaDraw
+        );
+        if (EFI_ERROR (Status)) {
+            continue;
+        }
+
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[Index],
+            &gEfiGraphicsOutputProtocolGuid, (VOID **)&GraphicsOutput
+        );
+        if (!EFI_ERROR (Status)) {
+            continue;
+        }
+
+        FramebufferBase = 0;
+        FramebufferSize = 0;
+        ScreenRowBytes  = 0;
+        PixelFormat     = PixelBltOnly;
+
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[Index],
+            &gAppleFramebufferInfoProtocolGuid, (VOID **)&FramebufferInfo
+        );
+        if (EFI_ERROR (Status)) {
+            if (HasAppleFramebuffer || !ForAll) {
+                continue;
+            }
+        }
+        else {
+            Status = REFIT_CALL_7_WRAPPER(
+                FramebufferInfo->GetInfo, FramebufferInfo,
+                &FramebufferBase, &FramebufferSize,
+                &ScreenRowBytes, &ScreenWidth,
+                &ScreenHeight, &ScreenDepth
+            );
+            if (!EFI_ERROR (Status)) {
+                PixelFormat = PixelRedGreenBlueReserved8BitPerColor;  ///< or PixelBlueGreenRedReserved8BitPerColor?
+            }
+            else {
+                if (HasAppleFramebuffer) {
+                    continue;
+                }
+            }
+        }
+
+        Status = REFIT_CALL_5_WRAPPER(
+            UgaDraw->GetMode, UgaDraw,
+            &HorizontalResolution, &VerticalResolution,
+            &ColorDepth, &RefreshRate
+        );
+        if (EFI_ERROR (Status)) {
+            continue;
+        }
+
+        OcGopDraw = AllocateZeroPool (sizeof (*OcGopDraw));
+        if (OcGopDraw == NULL) {
+            continue;
+        }
+
+        OcGopDraw->Uga                      = UgaDraw;
+        OcGopDraw->GraphicsOutput.QueryMode = RP_GopDrawQueryMode;
+        OcGopDraw->GraphicsOutput.SetMode   = OcGopDrawSetMode;
+        OcGopDraw->GraphicsOutput.Blt       = RP_GopDrawBlt;
+        OcGopDraw->GraphicsOutput.Mode      = AllocateZeroPool (sizeof (*OcGopDraw->GraphicsOutput.Mode));
+        if (OcGopDraw->GraphicsOutput.Mode == NULL) {
+            FreePool (OcGopDraw);
+            continue;
+        }
+
+        // Only Mode 0 is supported, so there is only one mode supported in total.
+        OcGopDraw->GraphicsOutput.Mode->MaxMode = 1;
+
+        // Again, only Mode 0 is supported.
+        OcGopDraw->GraphicsOutput.Mode->Mode = 0;
+        OcGopDraw->GraphicsOutput.Mode->Info = AllocateZeroPool (sizeof (*OcGopDraw->GraphicsOutput.Mode->Info));
+        if (OcGopDraw->GraphicsOutput.Mode->Info == NULL) {
+            FreePool (OcGopDraw->GraphicsOutput.Mode);
+            FreePool (OcGopDraw);
+            continue;
+        }
+
+        OcGopDraw->GraphicsOutput.Mode->Info->Version              = 0;
+        OcGopDraw->GraphicsOutput.Mode->Info->HorizontalResolution = HorizontalResolution;
+        OcGopDraw->GraphicsOutput.Mode->Info->VerticalResolution   = VerticalResolution;
+        OcGopDraw->GraphicsOutput.Mode->Info->PixelFormat          = PixelFormat;
+
+        // No pixel mask is needed (i.e. all zero) in PixelInformation,
+        // plus AllocateZeroPool already assigns zero for it.
+        // Skip.
+        // ------------------------------------------------------------------------------
+        // ScreenRowBytes is PixelsPerScanLine * sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL),
+        // so here to divide it back.
+        OcGopDraw->GraphicsOutput.Mode->Info->PixelsPerScanLine = ScreenRowBytes / sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL);
+        OcGopDraw->GraphicsOutput.Mode->SizeOfInfo              = sizeof (*OcGopDraw->GraphicsOutput.Mode->Info);
+        OcGopDraw->GraphicsOutput.Mode->FrameBufferBase         = FramebufferBase;
+        OcGopDraw->GraphicsOutput.Mode->FrameBufferSize         = FramebufferSize;
+
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallMultipleProtocolInterfaces, &HandleBuffer[Index],
+            &gEfiGraphicsOutputProtocolGuid, &OcGopDraw->GraphicsOutput,
+            NULL
+        );
+        if (EFI_ERROR (Status)) {
+            FreePool (OcGopDraw->GraphicsOutput.Mode->Info);
+            FreePool (OcGopDraw->GraphicsOutput.Mode);
+            FreePool (OcGopDraw);
+        }
+    }
+
+    FreePool (HandleBuffer);
+
+    return Status;
+} // static EFI_STATUS RP_ProvideGopPassThrough()
+// DA-TAG: Limit to TianoCore - END
+#endif
+
 
 static
 EFI_STATUS EncodeAsPNG (
@@ -1209,7 +1447,9 @@ VOID egInitScreen (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
 
-            GOPDraw = NULL;
+            GOPDraw->Mode->Info = NULL;
+            GOPDraw->Mode       = NULL;
+            GOPDraw             = NULL;
         }
         else {
             egHasGraphics  = TRUE;
@@ -1285,7 +1525,7 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (
                 (EFI_ERROR(Status))
                     ? L"Graphics Not Available ... Fall Back on Text Mode"
-                    : (SetPreferUGA)
+                    : (FoundHandleUGA && SetPreferUGA)
                         ? L"Forcing Universal Graphics Adapter"
                         : (FoundHandleUGA && !ObtainHandleGOP)
                             ? L"Leveraging Universal Graphics Adapter"
@@ -1307,6 +1547,58 @@ VOID egInitScreen (VOID) {
 // DA-TAG: Limit to TianoCore
 BOOLEAN NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
+    if (UGADraw != NULL) {
+        if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
+            #if REFIT_DEBUG > 0
+            PrevFlag = FALSE;
+            LOG_MSG("\n\n");
+            #endif
+
+            // Install AppleFramebuffers and Update AppleFramebuffer Count
+            RP_AppleFbInfoInstallProtocol (TRUE);
+            AppleFramebuffers = egCountAppleFramebuffers();
+
+            if (AppleFramebuffers > 0) {
+                NewAppleFramebuffers = TRUE;
+                #ifdef __MAKEWITH_TIANO
+                // DA-TAG: Limit to TianoCore
+                if (!SetPreferUGA) {
+                    // Run OpenCore Functions
+                    Status = RP_ProvideGopPassThrough (FALSE);
+                    if (!EFI_ERROR(Status)) {
+                        Status = OcProvideConsoleGop (TRUE);
+                        #if REFIT_DEBUG > 0
+                        MsgStr = PoolPrint (L"Create GOP for Console Out ... %r", Status);
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        LOG_MSG("INFO: %s", MsgStr);
+                        MY_FREE_POOL(MsgStr);
+                        #endif
+
+                        if (!EFI_ERROR(Status)) {
+                            Status = REFIT_CALL_3_WRAPPER(
+                                gBS->HandleProtocol, gST->ConsoleOutHandle,
+                                &GOPDrawProtocolGuid, (VOID **) &GOPDraw
+                            );
+                            #if REFIT_DEBUG > 0
+                            MsgStr = PoolPrint (L"Implement GOP Pass Through ... %r", Status);
+                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                            MY_FREE_POOL(MsgStr);
+                            PrevFlag = TRUE;
+                            #endif
+
+                            if (!EFI_ERROR(Status)) {
+                                // We have GOP from UGA
+                                egHasGraphics  =            TRUE;
+                                FoundHandleUGA = FlagUGA = FALSE;
+                            }
+                        }
+                    }
+                }
+                #endif
+            }
+        }
+    }
     if (GOPDraw != NULL) {
         if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
             // Implement Text Renderer
@@ -1330,30 +1622,6 @@ BOOLEAN NewAppleFramebuffers = FALSE;
         MY_FREE_POOL(MsgStr);
         #endif
     }
-    else if (UGADraw != NULL) {
-        if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
-            #if REFIT_DEBUG > 0
-            PrevFlag = FALSE;
-            LOG_MSG("\n\n");
-            #endif
-
-            // Install AppleFramebuffers and Update AppleFramebuffer Count
-            RP_AppleFbInfoInstallProtocol (TRUE);
-            AppleFramebuffers = egCountAppleFramebuffers();
-
-            if (AppleFramebuffers > 0) {
-                NewAppleFramebuffers = TRUE;
-            }
-        }
-    }
-    if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
-        // Implement Text Renderer
-        Status = OcUseBuiltinTextOutput (
-            (egHasGraphics)
-                ? EfiConsoleControlScreenGraphics
-                : EfiConsoleControlScreenText
-        );
-    }
 #endif
 
     if (!egHasGraphics) {
@@ -1364,10 +1632,10 @@ BOOLEAN NewAppleFramebuffers = FALSE;
     else if (NewAppleFramebuffers) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Unlikely but Possibly via Reinstalled Framebuffer%s",
+            L"Yes (Potentially Without Display%s)",
             (GlobalConfig.TextOnly)
                 ? L""
-                : L" ... Try \"TextOnly\" if No Display"
+                : L" ... Try \"TextOnly\" if so"
         );
 
         #endif
@@ -1379,24 +1647,15 @@ BOOLEAN NewAppleFramebuffers = FALSE;
     }
     else {
         // Force Text Mode ... AppleFramebuffers Missing on Mac with UGA
-        UGADraw               =  NULL;
-        GOPDraw               =  NULL;
-        egHasGraphics         = FALSE;
-        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-
-        Status = EFI_ALREADY_STARTED;
-        if (!GlobalConfig.UseTextRenderer) {
-            // Force Text Renderer
-            Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
-        }
+        egHasGraphics                         = FALSE;
+        GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
+        GOPDraw->Mode->Info                   =  NULL;
+        GOPDraw->Mode                         =  NULL;
+        GOPDraw                               =  NULL;
+        UGADraw                               =  NULL;
 
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Yes (Without Display ... Forcing Text Mode%s)",
-            (Status == EFI_ALREADY_STARTED)
-                ? L""
-                : L" and Renderer"
-        );
+        MsgStr = StrDuplicate (L"Yes (Without Display ... Forcing Text Mode)");
         #endif
     }
 

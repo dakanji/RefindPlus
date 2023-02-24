@@ -179,7 +179,7 @@ VOID InitSelection (VOID) {
     }
     if (TempSmallImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Small Selection Image");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Selection Image:- 'Small'");
         #endif
 
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE, NULL);
@@ -221,7 +221,7 @@ VOID InitSelection (VOID) {
     }
     if (TempBigImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Big Selection Image");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Using Default Selection Image:- 'Big'");
         #endif
 
        TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE, NULL);
