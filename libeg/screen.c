@@ -70,7 +70,6 @@
 
 extern UINTN    AppleFramebuffers;
 extern BOOLEAN  ForceTextOnly;
-extern BOOLEAN  AllowTweakUEFI;
 extern BOOLEAN  ObtainHandleGOP;
 extern EG_PIXEL MenuBackgroundPixel;
 
@@ -1079,7 +1078,7 @@ VOID egInitScreen (VOID) {
             #endif
         }
         else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
-            if (OldGop && (!AllowTweakUEFI || OldGop->Mode->MaxMode > 0)) {
+            if (OldGop && OldGop->Mode->MaxMode > 0) {
                 XFlag        = EFI_SUCCESS;
                 thisValidGOP = TRUE;
 
@@ -1087,12 +1086,7 @@ VOID egInitScreen (VOID) {
                 GOPDraw = OldGop;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (
-                    L"Assess Graphics Output Protocol ... ok%s",
-                    (!AllowTweakUEFI)
-                        ? L" (  A S S U M E D  )"
-                        : L""
-                );
+                MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                 LOG_MSG("\n\n");
@@ -1126,7 +1120,7 @@ VOID egInitScreen (VOID) {
                     }
                 }
                 #endif
-            } // if/else !AllowTweakUEFI
+            } // if/else OldGop
         } // if/else Status == EFI_NOT_FOUND
 
         if (XFlag != EFI_NOT_FOUND && XFlag != EFI_NOT_STARTED && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
@@ -1148,9 +1142,7 @@ VOID egInitScreen (VOID) {
 
                     #ifdef __MAKEWITH_TIANO
                     // DA-TAG: Limit to TianoCore
-                    if (AllowTweakUEFI) {
-                        Status = OcUseDirectGop (-1);
-                    }
+                    Status = OcUseDirectGop (-1);
                     #endif
                 }
                 if (!EFI_ERROR(Status)) {
@@ -1163,7 +1155,7 @@ VOID egInitScreen (VOID) {
                         OldGop = NULL;
                     }
                     else {
-                        if (OldGop && (!AllowTweakUEFI || OldGop->Mode->MaxMode > 0)) {
+                        if (OldGop && OldGop->Mode->MaxMode > 0) {
                             GOPDraw = OldGop;
                             XFlag = EFI_ALREADY_STARTED;
                         }
@@ -1171,14 +1163,7 @@ VOID egInitScreen (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                CHAR16 *StrX = L"";
-                if (!AllowTweakUEFI && !EFI_ERROR(Status)) {
-                    StrX = L" (  A S S U M E D  )";
-                }
-                MsgStr = PoolPrint (
-                    L"Implement Direct GOP Renderer ... %r%s",
-                    Status, StrX
-                );
+                MsgStr = PoolPrint (L"Implement Direct GOP Renderer ... %r", Status);
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("INFO: %s", MsgStr);
                 LOG_MSG("\n\n");

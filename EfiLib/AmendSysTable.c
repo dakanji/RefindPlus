@@ -34,7 +34,8 @@ EFI_STATUS AmendSysTable (VOID) {
 extern BOOLEAN egInitUGADraw (BOOLEAN LogOutput);
 
 #define EFI_FIELD_OFFSET(TYPE, Field) ((UINTN) (&(((TYPE *) 0)->Field)))
-#define TARGET_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
+#define EFI_REVISION_MIN  EFI_2_00_SYSTEM_TABLE_REVISION
+#define EFI_REVISION_MOD  EFI_2_30_SYSTEM_TABLE_REVISION
 
 EFI_CPU_ARCH_PROTOCOL   *zCpu       = NULL;
 EFI_SMM_BASE2_PROTOCOL  *zSmmBase2  = NULL;
@@ -413,7 +414,7 @@ EFI_STATUS OurCreateEventEx (
 /**
   @retval EFI_SUCCESS               The command completed successfully.
   @retval EFI_OUT_OF_RESOURCES      Out of memory.
-  @retval EFI_ALREADY_STARTED       Already on UEFI 2.3 or later.
+  @retval EFI_ALREADY_STARTED       Already on UEFI 2.0 or later.
   @retval EFI_PROTOCOL_ERROR        Unexpected Field Offset.
   @retval EFI_NOT_STARTED           Aborted Process ... PreferUGA
 **/
@@ -421,9 +422,9 @@ EFI_STATUS AmendSysTable (VOID) {
     EFI_BOOT_SERVICES *uBS;
 
     /* Check EFI Revision */
-    if (gBS->Hdr.Revision >= TARGET_EFI_REVISION ||
-        gRT->Hdr.Revision >= TARGET_EFI_REVISION ||
-        gST->Hdr.Revision >= TARGET_EFI_REVISION
+    if (gBS->Hdr.Revision >= EFI_REVISION_MIN ||
+        gRT->Hdr.Revision >= EFI_REVISION_MIN ||
+        gST->Hdr.Revision >= EFI_REVISION_MIN
     ) {
         // Early Return
         return EFI_ALREADY_STARTED;
@@ -440,36 +441,27 @@ EFI_STATUS AmendSysTable (VOID) {
         return EFI_OUT_OF_RESOURCES;
     }
 
+    /* Amend SystemTable */
+    gST->BootServices    = gBS;
+    gST->RuntimeServices = gRT;
+    gST->Hdr.HeaderSize  = sizeof (EFI_SYSTEM_TABLE);
+    gST->Hdr.Revision    = EFI_REVISION_MOD;
+    gST->Hdr.CRC32       = 0;
+    REFIT_CALL_3_WRAPPER(
+        gBS->CalculateCrc32, gST,
+        gST->Hdr.HeaderSize, &gST->Hdr.CRC32
+    );
+
     /* Amend BootServices */
     uBS->CreateEventEx   = OurCreateEventEx;
     uBS->Hdr.HeaderSize  = sizeof (EFI_BOOT_SERVICES);
-    uBS->Hdr.Revision    = TARGET_EFI_REVISION;
+    uBS->Hdr.Revision    = EFI_REVISION_MOD;
     uBS->Hdr.CRC32       = 0;
     REFIT_CALL_3_WRAPPER(
         uBS->CalculateCrc32, uBS,
         uBS->Hdr.HeaderSize, &uBS->Hdr.CRC32
     );
     gBS = uBS;
-
-    /* Amend RuntimeServices */
-    gRT->Hdr.HeaderSize  = sizeof (EFI_RUNTIME_SERVICES);
-    gRT->Hdr.Revision    = TARGET_EFI_REVISION;
-    gRT->Hdr.CRC32       = 0;
-    REFIT_CALL_3_WRAPPER(
-        gBS->CalculateCrc32, gRT,
-        gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
-    );
-
-    /* Amend SystemTable */
-    gST->BootServices    = gBS;
-    gST->RuntimeServices = gRT;
-    gST->Hdr.HeaderSize  = sizeof (EFI_SYSTEM_TABLE);
-    gST->Hdr.Revision    = TARGET_EFI_REVISION;
-    gST->Hdr.CRC32       = 0;
-    REFIT_CALL_3_WRAPPER(
-        gBS->CalculateCrc32, gST,
-        gST->Hdr.HeaderSize, &gST->Hdr.CRC32
-    );
 
     /* Flag Amendment */
     SetSysTab = TRUE;

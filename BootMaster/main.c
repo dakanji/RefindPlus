@@ -223,7 +223,6 @@ BOOLEAN                IconScaleSet         = FALSE;
 BOOLEAN                ForceTextOnly        = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
-BOOLEAN                AllowTweakUEFI       = FALSE;
 BOOLEAN                FlushFailedTag       = FALSE;
 BOOLEAN                FlushFailReset       = FALSE;
 BOOLEAN                WarnVersionEFI       = FALSE;
@@ -1334,10 +1333,6 @@ VOID ReMapOpenProtocol (VOID) {
         // Early Return if GOP is Absent
         return;
     }
-    if (!AllowTweakUEFI) {
-        // Early Return on Invalid UEFI Versions
-        return;
-    }
 
     if (AppleFirmware) {
         if (!DevicePresence) {
@@ -2007,38 +2002,23 @@ VOID LogBasicInfo (VOID) {
         WarnRevisionUEFI = TRUE;
     }
 
-    AllowTweakUEFI = TRUE;
-    if (WarnVersionEFI || WarnRevisionUEFI) {
-        if (WarnVersionEFI) {
-            AllowTweakUEFI = FALSE;
-
-#if REFIT_DEBUG > 0
-            LOG_MSG("** WARN: Inconsistent EFI Versions Detected");
-            LOG_MSG("%s         Program Behaviour is *NOT* Defined",   OffsetNext);
-            LOG_MSG("%s         Priority = Stability Over Features",   OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'ProvideConsoleGOP'",     OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'ReMapOpenProtocol'",     OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'UseDirectGop'",          OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'SupplyUEFI'",            OffsetNext);
-            LOG_MSG("%s         * Disabled:- 'ReloadGOP'",             OffsetNext);
-#endif
-        }
-        else {
-#if REFIT_DEBUG > 0
-            LOG_MSG("** WARN: Inconsistent UEFI Revisions Detected");
-#endif
-        } // if/else WarnVersionEFI
-
-#if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
-#endif
-    } // if/else WarnVersionEFI || WarnRevisionUEFI
 
 /**
  * Function effectively ends here on RELEASE Builds
 **/
 
+
 #if REFIT_DEBUG > 0
+    if (WarnVersionEFI || WarnRevisionUEFI) {
+        LOG_MSG(
+            "** WARN: Inconsistent %s Detected",
+            (WarnVersionEFI)
+                ? L"EFI Versions"
+                : L"UEFI Revisions"
+        );
+        LOG_MSG("\n\n");
+    }
+
     /* NVRAM Storage Info */
     QVInfoSupport = FALSE;
     LOG_MSG("Non-Volatile Storage:");
@@ -2179,7 +2159,6 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     /* Stash SystemTable */
-    EFI_RUNTIME_SERVICES *OrigRT   =   gRT;
     EFI_BOOT_SERVICES    *OrigBS   =   gBS;
     EFI_SYSTEM_TABLE     *OrigST   =   gST;
     OrigSetVariableRT   = gRT->SetVariable;
@@ -2381,17 +2360,6 @@ EFI_STATUS EFIAPI efi_main (
     /* Adjust Default Menu Selection */
     AdjustDefaultSelection();
 
-    /* Align 'AllowTweakUEFI' */
-    if (!AllowTweakUEFI) {
-        // DA-TAG: Investigate This
-        //         Items that may conflict with EFI version mismatch
-        //         NB: 'ReMapOpenProtocol' additionally disabled elsewhere
-        GlobalConfig.ProvideConsoleGOP   = FALSE;
-        GlobalConfig.UseDirectGop        = FALSE;
-        GlobalConfig.SupplyUEFI          = FALSE;
-        GlobalConfig.ReloadGOP           = FALSE;
-    }
-
     #if REFIT_DEBUG > 0
     #define TAG_ITEM_A(Item) OffsetNext,  Item
     #define TAG_ITEM_B(Item) OffsetNext, (Item) ? L"YES" : L"NO"
@@ -2547,18 +2515,12 @@ EFI_STATUS EFIAPI efi_main (
         else {
             SetSysTab =  FALSE;
             gBS       = OrigBS;
-            gRT       = OrigRT;
             gST       = OrigST;
             gBS->Hdr.CRC32 = 0;
-            gRT->Hdr.CRC32 = 0;
             gST->Hdr.CRC32 = 0;
             REFIT_CALL_3_WRAPPER(
                 gBS->CalculateCrc32, gBS,
                 gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
-            );
-            REFIT_CALL_3_WRAPPER(
-                gBS->CalculateCrc32, gRT,
-                gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32
             );
             REFIT_CALL_3_WRAPPER(
                 gBS->CalculateCrc32, gST,
@@ -2597,7 +2559,7 @@ EFI_STATUS EFIAPI efi_main (
             GlobalConfig.ScreensaverTime = 300;
         }
 
-        if (SecureBootFailure || WarnVersionEFI) {
+        if (SecureBootFailure || WarnMissingQVInfo) {
             // Override DirectBoot if a warning needs to be shown
             //   for ALL build targets
             OverrideSB                     = TRUE;
@@ -2782,80 +2744,11 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu->TimeoutText = StrDuplicate (L"Shutdown");
     }
 
+    // Show Inconsistent UEFI 2.x Implementation Warning
+    #if REFIT_DEBUG > 0
     // Prime ForceContinue
     BOOLEAN ForceContinue = FALSE;
 
-    // Show EFI Version Mismatch Warning
-    if (WarnVersionEFI) {
-        SwitchToText (FALSE);
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG("D I S P L A Y   U S E R   W A R N I N G");
-        MsgStr = StrDuplicate (L"Inconsistent EFI Versions");
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
-        GlobalConfig.ContinueOnWarning = TRUE;
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"            Inconsistent EFI Versions Detected            ", NEXTLINE);
-        PrintUglyText (L"             Program Behaviour is Undefined!!             ", NEXTLINE);
-        PrintUglyText (L"                                                          ", NEXTLINE);
-
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-        PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"        Disabled All Features Involving UEFI Changes      ", NEXTLINE);
-#if REFIT_DEBUG > 0
-        PrintUglyText (L"                See Debug Log for Details                 ", NEXTLINE);
-#else
-        PrintUglyText (L"              Run DBG Build File for Details              ", NEXTLINE);
-#endif
-        PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"                                                          ", NEXTLINE);
-        PauseForKey();
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
-        GlobalConfig.ContinueOnWarning = ForceContinue;
-        ForceContinue = FALSE;
-
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        LOG_MSG("%s      %s ... ", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-        if (AllowGraphicsMode) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("Restore Graphics Mode");
-            LOG_MSG("\n\n");
-            #endif
-
-            SwitchToGraphicsAndClear (TRUE);
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("Proceeding");
-            LOG_MSG("\n\n");
-            #endif
-        }
-        // Wait 1 second
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-    } // if WarnVersionEFI
-
-    // Show Inconsistent UEFI 2.x Implementation Warning
-    #if REFIT_DEBUG > 0
     if (WarnMissingQVInfo) {
         SwitchToText (FALSE);
 

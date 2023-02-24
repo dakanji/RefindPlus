@@ -34,6 +34,12 @@
 - Amends `RescanDXE` Feature
   * Now does not try to dispatch additional DXE drivers by default
   * Hence, the "Opt-Out" `disable_rescan_dxe` token has been replaced by an "Opt-In `enable_rescan_dxe` token
+- Amends `Invalid UEFI Versions` Handling
+  * Now accounts for such by reducing the amendment threshold to UEFI 2.0
+  * Still amends to UEFI 2.3 when UEFI amendments happen
+  * No longer amends Runtime Services for UEFI amendments
+  * No longer disables certain features on detecting inconsistent versions
+  * No longer displays a warning messages and the discrepancy is only logged
 
 
 0.13.3.AC (06 Dec 2022):
