@@ -348,9 +348,6 @@ Known-Issue:
       - 'Cannot-Replicate'
     # Close thread
     close: true
-    # Add Comment
-    comment: >
-      This item is a known issue
 
 # The `Parked` label is added to issues
 Parked:
@@ -419,7 +416,7 @@ Queries:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Reopen and unlock issue
+    # Reopen issue
     reopen: true
 
 # The `Resolved` label is added to issues
@@ -513,11 +510,6 @@ Not-Planned:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Close thread
-    close: true
-    # Add Comment
-    comment: >
-      This item cannot be looked into at this time
 
 # The `Not-Planned` label is removed from issues
 -Not-Planned:
@@ -548,9 +540,6 @@ Cannot-Replicate:
       - 'Known-Issue'
     # Close thread
     close: true
-    # Add Comment
-    comment: >
-      This item could not be replicated
 
 # The `Prorogued` label is added to issues
 Prorogued:

@@ -17,6 +17,7 @@ jobs:
     name: Handle Labels
     runs-on: ubuntu-20.04
 
+    if: github.actor == 'dakanji'
     steps:
       - uses: dessant/label-actions@v3
         with:
@@ -27,9 +28,10 @@ jobs:
   # Check Labels - https://github.com/mheap/github-action-required-labels
   handle_enhance_check:
     name: Handle Enhance - Check
+    needs: [auto_labels]
     runs-on: ubuntu-20.04
 
-    if: github.actor == 'dakanji' && github.event.label.name == 'Invalid'
+    if: ${{ always() && github.actor == 'dakanji' && (github.event.label.name == 'Invalid' || github.event.label.name == 'Not-Planned') }}
     steps:
       - uses: mheap/github-action-required-labels@v2
         env:
@@ -40,7 +42,7 @@ jobs:
           labels: "Enhancement"
           exit_type: success
 
-  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  # Close Issue - https://github.com/actions-cool/issues-helper
   handle_enhance_act:
     name: Handle Enhance - Act
     needs: [handle_enhance_check]
@@ -48,7 +50,17 @@ jobs:
 
     if: needs.handle_enhance_check.outputs.status == 'success'
     steps:
-      - uses: actions-cool/issues-helper@v3
+
+      - name: Tag Item
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          labels: 'Tagged'
+
+      - name: Close Item
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'close-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
