@@ -277,7 +277,7 @@ EFI_STATUS RP_ProvideGopPassThrough (
         OcGopDraw->GraphicsOutput.Blt       = RP_GopDrawBlt;
         OcGopDraw->GraphicsOutput.Mode      = AllocateZeroPool (sizeof (*OcGopDraw->GraphicsOutput.Mode));
         if (OcGopDraw->GraphicsOutput.Mode == NULL) {
-            FreePool (OcGopDraw);
+            MY_FREE_POOL(OcGopDraw);
             continue;
         }
 
@@ -288,8 +288,8 @@ EFI_STATUS RP_ProvideGopPassThrough (
         OcGopDraw->GraphicsOutput.Mode->Mode = 0;
         OcGopDraw->GraphicsOutput.Mode->Info = AllocateZeroPool (sizeof (*OcGopDraw->GraphicsOutput.Mode->Info));
         if (OcGopDraw->GraphicsOutput.Mode->Info == NULL) {
-            FreePool (OcGopDraw->GraphicsOutput.Mode);
-            FreePool (OcGopDraw);
+            MY_FREE_POOL(OcGopDraw->GraphicsOutput.Mode);
+            MY_FREE_POOL(OcGopDraw);
             continue;
         }
 
@@ -315,13 +315,13 @@ EFI_STATUS RP_ProvideGopPassThrough (
             NULL
         );
         if (EFI_ERROR (Status)) {
-            FreePool (OcGopDraw->GraphicsOutput.Mode->Info);
-            FreePool (OcGopDraw->GraphicsOutput.Mode);
-            FreePool (OcGopDraw);
+            MY_FREE_POOL(OcGopDraw->GraphicsOutput.Mode->Info);
+            MY_FREE_POOL(OcGopDraw->GraphicsOutput.Mode);
+            MY_FREE_POOL(OcGopDraw);
         }
     }
 
-    FreePool (HandleBuffer);
+    MY_FREE_POOL(HandleBuffer);
 
     return Status;
 } // static EFI_STATUS RP_ProvideGopPassThrough()
@@ -2625,7 +2625,7 @@ VOID egScreenShot (VOID) {
         LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
-        FreePool (MsgStr);
+        MY_FREE_POOL(MsgStr);
 
         return;
     }
@@ -2655,7 +2655,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            FreePool (FileData);
+            MY_FREE_POOL(FileData);
 
             return;
         }
@@ -2688,7 +2688,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            FreePool (FileData);
+            MY_FREE_POOL(FileData);
 
             return;
         }
@@ -2721,7 +2721,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            FreePool (FileData);
+            MY_FREE_POOL(FileData);
 
             return;
         }
@@ -2755,8 +2755,8 @@ VOID egScreenShot (VOID) {
     #endif
 
     MY_FREE_POOL(MsgStr);
-    FreePool (FileName);
-    FreePool (FileData);
+    MY_FREE_POOL(FileName);
+    MY_FREE_POOL(FileData);
 
     return;
 

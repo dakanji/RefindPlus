@@ -2465,7 +2465,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else {
                 if (Entry->me.Image != NULL) {
-                    FreePool (Entry->me.Image);
+                    MY_FREE_POOL(Entry->me.Image);
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
                     #endif

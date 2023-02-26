@@ -435,8 +435,7 @@ VOID LogPadding (
 
     CHAR16 *TmpPad = StrDuplicate (PadStr);
     UINTN   PadPos = StrLen (PadStr);
-    FreePool (PadStr);
-    PadStr = NULL;
+    MY_FREE_POOL(PadStr);
 
     if (Increment == TRUE) {
         if (NativeLogger) {
@@ -462,7 +461,7 @@ VOID LogPadding (
         }
     }
 
-    FreePool (TmpPad);
+    MY_FREE_POOL(TmpPad);
 } // VOID LogPadding()
 
 // DBG Build Only - END

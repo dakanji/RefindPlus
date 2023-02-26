@@ -3078,7 +3078,7 @@ EFI_STATUS EFIAPI efi_main (
                         AccessFlagsFull, 0, NULL
                     );
 
-                    FreePool (VarNVRAM);
+                    MY_FREE_POOL(VarNVRAM);
                 } // while
 
                 // Force nvram garbage collection on Macs
