@@ -520,7 +520,6 @@ extern UINTN                HfsRecoveryCount;
 
 extern UINT64               ReadWriteCreate;
 
-extern BOOLEAN              SetSysTab;
 extern BOOLEAN              SingleAPFS;
 extern BOOLEAN              MuteLogger;
 extern BOOLEAN              NativeLogger;

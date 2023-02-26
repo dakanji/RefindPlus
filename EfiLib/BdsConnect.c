@@ -44,6 +44,7 @@ UINTN   AllHandleCount;
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
 
+extern BOOLEAN SetSysTab;
 extern BOOLEAN SetPreferUGA;
 
 // DA-TAG: Limit to TianoCore
@@ -711,33 +712,13 @@ EFI_STATUS ApplyGOPFix (VOID) {
     #endif
 
     // Update Boot Services to permit reloading OptionROM
-    Status = AmendSysTable();
+    Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"System Table Convert ... %r", Status);
+    MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
-    MY_FREE_POOL(MsgStr);
-    #endif
-    if (Status == EFI_ALREADY_STARTED && SetSysTab == TRUE) {
-        // Set to success if previously changed
-        Status = EFI_SUCCESS;
-    }
-    if (EFI_ERROR(Status)) {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
-        #endif
-
-        // Early Return
-        return Status;
-    }
-
-    Status = AcquireGOP();
-    #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s      %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
     if (EFI_ERROR(Status)) {
@@ -747,9 +728,26 @@ EFI_STATUS ApplyGOPFix (VOID) {
         return Status;
     }
 
+    // Update Boot Services to permit reloading OptionROM
+    Status = AmendSysTable();
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"System Table Convert ... %r", Status);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s      %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+    if (Status == EFI_ALREADY_STARTED && SetSysTab == TRUE) {
+        // Set to success if previously changed
+        Status = EFI_SUCCESS;
+    }
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
     // Connect all devices if no error
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n\n");
+    BRK_MOD("\n\n");
     #endif
 
     BOOLEAN TempRescanDXE  = GlobalConfig.RescanDXE;

@@ -213,7 +213,6 @@ CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                gKernelStarted       = FALSE;
 BOOLEAN                IsBoot               = FALSE;
-BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                OverrideSB           = FALSE;
 BOOLEAN                OneMainLoop          = FALSE;
@@ -259,6 +258,7 @@ extern EFI_GUID                      AppleVendorOsGuid;
 extern EFI_FILE                     *gVarsDir;
 
 extern BOOLEAN                       HasMacOS;
+extern BOOLEAN                       SetSysTab;
 extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
@@ -2170,9 +2170,7 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     /* Stash SystemTable */
-    EFI_BOOT_SERVICES    *OrigBS   =   gBS;
-    EFI_SYSTEM_TABLE     *OrigST   =   gST;
-    OrigSetVariableRT   = gRT->SetVariable;
+    OrigSetVariableRT  =  gRT->SetVariable;
     OrigOpenProtocolBS = gBS->OpenProtocol;
 
     /* Remove any recovery boot flags */
@@ -2517,36 +2515,6 @@ EFI_STATUS EFIAPI efi_main (
 
     // Load Drivers
     LoadDrivers();
-
-    // Restore SystemTable if previously amended and not emulating UEFI 2.x
-    if (SetSysTab) {
-        if (GlobalConfig.SupplyUEFI) {
-            OrigSetVariableRT = gRT->SetVariable;
-        }
-        else {
-            SetSysTab =  FALSE;
-            gBS       = OrigBS;
-            gST       = OrigST;
-            gBS->Hdr.CRC32 = 0;
-            gST->Hdr.CRC32 = 0;
-            REFIT_CALL_3_WRAPPER(
-                gBS->CalculateCrc32, gBS,
-                gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
-            );
-            REFIT_CALL_3_WRAPPER(
-                gBS->CalculateCrc32, gST,
-                gST->Hdr.HeaderSize, &gST->Hdr.CRC32
-            );
-        }
-
-        #if REFIT_DEBUG > 0
-        Status = (GlobalConfig.SupplyUEFI) ? EFI_NOT_STARTED : EFI_SUCCESS;
-        MsgStr = PoolPrint (L"System Table Restore ... %r", Status);
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("%s      %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-    }
 
     // Second call to ScanVolumes() to enumerate volumes and
     //   register any new filesystem(s) accessed by drivers.
