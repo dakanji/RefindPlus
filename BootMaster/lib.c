@@ -1294,6 +1294,7 @@ VOID ScanVolumeBootcode (
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
     CHAR16  *StrSpacer;
+    CHAR16  *MsgStr;
     #endif
 
     *Bootable           = FALSE;
@@ -1303,10 +1304,29 @@ VOID ScanVolumeBootcode (
     Volume->OSName      = NULL;
 
     if (Volume->BlockIO == NULL) {
+        #if REFIT_DEBUG > 0
+        if (SelfVolRun) {
+            MsgStr = StrDuplicate (L"Found Invalid Volume BlockIO on Item Below");
+            LOG_MSG("\n\n");
+            LOG_MSG("** WARN:  %s", MsgStr);
+            LOG_MSG("\n");
+            MY_FREE_POOL(MsgStr);
+        }
+        #endif
+
         return;
     }
     if (Volume->BlockIO->Media->BlockSize > SAMPLE_SIZE) {
-        // Buffer is too small
+        #if REFIT_DEBUG > 0
+        if (SelfVolRun) {
+            // Buffer is too small
+            MsgStr = StrDuplicate (L"Found Invalid Boot Code Buffer Size on Item Below");
+            LOG_MSG("\n\n");
+            LOG_MSG("** WARN:  %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+        }
+        #endif
+
         return;
     }
 
@@ -1317,6 +1337,7 @@ VOID ScanVolumeBootcode (
         SAMPLE_SIZE, Buffer
     );
     if (EFI_ERROR(Status)) {
+        // DA-TAG: Do not log as unable to filter
         return;
     }
 
@@ -1328,7 +1349,7 @@ VOID ScanVolumeBootcode (
                 MediaCheck = TRUE;
             }
             ScannedOnce = FALSE;
-            CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector");
+            MsgStr = StrDuplicate (L"Could Not Read Boot Sector on Item Below");
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: '%r' %s", Status, MsgStr);
             CheckError (Status, MsgStr);

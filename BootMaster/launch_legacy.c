@@ -1081,39 +1081,70 @@ VOID ScanLegacyVolume (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    ShowVolume        = FALSE;
-    HideIfOthersFound = FALSE;
-    if (Volume->HasBootCode) {
-        ShowVolume = TRUE;
-        if (Volume->OSName == NULL &&
-            Volume->BlockIOOffset == 0 &&
-            Volume->BlockIO == Volume->WholeDiskBlockIO
-        ) {
-            // Whole disk (MBR) entry ... Hide if other bootable entries are on the same disk
-            HideIfOthersFound = TRUE;
-        }
+    #if REFIT_DEBUG > 1
+    CHAR16 *TheVolName = L"Unnamed Volume";
+    if (StrLen (Volume->VolName) > 0) {
+        TheVolName = Volume->VolName;
+    }
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning %s", TheVolName);
+    #endif
+
+    if (!Volume->HasBootCode) {
+        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID - !HasBootCode", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Exit
+        return;
     }
 
+    BREAD_CRUMB(L"%s:  2 - HasBootCode", FuncTag);
+    if (Volume->OSName == NULL &&
+        Volume->BlockIOOffset == 0 &&
+        Volume->BlockIO == Volume->WholeDiskBlockIO
+    ) {
+        BREAD_CRUMB(L"%s:  2a 1 - MBR Entry Type = 'Whole Disk'", FuncTag);
+        HideIfOthersFound = TRUE;
+    }
+    else {
+        BREAD_CRUMB(L"%s:  2b 1 - MBR Entry Type = 'Partition/Volume'", FuncTag);
+        HideIfOthersFound = FALSE;
+    }
+
+    BREAD_CRUMB(L"%s:  3 - Check for 'Potential Whole Disk Entry Hide' Flag", FuncTag);
+    ShowVolume = TRUE;
     if (HideIfOthersFound) {
         // Check for other bootable entries on the same disk
+        BREAD_CRUMB(L"%s:  3a 1 - Found ... Check for Other Bootable Entries on Same Disk", FuncTag);
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
+            BREAD_CRUMB(L"%s:  3a 1a 1 - FOR LOOP:- START", FuncTag);
             if (VolumeIndex2 != VolumeIndex &&
                 Volumes[VolumeIndex2]->HasBootCode &&
                 Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
             ) {
+                BREAD_CRUMB(L"%s:  3a 1a 1a 1 - Found Other Bootable Entry ... Hiding Whole Disk Entry", FuncTag);
                 ShowVolume = FALSE;
             }
+            BREAD_CRUMB(L"%s:  3a 1a 2 - FOR LOOP:- END", FuncTag);
+            if (!ShowVolume) break;
         }
     }
 
-    if (ShowVolume) {
+    BREAD_CRUMB(L"%s:  4", FuncTag);
+    if (!ShowVolume) {
+        BREAD_CRUMB(L"%s:  4a 1 - Skipping Whole Disk MBR Entry", FuncTag);
+    }
+    else {
+        BREAD_CRUMB(L"%s:  4b 1 - Processing MBR Entry", FuncTag);
         if ((Volume->VolName == NULL) ||
             (StrLen (Volume->VolName) < 1)
         ) {
+            BREAD_CRUMB(L"%s:  4b 1a 1 - Getting MBR Entry Name", FuncTag);
             Volume->VolName = GetVolumeName (Volume);
         }
-
+        BREAD_CRUMB(L"%s:  4b 2 - Add Legacy Boot Entry", FuncTag);
         AddLegacyEntry (NULL, Volume);
+        BREAD_CRUMB(L"%s:  4b 3", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  5 - END:- VOID", FuncTag);

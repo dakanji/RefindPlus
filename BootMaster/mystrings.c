@@ -368,10 +368,10 @@ VOID MergeStrings (
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeStrings";
     CHAR16 *MsgStr = PoolPrint (
-        L"Add '%s' to the end of '%s' with '%s' as separator",
+        L"Add '%s' to the end of '%s' (%s Separator)",
         Second  ? Second  : L"NULL",
         *First  ? *First  : L"NULL",
-        AddChar ? AddChar : L"NOTHING"
+        AddChar ? L"After a" : L"With no"
     );
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -457,10 +457,10 @@ VOID MergeUniqueStrings (
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeUniqueStrings";
     CHAR16 *MsgStr = PoolPrint (
-        L"If not already present as a substring, add '%s' to the end of '%s' with '%s' as separator",
+        L"If not already present as a substring, add '%s' to the end of '%s' (%s Separator)",
         Second  ? Second  : L"NULL",
         *First  ? *First  : L"NULL",
-        AddChar ? AddChar : L"NOTHING"
+        AddChar ? L"After a" : L"With no"
     );
     LOG_SEP(L"X");
     LOG_INCREMENT();
