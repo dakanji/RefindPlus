@@ -651,8 +651,8 @@ VOID GenerateSubScreen (
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
 
-            AddMenuInfoLine (SubScreen, L"NOTE: This is an example.");
-            AddMenuInfoLine (SubScreen, L"Entries marked with (*) may not work.");
+            AddMenuInfoLine (SubScreen, L"NOTE: This is an example",             FALSE);
+            AddMenuInfoLine (SubScreen, L"Entries marked with (*) may not work", FALSE);
 
             BREAD_CRUMB(L"%s:  A2 - OSType E:- END", FuncTag);
         }

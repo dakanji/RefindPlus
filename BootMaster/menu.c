@@ -446,36 +446,21 @@ CHAR16 * MenuExitInfo (
     return MenuExitData;
 } // CHAR16 * MenuExitInfo()
 
-VOID AddMenuInfoLineAlt (
-    IN REFIT_MENU_SCREEN *Screen,
-    IN CHAR16            *InfoLine
-) {
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
-    #endif
-
-    // DA-TAG: Passing 'InfoLine', which will be freed, directly
-    AddListElement (
-        (VOID ***) &(Screen->InfoLines),
-        &(Screen->InfoLineCount),
-        InfoLine
-    );
-} // VOID AddMenuInfoLineAlt()
-
 VOID AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
-    IN CHAR16            *InfoLine
+    IN CHAR16            *InfoLine,
+    IN BOOLEAN            CanFree
 ) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
     #endif
 
-    // DA-TAG: Passing duplicate of 'InfoLine', which will be freed
-    //         Hence 'InfoLine' is not freed ... For literal strings
+    // DA-TAG: The 'NewElement' item may be freed later
+    //         So pass a duplicate if 'CanFree' is false
     AddListElement (
         (VOID ***) &(Screen->InfoLines),
         &(Screen->InfoLineCount),
-        StrDuplicate (InfoLine)
+        (CanFree) ? InfoLine : StrDuplicate (InfoLine)
     );
 } // VOID AddMenuInfoLine()
 
@@ -2688,7 +2673,7 @@ VOID DisplaySimpleMessage (
     SimpleMessageMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     SimpleMessageMenu->Title      = StrDuplicate (Title);
 
-    AddMenuInfoLine (SimpleMessageMenu, Message);
+    AddMenuInfoLine (SimpleMessageMenu, Message, FALSE);
 
     BOOLEAN RetVal = GetReturnMenuEntry (&SimpleMessageMenu);
     if (!RetVal) {
@@ -2850,7 +2835,7 @@ VOID ManageHiddenTags (VOID) {
     RestoreItemMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
     RestoreItemMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
-    AddMenuInfoLine (RestoreItemMenu, L"Select a Tag and Press 'Enter' to Restore");
+    AddMenuInfoLine (RestoreItemMenu, L"Select a Tag and Press 'Enter' to Restore", FALSE);
     while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
         MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
         MenuEntryItem->Title = StrDuplicate (OneElement);
@@ -3023,12 +3008,8 @@ BOOLEAN HideEfiTag (
 
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
 
-    AddMenuInfoLine (HideEfiMenu, L"Hide EFI Tag Below?");
-
-    AddMenuInfoLineAlt (
-        HideEfiMenu,
-        PoolPrint (L"'%s'", FullPath)
-    );
+    AddMenuInfoLine (HideEfiMenu, L"Hide EFI Tag Below?",        FALSE);
+    AddMenuInfoLine (HideEfiMenu, PoolPrint (L"'%s'", FullPath),  TRUE);
 
     AddMenuEntryCopy (HideEfiMenu, &MenuEntryYes);
     AddMenuEntryCopy (HideEfiMenu, &MenuEntryNo);
@@ -3075,8 +3056,8 @@ BOOLEAN HideFirmwareTag(
 ) {
     BOOLEAN TagHidden = FALSE;
 
-    AddMenuInfoLine (HideFirmwareMenu, L"Hide Firmware Tag Below?");
-    AddMenuInfoLineAlt (HideFirmwareMenu, PoolPrint (L"'%s'", Loader->Title));
+    AddMenuInfoLine (HideFirmwareMenu, L"Hide Firmware Tag Below?",        FALSE);
+    AddMenuInfoLine (HideFirmwareMenu, PoolPrint (L"'%s'", Loader->Title),  TRUE);
 
     AddMenuEntryCopy (HideFirmwareMenu, &MenuEntryYes);
     AddMenuEntryCopy (HideFirmwareMenu, &MenuEntryNo);
@@ -3124,12 +3105,8 @@ BOOLEAN HideLegacyTag (
         Name = StrDuplicate (L"Legacy BIOS Loader");
     }
 
-    AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Tag Below?");
-
-    AddMenuInfoLineAlt (
-        HideLegacyMenu,
-        PoolPrint (L"'%s'", Name)
-    );
+    AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Tag Below?", FALSE);
+    AddMenuInfoLine (HideLegacyMenu, PoolPrint (L"'%s'", Name),  TRUE);
 
     AddMenuEntryCopy (HideLegacyMenu, &MenuEntryYes);
     AddMenuEntryCopy (HideLegacyMenu, &MenuEntryNo);
@@ -3378,7 +3355,7 @@ BOOLEAN ConfirmRestart (VOID) {
     ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
     ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
-    AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?");
+    AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?", FALSE);
 
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryNo);
@@ -3431,7 +3408,7 @@ BOOLEAN ConfirmShutdown (VOID) {
     ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?");
+    AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?", FALSE);
 
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryNo);

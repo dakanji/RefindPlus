@@ -647,7 +647,7 @@ BOOLEAN ConfirmReboot (
     ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    AddMenuInfoLineAlt (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
+    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
 
     BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
     if (!RetVal) {

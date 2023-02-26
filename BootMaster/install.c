@@ -143,7 +143,11 @@ REFIT_VOLUME * PickOneESP (
     InstallMenu->Hint1      = StrDuplicate (L"Select a destination and press 'Enter' or");
     InstallMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT                     );
 
-    AddMenuInfoLine (InstallMenu, L"Select a Partition and Press 'Enter' to Install RefindPlus");
+    AddMenuInfoLine (
+        InstallMenu,
+        L"Select a Partition and Press 'Enter' to Install RefindPlus",
+        FALSE
+    );
 
     UINTN i = 1;
     ESP_LIST *CurrentESP = AllESPs;
@@ -1225,10 +1229,7 @@ UINTN ConfirmBootOptionOperation (
     ConfirmBootOptionMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT              );
     ConfirmBootOptionMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT         );
 
-    AddMenuInfoLineAlt (
-        ConfirmBootOptionMenu,
-        PoolPrint (L"%s", BootOptionString)
-    );
+    AddMenuInfoLine (ConfirmBootOptionMenu, PoolPrint (L"%s", BootOptionString), TRUE);
 
     CHAR16 *CheckString = NULL;
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
@@ -1237,7 +1238,7 @@ UINTN ConfirmBootOptionOperation (
     else if (Operation == EFI_BOOT_OPTION_DELETE) {
         CheckString = L"Delete This Boot Option?";
     }
-    AddMenuInfoLine (ConfirmBootOptionMenu, CheckString);
+    AddMenuInfoLine (ConfirmBootOptionMenu, CheckString, FALSE);
 
     BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmBootOptionMenu);
     if (!RetVal) {
@@ -1303,7 +1304,11 @@ UINTN PickOneBootOption (
                 L"'Delete' to delete it, or %s", RETURN_MAIN_SCREEN_HINT
             );
 
-            AddMenuInfoLine (PickBootOptionMenu, L"Promote or Remove Firmware BootOrder Variables");
+            AddMenuInfoLine (
+                PickBootOptionMenu,
+                L"Promote or Remove Firmware BootOrder Variables",
+                FALSE
+            );
 
             do {
                 MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));

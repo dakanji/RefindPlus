@@ -1405,19 +1405,19 @@ BOOLEAN ShowCleanNvramInfo (
     CleanNvramInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
     CleanNvramInfoMenu->Hint2      = StrDuplicate (L""                        );
 
-    AddMenuInfoLineAlt (CleanNvramInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose)                );
-    AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
-    AddMenuInfoLine (CleanNvramInfoMenu, L"The binary must be placed in one of the paths below"     );
-    AddMenuInfoLine (CleanNvramInfoMenu, L" - The first file found in the order listed will be used");
-    AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found"   );
-    AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
+    AddMenuInfoLine (CleanNvramInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose),                     TRUE);
+    AddMenuInfoLine (CleanNvramInfoMenu, L"",                                                         FALSE);
+    AddMenuInfoLine (CleanNvramInfoMenu, L"The binary must be placed in one of the paths below",      FALSE);
+    AddMenuInfoLine (CleanNvramInfoMenu, L" - The first file found in the order listed will be used", FALSE);
+    AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found",    FALSE);
+    AddMenuInfoLine (CleanNvramInfoMenu, L"",                                                         FALSE);
 
     k = 0;
     while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-        AddMenuInfoLineAlt (CleanNvramInfoMenu, FilePath);
+        AddMenuInfoLine (CleanNvramInfoMenu, FilePath, TRUE);
     }
 
-    AddMenuInfoLine (CleanNvramInfoMenu, L"");
+    AddMenuInfoLine (CleanNvramInfoMenu, L"", FALSE);
 
     REFIT_MENU_ENTRY *MenuEntryCleanNvram = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     if (MenuEntryCleanNvram == NULL) {
@@ -1494,38 +1494,43 @@ VOID AboutRefindPlus (VOID) {
         return;
     }
 
-#if defined(__MAKEWITH_TIANO)
-    AddMenuInfoLine (AboutMenu, L"Built with TianoCore EDK II");
-#else
-    AddMenuInfoLine (AboutMenu, L"Built with GNU-EFI"         );
-#endif
-    TmpStr = StrDuplicate (VendorInfo);
+    AddMenuInfoLine (
+        AboutMenu,
+        #if defined(__MAKEWITH_TIANO)
+            L"Built with TianoCore EDK II",
+        #else
+            L"Built with GNU-EFI",
+        #endif
+        FALSE
+    );
     // More than ~65 causes empty info page on 800x600 display
+    TmpStr = StrDuplicate (VendorInfo);
     LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLineAlt (
-        AboutMenu,
-        PoolPrint (L"Firmware      : %s", TmpStr)
-    );
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Firmware      : %s", TmpStr),   TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Platform      : %s", ArchType), TRUE);
     MY_FREE_POOL(TmpStr);
-    AddMenuInfoLineAlt (
-        AboutMenu,
-        PoolPrint (L"Platform      : %s", ArchType)
-    );
-    AddMenuInfoLineAlt (
+    AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"EFI Version   : %s %d.%02d",
+            L"EFI Version   : %s %d.%02d %s",
             ((gST->Hdr.Revision >> 16U) > 1) ? L"UEFI" : L"EFI",
             gST->Hdr.Revision >> 16U,
-            gST->Hdr.Revision & ((1 << 16) - 1)
-        )
+            gST->Hdr.Revision & ((1 << 16) - 1),
+            (WarnVersionEFI)
+                ? L"(Spoofed by Others)"
+                : (SetSysTab)
+                    ? L"(Spoofed)"
+                    : L""
+        ),
+        TRUE
     );
-    AddMenuInfoLineAlt (
+    AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
             L"Secure Boot   : %s",
             secure_mode() ? L"Active" : L"Inactive"
-        )
+        ),
+        TRUE
     );
     if (!AppleFirmware) {
         TmpStr = StrDuplicate (L"Not Available");
@@ -1543,28 +1548,20 @@ VOID AboutRefindPlus (VOID) {
             ? StrDuplicate (gCsrStatus)
             : PoolPrint (L"%s ... %r", gCsrStatus, Status);
     }
-    // More than ~65 causes empty info page on 800x600 display
     LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLineAlt (
-        AboutMenu,
-        PoolPrint (L"CSR for Mac   : %s", TmpStr)
-    );
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for Mac   : %s", TmpStr), TRUE);
     MY_FREE_POOL(TmpStr);
     TmpStr = egScreenDescription();
-    // More than ~65 causes empty info page on 800x600 display
     LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLineAlt (
-        AboutMenu,
-        PoolPrint(L"Screen Output : %s", TmpStr)
-    );
+    AddMenuInfoLine (AboutMenu, PoolPrint(L"Screen Output : %s", TmpStr),  TRUE);
     MY_FREE_POOL(TmpStr);
 
-    AddMenuInfoLine (AboutMenu, L"");
-    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others"         );
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith"     );
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer"   );
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others");
-    AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license"   );
+    AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
+    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others",          FALSE);
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith",      FALSE);
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer",    FALSE);
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others", FALSE);
+    AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license",    FALSE);
 
     RetVal = GetReturnMenuEntry (&AboutMenu);
     if (!RetVal) {
