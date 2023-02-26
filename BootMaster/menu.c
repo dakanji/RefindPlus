@@ -2655,8 +2655,8 @@ BOOLEAN EditOptions (
 //
 
 VOID DisplaySimpleMessage (
-    CHAR16 *Title OPTIONAL,
-    CHAR16 *Message
+    CHAR16 *Message,
+    CHAR16 *Title OPTIONAL
 ) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -2838,7 +2838,7 @@ VOID ManageHiddenTags (VOID) {
     }
 
     if (!AllTags || StrLen (AllTags) < 1) {
-        DisplaySimpleMessage (NULL, L"No Hidden Tags Found");
+        DisplaySimpleMessage (L"No Hidden Tags Found", NULL);
 
         // Early Return
         return;
@@ -3199,11 +3199,11 @@ VOID HideTag (
                 Clarify = (SingleAPFS)
                     ? L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token"
                     : L"APFS Container with Multiple Mac OS Instances Found";
-                DisplaySimpleMessage (MsgStr, Clarify);
+                DisplaySimpleMessage (Clarify, MsgStr);
             }
             else if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
                 MsgStr = PoolPrint (L"HideTag not Available on \"%s\" Manual Stanza", ChosenEntry->Title);
-                DisplaySimpleMessage (MsgStr, L"Amend Config File Instead ... Disable Stanza");
+                DisplaySimpleMessage (L"Amend Config File Instead ... Disable Stanza", MsgStr);
             }
             else {
                 HideTagMenu->Title = L"Hide UEFI Tag";
@@ -3311,7 +3311,7 @@ VOID HideTag (
         case TAG_CSR_ROTATE:
         case TAG_INFO_NVRAMCLEAN:
             MsgStr = PoolPrint (L"HideTag not Available on \"%s\" Internal Tool", ChosenEntry->Title);
-            DisplaySimpleMessage (MsgStr, L"Amend Config File Instead ... Update \"showtools\" Token");
+            DisplaySimpleMessage (L"Amend Config File Instead ... Update \"showtools\" Token", MsgStr);
             MY_FREE_POOL(MsgStr);
 
         break;

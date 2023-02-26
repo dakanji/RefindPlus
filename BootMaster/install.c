@@ -122,7 +122,7 @@ REFIT_VOLUME * PickOneESP (
     #endif
 
     if (!AllESPs) {
-        DisplaySimpleMessage (NULL, L"No Eligible ESPs Found");
+        DisplaySimpleMessage (L"No Eligible ESPs Found", NULL);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"No Eligible ESPs Found");
@@ -1103,7 +1103,7 @@ VOID InstallRefindPlus (VOID) {
     }
 
     MsgStr = L"RefindPlus Successfully Installed";
-    DisplaySimpleMessage (NULL, MsgStr);
+    DisplaySimpleMessage (MsgStr, NULL);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1289,7 +1289,7 @@ UINTN PickOneBootOption (
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
     if (!Entries) {
-        DisplaySimpleMessage (NULL, L"Firmware BootOrder List is Unavailable!!");
+        DisplaySimpleMessage (L"Firmware BootOrder List is Unavailable!!", NULL);
     }
     else {
         REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -1440,7 +1440,7 @@ VOID ManageBootorder (VOID) {
         );
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
-        DisplaySimpleMessage (NULL, Message);
+        DisplaySimpleMessage (Message, NULL);
         MY_FREE_POOL(Name);
         MY_FREE_POOL(Message);
     }
@@ -1448,7 +1448,7 @@ VOID ManageBootorder (VOID) {
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
         SetBootDefault (BootNum);
         Message = PoolPrint (L"Boot%04x is Now the Default EFI Boot Option.", BootNum);
-        DisplaySimpleMessage (NULL, Message);
+        DisplaySimpleMessage (Message, NULL);
         MY_FREE_POOL(Message);
     }
 

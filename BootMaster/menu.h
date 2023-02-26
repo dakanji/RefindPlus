@@ -158,8 +158,8 @@ VOID GraphicsMenuStyle (
     IN CHAR16 *ParamText
 );
 VOID DisplaySimpleMessage (
-    CHAR16 *Title OPTIONAL,
-    CHAR16 *Message
+    CHAR16 *Message,
+    CHAR16 *Title OPTIONAL
 );
 
 UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
