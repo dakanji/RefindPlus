@@ -102,6 +102,12 @@ typedef struct {
   EFI_GRAPHICS_OUTPUT_PROTOCOL     GraphicsOutput;
 } RP_GOP_PROTOCOL;
 
+static
+VOID DisableGOP (VOID) {
+    GOPDraw->Mode->Info = NULL;
+    GOPDraw->Mode       = NULL;
+    GOPDraw             = NULL;
+} // static VOID DisableGOP()
 
 static
 EFI_STATUS EFIAPI RP_GopDrawQueryMode (
@@ -357,9 +363,11 @@ EFI_STATUS EncodeAsPNG (
 } // static EFI_STATUS EncodeAsPNG()
 
 static
-EFI_STATUS RefitCheckGOP (VOID) {
+EFI_STATUS RefitCheckGOP (
+    BOOLEAN FixGOP
+) {
     EFI_STATUS                     Status;
-    UINTN                          i;
+    UINTN                          index;
     UINTN                          HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop = NULL;
@@ -378,8 +386,11 @@ EFI_STATUS RefitCheckGOP (VOID) {
     // Search for avaliable modes on ConsoleOut GOP
     if (OrigGop->Mode->MaxMode > 0) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Usable GOP Found on ConsoleOut Handle");
-        LOG_MSG("\n\n");
+        if (!FixGOP) {
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: Usable GOP Found on ConsoleOut Handle");
+            LOG_MSG("\n\n");
+        }
         #endif
 
         GOPDraw = OrigGop;
@@ -389,7 +400,11 @@ EFI_STATUS RefitCheckGOP (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Seek Replacement GOP Candidates:");
+    LOG_MSG("\n\n");
+    LOG_MSG(
+        "Seek %s GOP Candidates:",
+        (FixGOP) ? L"Replacement" : L"Console GOP"
+    );
     #endif
 
     // Search for GOP on handle buffer
@@ -420,29 +435,37 @@ EFI_STATUS RefitCheckGOP (VOID) {
     BOOLEAN DoneLoop;
     BOOLEAN OurValidGOP = FALSE;
 
-    #if REFIT_DEBUG > 0
-    UINTN   IndexGPU = 0;
-    #endif
-
     // Assess GOP instances on handle buffer
-    for (i = 0; i < HandleCount; i++) {
-        if (HandleBuffer[i] == gST->ConsoleOutHandle) {
-            // Skip ConsoleOut GOP
+    for (index = 0; index < HandleCount; index++) {
+        if (HandleBuffer[index] == gST->ConsoleOutHandle) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s  - Ignore Handle[%02d] ... ConOut Handle", OffsetNext, index);
+            #endif
+
+            // Restart Loop
             continue;
         }
 
         Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol, HandleBuffer[i],
+            gBS->HandleProtocol, HandleBuffer[index],
             &GOPDrawProtocolGuid, (VOID **) &Gop
         );
         if (EFI_ERROR(Status)) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s  - Ignore Handle[%02d] ... %r", OffsetNext, index, Status);
+            #endif
+
             // Skip handle on error
             continue;
         }
 
         #if REFIT_DEBUG > 0
-        ++IndexGPU;
-        LOG_MSG("%s  - Found Replacement Candidate on GPU %02d", OffsetNext, IndexGPU);
+        LOG_MSG(
+            "%s  - Found %s Candidate on Handle[%02d]",
+            OffsetNext,
+            (FixGOP) ? L"Replacement" : L"Console GOP",
+            index
+        );
         LOG_MSG("%s    * Evaluate Candidate", OffsetNext);
         #endif
 
@@ -510,7 +533,10 @@ EFI_STATUS RefitCheckGOP (VOID) {
 
     if (!OurValidGOP || EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Could Not Find Usable Replacement GOP");
+        LOG_MSG(
+            "INFO: Could Not Find Usable %s Candidate",
+            (FixGOP) ? L"Replacement" : L"Console GOP"
+        );
         LOG_MSG("\n\n");
         #endif
 
@@ -521,6 +547,55 @@ EFI_STATUS RefitCheckGOP (VOID) {
     // Return 'Success' to trigger provision
     return EFI_SUCCESS;
 } // static EFI_STATUS RefitCheckGOP()
+
+static
+BOOLEAN SupplyConsoleGop (
+    BOOLEAN FixGOP
+) {
+    BOOLEAN    ValueValidGOP = FALSE;
+
+// DA-TAG: Limit to TianoCore
+#ifdef __MAKEWITH_TIANO
+    EFI_STATUS Status;
+
+    if (GlobalConfig.ProvideConsoleGOP) {
+        Status = RefitCheckGOP (FixGOP);
+        if (!EFI_ERROR(Status)) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("\n\n");
+            LOG_MSG(
+                "%s ConsoleOut GOP:",
+                (FixGOP) ? L"Replace" : L"Supply"
+            );
+            LOG_MSG("%s  - Status:- '%r' on RefitCheckGOP", OffsetNext, Status);
+            #endif
+            // Run OpenCore Function
+            Status = OcProvideConsoleGop (TRUE);
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s  - Status:- '%r' on OcProvideConsoleGop", OffsetNext, Status);
+            #endif
+            if (!EFI_ERROR(Status)) {
+                Status = REFIT_CALL_3_WRAPPER(
+                    gBS->HandleProtocol, gST->ConsoleOutHandle,
+                    &GOPDrawProtocolGuid, (VOID **) &GOPDraw
+                );
+                #if REFIT_DEBUG > 0
+                LOG_MSG("%s  - Status:- '%r' on HandleProtocol", OffsetNext, Status);
+                #endif
+                if (!EFI_ERROR(Status)) {
+                    ValueValidGOP = TRUE;
+                }
+            }
+        }
+    }
+#endif
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n\n");
+    #endif
+
+    return ValueValidGOP;
+} // static BOOLEAN SupplyConsoleGop()
 
 EFI_STATUS egDumpGOPVideoModes (VOID) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
@@ -996,6 +1071,14 @@ VOID egInitConsoleControl (VOID) {
                     gBS->HandleProtocol, HandleBuffer[i],
                     &ConsoleControlProtocolGuid, (VOID*) &ConsoleControl
                 );
+                if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG("%s    ** Bypassed ConOut Handle[%02d] ... ConsoleOut Handle", OffsetNext, i);
+                    #endif
+
+                    // Restart Loop
+                    continue;
+                }
                 #if REFIT_DEBUG > 0
                 LOG_MSG("    ** Evaluate on GPU Handle[%02d] ... %r", i, Status);
                 #endif
@@ -1020,123 +1103,146 @@ VOID egInitConsoleControl (VOID) {
     #endif
 } // static VOID egInitConsoleControl()
 
-BOOLEAN egInitUGADraw (
-    BOOLEAN LogOutput
+static
+VOID LogUGADrawExit (
+    EFI_STATUS Status
 ) {
-    EFI_STATUS                     Status;
-    UINTN                          i;
-    UINTN                          HandleCount;
-    BOOLEAN                        FoundHandleUGA = FALSE;
-    EFI_HANDLE                    *HandleBuffer   = NULL;
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    if (!LogOutput) {
-        MY_MUTELOGGER_SET;
-    }
-
-    LOG_MSG("\n%s  - Seek Universal Graphics Adapter", OffsetNext);
-    #endif
-
-    // Check ConsoleOut Handle
-    Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol, gST->ConsoleOutHandle,
-        &UgaDrawProtocolGuid, (VOID **) &UGADraw
-    );
-    #if REFIT_DEBUG > 0
-    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
-    #endif
-    if (!EFI_ERROR(Status)) {
-        FoundHandleUGA = TRUE;
-    }
-    else {
-        // Try Locating by Handle
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &UgaDrawProtocolGuid, NULL,
-            &HandleCount, &HandleBuffer
-        );
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
-        #endif
-
-        if (!EFI_ERROR(Status)) {
-            EFI_UGA_DRAW_PROTOCOL *TmpUGA    = NULL;
-            UINT32                 UGAWidth  = 0;
-            UINT32                 UGAHeight = 0;
-            UINT32                 Width;
-            UINT32                 Height;
-            UINT32                 Depth;
-            UINT32                 RefreshRate;
-
-            for (i = 0; i < HandleCount; i++) {
-                Status = REFIT_CALL_3_WRAPPER(
-                    gBS->HandleProtocol,
-                    HandleBuffer[i],
-                    &UgaDrawProtocolGuid,
-                    (VOID*) &TmpUGA
-                );
-
-                #if REFIT_DEBUG > 0
-                LOG_MSG("%s    ** Examine GPU Handle[%02d] ... %r", OffsetNext, i, Status);
-                #endif
-
-                if (!EFI_ERROR(Status)) {
-                    FoundHandleUGA = TRUE;
-
-                    if (HandleCount == 1) {
-                        UGADraw = TmpUGA;
-                        break;
-                    }
-
-                    Status = REFIT_CALL_5_WRAPPER(
-                        TmpUGA->GetMode, TmpUGA,
-                        &Width, &Height,
-                        &Depth, &RefreshRate
-                    );
-                    if (!EFI_ERROR(Status)) {
-                        if (UGAWidth < Width ||
-                            UGAHeight < Height
-                        ) {
-                            UGADraw   = TmpUGA;
-                            UGAWidth  = Width;
-                            UGAHeight = Height;
-
-                            #if REFIT_DEBUG > 0
-                            LOG_MSG("%s    *** Select GPU Handle[%02d] @ %5d x %-5d",
-                                OffsetNext, i, Width, Height
-                            );
-                            #endif
-                        }
-                        else {
-                            #if REFIT_DEBUG > 0
-                            LOG_MSG("%s    *** Ignore GPU Handle[%02d] @ %5d x %-5d",
-                                OffsetNext, i, Width, Height
-                            );
-                            #endif
-                        }
-                    }
-                } // if !EFI_ERROR(Status)
-            } // for
-            MY_FREE_POOL(HandleBuffer);
-
-        } // if !EFI_ERROR(Status)
-    } // if/else !EFI_ERROR(Status
-
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = (EFI_ERROR(Status))
         ? L"Assess Universal Graphics Adapter ... NOT OK!!"
         : L"Assess Universal Graphics Adapter ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    #endif
+} // static VOID LogUGADrawExit()
+
+BOOLEAN egInitUGADraw (
+    BOOLEAN LogOutput
+) {
+    EFI_STATUS                     Status;
+    UINTN                          i;
+    UINTN                          HandleCount;
+    BOOLEAN                        UGAonGPU;
+    EFI_HANDLE                    *HandleBuffer;
+    EFI_UGA_DRAW_PROTOCOL         *TmpUGA;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    if (!LogOutput) {
+        MY_MUTELOGGER_SET;
+    }
+    #endif
+
+    // Check ConsoleOut Handle
+    // DA-TAG: Investigate This
+    //         ConsoleOut UGA appears inadequate
+    //         Using TmpUGA to keep UGADraw NULL
+    TmpUGA = NULL;
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, gST->ConsoleOutHandle,
+        &UgaDrawProtocolGuid, (VOID *) &TmpUGA
+    );
+    #if REFIT_DEBUG > 0
+    LOG_MSG("%s", OffsetNext);
+    LOG_MSG("%s  - Seek Universal Graphics Adapter", OffsetNext);
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
+    #endif
+    if (!EFI_ERROR(Status)) {
+        UGADraw = TmpUGA;
+        LogUGADrawExit (Status);
+
+        return TRUE;
+    }
+
+    // Try Locating on GPU Handle
+    HandleBuffer = NULL;
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &UgaDrawProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (HandleCount == 1) {
+        Status = EFI_NOT_FOUND;
+    }
+    #if REFIT_DEBUG > 0
+    LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
+    #endif
+
+    UGAonGPU = FALSE;
+    if (!EFI_ERROR(Status)) {
+        UINT32                 UGAWidth  = 0;
+        UINT32                 UGAHeight = 0;
+        UINT32                 RefreshRate;
+        UINT32                 Height;
+        UINT32                 Width;
+        UINT32                 Depth;
+
+        for (i = 0; i < HandleCount; i++) {
+            if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+                #if REFIT_DEBUG > 0
+                LOG_MSG("%s    ** Skipped Handle[%02d] ... ConsoleOut Handle", OffsetNext, i);
+                #endif
+
+                // Restart Loop
+                continue;
+            }
+
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s    ** Examine Handle[%02d] ... %r", OffsetNext, i, Status);
+            #endif
+
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol, HandleBuffer[i],
+                &UgaDrawProtocolGuid, (VOID *) &TmpUGA
+            );
+            if (EFI_ERROR(Status)) {
+                // Restart Loop
+                continue;
+            }
+
+            Status = REFIT_CALL_5_WRAPPER(
+                TmpUGA->GetMode, TmpUGA,
+                &Width, &Height,
+                &Depth, &RefreshRate
+            );
+            if (!EFI_ERROR(Status)) {
+                if (UGAWidth  <  Width ||
+                    UGAHeight < Height
+                ) {
+                    UGAonGPU  =   TRUE;
+                    UGADraw   = TmpUGA;
+                    UGAWidth  =  Width;
+                    UGAHeight = Height;
+
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG("%s    *** Select Handle[%02d] @ %5d x %-5d",
+                        OffsetNext, i, Width, Height
+                    );
+                    #endif
+
+                    // Break Loop
+                    break;
+                }
+
+                #if REFIT_DEBUG > 0
+                LOG_MSG("%s    *** Ignore Handle[%02d] @ %5d x %-5d",
+                    OffsetNext, i, Width, Height
+                );
+                #endif
+            }
+        } // for
+        MY_FREE_POOL(HandleBuffer);
+    } // if !EFI_ERROR(Status)
+
+    #if REFIT_DEBUG > 0
+    LogUGADrawExit (Status);
 
     if (!LogOutput) {
         MY_MUTELOGGER_OFF;
     }
     #endif
 
-    return FoundHandleUGA;
+    return UGAonGPU;
 } // static BOOLEAN egInitUGADraw()
 
 VOID egInitScreen (VOID) {
@@ -1160,7 +1266,7 @@ VOID egInitScreen (VOID) {
     egInitConsoleControl();
 
     // Get UGADraw Protocol
-    BOOLEAN FoundHandleUGA = egInitUGADraw(TRUE);
+    BOOLEAN FoundHandleUGA = egInitUGADraw (TRUE);
 
     // Align PreferUGA
     if (GlobalConfig.PreferUGA && FoundHandleUGA && !SetPreferUGA) {
@@ -1182,154 +1288,188 @@ VOID egInitScreen (VOID) {
         }
     }
 
+    // Set 'ObtainHandleGOP', if false, to 'ProvideConsoleGOP' value
+    if (!ObtainHandleGOP) {
+        ObtainHandleGOP = GlobalConfig.ProvideConsoleGOP;
+    }
+
     // Get GOPDraw Protocol
     XFlag = EFI_NOT_STARTED;
     if (FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-        LOG_MSG("INFO: Skip GOP Search ... ");
-        LOG_MSG("%s", (SetPreferUGA) ? L"Enforced UGA-Only Mode" : L"Apparent UGA-Only Graphics");
-        LOG_MSG("\n\n");
+        LOG_MSG(
+            "INFO: Skip GOP Search ... %s",
+            (SetPreferUGA) ? L"Enforced 'UGA-Only' Mode" : L"Apparent 'UGA-Only' Graphics"
+        );
+        PrevFlag = TRUE;
         #endif
     }
     else {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("\n%s  - Seek Graphics Output Protocol", OffsetNext);
-        #endif
+        do {
+            // Check ConsoleOut Handle
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol, gST->ConsoleOutHandle,
+                &GOPDrawProtocolGuid, (VOID **) &OldGop
+            );
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s", OffsetNext);
+            LOG_MSG("%s  - Seek Graphics Output Protocol", OffsetNext);
+            LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
+            #endif
+            if (!EFI_ERROR(Status)) {
+                // Break Loop
+                break;
+            }
 
-        // Check ConsoleOut Handle
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol, gST->ConsoleOutHandle,
-            &GOPDrawProtocolGuid, (VOID **) &OldGop
-        );
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
-        #endif
-
-        if (EFI_ERROR(Status)) {
             // Try Locating by Handle
             Status = REFIT_CALL_5_WRAPPER(
                 gBS->LocateHandleBuffer, ByProtocol,
                 &GOPDrawProtocolGuid, NULL,
                 &HandleCount, &HandleBuffer
             );
-
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
             #endif
-
             if (EFI_ERROR(Status)) {
                 // Force to NOT FOUND on error as subsequent code relies on this
                 Status = EFI_NOT_FOUND;
-            }
-            else {
-                EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
-                EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGop = NULL;
-                UINT32 GopWidth  = 0;
-                UINT32 GopHeight = 0;
-                UINT32 MaxMode   = 0;
-                UINT32 GopMode;
-                UINTN  SizeOfInfo;
 
-                for (i = 0; i < HandleCount; i++) {
-                    Status = REFIT_CALL_3_WRAPPER(
-                        gBS->HandleProtocol, HandleBuffer[i],
-                        &GOPDrawProtocolGuid, (VOID*) &TmpGop
-                    );
+                // Break Loop
+                break;
+            }
+
+            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
+            EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGop = NULL;
+            UINT32 GopWidth  = 0;
+            UINT32 GopHeight = 0;
+            UINT32 MaxMode   = 0;
+            UINT32 GopMode;
+            UINTN  SizeOfInfo;
+            for (i = 0; i < HandleCount; i++) {
+                if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("%s    ** Evaluate on GPU Handle[%02d] ... %r", OffsetNext, i, Status);
+                    LOG_MSG("%s    ** Bypassed ConOut Handle[%02d]", OffsetNext, i);
                     #endif
-                    if (!EFI_ERROR(Status)) {
-                        if (HandleCount == 1) {
-                            OldGop = TmpGop;
-                            break;
+
+                    // Restart Loop
+                    continue;
+                }
+
+                #if REFIT_DEBUG > 0
+                LOG_MSG("%s    ** Evaluate on GPU Handle[%02d] ... %r", OffsetNext, i, Status);
+                #endif
+
+                Status = REFIT_CALL_3_WRAPPER(
+                    gBS->HandleProtocol, HandleBuffer[i],
+                    &GOPDrawProtocolGuid, (VOID*) &TmpGop
+                );
+                if (!EFI_ERROR(Status)) {
+                    MaxMode = TmpGop->Mode->MaxMode;
+                    for (GopMode = 0; GopMode < MaxMode; GopMode++) {
+                        Status = TmpGop->QueryMode (TmpGop, GopMode, &SizeOfInfo, &Info);
+                        if (EFI_ERROR(Status)) {
+                            #if REFIT_DEBUG > 0
+                            LOG_MSG("%s        Ignore GPU Handle[%02d][%02d] ... QueryMode Failure",
+                                OffsetNext, i, GopMode
+                            );
+                            #endif
+
+                            // Restart Loop
+                            continue;
                         }
 
-                        MaxMode = TmpGop->Mode->MaxMode;
-                        for (GopMode = 0; GopMode < MaxMode; GopMode++) {
-                            Status = TmpGop->QueryMode (TmpGop, GopMode, &SizeOfInfo, &Info);
-                            if (!EFI_ERROR(Status)) {
-                                if (GopWidth < Info->HorizontalResolution ||
-                                    GopHeight < Info->VerticalResolution
-                                ) {
-                                    OldGop      = TmpGop;
-                                    GopWidth    = Info->HorizontalResolution;
-                                    GopHeight   = Info->VerticalResolution;
-                                    SelectedGOP = i;
+                        if (GopWidth  < Info->HorizontalResolution ||
+                            GopHeight < Info->VerticalResolution
+                        ) {
+                            OldGop      = TmpGop;
+                            GopWidth    = Info->HorizontalResolution;
+                            GopHeight   = Info->VerticalResolution;
+                            SelectedGOP = i;
 
-                                    #if REFIT_DEBUG > 0
-                                    LOG_MSG(
-                                        "%s    *** Select GPU Handle[%02d][%02d] @ %5d x %-5d",
-                                        OffsetNext,
-                                        i, GopMode,
-                                        GopWidth,
-                                        GopHeight
-                                    );
-                                    #endif
-                                }
-                                else {
-                                    #if REFIT_DEBUG > 0
-                                    LOG_MSG(
-                                        "%s        Ignore GPU Handle[%02d][%02d] @ %5d x %-5d",
-                                        OffsetNext,
-                                        i, GopMode,
-                                        Info->HorizontalResolution,
-                                        Info->VerticalResolution
-                                    );
-                                    #endif
-                                }
-                            }
+                            #if REFIT_DEBUG > 0
+                            LOG_MSG(
+                                "%s    *** Select GPU Handle[%02d][%02d] @ %5d x %-5d",
+                                OffsetNext,
+                                i, GopMode,
+                                GopWidth,
+                                GopHeight
+                            );
+                            #endif
 
-                            MY_FREE_POOL(Info);
-                        } // for GopMode = 0
-                    } // if !EFI_ERROR(Status)
-                } // for
+                            // Restart Loop
+                            continue;
+                        }
 
-                MY_FREE_POOL(HandleBuffer);
-            } // if EFI_ERROR(Status) ... Force to NOT FOUND
-        } // if EFI_ERROR(Status)
+                        #if REFIT_DEBUG > 0
+                        LOG_MSG(
+                            "%s        Ignore GPU Handle[%02d][%02d] @ %5d x %-5d",
+                            OffsetNext,
+                            i, GopMode,
+                            Info->HorizontalResolution,
+                            Info->VerticalResolution
+                        );
+                        #endif
+
+                        MY_FREE_POOL(Info);
+                    } // for GopMode = 0
+                } // if !EFI_ERROR(Status)
+            } // for
+
+            MY_FREE_POOL(HandleBuffer);
+        } while (0); // This 'loop' only runs once
 
         XFlag = EFI_UNSUPPORTED;
-        if (Status == EFI_NOT_FOUND) {
+        if (EFI_ERROR(Status)) {
+            // Tag as "Not Found"
             XFlag = EFI_NOT_FOUND;
 
-            // Not Found
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT FOUND!!");
+            MsgStr = PoolPrint (L"Assess Graphics Output Protocol ... %r!!", Status);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             #endif
         }
-        else if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
-            XFlag = EFI_NOT_FOUND;
-
-            // Not Found
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT SUPPORTED!!");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
-        }
-        else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
+        else {
             if (OldGop && OldGop->Mode->MaxMode > 0) {
-                XFlag        = EFI_SUCCESS;
-                thisValidGOP = TRUE;
-
-                // Set GOP to OldGop
-                GOPDraw = OldGop;
+                XFlag = EFI_SUCCESS;
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
+
+                thisValidGOP = SupplyConsoleGop (FALSE);
+                if (thisValidGOP) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Supplied GOP on ConsoleOut Handle");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("INFO: %s", MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Could Not Supply GOP on ConsoleOut Handle");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("INFO: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    MsgStr = StrDuplicate (L"Leveraging GPU Handle GOP");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+
+                    // Use valid 'OldGop' and force 'thisValidGOP' to true
+                    GOPDraw = OldGop;
+                    thisValidGOP = TRUE;
+                }
             }
             else {
                 XFlag = EFI_UNSUPPORTED;
@@ -1338,30 +1478,41 @@ VOID egInitScreen (VOID) {
                 MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                #ifdef __MAKEWITH_TIANO
-                // DA-TAG: Limit to TianoCore
-                if (GlobalConfig.ProvideConsoleGOP) {
-                    Status = RefitCheckGOP();
-                    if (!EFI_ERROR(Status)) {
-                        // Run OpenCore Function
-                        Status = OcProvideConsoleGop (TRUE);
-                        if (!EFI_ERROR(Status)) {
-                            Status = REFIT_CALL_3_WRAPPER(
-                                gBS->HandleProtocol, gST->ConsoleOutHandle,
-                                &GOPDrawProtocolGuid, (VOID **) &GOPDraw
-                            );
-                        }
-                    }
+                thisValidGOP = SupplyConsoleGop (TRUE);
+                if (thisValidGOP) {
+                    XFlag = EFI_SUCCESS;
+
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Replaced GOP on ConsoleOut Handle");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("INFO: %s", MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
                 }
-                #endif
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Could Not Replace GOP on ConsoleOut Handle");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    MsgStr = StrDuplicate (L"Disabling Available GOP");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+
+                    // Disable GOP
+                    DisableGOP();
+                }
             } // if/else OldGop
         } // if/else Status == EFI_NOT_FOUND
 
-        if (XFlag != EFI_NOT_FOUND && XFlag != EFI_NOT_STARTED && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
+        if (XFlag == EFI_SUCCESS && GlobalConfig.UseDirectGop) {
             if (GOPDraw == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Cannot Implement Direct GOP Renderer");
@@ -1389,13 +1540,11 @@ VOID egInitScreen (VOID) {
                         gBS->HandleProtocol, gST->ConsoleOutHandle,
                         &GOPDrawProtocolGuid, (VOID **) &OldGop
                     );
-                    if (EFI_ERROR(Status)) {
-                        OldGop = NULL;
-                    }
-                    else {
+                    if (!EFI_ERROR(Status)) {
+                        Status = EFI_NOT_READY;
                         if (OldGop && OldGop->Mode->MaxMode > 0) {
+                            Status = EFI_SUCCESS;
                             GOPDraw = OldGop;
-                            XFlag = EFI_ALREADY_STARTED;
                         }
                     }
                 }
@@ -1408,51 +1557,41 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
             } // if/else GOPDraw == NULL
-        } // if XFlag != EFI_NOT_FOUND etc
-
-        if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR || XFlag == EFI_UNSUPPORTED) {
-            if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Graphics Output Protocol ... %r", XFlag);
-                #endif
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
-                #endif
-
-                if (!EFI_ERROR(Status)) {
-                    thisValidGOP = TRUE;
-                }
-            }
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
-        }
-    } // if/else FoundHandleUGA
+        } // if XFlag == (EFI_SUCCESS && GlobalConfig.UseDirectGop)
+    } // if/else FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)
 
     // Get Screen Size
     egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
-        Status = egDumpGOPVideoModes();
-        if (EFI_ERROR(Status)) {
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Invalid GOP Instance");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"WARNING: %s!!", MsgStr);
-            LOG_MSG("** WARN: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
+        do {
+            if (FoundHandleUGA && SetPreferUGA) {
+                // Disable GOP
+                DisableGOP();
 
-            GOPDraw->Mode->Info = NULL;
-            GOPDraw->Mode       = NULL;
-            GOPDraw             = NULL;
-        }
-        else {
-            egHasGraphics  = TRUE;
+                // Break Loop
+                break;
+            }
+
+            Status = egDumpGOPVideoModes();
+            if (EFI_ERROR(Status)) {
+                #if REFIT_DEBUG > 0
+                MsgStr = StrDuplicate (L"Invalid GOP Instance");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"WARNING: %s!!", MsgStr);
+                LOG_MSG("** WARN: %s", MsgStr);
+                LOG_MSG("\n\n");
+                MY_FREE_POOL(MsgStr);
+                #endif
+
+                // Disable GOP
+                DisableGOP();
+
+                // Break Loop
+                break;
+            }
+
+            // GOP Graphics Available ... Discard UGADraw
+            UGADraw       = NULL;
+            egHasGraphics = TRUE;
 
             Status = egSetMaxResolution();
             if (!EFI_ERROR(Status)) {
@@ -1465,79 +1604,76 @@ VOID egInitScreen (VOID) {
             }
 
             #if REFIT_DEBUG > 0
-            // Only log this if GOPFix or Direct Renderer attempted
-            if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgStr = PoolPrint (L"Provide Graphics Output Protocol ... %r", Status);
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("INFO: %s", MsgStr);
-                LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
+            Status = EFI_NOT_STARTED;
+            #endif
+
+            // DA-TAG: Limit to TianoCore
+            #ifdef __MAKEWITH_TIANO
+            if (GlobalConfig.PassUgaThrough && thisValidGOP) {
+                // Run OcProvideUgaPassThrough from OpenCorePkg
+                Status = OcProvideUgaPassThrough();
             }
             #endif
-        }
-    } // if GOPDraw != NULL
 
-    if (UGADraw != NULL) {
-        #if REFIT_DEBUG > 0
-        Status = EFI_NOT_STARTED;
-        #endif
-
-// DA-TAG: Limit to TianoCore
-#ifdef __MAKEWITH_TIANO
-        if (GlobalConfig.PassUgaThrough && thisValidGOP) {
-            // Run OcProvideUgaPassThrough from OpenCorePkg
-            Status = OcProvideUgaPassThrough();
-        }
-#endif
-
-        #if REFIT_DEBUG > 0
-        if ((GOPDraw != NULL) &&
-            (GlobalConfig.UseTextRenderer || GlobalConfig.TextOnly)
-        ) {
+            #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             PrevFlag = TRUE;
-        }
-        #endif
-
-        if (GOPDraw == NULL) {
-            UINT32 Width, Height, Depth, RefreshRate;
-            Status = REFIT_CALL_5_WRAPPER(
-                UGADraw->GetMode, UGADraw,
-                &Width, &Height,
-                &Depth, &RefreshRate
-            );
-            if (EFI_ERROR(Status)) {
-                // Graphics not available
-                UGADraw               = NULL;
-                GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-            }
-            else {
-                egHasGraphics  = FlagUGA = TRUE;
-                egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
-                egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
-            }
-
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (
-                (EFI_ERROR(Status))
-                    ? L"Graphics Not Available ... Fall Back on Text Mode"
-                    : (FoundHandleUGA && SetPreferUGA)
-                        ? L"Forcing Universal Graphics Adapter"
-                        : (FoundHandleUGA && !ObtainHandleGOP)
-                            ? L"Leveraging Universal Graphics Adapter"
-                            : L"GOP Not Available ... Fall Back on UGA"
-            );
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-
-            PrevFlag = TRUE;
             #endif
-        } // if GOPDraw == NULL
-    } // if UGADraw != NULL
+        } while (0); // This 'loop' only runs once
+    } // if GOPDraw != NULL
+
+    if (GOPDraw == NULL && UGADraw == NULL) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Graphics Not Available ... Falling Back on Text Mode");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        PrevFlag = TRUE;
+        #endif
+    }
+    else if (UGADraw != NULL) {
+        UINT32 Width, Height, Depth, RefreshRate;
+        Status = REFIT_CALL_5_WRAPPER(
+            UGADraw->GetMode, UGADraw,
+            &Width, &Height,
+            &Depth, &RefreshRate
+        );
+        if (EFI_ERROR(Status)) {
+            // Graphics not available
+            UGADraw               = NULL;
+            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+        }
+        else {
+            egHasGraphics  = FlagUGA = TRUE;
+            egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
+            egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
+        }
+
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (
+            (FoundHandleUGA && SetPreferUGA)
+                ? L"Forcing Universal Graphics Adapter"
+                : (FoundHandleUGA && !ObtainHandleGOP)
+                    ? L"Leveraging Universal Graphics Adapter"
+                    : L"GOP Not Available ... Falling Back on UGA"
+        );
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        if (PrevFlag) {
+            LOG_MSG("%s      ", OffsetNext);
+        }
+        else {
+            LOG_MSG("INFO: ");
+        }
+        LOG_MSG("%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        PrevFlag = TRUE;
+        #endif
+    } // if (GOPDraw == NULL && UGADraw == NULL)
 
     #if REFIT_DEBUG > 0
     Status = EFI_NOT_STARTED;
@@ -1546,59 +1682,72 @@ VOID egInitScreen (VOID) {
 // DA-TAG: Limit to TianoCore
 BOOLEAN NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
-    if (UGADraw != NULL) {
-        if (GlobalConfig.SupplyAppleFB && AppleFramebuffers == 0) {
-            #if REFIT_DEBUG > 0
-            PrevFlag = FALSE;
-            LOG_MSG("\n\n");
-            #endif
-
-            // Install AppleFramebuffers and Update AppleFramebuffer Count
-            RP_AppleFbInfoInstallProtocol (TRUE);
-            AppleFramebuffers = egCountAppleFramebuffers();
-
-            if (AppleFramebuffers > 0) {
-                NewAppleFramebuffers = TRUE;
-                #ifdef __MAKEWITH_TIANO
-                // DA-TAG: Limit to TianoCore
-                if (!SetPreferUGA) {
-                    // Run OpenCore Functions
-                    Status = RP_ProvideGopPassThrough (FALSE);
-                    if (!EFI_ERROR(Status)) {
-                        Status = OcProvideConsoleGop (TRUE);
-                        #if REFIT_DEBUG > 0
-                        MsgStr = PoolPrint (L"Create GOP for Console Out ... %r", Status);
-                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                        LOG_MSG("INFO: %s", MsgStr);
-                        MY_FREE_POOL(MsgStr);
-                        #endif
-
-                        if (!EFI_ERROR(Status)) {
-                            Status = REFIT_CALL_3_WRAPPER(
-                                gBS->HandleProtocol, gST->ConsoleOutHandle,
-                                &GOPDrawProtocolGuid, (VOID **) &GOPDraw
-                            );
-                            #if REFIT_DEBUG > 0
-                            MsgStr = PoolPrint (L"Implement GOP Pass Through ... %r", Status);
-                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                            LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                            MY_FREE_POOL(MsgStr);
-                            PrevFlag = TRUE;
-                            #endif
-
-                            if (!EFI_ERROR(Status)) {
-                                // We have GOP from UGA
-                                egHasGraphics  =            TRUE;
-                                FoundHandleUGA = FlagUGA = FALSE;
-                            }
-                        }
-                    }
-                }
-                #endif
-            }
+// DA-TAG: Limit to TianoCore
+    do {
+        if (UGADraw == NULL || GOPDraw != NULL) {
+            // Break Loop
+            break;
         }
+
+        if (!GlobalConfig.SupplyAppleFB || AppleFramebuffers > 0) {
+            // Break Loop
+            break;
+        }
+
+        // Install AppleFramebuffers and Update AppleFramebuffer Count
+        RP_AppleFbInfoInstallProtocol (TRUE);
+        AppleFramebuffers = egCountAppleFramebuffers();
+        if (AppleFramebuffers == 0) {
+            // Break Loop
+            break;
+        }
+
+        NewAppleFramebuffers = TRUE;
+        if (SetPreferUGA) {
+            // Break Loop
+            break;
+        }
+
+        // Run OpenCore Functions
+        OcProvideConsoleGop (TRUE);
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, gST->ConsoleOutHandle,
+            &GOPDrawProtocolGuid, (VOID **) &GOPDraw
+        );
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Create GOP on ConsoleOut Handle ... %r", Status);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("\n\n");
+        LOG_MSG("INFO: %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
+        if (EFI_ERROR(Status)) {
+            // Break Loop
+            break;
+        }
+
+        Status = RP_ProvideGopPassThrough (FALSE);
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Implement GOP Pass Through ... %r", Status);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s      %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+        PrevFlag = TRUE;
+        #endif
+        if (EFI_ERROR(Status)) {
+            // Break Loop
+            break;
+        }
+    } while (0); // This 'loop' only runs once
+
+    if (UGADraw != NULL) {
+        // We have GOP from UGA
+        egHasGraphics  =            TRUE;
+        FoundHandleUGA = FlagUGA = FALSE;
     }
+
     if (GOPDraw != NULL) {
+        Status = EFI_NOT_STARTED;
         if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
             // Implement Text Renderer
             Status = OcUseBuiltinTextOutput (
@@ -1636,7 +1785,6 @@ BOOLEAN NewAppleFramebuffers = FALSE;
                 ? L""
                 : L" ... Try \"TextOnly\" if so"
         );
-
         #endif
     }
     else if (!FlagUGA || !AppleFirmware || AppleFramebuffers > 0) {
@@ -1646,11 +1794,10 @@ BOOLEAN NewAppleFramebuffers = FALSE;
     }
     else {
         // Force Text Mode ... AppleFramebuffers Missing on Mac with UGA
+        // Disable GOP
+        DisableGOP();
         egHasGraphics                         = FALSE;
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
-        GOPDraw->Mode->Info                   =  NULL;
-        GOPDraw->Mode                         =  NULL;
-        GOPDraw                               =  NULL;
         UGADraw                               =  NULL;
 
         #if REFIT_DEBUG > 0
