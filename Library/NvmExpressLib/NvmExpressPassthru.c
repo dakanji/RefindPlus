@@ -119,7 +119,7 @@ VOID * NvmeCreatePrpList (
         }
 
         return (VOID*) (UINTN) PrpListPhyAddr;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     PciIo->FreeBuffer (PciIo, *PrpListNo, *PrpListHost);
 
@@ -667,7 +667,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
 
             REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Event);
         }
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     if (MapData != NULL) {
         PciIo->Unmap (
@@ -952,7 +952,7 @@ EFI_STATUS EFIAPI NvmExpressBuildDevicePath (
         Node->NamespaceUuid = NamespaceData->Eui64;
 
         *DevicePath = (EFI_DEVICE_PATH_PROTOCOL *) Node;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     if (NamespaceData != NULL) {
         FREE_NVME_POOL(NamespaceData);

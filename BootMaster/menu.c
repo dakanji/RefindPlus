@@ -2667,14 +2667,14 @@ VOID DisplaySimpleMessage (
         return;
     }
 
-    if (!Title) {
-        Title = L"Information";
-    }
-
     REFIT_MENU_SCREEN *SimpleMessageMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (SimpleMessageMenu == NULL) {
         // Early Return
         return;
+    }
+
+    if (!Title) {
+        Title = L"Information";
     }
 
     #if REFIT_DEBUG > 0
@@ -2846,9 +2846,9 @@ VOID ManageHiddenTags (VOID) {
 
     REFIT_MENU_SCREEN *RestoreItemMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     RestoreItemMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    RestoreItemMenu->Title      = StrDuplicate (L"Restore Tags");
-    RestoreItemMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' to Apply the Option");
-    RestoreItemMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    RestoreItemMenu->Title      = StrDuplicate (L"Restore Tags"        );
+    RestoreItemMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
+    RestoreItemMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
     AddMenuInfoLine (RestoreItemMenu, L"Select a Tag and Press 'Enter' to Restore");
     while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
@@ -3179,9 +3179,9 @@ VOID HideTag (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
-    HideTagMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    HideTagMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
-    HideTagMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    HideTagMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN  );
+    HideTagMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    HideTagMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
     // DA-TAG: Investigate This ... Most probably no longer applies to RefindPlus
     //         (BUG) RescanAll calls should be conditional on successful calls to
@@ -3373,10 +3373,10 @@ BOOLEAN ConfirmRestart (VOID) {
     RetVal = FALSE;
 
     // Build the menu page
-    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm Restart");
-    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
-    ConfirmRestartMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
-    ConfirmRestartMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm Restart"     );
+    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET );
+    ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
+    ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
     AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?");
 
@@ -3426,10 +3426,10 @@ BOOLEAN ConfirmShutdown (VOID) {
     RetVal = FALSE;
 
     // Build the menu page
-    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm Shutdown");
+    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm Shutdown"      );
     ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
-    ConfirmShutdownMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
-    ConfirmShutdownMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
     AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?");
 

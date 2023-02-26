@@ -645,6 +645,7 @@ UINTN ScanDriverDir (
                 : L"",
             Status, FileName
         );
+        BRK_MAX("\n");
         #endif
 
         MY_FREE_POOL(FileName);

@@ -906,7 +906,7 @@ VOID AddLegacyEntryUEFI (
     }
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-    SubScreen->Title      = PoolPrint (L"Legacy BIOS Options for %s", BdsOption->Description);
+    SubScreen->Title      = PoolPrint (L"Boot Options for Legacy BIOS Loader on %s", BdsOption->Description);
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
     SubScreen->Hint2      = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
         ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
@@ -989,7 +989,7 @@ VOID ScanLegacyUEFI (
         NULL, (VOID **) &LegacyBios
     );
     if (EFI_ERROR(Status)) {
-        BREAD_CRUMB(L"%s:  B - END:- VOID (LocateProtocol Error)", FuncTag);
+        BREAD_CRUMB(L"%s:  Z - END:- VOID (LocateProtocol Error)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1060,7 +1060,7 @@ VOID ScanLegacyUEFI (
 
     MY_FREE_POOL(BootOrder);
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanLegacyUEFI()
@@ -1079,7 +1079,7 @@ VOID ScanLegacyVolume (
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     ShowVolume        = FALSE;
     HideIfOthersFound = FALSE;
@@ -1116,7 +1116,7 @@ VOID ScanLegacyVolume (
         AddLegacyEntry (NULL, Volume);
     }
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  5 - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanLegacyVolume()
@@ -1156,7 +1156,7 @@ VOID ScanLegacyDisc (VOID) {
     }
     FirstLegacyScan = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyDisc()
@@ -1169,17 +1169,15 @@ VOID ScanLegacyInternal (VOID) {
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"ScanLegacyInternal";
+
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
+        L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"
+    );
     #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"
-    );
-    #endif
 
     FirstLegacyScan = TRUE;
     if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
@@ -1197,7 +1195,7 @@ VOID ScanLegacyInternal (VOID) {
     }
     FirstLegacyScan = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyInternal()
@@ -1238,7 +1236,7 @@ VOID ScanLegacyExternal (VOID) {
     }
     FirstLegacyScan = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyExternal()
@@ -1350,7 +1348,7 @@ VOID WarnIfLegacyProblems (VOID) {
         }
     } // if GlobalConfig.LegacyType
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID WarnIfLegacyProblems()

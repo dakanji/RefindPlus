@@ -935,6 +935,17 @@ EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
     return EFI_SUCCESS;
 } // static EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo()
 
+#if REFIT_DEBUG > 0
+static
+VOID LogInstallStatusFB (
+    EFI_STATUS Status
+) {
+    CHAR16 *MsgStr = L"AppleFramebuffer Install Status";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s      %s:- '%r'", OffsetNext, MsgStr, Status);
+} // static VOID LogInstallStatusFB()
+#endif
+
 APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     IN BOOLEAN  Reinstall
 ) {
@@ -942,7 +953,8 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
+    CHAR16 *DotGap = L" ... ";
     #endif
 
     static
@@ -954,8 +966,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"Attempt AppleFramebuffer Install");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("INFO: %s", MsgStr);
-    LOG_MSG(" ... ");
+    LOG_MSG("%s      %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -965,12 +976,15 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Uninstall Existing AppleFramebuffer");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s:- '%r'", MsgStr, Status);
-            LOG_MSG("\n\n");
+            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
             MY_FREE_POOL(MsgStr);
             #endif
 
             if (Status != EFI_NOT_FOUND) {
+                #if REFIT_DEBUG > 0
+                LogInstallStatusFB (Status);
+                #endif
+
                 return NULL;
             }
         }
@@ -984,9 +998,10 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Locate Existing AppleFramebuffer");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s:- '%r'", MsgStr, Status);
-            LOG_MSG("\n\n");
+            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
             MY_FREE_POOL(MsgStr);
+
+            LogInstallStatusFB (Status);
             #endif
 
             return Protocol;
@@ -998,11 +1013,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
     );
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"AppleFramebuffer Install Status");
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-    LOG_MSG("%s:- '%r'", MsgStr, Status);
-    LOG_MSG("\n\n");
-    MY_FREE_POOL(MsgStr);
+    LogInstallStatusFB (Status);
     #endif
     if (EFI_ERROR (Status)) {
         return NULL;

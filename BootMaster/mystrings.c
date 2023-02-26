@@ -361,19 +361,23 @@ VOID MergeStrings (
     IN     CHAR16  *Second,
     IN     CHAR16   AddChar
 ) {
-    UINTN Length1 = 0, Length2 = 0;
-    CHAR16* NewString;
+    UINTN   Length1 = 0;
+    UINTN   Length2 = 0;
+    CHAR16 *NewString;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeStrings";
-    #endif
-
+    CHAR16 *MsgStr = PoolPrint (
+        L"Add '%s' to the end of '%s' with '%s' as separator",
+        Second  ? Second  : L"NULL",
+        *First  ? *First  : L"NULL",
+        AddChar ? AddChar : L"NOTHING"
+    );
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- Merge '%s' into '%s'", FuncTag,
-        Second ? Second : L"NULL",
-        *First ? *First : L"NULL"
-    );
+    BREAD_CRUMB(L"%s:  1 - START:- %s", FuncTag, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
@@ -446,19 +450,24 @@ VOID MergeUniqueStrings (
     IN     CHAR16  *Second,
     IN     CHAR16   AddChar
 ) {
-    UINTN Length1 = 0, Length2 = 0;
-    CHAR16* NewString;
+    UINTN   Length1 = 0;
+    UINTN   Length2 = 0;
+    CHAR16 *NewString;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeUniqueStrings";
-    #endif
-
+    CHAR16 *MsgStr = PoolPrint (
+        L"If not already present as a substring, add '%s' to the end of '%s' with '%s' as separator",
+        Second  ? Second  : L"NULL",
+        *First  ? *First  : L"NULL",
+        AddChar ? AddChar : L"NOTHING"
+    );
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- Merge '%s' into '%s'", FuncTag,
-        Second ? Second : L"NULL",
-        *First ? *First : L"NULL"
-    );
+    BREAD_CRUMB(L"%s:  1 - START:- %s", FuncTag, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
     if (*First == NULL) {
         *First = StrDuplicate (Second);
         BREAD_CRUMB(L"%s:  1a 1 - END:- NULL Input - Out String = '%s'", FuncTag,

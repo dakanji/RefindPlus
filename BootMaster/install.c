@@ -91,7 +91,7 @@ ESP_LIST * FindAllESPs (VOID) {
     } // for
 
     return AllESPs;
-} // ESP_LIST * FindAllESPs()
+} // static ESP_LIST * FindAllESPs()
 
 /***********************
  *
@@ -110,7 +110,6 @@ static
 REFIT_VOLUME * PickOneESP (
     ESP_LIST *AllESPs
 ) {
-    CHAR16           *Temp          = NULL;
     CHAR16           *FsName        = NULL;
     CHAR16           *VolName       = NULL;
     CHAR16           *GuidStr       = NULL;
@@ -139,10 +138,10 @@ REFIT_VOLUME * PickOneESP (
         return NULL;
     }
 
-    InstallMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
-    InstallMenu->Title      = StrDuplicate (L"Install RefindPlusr");
-    InstallMenu->Hint1      = StrDuplicate (L"Select a Destination and Press 'Enter' or");
-    InstallMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    InstallMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL                    );
+    InstallMenu->Title      = StrDuplicate (L"Install RefindPlus"                       );
+    InstallMenu->Hint1      = StrDuplicate (L"Select a destination and press 'Enter' or");
+    InstallMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT                     );
 
     AddMenuInfoLine (InstallMenu, L"Select a Partition and Press 'Enter' to Install RefindPlus");
 
@@ -209,6 +208,7 @@ REFIT_VOLUME * PickOneESP (
 
 
     if (MenuExit == MENU_EXIT_ENTER) {
+        CHAR16 *Temp;
         CurrentESP = AllESPs;
         while (CurrentESP != NULL) {
             Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
@@ -233,14 +233,15 @@ REFIT_VOLUME * PickOneESP (
 
 static
 EFI_STATUS RenameFile (
-    IN EFI_FILE *BaseDir,
+    EFI_FILE    *BaseDir,
     CHAR16      *OldName,
     CHAR16      *NewName
 ) {
-    EFI_STATUS     Status;
-    EFI_FILE      *FilePtr;
-    EFI_FILE_INFO *NewInfo, *Buffer = NULL;
-    UINTN          NewInfoSize;
+    EFI_STATUS          Status;
+    EFI_FILE           *FilePtr;
+    EFI_FILE_INFO      *Buffer;
+    EFI_FILE_INFO      *NewInfo;
+    UINTN               NewInfoSize;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Rename '%s' to '%s'", OldName, NewName);
@@ -256,37 +257,38 @@ EFI_STATUS RenameFile (
         return Status;
     }
 
-    Buffer = LibFileInfo (FilePtr);
-    if (Buffer == NULL) {
-        REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
+    do {
+        NewInfo = NULL;
+        Buffer = LibFileInfo (FilePtr);
+        if (Buffer == NULL) {
+            Status = EFI_BUFFER_TOO_SMALL;
 
-        // Early Return
-        return EFI_BUFFER_TOO_SMALL;
-    }
+            break;
+        }
 
-    NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize (NewName);
-    NewInfo = (EFI_FILE_INFO *) AllocateZeroPool (NewInfoSize);
-    if (NewInfo == NULL) {
-        REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
+        NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize (NewName);
+        NewInfo = (EFI_FILE_INFO *) AllocateZeroPool (NewInfoSize);
+        if (NewInfo == NULL) {
+            Status = EFI_OUT_OF_RESOURCES;
 
-        // Early Return
-        return EFI_OUT_OF_RESOURCES;
-    }
+            break;
+        }
 
-    CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
-    NewInfo->FileName[0] = 0;
-    StrCat (NewInfo->FileName, NewName);
+        CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
+        NewInfo->FileName[0] = 0;
+        StrCat (NewInfo->FileName, NewName);
 
-    Status = REFIT_CALL_4_WRAPPER(
-        BaseDir->SetInfo, FilePtr,
-        &gEfiFileInfoGuid, NewInfoSize, (VOID *) NewInfo
-    );
+        Status = REFIT_CALL_4_WRAPPER(
+            BaseDir->SetInfo, FilePtr,
+            &gEfiFileInfoGuid, NewInfoSize, (VOID *) NewInfo
+        );
+    } while (0); // This 'loop' only runs once
+
+    REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
 
     MY_FREE_POOL(NewInfo);
     MY_FREE_POOL(FilePtr);
     MY_FREE_POOL(Buffer);
-
-    REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
 
     return Status;
 } // EFI_STATUS RenameFile()
@@ -296,10 +298,10 @@ EFI_STATUS RenameFile (
 // user wants icons stored there that have been supplanted by new icons.
 static
 EFI_STATUS BackupOldFile (
-    IN EFI_FILE *BaseDir,
+    EFI_FILE    *BaseDir,
     CHAR16      *FileName
 ) {
-    EFI_STATUS          Status = EFI_SUCCESS;
+    EFI_STATUS          Status;
     CHAR16              *NewName;
 
     #if REFIT_DEBUG > 0
@@ -311,18 +313,21 @@ EFI_STATUS BackupOldFile (
     }
 
     NewName = PoolPrint (L"%s-old", FileName);
-    if (!FileExists (BaseDir, NewName)) {
+    if (FileExists (BaseDir, NewName)) {
+        Status = EFI_SUCCESS;
+    }
+    else {
         Status = RenameFile (BaseDir, FileName, NewName);
     }
     MY_FREE_POOL(NewName);
 
     return Status;
-} // EFI_STATUS BackupOldFile()
+} // static EFI_STATUS BackupOldFile()
 
 // Create directories in which RefindPlus will reside.
 static
 EFI_STATUS CreateDirectories (
-    IN EFI_FILE *BaseDir
+    EFI_FILE *BaseDir
 ) {
     EFI_STATUS  Status   = EFI_SUCCESS;
     EFI_FILE   *TheDir   = NULL;
@@ -349,10 +354,10 @@ EFI_STATUS CreateDirectories (
 
 static
 EFI_STATUS CopyOneFile (
-    IN EFI_FILE *SourceDir,
-    IN CHAR16   *SourceName,
-    IN EFI_FILE *DestDir,
-    IN CHAR16   *DestName
+    EFI_FILE *SourceDir,
+    CHAR16   *SourceName,
+    EFI_FILE *DestDir,
+    CHAR16   *DestName
 ) {
     EFI_FILE           *SourceFile = NULL, *DestFile = NULL;
     UINTN              FileSize = 0, Status;
@@ -467,10 +472,10 @@ EFI_STATUS CopyOneFile (
 // Copy a single directory (non-recursively)
 static
 EFI_STATUS CopyDirectory (
-    IN EFI_FILE *SourceDirPtr,
-    IN CHAR16   *SourceDirName,
-    IN EFI_FILE *DestDirPtr,
-    IN CHAR16   *DestDirName
+    EFI_FILE *SourceDirPtr,
+    CHAR16   *SourceDirName,
+    EFI_FILE *DestDirPtr,
+    CHAR16   *DestDirName
 ) {
     REFIT_DIR_ITER  DirIter;
     EFI_FILE_INFO   *DirEntry;
@@ -501,10 +506,10 @@ EFI_STATUS CopyDirectory (
 // as a Linux /boot partition. That is weird, but it does work.
 static
 EFI_STATUS CopyDrivers (
-    IN EFI_FILE *SourceDirPtr,
-    IN CHAR16   *SourceDirName,
-    IN EFI_FILE *DestDirPtr,
-    IN CHAR16   *DestDirName
+    EFI_FILE *SourceDirPtr,
+    CHAR16   *SourceDirName,
+    EFI_FILE *DestDirPtr,
+    CHAR16   *DestDirName
 ) {
     UINTN           i;
     CHAR16         *DestFileName   = NULL;
@@ -634,7 +639,7 @@ EFI_STATUS CopyDrivers (
 // Copy all the files from the source to *TargetDir
 static
 EFI_STATUS CopyFiles (
-    IN EFI_FILE *TargetDir
+    EFI_FILE *TargetDir
 ) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile   = NULL, *SourceDir, *ConfFile;
@@ -751,7 +756,7 @@ EFI_STATUS CopyFiles (
 // Success is not critical, so we do not return a Status value.
 static
 VOID CreateFallbackCSV (
-    IN EFI_FILE *TargetDir
+    EFI_FILE *TargetDir
 ) {
     CHAR16   *Contents = NULL;
     UINTN     FileSize, Status;
@@ -794,7 +799,7 @@ VOID CreateFallbackCSV (
 
  static
  BOOLEAN CopyRefindPlusFiles (
-     IN EFI_FILE *TargetDir
+     EFI_FILE *TargetDir
  ) {
     EFI_STATUS Status = EFI_SUCCESS, Status2;
 
@@ -1215,10 +1220,10 @@ UINTN ConfirmBootOptionOperation (
         return EFI_BOOT_OPTION_DO_NOTHING;
     }
 
-    ConfirmBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+    ConfirmBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER      );
     ConfirmBootOptionMenu->Title      = StrDuplicate (L"Confirm Boot Option Operation");
-    ConfirmBootOptionMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
-    ConfirmBootOptionMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    ConfirmBootOptionMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT              );
+    ConfirmBootOptionMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT         );
 
     AddMenuInfoLineAlt (
         ConfirmBootOptionMenu,
@@ -1275,8 +1280,8 @@ UINTN ConfirmBootOptionOperation (
 //  - *BootOrderNum: Returns the Boot#### number to be promoted or deleted.
 static
 UINTN PickOneBootOption (
-    IN BOOT_ENTRY_LIST *Entries,
-    IN OUT UINTN       *BootOrderNum
+    IN     BOOT_ENTRY_LIST *Entries,
+    IN OUT UINTN           *BootOrderNum
 ) {
     CHAR16              *Filename      = NULL;
     UINTN                Operation     = EFI_BOOT_OPTION_DO_NOTHING;
@@ -1292,10 +1297,10 @@ UINTN PickOneBootOption (
             PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
             PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
             PickBootOptionMenu->Hint1      = StrDuplicate (
-                L"Select an Option and Press 'Enter' to make it the Default, Press '-' or"
+                L"Select an option and press 'Enter' to make it the default. Press '-' or"
             );
-            PickBootOptionMenu->Hint2      = StrDuplicate (
-                L"'Delete' to Delete it, or 'Esc' to Return to Main Menu (Without Changes)"
+            PickBootOptionMenu->Hint2      = PoolPrint (
+                L"'Delete' to delete it, or %s", RETURN_MAIN_SCREEN_HINT
             );
 
             AddMenuInfoLine (PickBootOptionMenu, L"Promote or Remove Firmware BootOrder Variables");

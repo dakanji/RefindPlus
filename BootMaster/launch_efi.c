@@ -421,11 +421,10 @@ EFI_STATUS StartEFIImage (
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
 
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
         }
@@ -644,9 +643,9 @@ BOOLEAN ConfirmReboot (
     }
 
     ConfirmRebootMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
-    ConfirmRebootMenu->Title      = PoolPrint (L"Confirm %s", PromptUser);
-    ConfirmRebootMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
-    ConfirmRebootMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+    ConfirmRebootMenu->Title      = PoolPrint (L"Confirm %s", PromptUser   );
+    ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
     AddMenuInfoLineAlt (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
 

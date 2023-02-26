@@ -711,7 +711,6 @@ EFI_STATUS EfivarGetRaw (
         }
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
@@ -1332,7 +1331,6 @@ VOID ScanVolumeBootcode (
             CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector");
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: '%r' %s", Status, MsgStr);
-            LOG_MSG("\n");
             CheckError (Status, MsgStr);
             MY_FREE_POOL(MsgStr);
         }
@@ -1606,7 +1604,7 @@ CHAR16 * SizeInIEEEUnits (
     MY_FREE_POOL(Units);
 
     return TheValue;
-} // CHAR16 *SizeInIEEEUnits()
+} // static CHAR16 * SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
 // filesystem or partition, but this function falls back to describing the
@@ -1744,7 +1742,7 @@ CHAR16 * GetVolumeName (
     //         - use or add disk/partition number (e.g., "(hd0,2)")
 
     return FoundName;
-} // static CHAR16 *GetVolumeName()
+} // CHAR16 * GetVolumeName()
 
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
 static
@@ -2668,7 +2666,7 @@ VOID ScanVolumes (VOID) {
             else if (FindSubStr (PartType,        L"Mac Raid"               )) RoleStr = L" * Part MacRaid"  ;
             else if (MyStriCmp (Volume->VolName,  L"Whole Disk Volume"      )) RoleStr = L" * Physical Disk" ;
             else if (MyStriCmp (Volume->VolName,  L"Recovery HD"            )) RoleStr = L" * HFS Recovery"  ;
-            else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Win BootCamp"  ;
+            else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Mac BootCamp"  ;
             else if (MyStriCmp (Volume->VolName,  L"Basic Data Partition"   )) RoleStr = L" * Win BasicData" ;
             else if (MyStriCmp (Volume->VolName,  L"Boot OS X"              )) RoleStr = L" * Mac BootAssist";
             else if (MyStriCmp (Volume->VolName,  L"EFI"                    )) RoleStr = L" * EFI Partition" ;
@@ -3116,7 +3114,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         #endif
     } // for
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID GetVolumeBadgeIcons()
@@ -3237,7 +3235,7 @@ VOID SetVolumeIcons (VOID) {
                 #if REFIT_DEBUG > 0
                 if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
                     ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'hidden_icons_external'",
+                        L"Skipped External Volume: '%s' ... Config Setting is *NOT* Active:- 'hidden_icons_external'",
                         Volume->VolName
                     );
                 }
@@ -3264,7 +3262,7 @@ VOID SetVolumeIcons (VOID) {
         #endif
     } // for
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SetVolumeIcons()
@@ -3387,6 +3385,9 @@ EFI_STATUS DirNextEntry (
             }
 
             //BREAD_CRUMB(L"%s:  2a 3a 3", FuncTag);
+            #if REFIT_DEBUG > 0
+            LOG_MSG("\n");
+            #endif
             if (BufferSize <= LastBufferSize) {
                 //BREAD_CRUMB(L"%s:  2a 3a 3a 1", FuncTag);
                 #if REFIT_DEBUG > 0
@@ -3397,7 +3398,7 @@ EFI_STATUS DirNextEntry (
                     LastBufferSize * 2
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("\n%s", MsgStr);
+                LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
 
@@ -3411,16 +3412,15 @@ EFI_STATUS DirNextEntry (
                     LastBufferSize, BufferSize
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("\n%s", MsgStr);
+                LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
-            //BREAD_CRUMB(L"%s:  2a 3a 4", FuncTag);
-
             #if REFIT_DEBUG > 0
             FirstRun = FALSE;
             #endif
 
+            //BREAD_CRUMB(L"%s:  2a 3a 4", FuncTag);
             Buffer = EfiReallocatePool (
                 Buffer, LastBufferSize, BufferSize
             );
@@ -3513,13 +3513,13 @@ VOID DirIterOpen (
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
     if (RelativePath == NULL) {
-        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 1 - RelativePath == NULL", FuncTag);
         DirIter->LastStatus     = EFI_SUCCESS;
         DirIter->DirHandle      = BaseDir;
         DirIter->CloseDirHandle = FALSE;
     }
     else {
-        BREAD_CRUMB(L"%s:  2b 1", FuncTag);
+        BREAD_CRUMB(L"%s:  2b 1 - RelativePath != NULL", FuncTag);
         DirIter->LastStatus = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
             &(DirIter->DirHandle), RelativePath,
@@ -3638,7 +3638,7 @@ BOOLEAN DirIterNext (
         i     =     0;
         Found = FALSE;
         while (!Found && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
-            BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START ... Seek MetaiMatch Pattern", FuncTag);
             if (RP_MetaiMatch (LastFileInfo->FileName, OnePattern)) {
                 BREAD_CRUMB(L"%s:  3a 5a 1a 1", FuncTag);
                 Found = TRUE;

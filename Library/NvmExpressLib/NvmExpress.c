@@ -755,7 +755,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingSupported (
         ) {
             Status = EFI_UNSUPPORTED;
         }
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     REFIT_CALL_4_WRAPPER(
         gBS->CloseProtocol, Controller,
@@ -970,7 +970,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
         }
 
         return EFI_SUCCESS;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     if (Private != NULL) {
         if (Private->Mapping != NULL) {
@@ -1209,7 +1209,7 @@ EFI_STATUS EFIAPI NvmExpressUnload (
         }
 
         Status = EFI_SUCCESS;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     // Free the buffer containing the list of handles from the handle database
     FREE_NVME_POOL(DeviceHandleBuffer);

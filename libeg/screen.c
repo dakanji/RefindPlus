@@ -1410,28 +1410,28 @@ VOID egInitScreen (VOID) {
             } // if/else GOPDraw == NULL
         } // if XFlag != EFI_NOT_FOUND etc
 
-        if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Graphics Output Protocol ... %r", XFlag);
-            #endif
-        }
-        else if (XFlag == EFI_UNSUPPORTED) {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
-            #endif
-
-            if (!EFI_ERROR(Status)) {
-                thisValidGOP = TRUE;
+        if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR || XFlag == EFI_UNSUPPORTED) {
+            if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Graphics Output Protocol ... %r", XFlag);
+                #endif
             }
-        }
-        #if REFIT_DEBUG > 0
-        if (MsgStr) {
+            else {
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
+                #endif
+
+                if (!EFI_ERROR(Status)) {
+                    thisValidGOP = TRUE;
+                }
+            }
+            #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");
-            FreePool (MsgStr);
+            MY_FREE_POOL(MsgStr);
+            #endif
         }
-        #endif
     } // if/else FoundHandleUGA
 
     // Get Screen Size
@@ -1497,7 +1497,6 @@ VOID egInitScreen (VOID) {
             MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
-            LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             PrevFlag = TRUE;
         }
@@ -2607,6 +2606,30 @@ VOID egScreenShot (VOID) {
         return;
     }
 
+    if (!FileData) {
+        MsgStr = StrDuplicate (L"No FileData!");
+
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        egDisplayMessage (
+            MsgStr, &BGColorWarn, CENTER,
+            4, L"HaltSeconds"
+        );
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+        FreePool (MsgStr);
+
+        return;
+    }
+
     // Save to first available ESP if not running from ESP
     if (!MyStriCmp (SelfVolume->VolName, L"EFI") &&
         !MyStriCmp (SelfVolume->VolName, L"ESP")
@@ -2632,7 +2655,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            MY_FREE_POOL(FileData);
+            FreePool (FileData);
 
             return;
         }
@@ -2665,7 +2688,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            MY_FREE_POOL(FileData);
+            FreePool (FileData);
 
             return;
         }
@@ -2698,7 +2721,7 @@ VOID egScreenShot (VOID) {
             #endif
 
             MY_FREE_POOL(MsgStr);
-            MY_FREE_POOL(FileData);
+            FreePool (FileData);
 
             return;
         }
@@ -2732,8 +2755,8 @@ VOID egScreenShot (VOID) {
     #endif
 
     MY_FREE_POOL(MsgStr);
-    MY_FREE_POOL(FileName);
-    MY_FREE_POOL(FileData);
+    FreePool (FileName);
+    FreePool (FileData);
 
     return;
 

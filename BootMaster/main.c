@@ -237,8 +237,8 @@ EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
 #define NVRAM_SIZE_THRESHOLD       (1023)
 
-#define BOOT_FIX_STR_01            L"Disable AMFI Checks"
-#define BOOT_FIX_STR_02            L"Disable Compatibility Checks"
+#define BOOT_FIX_STR_01            L"Disable AMFI Check"
+#define BOOT_FIX_STR_02            L"Disable Compatibility Check"
 #define BOOT_FIX_STR_03            L"Disable Paniclog Writes to NVRAM"
 
 extern VOID              InitBooterLog (VOID);
@@ -295,7 +295,7 @@ VOID InitMainMenu (VOID) {
         NULL, 0,
         L"Automatic Boot",
         SUBSCREEN_HINT1,
-        L"Press 'Insert', 'Tab', or 'F2' for More Options and 'Esc' or 'Backspace' to Refresh"
+        L"Press 'Insert', 'Tab', or 'F2' for more options. Press 'Esc' or 'Backspace' to refresh the screen"
     };
 
     FreeMenuScreen (&MainMenu);
@@ -775,7 +775,7 @@ VOID AlignCSR (VOID) {
         // Set Status to 'Already Started' if we get here
         Status = EFI_ALREADY_STARTED;
         #endif
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     // Finalise and flush the log buffer
     #if REFIT_DEBUG > 0
@@ -1400,10 +1400,10 @@ BOOLEAN ShowCleanNvramInfo (
         return FALSE;
     }
 
-    CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN                                     );
-    CleanNvramInfoMenu->Title      = StrDuplicate (L"Clean Nvram"                                                  );
-    CleanNvramInfoMenu->Hint1      = StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu");
-    CleanNvramInfoMenu->Hint2      = StrDuplicate (L""                                                             );
+    CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+    CleanNvramInfoMenu->Title      = StrDuplicate (L"Clean Nvram"             );
+    CleanNvramInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
+    CleanNvramInfoMenu->Hint2      = StrDuplicate (L""                        );
 
     AddMenuInfoLineAlt (CleanNvramInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose)                );
     AddMenuInfoLine (CleanNvramInfoMenu, L""                                                        );
@@ -1633,7 +1633,21 @@ VOID RescanAll (
         ConnectAllDriversToAllControllers (FALSE);
         ForceRescanDXE = TempRescanDXE;
 
+        #if REFIT_DEBUG > 1
+        UINTN   ThislogLevel  = GlobalConfig.LogLevel;
+        BOOLEAN TempLevelFlip = FALSE;
+        if (ThislogLevel > MAXLOGLEVEL) {
+            GlobalConfig.LogLevel = MAXLOGLEVEL;
+            TempLevelFlip = TRUE;
+        }
+        #endif
         ScanVolumes();
+        #if REFIT_DEBUG > 1
+        if (TempLevelFlip) {
+            GlobalConfig.LogLevel = ThislogLevel;
+            TempLevelFlip = FALSE;
+        }
+        #endif
     }
 
     // Unset Icon Scaled Flag
@@ -2539,7 +2553,21 @@ EFI_STATUS EFIAPI efi_main (
 
     // Second call to ScanVolumes() to enumerate volumes and
     //   register any new filesystem(s) accessed by drivers.
+    #if REFIT_DEBUG > 1
+    UINTN   ThislogLevel  = GlobalConfig.LogLevel;
+    BOOLEAN TempLevelFlip = FALSE;
+    if (ThislogLevel > MAXLOGLEVEL) {
+        GlobalConfig.LogLevel = MAXLOGLEVEL;
+        TempLevelFlip = TRUE;
+    }
+    #endif
     ScanVolumes();
+    #if REFIT_DEBUG > 1
+    if (TempLevelFlip) {
+        GlobalConfig.LogLevel = ThislogLevel;
+        TempLevelFlip = FALSE;
+    }
+    #endif
 
     if (GlobalConfig.SpoofOSXVersion &&
         GlobalConfig.SpoofOSXVersion[0] != L'\0'

@@ -8,9 +8,6 @@
   * Addresses issues reported using the build process at https://github.com/xaionaro/edk2-builder-docker
     - Updates `LodePNG` to Version 20221108
     - Deduplicates `DebugLog` function and aligns calling convention
-- Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
-  * The DBG build had an invalid memory allocation instance that results in a hang when logging detection
-  * Improved overall handling by reducing the items disabled on detection
 - Fixes `Forced Default` Config Settings
   * Forced Defaults, typically based on firmware type, could be skipped under some circumstances
   * This gap has now been closed
@@ -30,6 +27,18 @@
 - Amends `Big Selection Image` Size Filtering
   * The maximum Big Selection image size is increased to 320px from 256px
   * The Small Selection image maximum is maintained at 256px
+- Amends `Invalid UEFI Versions` Handling
+  * Now accounts for such by reducing the amendment threshold to UEFI 2.0
+  * Still amends to UEFI 2.3 when UEFI amendments happen
+  * No longer amends Runtime Services for UEFI amendments
+  * No longer disables certain features on detecting inconsistent versions
+  * No longer displays a warning messages and the discrepancy is only logged
+  * Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
+    - The DBG build had an invalid memory allocation instance that results in a hang when logging detection
+    - Improved overall handling by reducing the items disabled on detection
+- Amends and Refactors Misc Items
+  * General optimisation
+  * Memory management improvements and fixes
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
@@ -37,12 +46,6 @@
 - Amends `RescanDXE` Feature
   * Now does not try to dispatch additional DXE drivers by default
   * Hence, the "Opt-Out" `disable_rescan_dxe` token has been replaced by an "Opt-In `enable_rescan_dxe` token
-- Amends `Invalid UEFI Versions` Handling
-  * Now accounts for such by reducing the amendment threshold to UEFI 2.0
-  * Still amends to UEFI 2.3 when UEFI amendments happen
-  * No longer amends Runtime Services for UEFI amendments
-  * No longer disables certain features on detecting inconsistent versions
-  * No longer displays a warning messages and the discrepancy is only logged
 
 
 0.13.3.AC (06 Dec 2022):

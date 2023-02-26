@@ -1298,10 +1298,10 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 // using automatic settings for icons, options, etc.
 static
 LOADER_ENTRY * AddLoaderEntry (
-    IN CHAR16       *LoaderPath,
-    IN CHAR16       *LoaderTitle,
-    IN REFIT_VOLUME *Volume,
-    IN BOOLEAN       SubScreenReturn
+    IN OUT CHAR16       *LoaderPath,
+    IN     CHAR16       *LoaderTitle,
+    IN     REFIT_VOLUME *Volume,
+    IN     BOOLEAN       SubScreenReturn
 ) {
     EFI_STATUS     Status;
     LOADER_ENTRY  *Entry;
@@ -2473,11 +2473,8 @@ VOID ScanEfiFiles (
                 GlobalConfig.DontScanFiles
             )
         ) {
-            AddLoaderEntry (
-                FileName,
-                (FoundBRBackup) ? L"Assumed UEFI Windows (Potentially GRUB)" : L"Windows (UEFI)",
-                Volume, TRUE
-            );
+            CHAR16 *TmpMsg = (FoundBRBackup) ? L"Assumed UEFI Windows (Potentially GRUB)" : L"Windows (UEFI)";
+            AddLoaderEntry (FileName, TmpMsg, Volume, TRUE);
 
             if (DuplicatesFallback (Volume, FileName)) {
                 ScanFallbackLoader = FALSE;
@@ -2627,7 +2624,9 @@ VOID ScanEfiFiles (
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
         //BREAD_CRUMB(L"%s:  10a 1", FuncTag);
-        AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Loader", Volume, TRUE);
+        Temp = StrDuplicate (FALLBACK_FULLNAME);
+        AddLoaderEntry (Temp, L"Fallback Loader", Volume, TRUE);
+        MY_FREE_POOL(Temp);
     }
 
     MY_FREE_POOL(MatchPatterns);
@@ -2668,7 +2667,7 @@ VOID ScanInternal (VOID) {
         GlobalConfig.DynamicCSR = 0;
     }
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanInternal()
@@ -2699,7 +2698,7 @@ VOID ScanExternal (VOID) {
 
     FirstLoaderScan = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanExternal()
@@ -2729,7 +2728,7 @@ VOID ScanOptical (VOID) {
     } // for
     FirstLoaderScan = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanOptical()
@@ -2863,7 +2862,7 @@ VOID ScanFirmwareDefined (
     );
     #endif
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanFirmwareDefined()
@@ -3318,7 +3317,7 @@ VOID ScanForBootloaders (VOID) {
 
     ScanningLoaders = FALSE;
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanForBootloaders()
@@ -3566,7 +3565,7 @@ VOID ScanForTools (VOID) {
             case TAG_FIRMWARE:         ToolName = L"Firmware Reboot"    ;      break;
             case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update"    ;      break;
             case TAG_GDISK:            ToolName = L"GDisk Tool"         ;      break;
-            case TAG_GPTSYNC:          ToolName = L"GPT Sync"           ;      break;
+            case TAG_GPTSYNC:          ToolName = L"Manage HybridMBR"   ;      break;
             case TAG_HIDDEN:           ToolName = L"Restore Tags"       ;      break;
             case TAG_INFO_NVRAMCLEAN:  ToolName = L"Clean Nvram"        ;      break;
             case TAG_INSTALL:          ToolName = L"Install RefindPlus" ;      break;
@@ -3910,6 +3909,7 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_GPTSYNC:
                 j = 0;
+                OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
@@ -3922,7 +3922,7 @@ VOID ScanForTools (VOID) {
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume, FileName,
-                            L"Hybrid MBR tool",
+                            L"Manage HybridMBR",
                             BuiltinIcon (BUILTIN_ICON_TOOL_PART),
                             'P', FALSE
                         );
@@ -3930,12 +3930,14 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (j > 0) {
+                        if (OtherFind) {
                             LOG_MSG("%s%s", OffsetNext, Spacer);
                         }
                         LOG_MSG("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
                         #endif
+
+                        OtherFind = TRUE;
                     }
 
                     MY_FREE_POOL(FileName);

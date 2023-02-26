@@ -261,9 +261,14 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define HIDEUI_FLAG_ALL         (0x01FF)
 
 // Default hint text for program-launch submenus
-#define SUBSCREEN_HINT1            L"Use Arrow Keys to Move Selection and Press 'Enter' to Run Selected Item"
-#define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to Edit Options or Press 'Esc' to Return to Main Menu"
-#define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to Return to Main Menu"
+#define SUBSCREEN_HINT1            L"Use arrow keys to move selection and press 'Enter' to run selected item"
+#define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to edit options or press 'Esc' to return to the main screen"
+#define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to return to the main screen"
+
+// Other default hint texts
+#define SELECT_OPTION_HINT         L"Select an option and press 'Enter' to apply the option"
+#define RETURN_MAIN_SCREEN_HINT    L"Press 'ESC', 'BackSpace' or 'SpaceBar' to return to the main screen"
+
 
 #define NULL_GUID_VALUE              {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 #define REFINDPLUS_GUID              {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};

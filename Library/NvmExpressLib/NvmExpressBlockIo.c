@@ -478,7 +478,7 @@ EFI_STATUS AsyncReadSectors (
         REFIT_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
 
         return EFI_SUCCESS;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     // Resource cleanup if asynchronous read request has not been queued.
     FREE_NVME_POOL(Completion);
@@ -605,7 +605,7 @@ EFI_STATUS AsyncWriteSectors (
         REFIT_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
 
         return EFI_SUCCESS;
-    } while (0);
+    } while (0); // This 'loop' only runs once
 
     // Resource cleanup if asynchronous read request has not been queued.
         FREE_NVME_POOL(Completion);

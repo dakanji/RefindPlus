@@ -812,7 +812,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'timeout'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'timeout'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -823,7 +823,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'shutdown_after_timeout'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'shutdown_after_timeout'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -865,7 +865,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'hideui'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'hideui'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -876,7 +876,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'icons_dir'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'icons_dir'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -887,7 +887,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'set_boot_args'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'set_boot_args'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -900,7 +900,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'scanfor'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'scanfor'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -911,7 +911,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'use_nvram'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'use_nvram'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -922,7 +922,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'uefi_deep_legacy_scan'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'uefi_deep_legacy_scan'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -948,7 +948,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'enable_rescan_dxe'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'enable_rescan_dxe'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -959,7 +959,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'ransom_drives'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'ransom_drives'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -970,7 +970,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'scan_delay'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'scan_delay'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -986,7 +986,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'log_level'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'log_level'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -998,7 +998,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'icon_row_move'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'icon_row_move'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1012,7 +1012,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'icon_row_tune'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'icon_row_tune'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1023,7 +1023,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'also_scan_dirs'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'also_scan_dirs'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1037,7 +1037,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'dont_scan_dirs'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'dont_scan_dirs'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1051,7 +1051,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'dont_scan_files'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'dont_scan_files'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1065,7 +1065,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'dont_scan_tools'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'dont_scan_tools'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1079,7 +1079,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'dont_scan_firmware'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'dont_scan_firmware'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1098,7 +1098,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'dont_scan_volumes'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'dont_scan_volumes'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1109,7 +1109,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'windows_recovery_files'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'windows_recovery_files'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1120,7 +1120,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'scan_driver_dirs'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'scan_driver_dirs'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1175,7 +1175,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'showtools'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'showtools'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1186,7 +1186,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'banner'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'banner'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1221,7 +1221,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'banner_scale'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'banner_scale'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1232,7 +1232,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'nvram_variable_limit'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'nvram_variable_limit'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1246,7 +1246,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'small_icon_size'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'small_icon_size'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1261,7 +1261,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'big_icon_size'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'big_icon_size'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1275,7 +1275,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'mouse_size'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'mouse_size'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1286,7 +1286,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'selection_small'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'selection_small'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1297,7 +1297,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'selection_big'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'selection_big'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1313,7 +1313,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'default_selection'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'default_selection'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1324,7 +1324,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'textonly'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'textonly'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1335,7 +1335,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'textmode'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'textmode'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1361,7 +1361,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'resolution'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'resolution'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1373,7 +1373,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'screensaver'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'screensaver'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1397,7 +1397,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'use_graphics_for'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'use_graphics_for'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1408,7 +1408,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'font'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'font'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1419,7 +1419,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'scan_all_linux_kernels'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'scan_all_linux_kernels'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1430,7 +1430,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'fold_linux_kernels'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'fold_linux_kernels'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1441,7 +1441,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'extra_kernel_version_strings'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'extra_kernel_version_strings'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1452,7 +1452,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'max_tags'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'max_tags'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1463,7 +1463,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'enable_and_lock_vmx'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'enable_and_lock_vmx'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1474,7 +1474,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'spoof_osx_version'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'spoof_osx_version'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1485,7 +1485,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'csr_values'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'csr_values'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1507,7 +1507,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'screen_rgb'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'screen_rgb'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1557,7 +1557,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'write_systemd_vars'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'write_systemd_vars'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1568,7 +1568,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'unicode_collation'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'unicode_collation'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1579,7 +1579,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'enable_mouse'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'enable_mouse'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1596,7 +1596,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'enable_touch'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'enable_touch'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1613,7 +1613,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'provide_console_gop'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'provide_console_gop'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1628,7 +1628,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'transient_boot'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'transient_boot'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1643,7 +1643,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'hidden_icons_ignore'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'hidden_icons_ignore'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1658,7 +1658,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'hidden_icons_external'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'hidden_icons_external'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1673,7 +1673,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'hidden_icons_prefer'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'hidden_icons_prefer'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1688,7 +1688,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'renderer_text'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'renderer_text'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1703,7 +1703,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'pass_uga_through'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'pass_uga_through'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1718,7 +1718,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'renderer_direct_gop'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'renderer_direct_gop'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1733,7 +1733,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'force_trim'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'force_trim'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1749,7 +1749,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_reload_gop'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_reload_gop'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1765,7 +1765,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_apfs_load'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_apfs_load'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1781,7 +1781,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_apfs_mute'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_apfs_mute'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1797,7 +1797,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_apfs_sync'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_apfs_sync'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1815,7 +1815,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_apple_fb'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_apple_fb'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1833,7 +1833,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_nvram_protect'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_nvram_protect'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1850,7 +1850,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_help_tags'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_help_tags'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1867,7 +1867,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decline_help_text'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decline_help_text'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1882,7 +1882,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'csr_normalise'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'csr_normalise'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1898,7 +1898,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'csr_dynamic'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'csr_dynamic'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1912,7 +1912,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'mouse_speed'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'mouse_speed'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1923,7 +1923,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'continue_on_warning'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'continue_on_warning'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1934,7 +1934,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'decouple_key_f10'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'decouple_key_f10'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1945,7 +1945,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'disable_nvram_paniclog'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_nvram_paniclog'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1956,7 +1956,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'disable_compat_check'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_compat_check'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1967,7 +1967,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'disable_amfi'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_amfi'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1978,7 +1978,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'follow_symlinks'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'follow_symlinks'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -1989,7 +1989,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'prefer_uga'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'prefer_uga'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2000,7 +2000,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'supply_nvme'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'supply_nvme'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2011,7 +2011,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'supply_uefi'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'supply_uefi'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2024,7 +2024,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'nvram_protect_ex'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'nvram_protect_ex'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2049,7 +2049,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'enable_esp_filter'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'enable_esp_filter'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2061,7 +2061,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Update:- 'scale_ui'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'scale_ui'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif

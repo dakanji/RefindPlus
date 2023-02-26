@@ -226,7 +226,7 @@ VOID InitScreen (VOID) {
         }
     }
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID InitScreen()
@@ -522,7 +522,7 @@ VOID SetupScreen (VOID) {
         SwitchToText (FALSE);
     }
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SetupScreen()
@@ -623,7 +623,7 @@ VOID SwitchToText (
     }
     #endif
 
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SwitchToText()
