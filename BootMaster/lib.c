@@ -1497,10 +1497,11 @@ VOID ScanVolumeBootcode (
 
     if (!Volume->HasBootCode) {
         *Bootable = FALSE;
+        return;
     }
 
     // Check for MBR partition table
-    if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
+    if (*((UINT16 *)(Buffer + 510)) != 0xaa55) {
         *Bootable = Volume->HasBootCode = FALSE;
         return;
     }
