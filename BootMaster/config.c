@@ -72,12 +72,14 @@
 
 #define LAST_MINUTE         (1439) /* Last minute of a day */
 
-UINTN   ReadLoops = 0;
+UINTN   ReadLoops       = 0;
+UINTN   TotalEntryCount = 0;
+UINTN   ValidEntryCount = 0;
 
-BOOLEAN SilenceAPFS;
-BOOLEAN OuterLoop = TRUE;
-BOOLEAN InnerScan = FALSE;
-BOOLEAN FoundFontImage = TRUE;
+BOOLEAN OuterLoop      =  TRUE;
+BOOLEAN SilenceAPFS    =  TRUE;
+BOOLEAN ManualInclude  = FALSE;
+BOOLEAN FoundFontImage =  TRUE;
 
 // Control Forensic Logging
 #if REFIT_DEBUG > 1
@@ -2659,50 +2661,72 @@ VOID ScanUserConfigured (
     CHAR16 *FuncTag = L"ScanUserConfigured";
     #endif
 
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    if (!ManualInclude) {
+        LOG_SEP(L"X");
+        LOG_INCREMENT();
+        BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    static UINTN EntryCount = 0;
+        TotalEntryCount = ValidEntryCount = 0;
+    }
 
     if (FileExists (SelfDir, FileName)) {
         Status = RefitReadFile (SelfDir, FileName, &File, &size);
         if (!EFI_ERROR(Status)) {
             while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
                 if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
+                    TotalEntryCount = TotalEntryCount + 1;
                     Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
-                    if (Entry) {
-                        EntryCount = EntryCount + 1;
-                        if (!Entry->Enabled) {
-                            FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
-                        }
-                        else {
-                            #if REFIT_DEBUG > 0
-                            LOG_MSG(
-                                "%s  - Found '%s' on '%s'",
-                                OffsetNext,
-                                Entry->Title,
-                                (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
-                            );
-                            #endif
-
-                            if (Entry->me.SubScreen == NULL) {
-                                GenerateSubScreen (Entry, SelfVolume, TRUE);
-                            }
-                            AddPreparedLoaderEntry (Entry);
-                        }
+                    if (Entry == NULL) {
+                        FreeTokenLine (&TokenList, &TokenCount);
+                        continue;
                     }
+
+                    ValidEntryCount = ValidEntryCount + 1;
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG(
+                        "%s  - Found '%s' on '%s'",
+                        OffsetNext,
+                        Entry->Title,
+                        (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
+                    );
+                    #endif
+
+                    if (Entry->me.SubScreen == NULL) {
+                        GenerateSubScreen (Entry, SelfVolume, TRUE);
+                    }
+                    AddPreparedLoaderEntry (Entry);
                 }
-                else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
+                else if (
+                    TokenCount == 2 &&
+                    ManualInclude == FALSE &&
+                    MyStriCmp (TokenList[0], L"include") &&
                     MyStriCmp (FileName, GlobalConfig.ConfigFilename)
                 ) {
                     if (!MyStriCmp (TokenList[1], FileName)) {
+                        // Scan manual stanza include file
+                        #if REFIT_DEBUG > 0
+                        #if REFIT_DEBUG < 2
+                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Process Include File for Manual Stanzas");
+                        #else
                         LOG_SEP(L"X");
-                        BREAD_CRUMB(L"%s:  A1 - INNER SCAN: START", FuncTag);
-                        InnerScan = TRUE;
+                        BREAD_CRUMB(L"%s:  A1 - INCLUDE FILE (%s): START", FuncTag, TokenList[1]);
+                        #endif
+                        #endif
+
+                        ManualInclude = TRUE;
                         ScanUserConfigured (TokenList[1]);
-                        BREAD_CRUMB(L"%s:  A2 - INNER SCAN: END", FuncTag);
+                        ManualInclude = FALSE;
+
+                        #if REFIT_DEBUG > 0
+                        #if REFIT_DEBUG < 2
+                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Scanned Include File for Manual Stanzas");
+                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                        #else
+                        BREAD_CRUMB(L"%s:  A2 - INCLUDE FILE (%s): END", FuncTag, TokenList[1]);
                         LOG_SEP(L"X");
+                        #endif
+                        #endif
                     }
                 }
 
@@ -2714,16 +2738,27 @@ VOID ScanUserConfigured (
     } // if FileExists
 
     #if REFIT_DEBUG > 0
-    if (!InnerScan) {
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Processed %d User Defined Stanzas", EntryCount);
-    }
+    UINTN LogLineType = (ManualInclude) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
+    CHAR16 *CountStr  = (ValidEntryCount > 0) ? PoolPrint (L"%d", ValidEntryCount) : NULL;
+    ALT_LOG(1, LogLineType,
+        L"Processed %d Manual Stanzas in '%s'%s%s%s%s",
+        TotalEntryCount, FileName,
+        (TotalEntryCount == 0) ? L"" : L" ... Found ",
+        (ValidEntryCount < 1)  ? L"" : CountStr,
+        (TotalEntryCount == 0) ? L"" : L" Valid/Active Stanza",
+        (ValidEntryCount < 1)  ? L"" : L"s"
+    );
+    MY_FREE_POOL(CountStr);
     #endif
 
-    InnerScan = FALSE;
-
-    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
+    if (ManualInclude) {
+        ManualInclude = FALSE;
+    }
+    else {
+        BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+    }
 } // VOID ScanUserConfigured()
 
 // Create an options file based on /etc/fstab. The resulting file has two options
