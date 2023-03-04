@@ -1128,13 +1128,29 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"showtools")) {
-            SetMem (GlobalConfig.ShowTools, NUM_TOOLS * sizeof (UINTN), 0);
+            // DA-TAG: HiddenTags reset looks strange but is actually valid
+            //         Artificial default of 'TRUE' needed as misconfig exit option
+            //         This sets real default of 'FALSE' when 'showtools' is present
             GlobalConfig.HiddenTags = FALSE;
+
+            SetMem (GlobalConfig.ShowTools, NUM_TOOLS * sizeof (UINTN), 0);
+
             BOOLEAN DoneTool = FALSE;
-            // DA-TAG: Start Index is 1 Here ('i' for NUM_TOOLS)
-            for (i = 1; (i < TokenCount) && (i < NUM_TOOLS); i++) {
+            UINTN InvalidEntries = 0;
+            i = 0;
+            for (;;) {
+                // DA-TAG: Start Index is 1 Here ('i' for NUM_TOOLS/TokenList)
+                i = i + 1;
+                if (i >= TokenCount ||
+                    i >= (NUM_TOOLS + InvalidEntries)
+                ) {
+                    // Break Loop
+                    break;
+                }
+
                 // Set Showtools Index
                 j = (DoneTool) ? j + 1 : 0;
+
                 Flag = TokenList[i];
                 if (0);
                 else if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[j] = TAG_EXIT;
@@ -1163,16 +1179,21 @@ VOID ReadConfig (
                 else {
                     #if REFIT_DEBUG > 0
                     MuteLogger = FALSE;
-                    ALT_LOG(1, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
+                    ALT_LOG(1, LOG_THREE_STAR_MID, L"Invalid Config Entry in 'showtools' List:- '%s'!!", Flag);
                     MuteLogger = TRUE;
                     #endif
 
-                    // Handle Showtools Index and Skip 'DoneTool' Reset
+                    // Handle Showtools Index
                     j = (DoneTool) ? j - 1 : 0;
+
+                    // Increment Invalid Entry Count
+                    InvalidEntries = InvalidEntries + 1;
+
+                    // Skip 'DoneTool' Reset
                     continue;
                 }
                 DoneTool = TRUE;
-            } // for
+            } // for ;;
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
