@@ -744,9 +744,7 @@ BOOLEAN LimitStringLength (
     }
 
     //BREAD_CRUMB(L"%s:  2 - WHILE LOOP:- START/ENTER", FuncTag);
-    NestedStrStr = TRUE;
-    NestedStrStr = FALSE;
-    HasChanged   = FALSE;
+    HasChanged = FALSE;
     // SubString will be NULL or point WITHIN TheString
     SubString = MyStrStr (TheString, L"  ");
 
@@ -1077,9 +1075,10 @@ BOOLEAN ReplaceSubstring (
     }
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    NestedStrStr = TRUE;
+    FoundSearchString = NULL;
+    NestedStrStr      = TRUE;
     FoundSearchString = MyStrStr (*MainString, SearchString);
-    NestedStrStr = FALSE;
+    NestedStrStr      = FALSE;
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     if (!FoundSearchString) {

@@ -429,11 +429,6 @@ EFI_STATUS StartLegacyImageList (
         FullLoadOptions = StrDuplicate (LoadOptions);
     }
 
-    Print (
-        L"Starting 'Mac-Style' Legacy BIOS Loader\nUsing Load Options:- '%s'\n\n",
-        FullLoadOptions ? FullLoadOptions : L"NULL"
-    );
-
     // Load the image into memory
     Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
@@ -757,7 +752,7 @@ VOID AddLegacyEntry (
 
     #if REFIT_DEBUG > 0
     UINTN LogLineType = (FirstLegacyScan)
-        ? LOG_THREE_STAR_MID
+        ? LOG_STAR_HEAD_SEP
         : LOG_THREE_STAR_SEP;
 
     ALT_LOG(1, LogLineType,
@@ -876,7 +871,6 @@ VOID AddLegacyEntryUEFI (
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_THREE_STAR_MID,
         L"Adding 'UEFI-Style' Legacy Entry for '%s'",
         Entry->me.Title
@@ -971,7 +965,7 @@ VOID ScanLegacyUEFI (
 
     #if REFIT_DEBUG > 0
     UINTN LogLineType = (FirstLegacyScan)
-        ? LOG_THREE_STAR_MID
+        ? LOG_STAR_HEAD_SEP
         : LOG_THREE_STAR_SEP;
 
     /* Exception for LOG_THREE_STAR_SEP */

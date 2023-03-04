@@ -85,6 +85,7 @@ EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 
 BOOLEAN egHasGraphics  = FALSE;
 BOOLEAN SetPreferUGA   = FALSE;
+BOOLEAN GotGoodGOP     = FALSE;
 
 UINTN   SelectedGOP    = 0;
 UINTN   egScreenWidth  = 800;
@@ -385,14 +386,6 @@ EFI_STATUS RefitCheckGOP (
 
     // Search for avaliable modes on ConsoleOut GOP
     if (OrigGop->Mode->MaxMode > 0) {
-        #if REFIT_DEBUG > 0
-        if (!FixGOP) {
-            LOG_MSG("\n\n");
-            LOG_MSG("INFO: Usable GOP Found on ConsoleOut Handle");
-            LOG_MSG("\n\n");
-        }
-        #endif
-
         GOPDraw = OrigGop;
 
         // Early Return ... Skip Provision
@@ -400,11 +393,9 @@ EFI_STATUS RefitCheckGOP (
     }
 
     #if REFIT_DEBUG > 0
+    CHAR16 *TmpStr = (FixGOP) ? L"Replacement" : L"Appropriate";
     LOG_MSG("\n\n");
-    LOG_MSG(
-        "Seek %s GOP Candidates:",
-        (FixGOP) ? L"Replacement" : L"Console GOP"
-    );
+    LOG_MSG("Seek %s ConsoleOut GOP Candidates:", TmpStr);
     #endif
 
     // Search for GOP on handle buffer
@@ -415,7 +406,7 @@ EFI_STATUS RefitCheckGOP (
     );
     if (EFI_ERROR(Status) || HandleCount == 1) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s  - Could Not Find GOP Candidates", OffsetNext);
+        LOG_MSG("%s  - Could Not Find %s ConsoleOut GOP Candidates", OffsetNext, TmpStr);
         LOG_MSG("\n\n");
         #endif
 
@@ -558,30 +549,42 @@ BOOLEAN SupplyConsoleGop (
 #ifdef __MAKEWITH_TIANO
     EFI_STATUS Status;
 
+    GotGoodGOP = FALSE;
     if (GlobalConfig.ProvideConsoleGOP) {
         Status = RefitCheckGOP (FixGOP);
+        if (Status == EFI_ALREADY_STARTED) {
+            GotGoodGOP = TRUE;
+
+            return TRUE;
+        }
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG("\n\n");
+        LOG_MSG(
+            "%s ConsoleOut GOP:",
+            (FixGOP) ? L"Replace" : L"Supply"
+        );
+        LOG_MSG("%s  - Status:- '%r' on RefitCheckGOP", OffsetNext, Status);
+        #endif
+
         if (!EFI_ERROR(Status)) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("\n\n");
-            LOG_MSG(
-                "%s ConsoleOut GOP:",
-                (FixGOP) ? L"Replace" : L"Supply"
-            );
-            LOG_MSG("%s  - Status:- '%r' on RefitCheckGOP", OffsetNext, Status);
-            #endif
             // Run OpenCore Function
             Status = OcProvideConsoleGop (TRUE);
+
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Status:- '%r' on OcProvideConsoleGop", OffsetNext, Status);
             #endif
+
             if (!EFI_ERROR(Status)) {
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol, gST->ConsoleOutHandle,
                     &GOPDrawProtocolGuid, (VOID **) &GOPDraw
                 );
+
                 #if REFIT_DEBUG > 0
                 LOG_MSG("%s  - Status:- '%r' on HandleProtocol", OffsetNext, Status);
                 #endif
+
                 if (!EFI_ERROR(Status)) {
                     ValueValidGOP = TRUE;
                 }
@@ -1050,11 +1053,10 @@ VOID egInitConsoleControl (VOID) {
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &ConsoleControlProtocolGuid, (VOID **) &ConsoleControl
     );
-
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
+    EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
     #endif
-
     if (EFI_ERROR(Status)) {
         // Try Locating by Handle
         Status = REFIT_CALL_5_WRAPPER(
@@ -1073,7 +1075,7 @@ VOID egInitConsoleControl (VOID) {
                 );
                 if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("%s    ** Bypassed ConOut Handle[%02d] ... ConsoleOut Handle", OffsetNext, i);
+                    LOG_MSG("%s    ** Bypassed ConOut Handle[%02d]", OffsetNext, i);
                     #endif
 
                     // Restart Loop
@@ -1143,9 +1145,10 @@ BOOLEAN egInitUGADraw (
         &UgaDrawProtocolGuid, (VOID *) &TmpUGA
     );
     #if REFIT_DEBUG > 0
+    EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
     LOG_MSG("%s", OffsetNext);
     LOG_MSG("%s  - Seek Universal Graphics Adapter", OffsetNext);
-    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
     #endif
     if (!EFI_ERROR(Status)) {
         UGADraw = TmpUGA;
@@ -1313,9 +1316,10 @@ VOID egInitScreen (VOID) {
                 &GOPDrawProtocolGuid, (VOID **) &OldGop
             );
             #if REFIT_DEBUG > 0
+            EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
             LOG_MSG("%s", OffsetNext);
             LOG_MSG("%s  - Seek Graphics Output Protocol", OffsetNext);
-            LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
+            LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
             #endif
             if (!EFI_ERROR(Status)) {
                 // Break Loop
@@ -1434,8 +1438,6 @@ VOID egInitScreen (VOID) {
         }
         else {
             if (OldGop && OldGop->Mode->MaxMode > 0) {
-                XFlag = EFI_SUCCESS;
-
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1443,37 +1445,42 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                thisValidGOP = SupplyConsoleGop (FALSE);
-                if (thisValidGOP) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Supplied GOP on ConsoleOut Handle");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("INFO: %s", MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Could Not Supply GOP on ConsoleOut Handle");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("INFO: %s", MsgStr);
-                    MY_FREE_POOL(MsgStr);
-                    MsgStr = StrDuplicate (L"Leveraging GPU Handle GOP");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-
-                    // Use valid 'OldGop' and force 'thisValidGOP' to true
+                if (!GlobalConfig.ProvideConsoleGOP) {
                     GOPDraw = OldGop;
                     thisValidGOP = TRUE;
                 }
+                else {
+                    thisValidGOP = SupplyConsoleGop (FALSE);
+                    if (thisValidGOP) {
+                        XFlag = EFI_SUCCESS;
+                    }
+                    else {
+                        XFlag = EFI_LOAD_ERROR;
+
+                        // Use valid 'OldGop' and force 'thisValidGOP' to true
+                        GOPDraw = OldGop;
+                        thisValidGOP = TRUE;
+                    }
+                    #if REFIT_DEBUG > 0
+                    if (!GotGoodGOP) {
+                        MsgStr = PoolPrint (L"Supply GOP on ConsoleOut Handle ... %r", XFlag);
+                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+                        LOG_MSG("INFO: %s", MsgStr);
+                    }
+                    if (EFI_ERROR(XFlag)) {
+                        MY_FREE_POOL(MsgStr);
+                        MsgStr = StrDuplicate (L"Leveraging GPU Handle GOP");
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                    }
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+
+                XFlag = EFI_SUCCESS;
             }
             else {
-                XFlag = EFI_UNSUPPORTED;
-
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1481,33 +1488,50 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                thisValidGOP = SupplyConsoleGop (TRUE);
-                if (thisValidGOP) {
-                    XFlag = EFI_SUCCESS;
+                if (!GlobalConfig.ProvideConsoleGOP) {
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG("\n\n");
+                    #endif
 
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Replaced GOP on ConsoleOut Handle");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("INFO: %s", MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Could Not Replace GOP on ConsoleOut Handle");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("WARN: %s", MsgStr);
-                    MY_FREE_POOL(MsgStr);
-                    MsgStr = StrDuplicate (L"Disabling Available GOP");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
+                    thisValidGOP = TRUE;
 
                     // Disable GOP
                     DisableGOP();
+                }
+                else {
+                    thisValidGOP = SupplyConsoleGop (TRUE);
+                    if (thisValidGOP) {
+                        XFlag = EFI_SUCCESS;
+                    }
+                    else {
+                        XFlag = EFI_LOAD_ERROR;
+
+                        // Disable GOP
+                        DisableGOP();
+                    }
+                    #if REFIT_DEBUG > 0
+                    if (!GotGoodGOP) {
+                        MsgStr = PoolPrint (L"Replace GOP on ConsoleOut Handle ... %r", XFlag);
+                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+                        LOG_MSG("INFO: %s", MsgStr);
+                    }
+                    #endif
+                    if (EFI_ERROR(XFlag)) {
+                        // Set to Needed Value ... Previous, Load Error, was only for logging
+                        XFlag = EFI_UNSUPPORTED;
+
+                        #if REFIT_DEBUG > 0
+                        MY_FREE_POOL(MsgStr);
+                        // DA-TAG: Actually already disabled
+                        MsgStr = StrDuplicate (L"Disabling Available GOP");
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                        #endif
+                    }
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                    #endif
                 }
             } // if/else OldGop
         } // if/else Status == EFI_NOT_FOUND

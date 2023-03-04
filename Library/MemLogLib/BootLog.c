@@ -344,7 +344,7 @@ VOID DeepLoggger (
     switch (type) {
         case LOG_BLOCK_SEP:
         case LOG_BLANK_LINE_SEP: Tmp = StrDuplicate (L"\n");                                                    break;
-        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s\n",                        *Msg); break;
+        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s ]***\n",                   *Msg); break;
         case LOG_STAR_SEPARATOR: Tmp = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Msg); break;
         case LOG_LINE_SEPARATOR: Tmp = PoolPrint (L"\n===================[ %s ]===================\n",   *Msg); break;
         case LOG_LINE_THIN_SEP:  Tmp = PoolPrint (L"\n-------------------[ %s ]-------------------\n",   *Msg); break;
