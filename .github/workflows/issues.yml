@@ -41,7 +41,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Handle Incomplete Issues
         uses: actions/stale@v7
@@ -61,7 +61,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Handle No-Response Issues
         uses: actions/stale@v7
@@ -85,7 +85,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Handle Resolved Issues
         uses: actions/stale@v7
@@ -103,7 +103,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Catchall Closer
         uses: actions/stale@v7
@@ -120,7 +120,7 @@ jobs:
           remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Lock Threads - https://github.com/dessant/lock-threads
+  # Lock Threads - https://github.com/dakanji/lock-threads
   lock:
     name: Lock Threads
     needs: stale
@@ -130,7 +130,7 @@ jobs:
     steps:
 
       - name: Lock Not-Planned issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -145,10 +145,10 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Lock Invalid/Resolved Issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -163,10 +163,10 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Lock Misc Issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -182,10 +182,10 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Lock Incomplete/Abandoned Issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -201,10 +201,10 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Lock Unclear Issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -219,10 +219,10 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 120s
+          sleep 15s
 
       - name: Lock Inactive Issues
-        uses: dessant/lock-threads@v4
+        uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
