@@ -87,7 +87,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
-    /* RescanDXE = */ FALSE,
+    /* RescanDXE = */ TRUE,
     /* RansomDrives = */ FALSE,
     /* EnableAndLockVMX = */ FALSE,
     /* FoldLinuxKernels = */ TRUE,
@@ -2383,14 +2383,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP      ));
     LOG_MSG("%s      HelpTags:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpTags       ));
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
-    LOG_MSG("%s      CheckDXE:- ",         OffsetNext                              );
-    if (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch) {
-        LOG_MSG("'Forced'"                                                         );
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.RescanDXE ? L"Active" : L"Inactive"           );
-    }
-
+    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE      ));
     LOG_MSG("%s      AlignCSR:- ",         OffsetNext                              );
     if (!AppleFirmware && !HasMacOS) {
         LOG_MSG("'Disabled'"                                                       );
@@ -2437,19 +2430,19 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                              );
-    if (AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                       );
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"        );
-    }
     LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                              );
     if (!AppleFirmware) {
         LOG_MSG("'Disabled'"                                                       );
     }
     else {
         LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"       );
+    }
+    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                              );
+    if (AppleFirmware) {
+        LOG_MSG("'Disabled'"                                                       );
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"        );
     }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",

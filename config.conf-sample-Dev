@@ -195,6 +195,19 @@
 #
 #disable_nvram_paniclog
 
+# Disable dispatching revealed DXE drivers during handle connection.
+# The Controller/Handle connection exercise may sometimes reveal new
+# DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
+# automatically went into a loop to install such revealed DXE drivers
+# until all such were installed. This installation loop *MAY* end with
+# unwanted DXE drivers being installed, and also reduces loading speed
+# while not being required on some types of firmware. Hence, an option
+# to skip the process *MAY* be desirable on affected types of firmware.
+#
+# Inactive when commented out (Does not stop rescans for DXE drivers)
+#
+#disable_rescan_dxe
+
 # Limit scan of ESPs for kernels and loaders. When this option is active,
 # RefindPlus will ignore kernels and loaders in any other ESP
 # separate from the ESP that contains RefindPlus.
@@ -202,20 +215,6 @@
 # Scans of other ESPs are allowed when commented out
 #
 #enable_esp_filter
-
-# The Controller/Handle connection exercise may sometimes reveal new
-# DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
-# automatically went into a loop to install such revealed DXE drivers
-# until all were installed. This installation loop may however result
-# in unwanted drivers being installed and can slow loading speed down
-# while not being always needed on many firmware types. The option to
-# control whether to run the process or not is provided by this token.
-# NB: Temporarily activated when 'ESC' is pressed to rescan all items.
-#     Forced on when either 'enable_mouse' or 'enable_touch' is active.
-#
-# Inactive when commented out (Does not rescan for DXE drivers)
-#
-#enable_rescan_dxe
 
 # When this option is activated, RefindPlus will process symlinked loaders.
 # Symlinks are ignored by default as they may result in undesirable outcomes.

@@ -43,9 +43,6 @@
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
   * A previous issue where the token operated the wrong way round has been fixed
-- Amends `RescanDXE` Feature
-  * Now does not try to dispatch additional DXE drivers by default
-  * Hence, the "Opt-Out" `disable_rescan_dxe` token has been replaced by an "Opt-In `enable_rescan_dxe` token
 
 
 0.13.3.AC (06 Dec 2022):
