@@ -3344,6 +3344,9 @@ BOOLEAN ConfirmRestart (VOID) {
             gRT->ResetSystem, EfiResetCold,
             EFI_SUCCESS, 0, NULL
         );
+
+        // Useless return for Coverity
+        return FALSE;
     }
 
     // Prime RetVal
@@ -3397,6 +3400,9 @@ BOOLEAN ConfirmShutdown (VOID) {
             gRT->ResetSystem, EfiResetShutdown,
             EFI_SUCCESS, 0, NULL
         );
+
+        // Useless return for Coverity
+        return FALSE;
     }
 
     // Prime RetVal

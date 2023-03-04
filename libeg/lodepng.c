@@ -691,7 +691,7 @@ static unsigned HuffmanTree_makeTable(HuffmanTree* tree) {
   size = headsize;
   for(i = 0; i < headsize; ++i) {
     unsigned l = maxlens[i];
-    if(l > FIRSTBITS) size += (1u << (l - FIRSTBITS));
+    if(l > FIRSTBITS) size += ((UINTN) 1u << (l - FIRSTBITS));
   }
   tree->table_len = (unsigned char*)lodepng_refit_malloc(size * sizeof(*tree->table_len));
   tree->table_value = (unsigned short*)lodepng_refit_malloc(size * sizeof(*tree->table_value));
@@ -710,7 +710,7 @@ static unsigned HuffmanTree_makeTable(HuffmanTree* tree) {
     if(l <= FIRSTBITS) continue;
     tree->table_len[i] = l;
     tree->table_value[i] = pointer;
-    pointer += (1u << (l - FIRSTBITS));
+    pointer += ((UINTN) 1u << (l - FIRSTBITS));
   }
   lodepng_refit_free(maxlens);
 
@@ -2250,8 +2250,8 @@ static unsigned zlib_decompress(unsigned char** out, size_t* outsize, size_t exp
   } else {
     ucvector v = ucvector_init(*out, *outsize);
     if(expected_size) {
-      /*reserve the memory to avoid intermediate reallocations*/
-      ucvector_resize(&v, *outsize + expected_size);
+      /* reserve the memory to avoid intermediate reallocations */
+      if(!ucvector_resize(&v, *outsize + expected_size)) return 83; /*alloc fail*/
       v.size = *outsize;
     }
     error = lodepng_zlib_decompressv(&v, in, insize, settings);
@@ -5841,7 +5841,7 @@ static void Adam7_interlace(unsigned char* out, const unsigned char* in, unsigne
       size_t obp, ibp; /*bit pointers (for out and in buffer)*/
       for(y = 0; y < passh[i]; ++y)
       for(x = 0; x < passw[i]; ++x) {
-        ibp = (ADAM7_IY[i] + y * ADAM7_DY[i]) * olinebits + (ADAM7_IX[i] + x * ADAM7_DX[i]) * bpp;
+        ibp = (ADAM7_IY[i] + (UINTN) y * ADAM7_DY[i]) * (UINTN) olinebits + (ADAM7_IX[i] + (UINTN) x * ADAM7_DX[i]) * (UINTN) bpp;
         obp = (8 * passstart[i]) + (y * ilinebits + x * bpp);
         for(b = 0; b < bpp; ++b) {
           unsigned char bit = readBitFromReversedStream(&ibp, in);
@@ -5866,9 +5866,9 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
   unsigned error = 0;
 
   if(info_png->interlace_method == 0) {
-    *outsize = h + (h * ((w * bpp + 7u) / 8u)); /*image size plus an extra byte per scanline + possible padding bits*/
+    *outsize = h + (h * (((UINTN) w * bpp + 7u) / 8u)); /*image size plus an extra byte per scanline + possible padding bits*/
     *out = (unsigned char*)lodepng_refit_malloc(*outsize);
-    if(!(*out) && (*outsize)) error = 83; /*alloc fail*/
+    if(!(*out)) error = 83; /*alloc fail*/
 
     if(!error) {
       /*non multiple of 8 bits per scanline, padding bits needed per scanline*/
@@ -5897,7 +5897,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     if(!(*out)) error = 83; /*alloc fail*/
 
     adam7 = (unsigned char*)lodepng_refit_malloc(passstart[7]);
-    if(!adam7 && passstart[7]) error = 83; /*alloc fail*/
+    if(!adam7) error = 83; /*alloc fail*/
 
     if(!error) {
       unsigned i;
@@ -6128,10 +6128,9 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
     size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) / 8u;
 
     converted = (unsigned char*)lodepng_refit_malloc(size);
-    if(!converted && size) state->error = 83; /*alloc fail*/
-    if(!state->error) {
-      state->error = lodepng_convert(converted, image, &info.color, &state->info_raw, w, h);
-    }
+    if(!converted) state->error = 83; /*alloc fail*/
+    if(state->error) goto cleanup;
+    state->error = lodepng_convert(converted, image, &info.color, &state->info_raw, w, h);
     if(!state->error) {
       state->error = preProcessScanlines(&data, &datasize, converted, w, h, &info, &state->encoder);
     }

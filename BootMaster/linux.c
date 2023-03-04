@@ -350,7 +350,6 @@ CHAR16 * GetMainLinuxOptions (
     InitrdName = FindInitrd (LoaderPath, Volume);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    Options = NULL;
     if (InitrdName) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         KernelVersion = FindNumbers (InitrdName);
@@ -360,6 +359,7 @@ CHAR16 * GetMainLinuxOptions (
             BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
         }
+        MY_FREE_POOL(KernelVersion);
     }
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
@@ -372,7 +372,6 @@ CHAR16 * GetMainLinuxOptions (
     BREAD_CRUMB(L"%s:  5", FuncTag);
     MY_FREE_POOL(Options);
     MY_FREE_POOL(InitrdName);
-    MY_FREE_POOL(KernelVersion);
 
     BREAD_CRUMB(L"%s:  6 - END:- return CHAR16 *FullOptions = '%s'", FuncTag,
         FullOptions ? FullOptions : L"NULL"
