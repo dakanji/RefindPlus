@@ -210,21 +210,22 @@ static
 VOID SaveMessageToDebugLogFile (
     IN CHAR8 *LastMessage
 ) {
-    static
-    BOOLEAN           FirstTimeSave = TRUE;
-    CHAR8            *MemLogBuffer;
-    CHAR8            *Text;
-    UINTN             MemLogLen;
     UINTN             TextLen;
+    CHAR8            *Text;
     EFI_FILE_INFO    *Info;
     EFI_FILE_HANDLE   LogFile;
 
+    // Get/Open Logfile
     LogFile = GetDebugLogFile();
     if (LogFile == NULL) {
         return;
     }
 
     if (GlobalConfig.LogLevel < MINLOGLEVEL) {
+        // DA-TAG: Undocumented feature
+        //         Allows using DEBUG build without logging
+        //         Set 'log-level' to negative value to activate
+        // Delete Logfile on invalid log level
         EFI_STATUS Status = REFIT_CALL_5_WRAPPER(
             mRootDir->Open, mRootDir,
             &LogFile, mDebugLog,
@@ -243,26 +244,36 @@ VOID SaveMessageToDebugLogFile (
         return;
     }
 
-    // Advance to the EOF so we append
+    // Get File Info for LogFile
     Info = EfiLibFileInfo (LogFile);
     if (Info) {
-        MemLogBuffer = GetMemLogBuffer();
-        MemLogLen    = GetMemLogLen();
-        Text         = LastMessage;
-        TextLen      = AsciiStrLen (LastMessage);
+        // DA-TAG: Investigate This
+        //         'Softly' disable combining buffer
+        //         Review and make permanent later
+        //         Means removing 'FirstTimeSave'
+        //         Currently just set to 'FALSE'
+        //         Change to 'TRUE' if keeping
+        static BOOLEAN FirstTimeSave = FALSE;
 
+        // Use whole buffer on 'FirstTimeSave'
+        Text = (FirstTimeSave)
+            ? GetMemLogBuffer()
+            : LastMessage;
+        TextLen = (FirstTimeSave)
+            ? GetMemLogLen()
+            : AsciiStrLen (LastMessage);
+
+        // Advance to EOF (Append Output)
         LogFile->SetPosition (LogFile, Info->FileSize);
-        // Write out whole log if we have not had root before this
-        if (FirstTimeSave) {
-            Text          = MemLogBuffer;
-            TextLen       = MemLogLen;
-            FirstTimeSave = FALSE;
-        }
 
-        // Write out this message
+        // Write message out
         LogFile->Write (LogFile, &TextLen, Text);
+
+        // Update 'FirstTimeSave'
+        FirstTimeSave = FALSE;
     }
 
+    // Close Logfile
     LogFile->Close (LogFile);
 } // static VOID SaveMessageToDebugLogFile()
 

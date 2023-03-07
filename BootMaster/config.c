@@ -78,6 +78,7 @@ UINTN   ValidEntryCount = 0;
 
 BOOLEAN OuterLoop      =  TRUE;
 BOOLEAN SilenceAPFS    =  TRUE;
+BOOLEAN FirstInclude   =  TRUE;
 BOOLEAN ManualInclude  = FALSE;
 BOOLEAN FoundFontImage =  TRUE;
 
@@ -1537,8 +1538,11 @@ VOID ReadConfig (
                 }
 
                 MuteLogger = FALSE;
-                LOG_MSG("\n");
-                LOG_MSG("Detected Overrides File - L O A D   S E T T I N G   O V E R R I D E S");
+                if (FirstInclude) {
+                    LOG_MSG("\n");
+                    LOG_MSG("Detected Overrides File - L O A D   S E T T I N G   O V E R R I D E S");
+                    FirstInclude = FALSE;
+                }
                 LOG_MSG("%s* Supplementary Configuration ... %s", OffsetNext, TokenList[1]);
                 MuteLogger = TRUE; /* Explicit For FB Infer */
                 #endif

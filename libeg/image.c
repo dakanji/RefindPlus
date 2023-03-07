@@ -205,7 +205,7 @@ EG_IMAGE * egScaleImage (
     IN UINTN      NewWidth,
     IN UINTN      NewHeight
 ) {
-    EG_IMAGE  *NewImage = NULL;
+    EG_IMAGE  *NewImage;
     EG_PIXEL   a, b, c, d;
     UINTN      i, j;
     UINTN      x, y, Index;
@@ -213,15 +213,13 @@ EG_IMAGE * egScaleImage (
     UINTN      x_diff, y_diff;
     UINTN      x_ratio, y_ratio;
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
-    #endif
 
-    if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Image is NULL or a Size is 0!!");
-        #endif
-
+    if (Image          == NULL ||
+        Image->Height  ==    0 ||
+        Image->Width   ==    0 ||
+        NewHeight      ==    0 ||
+        NewWidth       ==    0
+    ) {
         return NULL;
     }
 
@@ -229,10 +227,14 @@ EG_IMAGE * egScaleImage (
         return (egCopyImage (Image));
     }
 
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scaling Image to %d x %d", NewWidth, NewHeight);
+    #endif
+
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Could Not Create New Image!!");
+        ALT_LOG(1, LOG_THREE_STAR_END, L"In egScaleImage ... Could Not Create New Image!!");
         #endif
 
         return NULL;
@@ -280,7 +282,7 @@ EG_IMAGE * egScaleImage (
     } // for (i...)
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scaling Image Completed");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scaling Image Completed");
     #endif
 
     return NewImage;

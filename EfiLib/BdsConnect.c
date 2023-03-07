@@ -269,7 +269,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     }
     else {
-        MsgStr = StrDuplicate (L"L I N K   D E V I C E   H A N D L E S");
+        MsgStr = StrDuplicate (L"C O N N E C T   D E V I C E   H A N D L E S");
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     }
     LOG_MSG("%s", MsgStr);
@@ -353,7 +353,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
             if (!Device) {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Handle 0x%03X ... Discounted [Other Item]", HexIndex);
+                MsgStr = PoolPrint (L"Handle 0x%03X   Discounted [Other Item]", HexIndex);
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -394,7 +394,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     );
                     if (EFI_ERROR(XStatus)) {
                         #if REFIT_DEBUG > 0
-                        DeviceData = StrDuplicate (L" - Not PCIe Device");
+                        DeviceData = StrDuplicate (L"Not PCIe Device");
                         #endif
                     }
                     else {
@@ -414,7 +414,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             MakeConnection = FALSE;
 
                             #if REFIT_DEBUG > 0
-                            DeviceData = StrDuplicate (L" - Unreadable Item");
+                            DeviceData = StrDuplicate (L"Unreadable Item");
                             #endif
                         }
                         else {
@@ -422,7 +422,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             BOOLEAN GFXDevice = IS_PCI_GFX(&Pci);
 
                             if (VGADevice) {
-                                // DA-TAG: Unable to reconnect later after disconnecting here
+                                // DA-TAG: Investigate This
+                                //         Unable to reconnect later after disconnecting here
                                 //         Comment out and set 'MakeConnection' to FALSE
                                 //REFIT_CALL_3_WRAPPER(
                                 //    gBS->DisconnectController, AllHandleBuffer[i],
@@ -431,7 +432,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 MakeConnection = FALSE;
 
                                 #if REFIT_DEBUG > 0
-                                DeviceData = StrDuplicate (L" - Monitor Display");
+                                DeviceData = StrDuplicate (L"Monitor Display");
                                 #endif
                             }
                             else if (GFXDevice) {
@@ -442,7 +443,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 //         Is this because it is a laptop or Non-Mac Firmware?
 
                                 #if REFIT_DEBUG > 0
-                                DeviceData = StrDuplicate (L" - GraphicsFX Card");
+                                DeviceData = StrDuplicate (L"GraphicsFX Card");
                                 #endif
                             }
                             else {
@@ -450,11 +451,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 //         Might be options out of the items above later
                                 #if REFIT_DEBUG > 0
                                 DeviceData = PoolPrint (
-                                    L" - PCI(%02llX|%02llX:%02llX.%llX)",
-                                    SegmentPCI,
-                                    BusPCI,
-                                    DevicePCI,
-                                    FunctionPCI
+                                    L"PCI(%02llX|%02llX:%02llX.%llX)",
+                                    SegmentPCI, BusPCI,
+                                    DevicePCI, FunctionPCI
                                 );
                                 #endif
                             } // if/else VGADevice/GFXDevicce
@@ -518,7 +517,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 if (Parent) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X ... Skipped [Parent Device]%s",
+                        L"Handle 0x%03X   Skipped [Parent Device] . %s",
                         HexIndex, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -531,7 +530,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X   * %r                %s",
+                        L"Handle 0x%03X * %r                   %s",
                         HexIndex, XStatus, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -544,7 +543,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     if (XStatus == EFI_NOT_STARTED) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X ... Declined [Empty Device]%s",
+                            L"Handle 0x%03X   Declined [Empty Device] . %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -553,7 +552,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_NOT_FOUND) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X ... Bypassed [Not Linkable]%s",
+                            L"Handle 0x%03X   Bypassed [Not Linkable] . %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -562,7 +561,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_INVALID_PARAMETER) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X     - ERROR: Invalid Param %s",
+                            L"Handle 0x%03X   - ERROR: Invalid Param  * %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -571,7 +570,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X     - WARN: %r %s",
+                            L"Handle 0x%03X   - WARN: %r  * %s",
                             HexIndex, XStatus, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -665,7 +664,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                LOG_MSG("INFO: Could not Find Path to GOP on any Device Handle");
+                LOG_MSG("INFO: Could Not Locate GOP on Device Handles");
             }
         }
         else {

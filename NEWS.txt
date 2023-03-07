@@ -42,6 +42,7 @@
 - Amends and Refactors Misc Items
   * General optimisation
   * Memory management improvements and fixes
+  * Log file handling tweaks
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
   * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token

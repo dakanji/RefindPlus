@@ -1479,7 +1479,7 @@ VOID BltClearScreen (
         // Load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Get Banner",
+            LOG_MSG("%s  - Fetch Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
                     ? OffsetNext
                     : L""
@@ -1654,7 +1654,7 @@ VOID BltClearScreen (
         BREAD_CRUMB(L"%s:  2b 3", FuncTag);
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Show Banner",
+            LOG_MSG("%s  - Show  Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
                     ? OffsetNext
                     : L""

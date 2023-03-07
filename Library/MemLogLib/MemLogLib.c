@@ -36,6 +36,7 @@
 #include <Library/IoLib.h>
 #include <Library/PciLib.h>
 #include "GenericIch.h"
+#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 // Struct for holding mem buffer.
@@ -63,6 +64,9 @@ MEM_LOG   *mMemLog = NULL;
 
 // Buffer for debug time.
 CHAR8     mTimingTxt[32];
+
+// Flag whether timer was previously reset
+BOOLEAN   mTimerPrev = FALSE;
 
 
 UINT64 GetCurrentMS (VOID) {
@@ -164,9 +168,11 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     UINT32          AcpiTick0, AcpiTick1, AcpiTicksDelta, AcpiTicksTarget;
     CHAR8           InitError[50];
 
-    if (mMemLog != NULL) {
-        // Early return
-        return  EFI_SUCCESS;
+    static BOOLEAN  SkipLog = FALSE;
+
+    if (SkipLog) {
+        // Logging disabled
+        return EFI_NOT_READY;
     }
 
     // Try to use existing MEM_LOG
@@ -175,6 +181,13 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         NULL, (VOID **) &mMemLog
     );
     if (Status == EFI_SUCCESS && mMemLog != NULL) {
+        if (!mTimerPrev) {
+            // Set timer and flag this
+            mTimerPrev        =         TRUE;
+            mMemLog->TscStart = AsmReadTsc();
+            mMemLog->TscLast  = AsmReadTsc();
+        }
+
         // Early return ... We are inited with an existing MEM_LOG
         return EFI_SUCCESS;
     }
@@ -182,10 +195,22 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     // Set up and publish new MEM_LOG
     mMemLog = AllocateZeroPool ( sizeof (MEM_LOG) );
     if (mMemLog == NULL) {
+        // Disable logging
+        SkipLog = TRUE;
+
         // Early return
         return EFI_OUT_OF_RESOURCES;
     }
     mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
+    if (mMemLog->Buffer == NULL) {
+        MY_FREE_POOL(mMemLog);
+
+        // Disable logging
+        SkipLog = TRUE;
+
+        // Early return
+        return EFI_OUT_OF_RESOURCES;
+    }
     mMemLog->BufferSize = MEM_LOG_INITIAL_SIZE;
     mMemLog->Cursor     = mMemLog->Buffer;
     mMemLog->Callback   = NULL;
@@ -286,21 +311,33 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         );
     }
 
-    mMemLog->TscStart = Tsc0;
-    mMemLog->TscLast  = Tsc0;
+    // Set timer and flag this
+    mTimerPrev        =         TRUE;
+    mMemLog->TscStart = AsmReadTsc();
+    mMemLog->TscLast  = AsmReadTsc();
 
     // Install (publish) MEM_LOG
     Status = REFIT_CALL_4_WRAPPER(
         gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
         &mMemLogProtocolGuid, mMemLog, NULL
     );
+    if (Status != EFI_SUCCESS) {
+        MY_FREE_POOL(mMemLog->Buffer);
+        MY_FREE_POOL(mMemLog);
+
+        // Disable logging
+        SkipLog = TRUE;
+
+        // Return Error
+        return Status;
+    }
 
     // Show Notice if Required
     if (InitError[0] != '\0') {
         MemLog (FALSE, 1, "** Could Not Calibrate ACPI PM Timer ... %a **\n\n", InitError);
     }
 
-    return Status;
+    return EFI_SUCCESS;
 }
 
 /**
