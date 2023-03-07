@@ -14,6 +14,9 @@
 - Fixes Invalid `ShowTools` Entry Handling
   * Such invalid entries were previously only flagged and not actually handled
   * These are now additionally skipped
+- Improves `DynamicCSR` Feature
+  * Lift Limitation to Apple Firmware
+  * Now runs whenever RefindPlus is loaded and not just when specific loaders are started
 - Improves `DefaultSelection` Feature
   * A substring match is now only attempted if an exact match fails
 - Improves CSR Handling

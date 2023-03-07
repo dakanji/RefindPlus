@@ -706,11 +706,13 @@ VOID AlignCSR (VOID) {
     BOOLEAN    RotateCsr;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN    HandleCsr = TRUE;
+    CHAR16    *TmpStr;
+    CHAR16    *MsgStr;
+    BOOLEAN    HandleCsr;
     #endif
 
-    if (!AppleFirmware && !HasMacOS) {
-        // Early Exit ... Apple Firmware or Mac OS not detected
+    if (!GlobalConfig.CsrValues) {
+        // Early Exit ... CsrValues not configured
         return;
     }
 
@@ -720,9 +722,21 @@ VOID AlignCSR (VOID) {
     }
 
     do {
+        #if REFIT_DEBUG > 0
+        HandleCsr = FALSE;
+        #endif
+
+        if (!HasMacOS) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_NOT_STARTED;
+            #endif
+
+            // Break Early ... No MacOS Instance
+            break;
+        }
+
         if (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1) {
             #if REFIT_DEBUG > 0
-            HandleCsr = FALSE;
             Status = EFI_INVALID_PARAMETER;
             #endif
 
@@ -733,13 +747,13 @@ VOID AlignCSR (VOID) {
         // Try to get current CSR status
         Status = GetCsrStatus (&CsrStatus);
         if (Status != EFI_SUCCESS) {
-            #if REFIT_DEBUG > 0
-            HandleCsr = FALSE;
-            #endif
-
             // Break Early ... Invalid CSR Status
             break;
         }
+
+        #if REFIT_DEBUG > 0
+        HandleCsr = TRUE;
+        #endif
 
         // Record CSR status in the 'gCsrStatus' variable
         RecordgCsrStatus (CsrStatus, FALSE);
@@ -749,16 +763,16 @@ VOID AlignCSR (VOID) {
 
         RotateCsr = FALSE;
         if (GlobalConfig.DynamicCSR == -1) {
-            // Always disable
+            // Configured to Always Disable SIP/SSV
             if (CsrEnabled) {
-                // Switch SIP/SSV off as currently enabled
+                // Disable SIP/SSV as currently enabled
                 RotateCsr = TRUE;
             }
         }
         else {
-            // Always enable
+            // Configured to Always Enable SIP/SSV
             if (!CsrEnabled) {
-                // Switch SIP/SSV on as currently disbled
+                // Enable SIP/SSV as currently disbled
                 RotateCsr = TRUE;
             }
         }
@@ -777,21 +791,26 @@ VOID AlignCSR (VOID) {
         #endif
     } while (0); // This 'loop' only runs once
 
-    // Finalise and flush the log buffer
     #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"D Y N A M I C   C S R   A L I G N M E N T");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LOG_MSG("%s", MsgStr);
+    MY_FREE_POOL(MsgStr);
     if (!HandleCsr) {
-        LOG_MSG("WARN: Dynamic");
+        TmpStr = L"WARN: Did Not Update";
     }
     else {
-        if (GlobalConfig.DynamicCSR == -1) {
-            LOG_MSG("INFO: Disable");
-        }
-        else {
-            LOG_MSG("INFO: Enable");
-        }
+        TmpStr = (GlobalConfig.DynamicCSR == -1)
+            ? L"INFO: Disable"
+            : L"INFO: Enable";
     }
-    LOG_MSG(" SIP/SSV ... %r", Status);
+    MsgStr = PoolPrint (L"%s SIP/SSV ... %r", TmpStr, Status);
+    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+    LOG_MSG("\n");
+    LOG_MSG("%s", MsgStr);
     LOG_MSG("\n\n");
+    MY_FREE_POOL(MsgStr);
     #endif
 } // static VOID AlignCSR()
 
@@ -1532,7 +1551,7 @@ VOID AboutRefindPlus (VOID) {
         ),
         TRUE
     );
-    if (!AppleFirmware) {
+    if (!HasMacOS) {
         TmpStr = StrDuplicate (L"Not Available");
     }
     else {
@@ -2385,10 +2404,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE      ));
     LOG_MSG("%s      AlignCSR:- ",         OffsetNext                              );
-    if (!AppleFirmware && !HasMacOS) {
-        LOG_MSG("'Disabled'"                                                       );
-    }
-    else if (GlobalConfig.DynamicCSR == 1) {
+    if (GlobalConfig.DynamicCSR == 1) {
         LOG_MSG("'Active ... CSR Enable'"                                          );
     }
     else if (GlobalConfig.DynamicCSR == 0) {
@@ -2846,6 +2862,9 @@ EFI_STATUS EFIAPI efi_main (
     } // if ConfigWarn
     #endif
 
+    // Set CSR if required
+    AlignCSR();
+
     // Init Pointers
     pdInitialize();
 
@@ -3281,9 +3300,6 @@ EFI_STATUS EFIAPI efi_main (
                         FindSubStr (ourLoaderEntry->Volume->VolName, L"com.apple.install")
                     )
                 ) {
-                    // Set CSR if required
-                    AlignCSR();
-
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3311,9 +3327,6 @@ EFI_STATUS EFIAPI efi_main (
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
-                    // Set CSR if required
-                    AlignCSR();
-
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = (
                             (GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE) == GRAPHICS_FOR_OPENCORE
@@ -3341,9 +3354,6 @@ EFI_STATUS EFIAPI efi_main (
                     || FindSubStr (ourLoaderEntry->Title, L"Clover")
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
                 ) {
-                    // Set CSR if required
-                    AlignCSR();
-
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = (
                             (GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER) == GRAPHICS_FOR_CLOVER
@@ -3371,9 +3381,6 @@ EFI_STATUS EFIAPI efi_main (
                     || ourLoaderEntry->OSType == 'M'
                     || FindSubStr (ourLoaderEntry->Title, L"MacOS")
                 ) {
-                    // Set CSR if required
-                    AlignCSR();
-
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
