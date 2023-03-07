@@ -11,7 +11,7 @@ The main development focus is on the following units:
 - **Xserve2,1**: Early 2008 Xserve
 - **Xserve3,1**: Early 2009 Xserve
 
-However, the enhancements added to RefindPlus are not limited in scope to those units and include several fixes and features relevant to UEFI-PCs and Apple Macs that may be of interest to anyone requiring a capable and flexible boot manager.
+However, the enhancements added to RefindPlus are not limited in scope to those units and include several UEFI-PC and other Apple Mac related enhancements that may be of interest to anyone requiring a capable and flexible boot manager.
 
 ## Headline Features
 - Maintains feature and configuration parity with the base upstream version.
@@ -61,6 +61,7 @@ decline_apfs_load     |Disables built in provision of APFS filesystem capability
 decline_apfs_mute     |Disables suppression of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
+decline_esp_filter    |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
 decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
 decline_help_text     |Disables complementary text colours if not required
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
@@ -70,7 +71,6 @@ disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
-enable_esp_filter     |Blocks scanning other ESPs, other than that with RefindPlus, for loaders
 follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes

@@ -43,12 +43,12 @@
 #
 #csr_normalise
 
-# Supply APFS filesystem capability. By default, RefindPlus is set up to jumpstart
-# MacOS APFS filesystem drivers, apfs.efi, which are available in system folders of
-# MacOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# MacOS version which ensures that any changes made to APFS drivers for each specific
-# MacOS version are accommodated, compared to using one driver no matter what specific
-# MacOS version is being loaded. This default is deactivated whenever this token is set.
+# Supply APFS filesystem capability. By default, RefindPlus is set up to jump start
+# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
+# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# Mac OS version which ensures that any changes made to APFS drivers for each specific
+# Mac OS version are accommodated, compared to using one driver no matter what specific
+# Mac OS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
@@ -203,14 +203,14 @@
 #
 #disable_nvram_paniclog
 
-# Check to see if it is possible to dispatch additional DXE drivers.
+# Disable dispatching revealed DXE drivers during handle connection.
 # The Controller/Handle connection exercise may sometimes reveal new
 # DXE drivers on some firmware. RefindPlus versions before v0.13.2.AP
 # automatically went into a loop to install such revealed DXE drivers
-# until all such were installed. This loop and installation may result
-# in unwanted drivers being installed and also slows the loading speed
-# while not being required on most types of firmware. Hence, an option
-# to skip this process is desirable when running most types of firmware
+# until all such were installed. This installation loop *MAY* end with
+# unwanted DXE drivers being installed, and also reduces loading speed
+# while not being required on some types of firmware. Hence, an option
+# to skip the process *MAY* be desirable on affected types of firmware.
 #
 # Inactive when commented out (Does not stop rescans for DXE drivers)
 #
@@ -1010,8 +1010,7 @@
 #scan_all_linux_kernels
 
 # Delay for the specified number of seconds before scanning disks.
-# This can help some users who find that some of their disks
-# are not detected until after pressing the "ESC" key.
+# This may help when disks are not detected until "ESC" is pressed.
 #
 # Inactive when commented out (Does not wait before scanning disks)
 #
@@ -1032,10 +1031,10 @@
 
 # Custom background image for selected item. There is a big one (144 x 144)
 # for the OS icons, and a small one (64 x 64) for the function icons in the
-# second row. If only a small image is given, that one is also used for the
-# big icons by stretching it in the middle. If only a big one is given, the
-# built-in default will be used for the small icons. If an image other than
-# an optimally sized one is specified, this may be scaled in an "ugly" way.
+# second row. When images other than optimally sized ones are specified, they
+# may be scaled in an "ugly" way. When a specified image is not available, the
+# built-in default will be used instead. This replacement with a default image
+# applies to both the specified "small" and "big" selection images separately.
 #
 # As with the "banner" setting below, these options take filenames of
 # uncompressed BMP, JPEG, PNG or ICNS image files with a colour depth
@@ -1043,7 +1042,13 @@
 # transparency support. As with the "banner" setting below, paths
 # are relative to the directory containing the RefindPlus efi.
 #
-# Uses default selection background images when commented out
+# NB: The file used for 'selection_small' must be no more
+# than 256px on the longest side while that used as the
+# 'selection_big' image must be no larger than 320px.
+# Custom selection images larger these thresholds
+# will be replaced with default embedded images.
+#
+# Uses default selection images when commented out
 #
 #selection_big icons/selection-big.png
 #selection_small icons/selection-small.png
@@ -1116,11 +1121,20 @@
 # file is loaded as if its tokens appeared at the point of the "include"
 # option. So, to override a setting in the main file, the secondary file
 # must be referenced AFTER the setting to be overridden. NB: A secondary
-# configuration file cannot "include" a tertiary configuration file.
+# configuration file CANNOT "include" tertiary configuration files.
+#
+# Manual configuration stanzas (see next item) may also be specified within
+# separate files and loaded as if their tokens appeared at the point of the
+# "include" option. Multiple such manual configuration stanza files can be
+# defined in addition to, or instead of, secondary configuration files as
+# described above. NB: Included manual configuration stanza files cannot
+# "include" tertiary, or other manual configuration stanza, files.
 #
 # Inactive when commented out (secondary file is not loaded)
 #
 #include manual.conf
+#include stanza-01.conf
+#include stanza-02.conf
 
 # Manual configuration stanzas. Each one begins with a "menuentry"
 # keyword followed by a name that will appear in the menu screen
@@ -1147,7 +1161,6 @@
 #                quotes if more than one option should be passed or
 #                if any options use characters that might be changed
 #                by RefindPlus' parsing procedures (=, /, #, or tab).
-#
 #  add_options - As "options" above but only applicable when under a
 #                "submenuentry" keyword. It adds the options to those
 #                set for the main "menuentry" keyword.

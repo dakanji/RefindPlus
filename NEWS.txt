@@ -1,4 +1,4 @@
-0.13.3.AD (PRE_RELEASE):
+0.13.3.AD (07 Mar 23):
 -----------------------
 - Fixes Manual Stanza SubMenuEntries
   * A memory conflict meant that including such entries resulted in RefindPlus hanging
@@ -27,9 +27,11 @@
 - Improves Misc Graphics Handling
   * Improves graphics related memory management
   * Improves UGA support via new `PassGopThrough` feature (Not user configurable)
-- Amends `Big Selection Image` Size Filtering
+- Amends `Selection Image` Size Filtering
   * The maximum Big Selection image size is increased to 320px from 256px
   * The Small Selection image maximum is maintained at 256px
+  * The default selection image is now used when a defined image cannot be found
+    - Previously used a scaled version of the small image when the big one was missing
 - Amends `Invalid UEFI Versions` Handling
   * Now accounts for such by reducing the amendment threshold to UEFI 2.0
   * Still amends to UEFI 2.3 when UEFI amendments happen
@@ -43,10 +45,6 @@
   * General optimisation
   * Memory management improvements and fixes
   * Log file handling tweaks
-- Amends `ScanAllESP` Feature
-  * Now aligned with upstream implementation and scans all ESPs by default
-  * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
-  * A previous issue where the token operated the wrong way round has been fixed
 
 
 0.13.3.AC (06 Dec 2022):

@@ -95,6 +95,14 @@
 #
 #decline_apple_fb
 
+# Allow scans of multiple ESPs. When this option is active, RefindPlus
+# will make other ESPs, separate from that containing RefindPlus,
+# available to be scanned for kernels and loaders.
+#
+# Scans of other ESPs are prevented when commented out
+#
+#decline_esp_filter
+
 # Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
 # By default, RefindPlus will prevent writes of certain items by processes such as
 # UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
@@ -207,14 +215,6 @@
 # Inactive when commented out (Does not stop rescans for DXE drivers)
 #
 #disable_rescan_dxe
-
-# Limit scan of ESPs for kernels and loaders. When this option is active,
-# RefindPlus will ignore kernels and loaders in any other ESP
-# separate from the ESP that contains RefindPlus.
-#
-# Scans of other ESPs are allowed when commented out
-#
-#enable_esp_filter
 
 # When this option is activated, RefindPlus will process symlinked loaders.
 # Symlinks are ignored by default as they may result in undesirable outcomes.
