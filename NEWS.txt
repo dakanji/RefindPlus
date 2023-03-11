@@ -14,14 +14,12 @@
 - Fixes Invalid `ShowTools` Entry Handling
   * Such invalid entries were previously only flagged and not actually handled
   * These are now additionally skipped
-- Improves `DynamicCSR` Feature
-  * Lift Limitation to Apple Firmware
-  * Now runs whenever RefindPlus is loaded and not just when specific loaders are started
 - Improves `DefaultSelection` Feature
   * A substring match is now only attempted if an exact match fails
 - Improves CSR Handling
   * Multiple tweaks to improve handling CSR settings
-  * Includes improvements to the `DynamicCSR` feature
+  * Removes Limitation of `DynamicCSR` Feature to Apple Firmware
+  * `DynamicCSR` also now runs whenever RefindPlus is loaded and not just when specific loaders are started
 - Improves `System Shutdown/Restart` Handling
   * Now displays a confirmation input screen before execution
 - Improves Misc Graphics Handling
@@ -40,11 +38,14 @@
   * No longer displays a warning messages and the discrepancy is only logged
   * Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
     - The DBG build had an invalid memory allocation instance that results in a hang when logging detection
-    - Improved overall handling by reducing the items disabled on detection
 - Amends and Refactors Misc Items
   * General optimisation
   * Memory management improvements and fixes
   * Log file handling tweaks
+- Amends `ScanAllESP` Feature
+  * Now aligned with upstream implementation and scans all ESPs by default
+  * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
+  * A previous issue where the token operated the wrong way round has been fixed
 
 
 0.13.3.AC (06 Dec 2022):
