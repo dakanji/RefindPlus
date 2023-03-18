@@ -51,7 +51,7 @@ static struct fsw_fstype_table   dummy_fstype = {
     NULL, //readlink,
 };
 
-static struct fsw_volume *create_dummy_volume(EFI_DISK_IO *diskio, UINT32 mediaid)
+static struct fsw_volume *create_dummy_volume(EFI_DISK_IO_PROTOCOL *diskio, UINT32 mediaid)
 {
     fsw_status_t err;
     struct fsw_volume *vol;
@@ -112,8 +112,9 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     }
 
     for (i = 0; i < HandleCount; i++) {
-        EFI_DISK_IO *diskio;
-        EFI_BLOCK_IO *blockio;
+        EFI_DISK_IO_PROTOCOL *diskio;
+        EFI_BLOCK_IO_PROTOCOL *blockio;
+
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol, Handles[i],
             &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio

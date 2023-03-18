@@ -67,7 +67,7 @@
 #define BlockIoProtocol gEfiBlockIoProtocolGuid
 #define LibFileSystemInfo EfiLibFileSystemInfo
 #define LibOpenRoot EfiLibOpenRoot
-EFI_DEVICE_PATH EndDevicePath[] = {
+EFI_DEVICE_PATH_PROTOCOL EndDevicePath[] = {
    {END_DEVICE_PATH_TYPE, END_ENTIRE_DEVICE_PATH_SUBTYPE, {END_DEVICE_PATH_LENGTH, 0}}
 };
 #endif
@@ -115,73 +115,73 @@ EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 
 
 
 // Variables
-EFI_HANDLE         SelfImageHandle;
+EFI_HANDLE                  SelfImageHandle;
 
-CHAR16            *SelfDirPath;
+CHAR16                     *SelfDirPath;
 
-EFI_LOADED_IMAGE  *SelfLoadedImage;
+EFI_LOADED_IMAGE_PROTOCOL  *SelfLoadedImage;
 
-EFI_FILE          *SelfRootDir;
-EFI_FILE          *SelfDir;
-EFI_FILE          *gVarsDir             = NULL;
+EFI_FILE_PROTOCOL          *SelfRootDir;
+EFI_FILE_PROTOCOL          *SelfDir;
+EFI_FILE_PROTOCOL          *gVarsDir             = NULL;
 
-REFIT_VOLUME      *SelfVolume           = NULL;
-REFIT_VOLUME     **Volumes              = NULL;
-REFIT_VOLUME     **RecoveryVolumes      = NULL;
-REFIT_VOLUME     **SkipApfsVolumes      = NULL;
-REFIT_VOLUME     **PreBootVolumes       = NULL;
-REFIT_VOLUME     **SystemVolumes        = NULL;
-REFIT_VOLUME     **DataVolumes          = NULL;
-REFIT_VOLUME     **HfsRecovery          = NULL;
+REFIT_VOLUME               *SelfVolume           = NULL;
+REFIT_VOLUME              **Volumes              = NULL;
+REFIT_VOLUME              **RecoveryVolumes      = NULL;
+REFIT_VOLUME              **SkipApfsVolumes      = NULL;
+REFIT_VOLUME              **PreBootVolumes       = NULL;
+REFIT_VOLUME              **SystemVolumes        = NULL;
+REFIT_VOLUME              **DataVolumes          = NULL;
+REFIT_VOLUME              **HfsRecovery          = NULL;
 
-UINTN              RecoveryVolumesCount    = 0;
-UINTN              SkipApfsVolumesCount    = 0;
-UINTN              PreBootVolumesCount     = 0;
-UINTN              SystemVolumesCount      = 0;
-UINTN              DataVolumesCount        = 0;
-UINTN              HfsRecoveryCount        = 0;
-UINTN              VolumesCount            = 0;
+UINTN                       RecoveryVolumesCount    = 0;
+UINTN                       SkipApfsVolumesCount    = 0;
+UINTN                       PreBootVolumesCount     = 0;
+UINTN                       SystemVolumesCount      = 0;
+UINTN                       DataVolumesCount        = 0;
+UINTN                       HfsRecoveryCount        = 0;
+UINTN                       VolumesCount            = 0;
 
-UINT64             ReadWriteCreate     = EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE;
+UINT64                      ReadWriteCreate     = EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE;
 
-BOOLEAN            FoundExternalDisk   = FALSE;
-BOOLEAN            DoneHeadings        = FALSE;
-BOOLEAN            ScannedOnce         = FALSE;
-BOOLEAN            SkipSpacing         = FALSE;
-BOOLEAN            SelfVolSet          = FALSE;
-BOOLEAN            SelfVolRun          = FALSE;
-BOOLEAN            MediaCheck          = FALSE;
-BOOLEAN            SingleAPFS          =  TRUE;
-BOOLEAN            ValidAPFS           =  TRUE;
-BOOLEAN            ScanMBR             = FALSE;
+BOOLEAN                     FoundExternalDisk   = FALSE;
+BOOLEAN                     DoneHeadings        = FALSE;
+BOOLEAN                     ScannedOnce         = FALSE;
+BOOLEAN                     SkipSpacing         = FALSE;
+BOOLEAN                     SelfVolSet          = FALSE;
+BOOLEAN                     SelfVolRun          = FALSE;
+BOOLEAN                     MediaCheck          = FALSE;
+BOOLEAN                     SingleAPFS          =  TRUE;
+BOOLEAN                     ValidAPFS           =  TRUE;
+BOOLEAN                     ScanMBR             = FALSE;
 
 #if REFIT_DEBUG > 0
-BOOLEAN            FirstVolume         =  TRUE;
-BOOLEAN            FoundMBR            = FALSE;
+BOOLEAN                     FirstVolume         =  TRUE;
+BOOLEAN                     FoundMBR            = FALSE;
 #endif
 
-EFI_GUID           GuidESP             =              ESP_GUID_VALUE;
-EFI_GUID           GuidHFS             =              HFS_GUID_VALUE;
-EFI_GUID           GuidAPFS            =             APFS_GUID_VALUE;
-EFI_GUID           GuidNull            =             NULL_GUID_VALUE;
-EFI_GUID           GuidLinux           =            LINUX_GUID_VALUE;
-EFI_GUID           GuidHomeGPT         =         GPT_HOME_GUID_VALUE;
-EFI_GUID           GuidServerGPT       =       GPT_SERVER_GUID_VALUE;
-EFI_GUID           GuidBasicData       =       BASIC_DATA_GUID_VALUE;
-EFI_GUID           GuidApplTvRec       =      APPLE_TV_RECOVERY_GUID;
-EFI_GUID           GuidMacRaidOn       =      MAC_RAID_ON_GUID_VALUE;
-EFI_GUID           GuidMacRaidOff      =     MAC_RAID_OFF_GUID_VALUE;
-EFI_GUID           GuidWindowsRE       = WIN_RECOVERY_ENV_GUID_VALUE;
-EFI_GUID           GuidRecoveryHD      =  MAC_RECOVERY_HD_GUID_VALUE;
-EFI_GUID           GuidContainerHFS    =    CONTAINER_HFS_GUID_VALUE;
+EFI_GUID                    GuidESP             =              ESP_GUID_VALUE;
+EFI_GUID                    GuidHFS             =              HFS_GUID_VALUE;
+EFI_GUID                    GuidAPFS            =             APFS_GUID_VALUE;
+EFI_GUID                    GuidNull            =             NULL_GUID_VALUE;
+EFI_GUID                    GuidLinux           =            LINUX_GUID_VALUE;
+EFI_GUID                    GuidHomeGPT         =         GPT_HOME_GUID_VALUE;
+EFI_GUID                    GuidServerGPT       =       GPT_SERVER_GUID_VALUE;
+EFI_GUID                    GuidBasicData       =       BASIC_DATA_GUID_VALUE;
+EFI_GUID                    GuidApplTvRec       =      APPLE_TV_RECOVERY_GUID;
+EFI_GUID                    GuidMacRaidOn       =      MAC_RAID_ON_GUID_VALUE;
+EFI_GUID                    GuidMacRaidOff      =     MAC_RAID_OFF_GUID_VALUE;
+EFI_GUID                    GuidWindowsRE       = WIN_RECOVERY_ENV_GUID_VALUE;
+EFI_GUID                    GuidRecoveryHD      =  MAC_RECOVERY_HD_GUID_VALUE;
+EFI_GUID                    GuidContainerHFS    =    CONTAINER_HFS_GUID_VALUE;
 
 
-extern EFI_GUID    RefindPlusOldGuid;
-extern EFI_GUID    RefindPlusGuid;
-extern BOOLEAN     ScanningLoaders;
+extern EFI_GUID             RefindPlusOldGuid;
+extern EFI_GUID             RefindPlusGuid;
+extern BOOLEAN              ScanningLoaders;
 
 #if REFIT_DEBUG > 0
-extern BOOLEAN     LogNewLine;
+extern BOOLEAN              LogNewLine;
 #endif
 
 
@@ -444,10 +444,10 @@ static
 VOID ReinitVolume (
     IN OUT REFIT_VOLUME  **Volume
 ) {
-    EFI_STATUS        StatusA, StatusB;
-    EFI_DEVICE_PATH  *RemainingDevicePath;
-    EFI_HANDLE        DeviceHandle;
-    EFI_HANDLE        WholeDiskHandle;
+    EFI_STATUS                 StatusA, StatusB;
+    EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
+    EFI_HANDLE                 DeviceHandle;
+    EFI_HANDLE                 WholeDiskHandle;
 
     if (Volume && *Volume) {
         if ((*Volume)->DevicePath != NULL) {
@@ -1836,14 +1836,14 @@ BOOLEAN HasWindowsBiosBootFiles (
 VOID ScanVolume (
     IN OUT REFIT_VOLUME *Volume
 ) {
-    EFI_STATUS        Status;
-    EFI_DEVICE_PATH  *DevicePath;
-    EFI_DEVICE_PATH  *NextDevicePath;
-    EFI_DEVICE_PATH  *DiskDevicePath;
-    EFI_DEVICE_PATH  *RemainingDevicePath;
-    EFI_HANDLE        WholeDiskHandle;
-    UINTN             PartialLength;
-    BOOLEAN           Bootable;
+    EFI_STATUS                 Status;
+    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+    EFI_DEVICE_PATH_PROTOCOL  *NextDevicePath;
+    EFI_DEVICE_PATH_PROTOCOL  *DiskDevicePath;
+    EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
+    EFI_HANDLE                 WholeDiskHandle;
+    UINTN                      PartialLength;
+    BOOLEAN                    Bootable;
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
@@ -1908,7 +1908,7 @@ VOID ScanVolume (
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // Make a device path for the whole device
             PartialLength  = (UINT8 *) NextDevicePath - (UINT8 *) (Volume->DevicePath);
-            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (
+            DiskDevicePath = (EFI_DEVICE_PATH_PROTOCOL *) AllocatePool (
                 PartialLength + sizeof (EFI_DEVICE_PATH)
             );
 
@@ -3294,8 +3294,8 @@ VOID SetVolumeIcons (VOID) {
 //
 
 BOOLEAN FileExists (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16   *RelativePath
+    IN EFI_FILE_PROTOCOL *BaseDir,
+    IN CHAR16            *RelativePath
 ) {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE TestFile;
@@ -3318,9 +3318,9 @@ BOOLEAN FileExists (
 
 static
 EFI_STATUS DirNextEntry (
-    IN     EFI_FILE       *Directory,
-    OUT    EFI_FILE_INFO **DirEntry,
-    IN     UINTN           FilterMode
+    IN     EFI_FILE_PROTOCOL      *Directory,
+    OUT    EFI_FILE_INFO         **DirEntry,
+    IN     UINTN                   FilterMode
 ) {
     EFI_STATUS  Status = EFI_BAD_BUFFER_SIZE;
     UINTN       LastBufferSize;
@@ -3519,9 +3519,9 @@ EFI_STATUS DirNextEntry (
 } // EFI_STATUS DirNextEntry()
 
 VOID DirIterOpen (
-    IN  EFI_FILE        *BaseDir,
-    IN  CHAR16          *RelativePath OPTIONAL,
-    OUT REFIT_DIR_ITER  *DirIter
+    IN  EFI_FILE_PROTOCOL       *BaseDir,
+    IN  CHAR16                  *RelativePath OPTIONAL,
+    OUT REFIT_DIR_ITER          *DirIter
 ) {
 
     #if REFIT_DEBUG > 1
@@ -3899,9 +3899,9 @@ CHAR16 * FindPath (
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
 // DeviceVolume, and returns that and the filename (*loader).
 VOID FindVolumeAndFilename (
-    IN  EFI_DEVICE_PATH  *loadpath,
-    OUT REFIT_VOLUME    **DeviceVolume,
-    OUT CHAR16          **loader
+    IN  EFI_DEVICE_PATH_PROTOCOL  *loadpath,
+    OUT REFIT_VOLUME             **DeviceVolume,
+    OUT CHAR16                   **loader
 ) {
     CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
     UINTN i = 0;

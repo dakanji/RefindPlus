@@ -2681,18 +2681,18 @@ EG_IMAGE * egCopyScreenArea (
 
 // Make a screenshot
 VOID egScreenShot (VOID) {
-    EFI_STATUS    Status;
-    EFI_FILE     *BaseDir;
-    EG_IMAGE     *Image;
-    UINT8        *FileData;
-    UINT8         Temp;
-    UINTN         i;
-    UINTN         FileDataSize;         ///< Size in bytes
-    UINTN         FilePixelSize;        ///< Size in pixels
-    CHAR16       *FileName    = NULL;
-    CHAR16       *MsgStr      = NULL;
-    EG_PIXEL      BGColorWarn = COLOR_RED;
-    EG_PIXEL      BGColorGood = COLOR_LIGHTBLUE;
+    EFI_STATUS            Status;
+    EG_IMAGE             *Image;
+    UINT8                *FileData;
+    UINT8                 Temp;
+    UINTN                 i;
+    UINTN                 FileDataSize;         ///< Size in bytes
+    UINTN                 FilePixelSize;        ///< Size in pixels
+    CHAR16               *FileName    = NULL;
+    CHAR16               *MsgStr      = NULL;
+    EG_PIXEL              BGColorWarn = COLOR_RED;
+    EG_PIXEL              BGColorGood = COLOR_LIGHTBLUE;
+    EFI_FILE_PROTOCOL    *BaseDir;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;

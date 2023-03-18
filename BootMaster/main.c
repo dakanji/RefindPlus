@@ -255,7 +255,7 @@ extern VOID              OcUnblockUnmountedPartitions (VOID);
 
 extern EFI_GUID                      AppleVendorOsGuid;
 
-extern EFI_FILE                     *gVarsDir;
+extern EFI_FILE_PROTOCOL            *gVarsDir;
 
 extern BOOLEAN                       HasMacOS;
 extern BOOLEAN                       SetSysTab;
@@ -1794,12 +1794,12 @@ static
 VOID SetConfigFilename (
     EFI_HANDLE ImageHandle
 ) {
-    EFI_STATUS         Status;
-    CHAR16            *Options;
-    CHAR16            *FileName;
-    CHAR16            *SubString;
-    CHAR16            *MsgStr = NULL;
-    EFI_LOADED_IMAGE  *Info;
+    EFI_STATUS                  Status;
+    CHAR16                     *Options;
+    CHAR16                     *FileName;
+    CHAR16                     *SubString;
+    CHAR16                     *MsgStr = NULL;
+    EFI_LOADED_IMAGE_PROTOCOL  *Info;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;

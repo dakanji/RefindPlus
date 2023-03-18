@@ -147,8 +147,8 @@ VOID WarnSecureBootError(
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
 BOOLEAN IsValidLoader (
-    EFI_FILE *RootDir,
-    CHAR16   *FileName
+    EFI_FILE_PROTOCOL *RootDir,
+    CHAR16            *FileName
 ) {
 #if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
     // DA-TAG: Investigate This
@@ -315,16 +315,16 @@ EFI_STATUS StartEFIImage (
     IN   BOOLEAN        IsDriver,
     OUT  EFI_HANDLE    *NewImageHandle OPTIONAL
 ) {
-    EFI_STATUS         Status;
-    EFI_STATUS         ReturnStatus;
-    EFI_HANDLE         ChildImageHandle  = NULL;
-    EFI_HANDLE         ChildImageHandle2 = NULL;
-    EFI_DEVICE_PATH   *DevicePath        = NULL;
-    EFI_LOADED_IMAGE  *ChildLoadedImage  = NULL;
-    CHAR16            *FullLoadOptions   = NULL;
-    CHAR16            *EspGUID           = NULL;
-    CHAR16            *MsgStr            = NULL;
-    EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
+    EFI_STATUS                           Status;
+    EFI_STATUS                           ReturnStatus;
+    EFI_HANDLE                           ChildImageHandle  = NULL;
+    EFI_HANDLE                           ChildImageHandle2 = NULL;
+    EFI_DEVICE_PATH_PROTOCOL            *DevicePath        = NULL;
+    EFI_LOADED_IMAGE_PROTOCOL           *ChildLoadedImage  = NULL;
+    CHAR16                              *FullLoadOptions   = NULL;
+    CHAR16                              *EspGUID           = NULL;
+    CHAR16                              *MsgStr            = NULL;
+    EFI_GUID                             SystemdGuid       = SYSTEMD_GUID_VALUE;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;

@@ -49,11 +49,11 @@
 #endif
 
 typedef struct {
-    UINT16           BootNum;
-    UINT32           Options;
-    UINT16           Size;
-    CHAR16           *Label;
-    EFI_DEVICE_PATH  *DevPath;
+    UINT16                     BootNum;
+    UINT32                     Options;
+    UINT16                     Size;
+    CHAR16                    *Label;
+    EFI_DEVICE_PATH_PROTOCOL  *DevPath;
 //     CHAR16           *Arguments; // Part of original data structure, but we do not use
 } EFI_BOOT_ENTRY;
 

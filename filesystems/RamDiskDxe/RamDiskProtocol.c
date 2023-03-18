@@ -594,18 +594,18 @@ RamDiskUnpublishNfit (
 EFI_STATUS
 EFIAPI
 RamDiskRegister (
-  IN UINT64                       RamDiskBase,
-  IN UINT64                       RamDiskSize,
-  IN EFI_GUID                     *RamDiskType,
-  IN EFI_DEVICE_PATH              *ParentDevicePath     OPTIONAL,
-  OUT EFI_DEVICE_PATH_PROTOCOL    **DevicePath
+  IN  UINT64                       RamDiskBase,
+  IN  UINT64                       RamDiskSize,
+  IN  EFI_GUID                    *RamDiskType,
+  IN  EFI_DEVICE_PATH_PROTOCOL    *ParentDevicePath     OPTIONAL,
+  OUT EFI_DEVICE_PATH_PROTOCOL   **DevicePath
   )
 {
-  EFI_STATUS                      Status;
+  EFI_STATUS                       Status;
   RAM_DISK_PRIVATE_DATA           *PrivateData;
   RAM_DISK_PRIVATE_DATA           *RegisteredPrivateData;
   MEDIA_RAM_DISK_DEVICE_PATH      *RamDiskDevNode;
-  UINTN                           DevicePathSize;
+  UINTN                            DevicePathSize;
   LIST_ENTRY                      *Entry;
 
   if ((0 == RamDiskSize) || (NULL == RamDiskType) || (NULL == DevicePath)) {

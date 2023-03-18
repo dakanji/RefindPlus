@@ -121,12 +121,12 @@ static UINT8 LegacyLoaderDevicePath5Data[] = {
     0x01, 0xAE, 0xF2, 0xB7, 0x7F, 0xFF, 0x04, 0x00,
 };
 
-static EFI_DEVICE_PATH *LegacyLoaderList[] = {
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath1Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath2Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath3Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath4Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath5Data,
+static EFI_DEVICE_PATH_PROTOCOL *LegacyLoaderList[] = {
+    (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderDevicePath1Data,
+    (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderDevicePath2Data,
+    (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderDevicePath3Data,
+    (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderDevicePath4Data,
+    (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderDevicePath5Data,
     NULL
 };
 
@@ -138,7 +138,7 @@ UINT8 LegacyLoaderMediaPathData[] = {
 };
 
 static
-EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *) LegacyLoaderMediaPathData;
+EFI_DEVICE_PATH_PROTOCOL *LegacyLoaderMediaPath = (EFI_DEVICE_PATH_PROTOCOL *) LegacyLoaderMediaPathData;
 
 static
 EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, \
@@ -149,8 +149,8 @@ BOOLEAN FirstLegacyScan = TRUE;
 
 static
 EFI_STATUS ActivateMbrPartition (
-    IN EFI_BLOCK_IO *BlockIO,
-    IN UINTN         PartitionIndex
+    IN EFI_BLOCK_IO_PROTOCOL *BlockIO,
+    IN UINTN                  PartitionIndex
 ) {
     EFI_STATUS           Status;
     UINT8                SectorBuffer[512];
@@ -286,7 +286,7 @@ EFI_STATUS ActivateMbrPartition (
 
 static
 EFI_STATUS WriteBootDiskHint (
-    IN EFI_DEVICE_PATH *WholeDiskDevicePath
+    IN EFI_DEVICE_PATH_PROTOCOL *WholeDiskDevicePath
 ){
    EFI_STATUS Status;
 
@@ -307,21 +307,21 @@ EFI_STATUS WriteBootDiskHint (
 
 static
 VOID ExtractLegacyLoaderPaths (
-    EFI_DEVICE_PATH **PathList,
-    UINTN             MaxPaths,
-    EFI_DEVICE_PATH **HardcodedPathList
+    EFI_DEVICE_PATH_PROTOCOL **PathList,
+    UINTN                      MaxPaths,
+    EFI_DEVICE_PATH_PROTOCOL **HardcodedPathList
 ) {
-    EFI_STATUS          Status;
-    UINTN               PathIndex;
-    UINTN               PathCount   = 0;
-    UINTN               HandleCount = 0;
-    UINTN               HandleIndex;
-    UINTN               HardcodedIndex;
-    BOOLEAN             Seen;
-    EFI_HANDLE         *Handles;
-    EFI_HANDLE          Handle;
-    EFI_DEVICE_PATH    *DevicePath;
-    EFI_LOADED_IMAGE   *LoadedImage;
+    EFI_STATUS                            Status;
+    UINTN                                 PathIndex;
+    UINTN                                 PathCount   = 0;
+    UINTN                                 HandleCount = 0;
+    UINTN                                 HandleIndex;
+    UINTN                                 HardcodedIndex;
+    BOOLEAN                               Seen;
+    EFI_HANDLE                           *Handles;
+    EFI_HANDLE                            Handle;
+    EFI_DEVICE_PATH_PROTOCOL             *DevicePath;
+    EFI_LOADED_IMAGE_PROTOCOL            *LoadedImage;
 
     MaxPaths--;  // leave space for the terminating NULL pointer
 
@@ -410,15 +410,15 @@ VOID ExtractLegacyLoaderPaths (
 // Launch a BIOS boot loader (Mac mode)
 static
 EFI_STATUS StartLegacyImageList (
-    IN  EFI_DEVICE_PATH **DevicePaths,
-    IN  CHAR16           *LoadOptions,
-    OUT UINTN            *ErrorInStep
+    IN  EFI_DEVICE_PATH_PROTOCOL **DevicePaths,
+    IN  CHAR16                    *LoadOptions,
+    OUT UINTN                     *ErrorInStep
 ) {
-    EFI_STATUS               Status;
-    EFI_HANDLE               ChildImageHandle;
-    EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    UINTN                    DevicePathIndex;
-    CHAR16                  *FullLoadOptions = NULL;
+    EFI_STATUS                        Status;
+    EFI_HANDLE                        ChildImageHandle;
+    EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage = NULL;
+    UINTN                             DevicePathIndex;
+    CHAR16                           *FullLoadOptions = NULL;
 
     if (ErrorInStep != NULL) {
         *ErrorInStep = 0;
@@ -513,7 +513,7 @@ VOID StartLegacy (
     EFI_STATUS       Status;
     EG_IMAGE        *BootLogoImage;
     UINTN            ErrorInStep = 0;
-    EFI_DEVICE_PATH *DiscoveredPathList[MAX_DISCOVERED_PATHS];
+    EFI_DEVICE_PATH_PROTOCOL *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
     CHAR16 *MsgStrA = NULL;
     CHAR16 *MsgStrB = NULL;

@@ -181,10 +181,10 @@ extern RAM_DISK_CONFIG_PRIVATE_DATA    mRamDiskConfigPrivateDataTemplate;
 EFI_STATUS
 EFIAPI
 RamDiskRegister (
-  IN UINT64                       RamDiskBase,
-  IN UINT64                       RamDiskSize,
-  IN EFI_GUID                     *RamDiskType,
-  IN EFI_DEVICE_PATH              *ParentDevicePath     OPTIONAL,
+  IN  UINT64                        RamDiskBase,
+  IN  UINT64                        RamDiskSize,
+  IN  EFI_GUID                     *RamDiskType,
+  IN  EFI_DEVICE_PATH_PROTOCOL     *ParentDevicePath     OPTIONAL,
   OUT EFI_DEVICE_PATH_PROTOCOL    **DevicePath
   );
 

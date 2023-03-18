@@ -306,10 +306,10 @@ VOID egFreeImage (
 //
 
 EFI_STATUS egLoadFile (
-    IN EFI_FILE  *BaseDir,
-    IN CHAR16    *FileName,
-    OUT UINT8   **FileData,
-    OUT UINTN    *FileDataLength
+    IN EFI_FILE_PROTOCOL  *BaseDir,
+    IN CHAR16             *FileName,
+    OUT UINT8            **FileData,
+    OUT UINTN             *FileDataLength
 ) {
     EFI_STATUS          Status;
     UINT64              ReadSize;
@@ -414,10 +414,10 @@ EFI_STATUS egFindESP (
 } // EFI_STATUS egFindESP()
 
 EFI_STATUS egSaveFile (
-    IN EFI_FILE  *BaseDir OPTIONAL,
-    IN CHAR16    *FileName,
-    IN UINT8     *FileData,
-    IN UINTN      FileDataLength
+    IN EFI_FILE_PROTOCOL  *BaseDir OPTIONAL,
+    IN CHAR16             *FileName,
+    IN UINT8              *FileData,
+    IN UINTN               FileDataLength
 ) {
     EFI_STATUS       Status;
     UINTN            BufferSize;
@@ -479,9 +479,9 @@ EG_IMAGE * egDecodeAny (
 } // static EG_IMAGE * egDecodeAny ()
 
 EG_IMAGE * egLoadImage (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16   *FileName,
-    IN BOOLEAN   WantAlpha
+    IN EFI_FILE_PROTOCOL  *BaseDir,
+    IN CHAR16             *FileName,
+    IN BOOLEAN             WantAlpha
 ) {
     EFI_STATUS   Status;
     UINTN        FileDataLength;
@@ -522,9 +522,9 @@ EG_IMAGE * egLoadImage (
 // Load an icon from (BaseDir)/Path, extracting the icon of size IconSize x IconSize.
 // Returns a pointer to the image data, or NULL if the icon could not be loaded.
 EG_IMAGE * egLoadIcon (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16   *Path,
-    IN UINTN     IconSize
+    IN EFI_FILE_PROTOCOL  *BaseDir,
+    IN CHAR16             *Path,
+    IN UINTN               IconSize
 ) {
     EFI_STATUS      Status;
     UINTN           FileDataLength = 0;
@@ -637,10 +637,10 @@ EG_IMAGE * egLoadIcon (
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
 EG_IMAGE * egLoadIconAnyType (
-    IN EFI_FILE  *BaseDir,
-    IN CHAR16    *SubdirName,
-    IN CHAR16    *BaseName,
-    IN UINTN      IconSize
+    IN EFI_FILE_PROTOCOL   *BaseDir,
+    IN CHAR16              *SubdirName,
+    IN CHAR16              *BaseName,
+    IN UINTN                IconSize
 ) {
     EG_IMAGE  *Image = NULL;
     CHAR16    *Extension;

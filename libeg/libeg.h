@@ -182,10 +182,10 @@ EG_IMAGE * egCropImage (
     IN UINTN Height
 );
 EG_IMAGE * egLoadIconAnyType (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16   *SubdirName,
-    IN CHAR16   *BaseName,
-    IN UINTN     IconSize
+    IN EFI_FILE_PROTOCOL  *BaseDir,
+    IN CHAR16             *SubdirName,
+    IN CHAR16             *BaseName,
+    IN UINTN               IconSize
 );
 EG_IMAGE * egPrepareEmbeddedImage (
     IN EG_EMBEDDED_IMAGE *EmbeddedImage,
@@ -214,16 +214,16 @@ EG_IMAGE * egDecodeJPEG (
 
 EFI_STATUS egFindESP (OUT EFI_FILE_HANDLE *RootDir);
 EFI_STATUS egLoadFile (
-    IN  EFI_FILE  *BaseDir,
-    IN  CHAR16    *FileName,
-    OUT UINT8    **FileData,
-    OUT UINTN     *FileDataLength
+    IN EFI_FILE_PROTOCOL  *BaseDir,
+    IN  CHAR16            *FileName,
+    OUT UINT8            **FileData,
+    OUT UINTN             *FileDataLength
 );
 EFI_STATUS egSaveFile(
-    IN EFI_FILE *BaseDir OPTIONAL,
-    IN CHAR16   *FileName,
-    IN UINT8    *FileData,
-    IN UINTN     FileDataLength
+    IN EFI_FILE_PROTOCOL  *BaseDir OPTIONAL,
+    IN CHAR16             *FileName,
+    IN UINT8              *FileData,
+    IN UINTN               FileDataLength
 );
 
 

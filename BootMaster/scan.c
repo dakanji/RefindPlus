@@ -1227,11 +1227,11 @@ CHAR16 * GetVolumeGroupName (
 // Add an NVRAM-based EFI boot loader entry to the menu.
 static
 LOADER_ENTRY * AddEfiLoaderEntry (
-    IN EFI_DEVICE_PATH *EfiLoaderPath,
-    IN CHAR16          *LoaderTitle,
-    IN UINT16           EfiBootNum,
-    IN UINTN            Row,
-    IN EG_IMAGE        *Icon
+    IN EFI_DEVICE_PATH_PROTOCOL *EfiLoaderPath,
+    IN CHAR16                   *LoaderTitle,
+    IN UINT16                    EfiBootNum,
+    IN UINTN                     Row,
+    IN EG_IMAGE                 *Icon
 ) {
     CHAR16        *TempStr;
     CHAR16        *FullTitle  = NULL;
@@ -2067,11 +2067,11 @@ static
 CHAR16 * RuniPXEDiscover (
     EFI_HANDLE Volume
 ) {
-    EFI_STATUS        Status;
-    EFI_DEVICE_PATH  *FilePath;
-    EFI_HANDLE        iPXEHandle;
-    CHAR16           *boot_info = NULL;
-    UINTN             boot_info_size = 0;
+    EFI_STATUS                 Status;
+    EFI_DEVICE_PATH_PROTOCOL  *FilePath;
+    EFI_HANDLE                 iPXEHandle;
+    CHAR16                    *boot_info = NULL;
+    UINTN                      boot_info_size = 0;
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
     Status = REFIT_CALL_6_WRAPPER(

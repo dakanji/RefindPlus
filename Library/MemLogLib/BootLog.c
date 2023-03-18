@@ -124,9 +124,9 @@ CHAR16 * GetDateString (VOID) {
 
 static
 EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
-    EFI_STATUS           Status;
-    EFI_LOADED_IMAGE    *LoadedImage;
-    EFI_FILE_PROTOCOL   *LogProtocol;
+    EFI_STATUS                    Status;
+    EFI_LOADED_IMAGE_PROTOCOL    *LoadedImage;
+    EFI_FILE_PROTOCOL            *LogProtocol;
 
     // DA-TAG: Always get 'LoadedImage->DeviceHandle' each time
     //         That is, do not use static

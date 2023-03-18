@@ -154,14 +154,14 @@ VOID SplitPathName (
     IN OUT CHAR16 **Filename
 );
 VOID DirIterOpen (
-    IN  EFI_FILE       *BaseDir,
-    IN  CHAR16         *RelativePath OPTIONAL,
-    OUT REFIT_DIR_ITER *DirIter
+    IN  EFI_FILE_PROTOCOL      *BaseDir,
+    IN  CHAR16                 *RelativePath OPTIONAL,
+    OUT REFIT_DIR_ITER         *DirIter
 );
 VOID FindVolumeAndFilename (
-    IN  EFI_DEVICE_PATH  *loadpath,
-    OUT REFIT_VOLUME    **DeviceVolume,
-    OUT CHAR16          **loader
+    IN  EFI_DEVICE_PATH_PROTOCOL  *loadpath,
+    OUT REFIT_VOLUME             **DeviceVolume,
+    OUT CHAR16                   **loader
 );
 
 CHAR16 * Basename (IN CHAR16 *Path);
@@ -175,7 +175,7 @@ CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
 BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);
-BOOLEAN FileExists (IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
+BOOLEAN FileExists (IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN FindVolume (IN REFIT_VOLUME **Volume, IN CHAR16 *Identifier);
 BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
 BOOLEAN VolumeMatchesDescription (

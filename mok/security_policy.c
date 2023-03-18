@@ -100,18 +100,19 @@ MSABI EFI_STATUS security_policy_authentication (
     UINT32 AuthenticationStatus,
     const EFI_DEVICE_PATH_PROTOCOL *DevicePathConst
 ) {
-    EFI_STATUS         Status;
-    EFI_DEVICE_PATH   *DevPath, *OrigDevPath;
-    EFI_HANDLE         h;
-    EFI_FILE          *f;
-    VOID              *FileBuffer;
-    UINTN              FileSize;
-    CHAR16            *DevPathStr;
+    EFI_STATUS                  Status;
+    EFI_DEVICE_PATH_PROTOCOL   *DevPath;
+    EFI_DEVICE_PATH_PROTOCOL   *OrigDevPath;
+    EFI_HANDLE                  h;
+    EFI_FILE_PROTOCOL          *f;
+    VOID                       *FileBuffer;
+    UINTN                       FileSize;
+    CHAR16                     *DevPathStr;
 
     if (DevicePathConst == NULL) {
         return EFI_INVALID_PARAMETER;
     } else {
-        DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
+        DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH_PROTOCOL *) DevicePathConst);
     }
 
     Status = REFIT_CALL_3_WRAPPER(

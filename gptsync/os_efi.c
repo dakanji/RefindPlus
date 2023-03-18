@@ -43,7 +43,7 @@
 
 // variables
 
-EFI_BLOCK_IO    *BlockIO = NULL;
+EFI_BLOCK_IO_PROTOCOL    *BlockIO = NULL;
 
 //
 // sector I/O functions
@@ -251,14 +251,14 @@ EFI_STATUS EFIAPI efi_main (
     IN EFI_HANDLE           ImageHandle,
     IN EFI_SYSTEM_TABLE    *SystemTable
 ) {
-    EFI_STATUS          Status;
-    UINTN               SyncStatus;
-    UINTN               Index;
-    UINTN               HandleCount;
-    EFI_HANDLE          *HandleBuffer;
-    EFI_HANDLE          DeviceHandle;
-    EFI_DEVICE_PATH     *DevicePath, *NextDevicePath;
-    BOOLEAN             Usable;
+    EFI_STATUS                    Status;
+    UINTN                         SyncStatus;
+    UINTN                         Index;
+    UINTN                         HandleCount;
+    EFI_HANDLE                   *HandleBuffer;
+    EFI_HANDLE                    DeviceHandle;
+    EFI_DEVICE_PATH_PROTOCOL     *DevicePath, *NextDevicePath;
+    BOOLEAN                       Usable;
 
     InitializeLib(ImageHandle, SystemTable);
 

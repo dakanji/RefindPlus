@@ -74,7 +74,7 @@ EFI_STATUS ConstructBootEntry (
     CHAR8      **Entry,
     UINTN       *Size
 );
-BOOLEAN IsValidLoader (EFI_FILE *RootDir, CHAR16 *FileName);
+BOOLEAN IsValidLoader (EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName);
 EFI_STATUS RebootIntoFirmware (VOID);
 VOID StartLoader (LOADER_ENTRY *Entry, CHAR16 *SelectionName);
 VOID StartTool (IN LOADER_ENTRY *Entry);

@@ -237,12 +237,12 @@ REFIT_VOLUME * PickOneESP (
 
 static
 EFI_STATUS RenameFile (
-    EFI_FILE    *BaseDir,
-    CHAR16      *OldName,
-    CHAR16      *NewName
+    EFI_FILE_PROTOCOL *BaseDir,
+    CHAR16            *OldName,
+    CHAR16            *NewName
 ) {
     EFI_STATUS          Status;
-    EFI_FILE           *FilePtr;
+    EFI_FILE_PROTOCOL  *FilePtr;
     EFI_FILE_INFO      *Buffer;
     EFI_FILE_INFO      *NewInfo;
     UINTN               NewInfoSize;
@@ -302,8 +302,8 @@ EFI_STATUS RenameFile (
 // user wants icons stored there that have been supplanted by new icons.
 static
 EFI_STATUS BackupOldFile (
-    EFI_FILE    *BaseDir,
-    CHAR16      *FileName
+    EFI_FILE_PROTOCOL   *BaseDir,
+    CHAR16              *FileName
 ) {
     EFI_STATUS          Status;
     CHAR16              *NewName;
@@ -331,12 +331,12 @@ EFI_STATUS BackupOldFile (
 // Create directories in which RefindPlus will reside.
 static
 EFI_STATUS CreateDirectories (
-    EFI_FILE *BaseDir
+    EFI_FILE_PROTOCOL *BaseDir
 ) {
-    EFI_STATUS  Status   = EFI_SUCCESS;
-    EFI_FILE   *TheDir   = NULL;
-    CHAR16     *FileName = NULL;
-    UINTN       i        = 0;
+    EFI_STATUS          Status   = EFI_SUCCESS;
+    EFI_FILE_PROTOCOL  *TheDir   = NULL;
+    CHAR16             *FileName = NULL;
+    UINTN               i        = 0;
 
     while (Status == EFI_SUCCESS &&
         (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL
@@ -358,15 +358,17 @@ EFI_STATUS CreateDirectories (
 
 static
 EFI_STATUS CopyOneFile (
-    EFI_FILE *SourceDir,
-    CHAR16   *SourceName,
-    EFI_FILE *DestDir,
-    CHAR16   *DestName
+    EFI_FILE_PROTOCOL *SourceDir,
+    CHAR16            *SourceName,
+    EFI_FILE_PROTOCOL *DestDir,
+    CHAR16            *DestName
 ) {
-    EFI_FILE           *SourceFile = NULL, *DestFile = NULL;
-    UINTN              FileSize = 0, Status;
-    EFI_FILE_INFO      *FileInfo = NULL;
-    UINTN              *Buffer = NULL;
+    EFI_STATUS          Status;
+    EFI_FILE_PROTOCOL  *SourceFile = NULL;
+    EFI_FILE_PROTOCOL  *DestFile   = NULL;
+    EFI_FILE_INFO      *FileInfo   = NULL;
+    UINTN              *Buffer     = NULL;
+    UINTN               FileSize   =    0;
 
     // Read the original file.
     Status = REFIT_CALL_5_WRAPPER(
@@ -476,10 +478,10 @@ EFI_STATUS CopyOneFile (
 // Copy a single directory (non-recursively)
 static
 EFI_STATUS CopyDirectory (
-    EFI_FILE *SourceDirPtr,
-    CHAR16   *SourceDirName,
-    EFI_FILE *DestDirPtr,
-    CHAR16   *DestDirName
+    EFI_FILE_PROTOCOL *SourceDirPtr,
+    CHAR16            *SourceDirName,
+    EFI_FILE_PROTOCOL *DestDirPtr,
+    CHAR16            *DestDirName
 ) {
     REFIT_DIR_ITER  DirIter;
     EFI_FILE_INFO   *DirEntry;
@@ -510,10 +512,10 @@ EFI_STATUS CopyDirectory (
 // as a Linux /boot partition. That is weird, but it does work.
 static
 EFI_STATUS CopyDrivers (
-    EFI_FILE *SourceDirPtr,
-    CHAR16   *SourceDirName,
-    EFI_FILE *DestDirPtr,
-    CHAR16   *DestDirName
+    EFI_FILE_PROTOCOL *SourceDirPtr,
+    CHAR16            *SourceDirName,
+    EFI_FILE_PROTOCOL *DestDirPtr,
+    CHAR16            *DestDirName
 ) {
     UINTN           i;
     CHAR16         *DestFileName   = NULL;
@@ -643,7 +645,7 @@ EFI_STATUS CopyDrivers (
 // Copy all the files from the source to *TargetDir
 static
 EFI_STATUS CopyFiles (
-    EFI_FILE *TargetDir
+    EFI_FILE_PROTOCOL *TargetDir
 ) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile   = NULL, *SourceDir, *ConfFile;
@@ -760,11 +762,11 @@ EFI_STATUS CopyFiles (
 // Success is not critical, so we do not return a Status value.
 static
 VOID CreateFallbackCSV (
-    EFI_FILE *TargetDir
+    EFI_FILE_PROTOCOL *TargetDir
 ) {
-    CHAR16   *Contents = NULL;
-    UINTN     FileSize, Status;
-    EFI_FILE *FilePtr;
+    CHAR16            *Contents = NULL;
+    UINTN              FileSize, Status;
+    EFI_FILE_PROTOCOL *FilePtr;
 
     Status = REFIT_CALL_5_WRAPPER(
         TargetDir->Open, TargetDir,
@@ -803,7 +805,7 @@ VOID CreateFallbackCSV (
 
  static
  BOOLEAN CopyRefindPlusFiles (
-     EFI_FILE *TargetDir
+     EFI_FILE_PROTOCOL *TargetDir
  ) {
     EFI_STATUS Status = EFI_SUCCESS, Status2;
 
@@ -883,9 +885,9 @@ VOID CreateFallbackCSV (
 // functionally equivalent entries.
 static
 UINTN FindBootNum (
-    EFI_DEVICE_PATH *Entry,
-    UINTN            Size,
-    BOOLEAN         *AlreadyExists
+    EFI_DEVICE_PATH_PROTOCOL *Entry,
+    UINTN                     Size,
+    BOOLEAN                  *AlreadyExists
 ) {
     EFI_STATUS      Status;
     UINTN    VarSize, i, j;
@@ -934,9 +936,10 @@ EFI_STATUS ConstructBootEntry (
     CHAR8      **Entry,
     UINTN       *Size
 ) {
-    EFI_DEVICE_PATH *DevicePath;
-    UINTN           Status = EFI_SUCCESS, DevPathSize;
-    CHAR8           *Working;
+    EFI_STATUS                 Status = EFI_SUCCESS;
+    UINTN                      DevPathSize;
+    CHAR8                     *Working;
+    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
 
     DevicePath  = FileDevicePath (TargetVolume, Loader);
     DevPathSize = DevicePathSize (DevicePath);
@@ -1027,10 +1030,11 @@ static
 EFI_STATUS CreateNvramEntry (
     EFI_HANDLE DeviceHandle
 ) {
-    CHAR16           *VarName = NULL, *ProgName;
-    UINTN            Status, Size, BootNum = 0;
-    EFI_DEVICE_PATH  *Entry;
-    BOOLEAN          AlreadyExists = FALSE;
+    EFI_STATUS                 Status;
+    CHAR16                    *VarName = NULL, *ProgName;
+    UINTN                      Size, BootNum = 0;
+    EFI_DEVICE_PATH_PROTOCOL  *Entry;
+    BOOLEAN                    AlreadyExists = FALSE;
 
     ProgName = PoolPrint (L"\\EFI\\refindplus\\%s", INST_REFINDPLUS_NAME);
     Status = ConstructBootEntry (

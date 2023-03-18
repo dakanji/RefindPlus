@@ -40,7 +40,7 @@
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping      = NULL;
 UINTN                     mBootOptionBbsMappingCount = 0;
 
-extern EFI_DEVICE_PATH EndDevicePath[];
+extern EFI_DEVICE_PATH_PROTOCOL EndDevicePath[];
 
 EFI_GUID gEfiLegacyDevOrderVariableGuid = { 0xa56074db, 0x65fe, 0x45f7, \
     {0xbd, 0x21, 0x2d, 0x2b, 0xdd, 0x8e, 0x96, 0x52 } };
