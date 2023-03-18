@@ -18,8 +18,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
+    outputs:
+      status: ${{ steps.add_label_user_close_check_main.outputs.status }}
     steps:
-      - uses: mheap/github-action-required-labels@v2
+      - id: add_label_user_close_check_main
+        uses: mheap/github-action-required-labels@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -147,8 +150,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
+    outputs:
+      status: ${{ steps.bounce_bug_check1_main.outputs.status }}
     steps:
-      - uses: mheap/github-action-required-labels@v2
+      - id: bounce_bug_check1_main
+        uses: mheap/github-action-required-labels@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -194,8 +200,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
+    outputs:
+      status: ${{ steps.bounce_enhance_check1_main.outputs.status }}
     steps:
-      - uses: mheap/github-action-required-labels@v2
+      - id: bounce_enhance_check1_main
+        uses: mheap/github-action-required-labels@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -257,8 +266,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     if: github.actor == 'dakanji' && github.event.action == 'closed'
+    outputs:
+      status: ${{ steps.handle_bug_tag_check_main.outputs.status }}
     steps:
-      - uses: mheap/github-action-required-labels@v2
+      - id: handle_bug_tag_check_main
+        uses: mheap/github-action-required-labels@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

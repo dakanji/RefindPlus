@@ -41,7 +41,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Handle Incomplete Issues
         uses: actions/stale@v7
@@ -61,7 +61,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Handle No-Response Issues
         uses: actions/stale@v7
@@ -85,7 +85,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Handle Resolved Issues
         uses: actions/stale@v7
@@ -103,7 +103,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Catchall Closer
         uses: actions/stale@v7
@@ -120,6 +120,10 @@ jobs:
           remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Inter-Step-Pause
+        run: |
+          sleep 90s
+
   # Lock Threads - https://github.com/dakanji/lock-threads
   lock:
     name: Lock Threads
@@ -128,6 +132,10 @@ jobs:
 
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 90s
 
       - name: Lock Not-Planned issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -145,7 +153,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Lock Invalid/Resolved Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -163,7 +171,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Lock Misc Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -182,7 +190,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -201,7 +209,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Lock Unclear Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -219,7 +227,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 15s
+          sleep 90s
 
       - name: Lock Inactive Issues
         uses: dakanji/lock-threads@v4.0.0.1
