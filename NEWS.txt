@@ -1,9 +1,14 @@
+0.14.0.AA (PRE_RELEASE):
+-----------------------
+- Synced with Upstream v0.14.0
+
+
 0.13.3.AD (07 Mar 23):
 -----------------------
 - Fixes Manual Stanza SubMenuEntries
   * A memory conflict meant that including such entries resulted in RefindPlus hanging
 - Fixes UGA Graphics
-  * Addresses issues with UGA-Only GPUs being always forced into TextOnly mode
+  * Addresses issue of `UGA-Only` GPUs being always forced into TextOnly mode
 - Fixes Misc Alt Build Function Duplication Issues
   * Addresses issues reported using the build process at https://github.com/xaionaro/edk2-builder-docker
     - Updates `LodePNG` to Version 20221108
