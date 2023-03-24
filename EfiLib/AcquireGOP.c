@@ -59,15 +59,16 @@ EFI_STATUS ReloadOptionROM (
     CHAR16                        *RomFileName;
     BOOLEAN                        LoadROM;
     EFI_STATUS                     Status;
+    EFI_STATUS                     ReturnStatus;
     EFI_HANDLE                     ImageHandle;
     PCI_DATA_STRUCTURE            *Pcir;
     EFI_DECOMPRESS_PROTOCOL       *Decompress;
     EFI_DEVICE_PATH_PROTOCOL      *FilePath;
     EFI_PCI_EXPANSION_ROM_HEADER  *EfiRomHeader;
 
-    ImageIndex    = 0;
-    Status        = EFI_NOT_FOUND;
-    RomBarOffset  = (UINTN) RomBar;
+    ImageIndex   = 0;
+    ReturnStatus = Status = EFI_NOT_FOUND;
+    RomBarOffset = (UINTN) RomBar;
 
     do {
         LoadROM      = FALSE;
@@ -119,7 +120,12 @@ EFI_STATUS ReloadOptionROM (
                 ImageLength             = InitializationSize - ImageOffset;
                 DecompressedImageBuffer = NULL;
 
-                if (EfiRomHeader->CompressionType == EFI_PCI_EXPANSION_ROM_HEADER_COMPRESSED) {
+                if (EfiRomHeader->CompressionType != EFI_PCI_EXPANSION_ROM_HEADER_COMPRESSED) {
+                    // Uncompressed image ... Tag as Success to load 'as is'
+                    Status = EFI_SUCCESS;
+                }
+                else {
+                    // Compressed image ... Decompress before loading
                     Status = REFIT_CALL_3_WRAPPER(
                         gBS->LocateProtocol, &gEfiDecompressProtocolGuid,
                         NULL, (VOID **) &Decompress
@@ -133,12 +139,17 @@ EFI_STATUS ReloadOptionROM (
                         if (!EFI_ERROR(Status)) {
                             DecompressedImageBuffer = AllocateZeroPool (DestinationSize);
                             if (DecompressedImageBuffer == NULL) {
+                                MY_FREE_POOL(ImageBuffer);
+
                                 return EFI_OUT_OF_RESOURCES;
                             }
 
                             if (ImageBuffer != NULL) {
                                 Scratch = AllocateZeroPool (ScratchSize);
                                 if (Scratch == NULL) {
+                                    MY_FREE_POOL(ImageBuffer);
+                                    MY_FREE_POOL(DecompressedImageBuffer);
+
                                     return EFI_OUT_OF_RESOURCES;
                                 }
 
@@ -149,9 +160,7 @@ EFI_STATUS ReloadOptionROM (
                                     Scratch, ScratchSize
                                 );
                                 if (!EFI_ERROR(Status)) {
-                                    LoadROM     = TRUE;
-                                    ImageBuffer = DecompressedImageBuffer;
-                                    ImageLength = DestinationSize;
+                                    LoadROM = TRUE;
                                 }
 
                                 MY_FREE_POOL(Scratch);
@@ -161,6 +170,12 @@ EFI_STATUS ReloadOptionROM (
                 } // if EfiRomHeader
 
                 if (LoadROM) {
+                    MY_FREE_POOL(ImageBuffer);
+                    ImageBuffer = DecompressedImageBuffer;
+                    ImageLength = DestinationSize;
+                }
+
+                if (!EFI_ERROR(Status)) {
                     RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
                     FilePath = REFIT_CALL_2_WRAPPER(FileDevicePath, NULL, RomFileName);
                     Status = REFIT_CALL_6_WRAPPER(
@@ -183,16 +198,18 @@ EFI_STATUS ReloadOptionROM (
                      MY_FREE_POOL(RomFileName);
                 }
 
-                MY_FREE_POOL(DecompressedImageBuffer);
+                MY_FREE_POOL(ImageBuffer);
             } // if InitializationSize
         } // if Pcir->CodeType
 
         RomBarOffset = RomBarOffset + ImageSize;
         ImageIndex++;
+
+        if (EFI_ERROR(ReturnStatus)) ReturnStatus = Status;
     } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN) RomBar) < RomSize));
 
-    return Status;
-}
+    return ReturnStatus;
+} // EFI_STATUS ReloadOptionROM()
 
 /**
   @retval EFI_SUCCESS               The command completed successfully.
@@ -279,6 +296,6 @@ EFI_STATUS AcquireGOP (VOID) {
     MY_FREE_POOL(HandleArray);
 
     return ReturnStatus;
-}
+} // EFI_STATUS AcquireGOP()
 
 #endif
