@@ -5,6 +5,8 @@ on:
   workflow_dispatch:
   issues:
     types: [labeled, unlabeled]
+  pull_request:
+    types: [labeled]
 
 permissions:
   contents: read

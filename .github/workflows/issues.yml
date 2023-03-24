@@ -137,6 +137,20 @@ jobs:
         run: |
           sleep 90s
 
+      - name: Lock Declined Pull Requests
+        uses: dakanji/lock-threads@v4.0.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-lock-reason: ''
+          issue-inactive-days: '0'
+          include-any-issue-labels: 'Declined'
+          remove-issue-labels: 'Tagged, Queries'
+          process-only: 'prs'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 90s
+
       - name: Lock Not-Planned issues
         uses: dakanji/lock-threads@v4.0.0.1
         with:

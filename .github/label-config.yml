@@ -23,6 +23,15 @@ Accepted:
       - 'Known-Issue'
       - 'Cannot-Replicate'
 
+# The `Declined` label is added to Pull Requests
+Declined:
+  prs:
+    # Add labels
+    label:
+      - 'Tagged'
+    # Close thread
+    close: true
+
 # The `Uncertain` label is added to issues
 Uncertain:
   issues:
