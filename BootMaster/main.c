@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -1577,7 +1577,7 @@ VOID AboutRefindPlus (VOID) {
 
     AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
     AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others",          FALSE);
-    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith",      FALSE);
+    AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2023 Roderick W. Smith",      FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer",    FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others", FALSE);
     AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license",    FALSE);

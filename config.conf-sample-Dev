@@ -216,14 +216,6 @@
 #
 #enable_esp_filter
 
-# When this option is activated, RefindPlus will process symlinked loaders.
-# Symlinks are ignored by default as they may result in undesirable outcomes.
-# This token may however be useful on Linux setups that use symlinked loaders.
-#
-# Inactive when commented out (Does not process symlinked loaders)
-#
-#follow_symlinks
-
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option
 # is active however, RefindPlus will enforce MacOS "TRIM" for all types
@@ -670,10 +662,14 @@
 # name and a colon are included before the directory name (myvol:/somedir)
 # to scan the "somedir" directory only on the filesystem named "myvol". If
 # a specified directory does not exist, it is ignored (no error message).
+# The "+" symbol denotes appending to the list of scanned directories
+# as opposed to overwriting this list.
 #
-# Scans hardcoded and the "boot" directories when commented out
+# Scans hardcoded, "boot" and "@/boot" directories when commented out
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
+#also_scan_dirs boot,@/boot
+#also_scan_dirs +,@/kernels
 
 # Use a custom title banner and not the default (embedded) banner. The
 # file path is relative to the directory where the RefindPlus binary is
@@ -882,6 +878,14 @@
 # Active when commented out (Combines Linux kernel entries)
 #
 #fold_linux_kernels 0
+
+# When this option is activated, RefindPlus will process symlinked loaders.
+# Symlinks are ignored by default as they may result in undesirable outcomes.
+# This token may however be useful on Linux setups that use symlinked loaders.
+#
+# Inactive when commented out (Does not process symlinked loaders)
+#
+#follow_symlinks
 
 # Set the font to be used for all textual displays in graphics mode.
 # For the best results, fonts used should be in PNG format with alpha

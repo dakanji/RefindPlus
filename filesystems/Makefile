@@ -83,6 +83,10 @@ ntfs_gnuefi:
 	rm -f fsw_efi.o
 	+make DRIVERNAME=ntfs -f Make.gnuefi
 
+# Compiling filesystem drivers in parallel with GNU-EFI can cause build errors
+# and frozen systems on boot with drivers that do build OK, so disallow this....
+.NOTPARALLEL:
+
 # utility rules
 
 clean:

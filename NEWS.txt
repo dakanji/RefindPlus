@@ -4,6 +4,19 @@
 - Syncs Deprecated EFI 1.x Protocols
   * Misc random deprecated protocols aligned with UEFI 2.x specs
   * Some are related to filesystem drivers; for which updated versions are created accordingly
+- Syncs Misc Upstream Changes/Fixes
+  * Adoption of the RefindPlus `FollowSymlinks` Feature
+  * 'also_scan_dirs' Volume Specification Bugfix
+    - https://sf.net/p/refind/code/ci/fde8116021e1c6ea7edaf3fae15fced47bbb38cf/
+    - https://sf.net/p/refind/discussion/general/thread/b411f33f37/
+  * Malformed `refind_linux.conf` Freeze Bugfix
+    - https://sf.net/p/refind/code/ci/ebe510a5fcdc10fc04f90e0976c47de54b8c767e/
+  * Parallel FS Driver GNU-EFI Build Limitation
+    - https://sourceforge.net/p/refind/code/ci/dc211965727921bf8e9440fdab5e147795ce9584/
+  * Memory leak and garbled JPEG when compiled on some Linux distributions
+    - https://sourceforge.net/p/refind/code/ci/8825e5e815b4be3708edd7b8d9fa3ea658094d3b/
+  * Apparent Memory Allocation Conflict
+    - https://sourceforge.net/p/refind/code/ci/5e2d0ac3fb76a8daab3a8199d0b0c52dc792b84f/
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible

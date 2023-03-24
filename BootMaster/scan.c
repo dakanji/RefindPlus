@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -554,7 +554,10 @@ VOID GenerateSubScreen (
                 KernelVersion = FindNumbers (Entry->LoaderPath);
 
                 BREAD_CRUMB(L"%s:  2a 4", FuncTag);
-                ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+                if (TokenCount >= 2) {
+                    BREAD_CRUMB(L"%s:  2a 4a 1", FuncTag);
+                    ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+                }
 
                 BREAD_CRUMB(L"%s:  2a 5", FuncTag);
                 // First entry requires special processing, since it was initially set
@@ -1648,7 +1651,7 @@ BOOLEAN ShouldScan (
     PathCopy = StrDuplicate (Path);
     if (SplitVolumeAndFilename (&PathCopy, &VolName)) {
         if (VolName) {
-            if (!MyStriCmp (VolName, Volume->FsName) ||
+            if (!MyStriCmp (VolName, Volume->FsName) &&
                 !MyStriCmp (VolName, Volume->PartName)
             ) {
                 ScanIt = FALSE;

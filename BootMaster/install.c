@@ -2,7 +2,7 @@
  * BootMaster/install.c
  * Functions related to installation of RefindPlus and management of EFI boot order
  *
- * Copyright (c) 2020-2021 by Roderick W. Smith
+ * Copyright (c) 2020-2023 by Roderick W. Smith
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), a copy of which must be distributed with this source
@@ -686,7 +686,7 @@ EFI_STATUS CopyFiles (
         //    copy to config.conf-sample if config.conf is present.
         ConfFile = PoolPrint (L"%s\\config.conf-sample", SourceDir);
         if (FileExists (SourceVolume->RootDir, ConfFile)) {
-            StrCpy (SourceFile, ConfFile);
+            SourceFile = PoolPrint (L"%s", ConfFile);
         }
         else {
             SourceFile = PoolPrint (L"%s\\config.conf", SourceDir);

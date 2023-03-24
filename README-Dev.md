@@ -71,7 +71,6 @@ disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
-follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
