@@ -20,6 +20,8 @@
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible
+- Improves Generic Menu Handling
+  * Now provides a `Return to Main Menu` option on all such menus
 
 
 0.13.3.AD (07 Mar 23):

@@ -691,20 +691,21 @@ VOID GenerateSubScreen (
             BREAD_CRUMB(L"%s:  A2 - OSType X:- END", FuncTag);
         } // Entries for xom.efi
 
-        LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  Z 1 - START", FuncTag);
-        if (GenerateReturn) {
-            BREAD_CRUMB(L"%s:  Z 1a 1", FuncTag);
-            BOOLEAN RetVal = GetReturnMenuEntry (&SubScreen);
+        do {
+            LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  Z 1 - START", FuncTag);
+            if (GenerateReturn) {
+                BREAD_CRUMB(L"%s:  Z 1a 1", FuncTag);
+                if (!GetReturnMenuEntry (&SubScreen)) {
+                    BREAD_CRUMB(L"%s:  Z 1a 1a 1 - Resource Exhaustion!!", FuncTag);
+                    FreeMenuScreen (&SubScreen);
+                    BREAD_CRUMB(L"%s:  Z 1a 1a 2", FuncTag);
 
-            BREAD_CRUMB(L"%s:  Z 1a 2", FuncTag);
-            if (!RetVal) {
-                BREAD_CRUMB(L"%s:  Z 1a 2a 1", FuncTag);
-                FreeMenuScreen (&SubScreen);
-                BREAD_CRUMB(L"%s:  Z 1a 2a 2", FuncTag);
+                    break;
+                }
             }
-        }
-        Entry->me.SubScreen = SubScreen;
+            Entry->me.SubScreen = SubScreen;
+        } while (0); // This 'loop' only runs once
 
         BREAD_CRUMB(L"%s:  B END MAIN - VOID", FuncTag);
         LOG_DECREMENT();

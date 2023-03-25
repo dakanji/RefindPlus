@@ -841,6 +841,7 @@ UINTN RunGenericMenu (
     IdentifyRows (&State, Screen);
 
     // Override the starting selection with the default index, if any
+    if (*DefaultEntryIndex == 9999) *DefaultEntryIndex = State.MaxIndex;
     if (*DefaultEntryIndex >= 0 && *DefaultEntryIndex <= State.MaxIndex) {
         State.CurrentSelection = *DefaultEntryIndex;
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -2845,55 +2846,65 @@ VOID ManageHiddenTags (VOID) {
         MY_FREE_POOL(OneElement);
     } // while
 
-    INTN           DefaultEntry = 0;
-    REFIT_MENU_ENTRY  *ChosenOption;
-    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    UINTN MenuExit = RunGenericMenu (RestoreItemMenu, Style, &DefaultEntry, &ChosenOption);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
-    #endif
-
-    if (MenuExit == MENU_EXIT_ENTER) {
-        SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
-        SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
-        SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
-        SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy);
-
-        if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
-            i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
-            Status = EfivarSetRaw (
-                &RefindPlusGuid, L"HiddenLegacy",
-                HiddenLegacy, i * 2 + 2 * (i > 0), TRUE
-            );
-            SaveLegacy = TRUE;
-            CheckError (Status, L"in ManageHiddenTags!!");
+    do {
+        if (!GetReturnMenuEntry (&RestoreItemMenu)) {
+            break;
         }
-    }
 
-    if (SaveTags) {
-        SaveHiddenList (HiddenTags, L"HiddenTags");
-    }
+        INTN        DefaultEntry = 9999; // Use the Max Index
+        REFIT_MENU_ENTRY  *ChosenOption;
+        MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+        UINTN MenuExit = RunGenericMenu (RestoreItemMenu, Style, &DefaultEntry, &ChosenOption);
 
-    if (SaveLegacy) {
-        SaveHiddenList (HiddenLegacy, L"HiddenLegacy");
-    }
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+        );
+        #endif
 
-    if (SaveTools) {
-        SaveHiddenList (HiddenTools, L"HiddenTools");
-        MY_FREE_POOL(gHiddenTools);
-    }
+        if (ChosenOption->Tag == TAG_RETURN) {
+            break;
+        }
 
-    if (SaveFirmware) {
-        SaveHiddenList (HiddenFirmware, L"HiddenFirmware");
-    }
+        if (MenuExit == MENU_EXIT_ENTER) {
+            SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
+            SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
+            SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
+            SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy);
 
-    if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
-        RescanAll (FALSE);
-    }
+            if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
+                i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
+                Status = EfivarSetRaw (
+                    &RefindPlusGuid, L"HiddenLegacy",
+                    HiddenLegacy, i * 2 + 2 * (i > 0), TRUE
+                );
+                SaveLegacy = TRUE;
+                CheckError (Status, L"in ManageHiddenTags!!");
+            }
+        }
+
+        if (SaveTags) {
+            SaveHiddenList (HiddenTags, L"HiddenTags");
+        }
+
+        if (SaveLegacy) {
+            SaveHiddenList (HiddenLegacy, L"HiddenLegacy");
+        }
+
+        if (SaveTools) {
+            SaveHiddenList (HiddenTools, L"HiddenTools");
+            MY_FREE_POOL(gHiddenTools);
+        }
+
+        if (SaveFirmware) {
+            SaveHiddenList (HiddenFirmware, L"HiddenFirmware");
+        }
+
+        if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
+            RescanAll (FALSE);
+        }
+    } while (0); // This 'loop' only runs once
 
     FreeMenuScreen (&RestoreItemMenu);
 

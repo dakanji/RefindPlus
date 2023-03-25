@@ -198,31 +198,40 @@ REFIT_VOLUME * PickOneESP (
         MY_FREE_POOL(GuidStr);
     } // while
 
-    INTN           DefaultEntry = 0;
-    REFIT_MENU_ENTRY  *ChosenOption;
-    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    UINTN MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
+    do {
+        if (!GetReturnMenuEntry (&InstallMenu)) {
+            break;
+        }
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
-    #endif
+        INTN        DefaultEntry = 9999; // Use the Max Index
+        REFIT_MENU_ENTRY  *ChosenOption;
+        MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+        UINTN MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
 
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+        );
+        #endif
 
-    if (MenuExit == MENU_EXIT_ENTER) {
-        CHAR16 *Temp;
-        CurrentESP = AllESPs;
-        while (CurrentESP != NULL) {
-            Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
-            if (MyStrStr (ChosenOption->Title, Temp)) {
-                ChosenVolume = CurrentESP->Volume;
-            }
-            CurrentESP = CurrentESP->NextESP;
-            MY_FREE_POOL(Temp);
-        } // while
-    }
+        if (ChosenOption->Tag == TAG_RETURN) {
+            break;
+        }
+
+        if (MenuExit == MENU_EXIT_ENTER) {
+            CHAR16 *Temp;
+            CurrentESP = AllESPs;
+            while (CurrentESP != NULL) {
+                Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
+                if (MyStrStr (ChosenOption->Title, Temp)) {
+                    ChosenVolume = CurrentESP->Volume;
+                }
+                CurrentESP = CurrentESP->NextESP;
+                MY_FREE_POOL(Temp);
+            } // while
+        }
+    } while (0); // This 'loop' only runs once
 
     FreeMenuScreen (&InstallMenu);
 
@@ -1295,92 +1304,105 @@ UINTN PickOneBootOption (
 
     if (!Entries) {
         DisplaySimpleMessage (L"Firmware BootOrder List is Unavailable!!", NULL);
+
+        // Early Return
+        return Operation;
     }
-    else {
-        REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-        if (PickBootOptionMenu) {
-            PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-            PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
-            PickBootOptionMenu->Hint1      = StrDuplicate (
-                L"Select an option and press 'Enter' to make it the default. Press '-' or"
-            );
-            PickBootOptionMenu->Hint2      = PoolPrint (
-                L"'Delete' to delete it, or %s", RETURN_MAIN_SCREEN_HINT
-            );
 
-            AddMenuInfoLine (
-                PickBootOptionMenu,
-                L"Promote or Remove Firmware BootOrder Variables",
-                FALSE
-            );
-
-            do {
-                MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
-                if ((Filename != NULL) && (StrLen (Filename) > 0)) {
-                    if ((Volume != NULL) && (Volume->VolName != NULL)) {
-                        MenuEntryItem->Title = PoolPrint (
-                            L"Boot%04x - %s - %s on %s",
-                            Entries->BootEntry.BootNum,
-                            Entries->BootEntry.Label,
-                            Filename, Volume->VolName);
-                    }
-                    else {
-                        MenuEntryItem->Title = PoolPrint (
-                            L"Boot%04x - %s - %s",
-                            Entries->BootEntry.BootNum,
-                            Entries->BootEntry.Label,
-                            Filename
-                        );
-                    }
-                }
-                else {
-                    MenuEntryItem->Title = PoolPrint (
-                        L"Boot%04x - %s",
-                        Entries->BootEntry.BootNum,
-                        Entries->BootEntry.Label
-                    );
-                }
-
-                // NB: Using the 'Row' field to hold the 'Boot####' value
-                MenuEntryItem->Row = Entries->BootEntry.BootNum;
-                AddMenuEntry (PickBootOptionMenu, MenuEntryItem);
-
-                // DA-TAG: Dereference 'Volume' ... Do not free
-                MY_SOFT_FREE(Volume);
-                MY_FREE_POOL(Filename);
-
-                Entries = Entries->NextBootEntry;
-            } while (Entries != NULL);
-
-            INTN           DefaultEntry = 0;
-            REFIT_MENU_ENTRY  *ChosenOption;
-            MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-            UINTN MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
-                MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-            );
-            #endif
-
-            if (MenuExit == MENU_EXIT_ENTER) {
-                Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
-                *BootOrderNum = ChosenOption->Row;
-            }
-            else if (MenuExit == MENU_EXIT_HIDE) {
-                Operation = EFI_BOOT_OPTION_DELETE;
-                *BootOrderNum = ChosenOption->Row;
-            }
-
-            Operation = ConfirmBootOptionOperation (Operation, ChosenOption->Title);
-
-            MY_FREE_POOL(MenuEntryItem);
-
-            FreeMenuScreen (&PickBootOptionMenu);
-        } // if PickBootOptionMenu
+    REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (PickBootOptionMenu == NULL) {
+        // Early Return
+        return Operation;
     }
+
+    PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+    PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
+    PickBootOptionMenu->Hint1      = StrDuplicate (
+        L"Select an option and press 'Enter' to make it the default. Press '-' or"
+    );
+    PickBootOptionMenu->Hint2      = PoolPrint (
+        L"'Delete' to delete it, or %s", RETURN_MAIN_SCREEN_HINT
+    );
+
+    AddMenuInfoLine (
+        PickBootOptionMenu,
+        L"Promote or Remove Firmware BootOrder Variables",
+        FALSE
+    );
+
+    do {
+        MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
+        if ((Filename != NULL) && (StrLen (Filename) > 0)) {
+            if ((Volume != NULL) && (Volume->VolName != NULL)) {
+                MenuEntryItem->Title = PoolPrint (
+                    L"Boot%04x - %s - %s on %s",
+                    Entries->BootEntry.BootNum,
+                    Entries->BootEntry.Label,
+                    Filename, Volume->VolName);
+            }
+            else {
+                MenuEntryItem->Title = PoolPrint (
+                    L"Boot%04x - %s - %s",
+                    Entries->BootEntry.BootNum,
+                    Entries->BootEntry.Label,
+                    Filename
+                );
+            }
+        }
+        else {
+            MenuEntryItem->Title = PoolPrint (
+                L"Boot%04x - %s",
+                Entries->BootEntry.BootNum,
+                Entries->BootEntry.Label
+            );
+        }
+
+        // NB: Using the 'Row' field to hold the 'Boot####' value
+        MenuEntryItem->Row = Entries->BootEntry.BootNum;
+        AddMenuEntry (PickBootOptionMenu, MenuEntryItem);
+
+        // DA-TAG: Dereference 'Volume' ... Do not free
+        MY_SOFT_FREE(Volume);
+        MY_FREE_POOL(Filename);
+
+        Entries = Entries->NextBootEntry;
+    } while (Entries != NULL);
+
+    do {
+        if (!GetReturnMenuEntry (&PickBootOptionMenu)) {
+            break;
+        }
+
+        INTN        DefaultEntry = 9999; // Use the Max Index
+        REFIT_MENU_ENTRY  *ChosenOption;
+        MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+        UINTN MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+        );
+        #endif
+
+        if (ChosenOption->Tag == TAG_RETURN) {
+            break;
+        }
+
+        if (MenuExit == MENU_EXIT_ENTER) {
+            Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
+            *BootOrderNum = ChosenOption->Row;
+        }
+        else if (MenuExit == MENU_EXIT_HIDE) {
+            Operation = EFI_BOOT_OPTION_DELETE;
+            *BootOrderNum = ChosenOption->Row;
+        }
+
+        Operation = ConfirmBootOptionOperation (Operation, ChosenOption->Title);
+    } while (0); // This 'loop' only runs once
+
+    FreeMenuScreen (&PickBootOptionMenu);
 
     return Operation;
 } // REFIT_VOLUME *PickOneBootOption()
