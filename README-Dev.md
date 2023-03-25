@@ -77,6 +77,7 @@ hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not re
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Fine tunes the resulting `icon_row_move` outcome
+mitigate_primed_buffer|Allows enhanced intervention to handle apparent primed keystroke buffers
 nvram_protect_ex      |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs

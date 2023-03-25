@@ -1254,60 +1254,60 @@ UINTN RunGenericMenu (
         MenuExit = 0;
     }
 
-    if (UserKeyPress) {
-        OneMainLoop = TRUE;
-    }
-    else {
+    do {
+        if (UserKeyPress || UserKeyScan) {
+            OneMainLoop = TRUE;
+            break;
+        }
+
+        if (ClearedBuffer                        ||
+            AppleFirmware                        ||
+            FlushFailReset                       ||
+            GlobalConfig.DirectBoot              ||
+            MenuExit != MENU_EXIT_ENTER          ||
+            !MyStriCmp (Screen->Title, L"Main Menu")
+        ) {
+            break;
+        }
+
         // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
         // Primed Keystroke Buffer appears to only affect UEFI PC but some provision to cover Macs made
-        if (!GlobalConfig.DirectBoot &&
-            MenuExit == MENU_EXIT_ENTER &&
-            !ClearedBuffer && !FlushFailReset &&
-            MyStriCmp (Screen->Title, L"Main Menu")
-        ) {
-            UINT64 MenuExitGate;
-            UINT64 MenuExitNumb = 750; // 500 + 250
-            UINT64 MenuExitTime = GetCurrentMS();
-            UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
+        UINT64 MenuExitNumb = 768; // 512 + 256
+        UINT64 MenuExitGate = MenuExitNumb;
+        UINT64 MenuExitTime = GetCurrentMS();
+        UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-            if (AppleFirmware) {
-                MenuExitGate = MenuExitNumb / 2;
-            }
-            else {
-                MenuExitGate = MenuExitNumb * 3;
+        if (GlobalConfig.MitigatePrimedBuffer) {
+            MenuExitGate = MenuExitNumb * 3;
 
-                #if REFIT_DEBUG > 0
-                if (GlobalConfig.LogLevel > 1) {
-                    MenuExitGate = MenuExitNumb * 5;
-                }
-                else if (GlobalConfig.LogLevel > 0) {
-                    MenuExitGate = MenuExitNumb * 4;
-                }
-                #endif
+            #if REFIT_DEBUG > 0
+            if (GlobalConfig.LogLevel > 1) {
+                MenuExitGate = MenuExitNumb * 5;
             }
+            else if (GlobalConfig.LogLevel > 0) {
+                MenuExitGate = MenuExitNumb * 4;
+            }
+            #endif
 
-            if (UserKeyScan) {
-                OneMainLoop = TRUE;
+            if (FoundExternalDisk) {
+                MenuExitGate = MenuExitGate * 4;
             }
-            else if (FoundExternalDisk) {
-                MenuExitGate = (AppleFirmware) ? MenuExitGate * 2 : MenuExitGate * 4;
-            }
+        }
 
-            if (MenuExitDiff < MenuExitGate) {
-                #if REFIT_DEBUG > 0
-                LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
-                CHAR16 *MsgStr = L"Mitigated Potential Persistent Primed Keystroke Buffer";
-                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-                LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
-                #endif
+        if (MenuExitDiff < MenuExitGate) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
+            CHAR16 *MsgStr = L"Mitigated Potential Persistent Primed Keystroke Buffer";
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            #endif
 
-                FlushFailedTag = FALSE;
-                FlushFailReset = TRUE;
-                MenuExit = 0;
-            }
-        } // if !GlobalConfig.DirectBoot ETC
-    } // if UserKeyScan
+            FlushFailedTag = FALSE;
+            FlushFailReset = TRUE;
+            MenuExit = 0;
+        }
+    } while (0); // This 'loop' only runs once
 
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
@@ -1315,9 +1315,7 @@ UINTN RunGenericMenu (
 
     *DefaultEntryIndex = State.CurrentSelection;
 
-    BREAD_CRUMB(L"%s:  2 - END:- return UINTN MenuExit = '%d'", FuncTag,
-        MenuExit
-    );
+    BREAD_CRUMB(L"%s:  2 - END:- return UINTN MenuExit = '%d'", FuncTag, MenuExit);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 

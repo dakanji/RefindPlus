@@ -455,6 +455,7 @@ typedef struct {
     BOOLEAN                    WriteSystemdVars;
     BOOLEAN                    UnicodeCollation;
     BOOLEAN                    SupplyAppleFB;
+    BOOLEAN                    MitigatePrimedBuffer;
     UINTN                      RequestedScreenWidth;
     UINTN                      RequestedScreenHeight;
     UINTN                      BannerBottomEdge;

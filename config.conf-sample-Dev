@@ -289,6 +289,24 @@
 #
 #icon_row_tune 5
 
+# When this option is activate, RefindPlus will prevent attempts to run loaders
+# that are detected below a time interval after loading the screen to counteract
+# spontaneous booting apparently resulting from keystroke buffers that appear to
+# have been primed before RefindPlus is loaded. This appears to primarily affect
+# UEFI-PC when RefindPlus is loaded done after first accessing the BIOS via keys
+# such as "F12". The issue appears to be worse when external drives are present.
+# A level of intervention is always active but this is typically not noticeable.
+# The base threshold is increased on RefindPlus DBG build files as well as when
+# external drives, including USB sticks, are detected on starting RefindPlus up.
+# This token increases this derived base time threshold to a new time threshold
+# below which attempts to run loaders will not be permitted in order to avoid
+# RefindPlus spontaneously starting up default selections when it is loaded.
+# NB: This feature does not operate on Apple firmware even when set here.
+#
+# Inactive when commented out (Does not increase base threshold interval)
+#
+#mitigate_primed_buffer
+
 # When this option is activate, the RefindPlus "NvramProtect" feature will be
 # extended, if set, to cover booting into Mac OS and "unknown" UEFI files.
 # NB: This setting is only active, if set, on Apple firmware.

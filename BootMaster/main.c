@@ -128,6 +128,7 @@ REFIT_CONFIG GlobalConfig = {
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
     /* SupplyAppleFB = */ TRUE,
+    /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,
