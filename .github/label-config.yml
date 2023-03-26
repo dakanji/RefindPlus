@@ -66,6 +66,7 @@ Bug:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
+      - 'Tagged'
       - 'Stale'
       - 'Queries'
       - 'Unclear'
@@ -177,6 +178,9 @@ Documentation:
 # The `Duplicate` label is added to issues
 Duplicate:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -194,9 +198,6 @@ Duplicate:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Add labels
-    label:
-      - 'Tagged'
     # Close thread
     close: true
     # Add Comment
@@ -316,6 +317,9 @@ Incomplete:
 # The `Invalid` label is added to issues
 Invalid:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -338,6 +342,9 @@ Invalid:
 # The `Known-Issue` label is added to issues
 Known-Issue:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -431,6 +438,9 @@ Queries:
 # The `Resolved` label is added to issues
 Resolved:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -448,9 +458,6 @@ Resolved:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Add labels
-    label:
-      - 'Tagged'
     # Close thread
     close: true
 
@@ -491,6 +498,7 @@ Unclear:
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
+      - 'Tagged'
       - 'Stale'
       - 'Invalid'
       - 'Prorogued'
@@ -502,6 +510,9 @@ Unclear:
 # The `Not-Planned` label is added to issues
 Not-Planned:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -523,6 +534,9 @@ Not-Planned:
 # The `Not-Planned` label is removed from issues
 -Not-Planned:
   issues:
+    # Remove labels
+    unlabel:
+      - 'Tagged'
     # Reopen and unlock issue
     reopen: true
     unlock: true
@@ -530,6 +544,9 @@ Not-Planned:
 # The `Cannot-Replicate` label is added to issues
 Cannot-Replicate:
   issues:
+    # Add labels
+    label:
+      - 'Tagged'
     # Remove labels
     unlabel:
       - 'Uncertain'

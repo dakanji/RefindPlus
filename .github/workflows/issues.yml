@@ -37,11 +37,12 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
           any-of-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned'
+          remove-issue-stale-when-updated: false
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Handle Incomplete Issues
         uses: actions/stale@v7
@@ -55,13 +56,13 @@ jobs:
           days-before-close: 3
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
-          remove-issue-stale-when-updated: true
           any-of-labels: 'Incomplete,'
+          remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Handle No-Response Issues
         uses: actions/stale@v7
@@ -75,17 +76,17 @@ jobs:
             Dear @${{ github.event.issue.user.login }},
 
             This item is being closed due to a lack of response.
-          days-before-stale: 3
-          days-before-close: 5
+          days-before-stale: 2
+          days-before-close: 3
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
-          remove-issue-stale-when-updated: true
           any-of-labels: 'Queries'
+          remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Handle Resolved Issues
         uses: actions/stale@v7
@@ -99,11 +100,12 @@ jobs:
           exempt-assignees: ''
           stale-issue-label: 'Tagged'
           any-of-labels: 'Resolved'
+          remove-issue-stale-when-updated: false
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Catchall Closer
         uses: actions/stale@v7
@@ -122,7 +124,11 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 150s
 
   # Lock Threads - https://github.com/dakanji/lock-threads
   lock:
@@ -132,10 +138,6 @@ jobs:
 
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
-
-      - name: Inter-Step-Pause
-        run: |
-          sleep 90s
 
       - name: Lock Declined Pull Requests
         uses: dakanji/lock-threads@v4.0.0.1
@@ -149,7 +151,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Not-Planned issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -162,12 +164,12 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Invalid/Resolved Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -180,12 +182,12 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Misc Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -199,12 +201,12 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -212,18 +214,16 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Abandoned'
-          issue-inactive-days: '5'
+          issue-inactive-days: '4'
           include-any-issue-labels: 'Stale, Incomplete'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
-            Dear @${{ github.event.issue.user.login }},
-
-            This thread is being locked as it appears to have abandoned.
+            This thread is being locked as the item appears to have abandoned.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Unclear Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -236,12 +236,12 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 90s
+          sleep 150s
 
       - name: Lock Inactive Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -256,5 +256,5 @@ jobs:
           issue-comment: |-
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
