@@ -707,7 +707,7 @@ VOID ReadConfig (
     AllowIncludes = OuterLoop;
 
     #if REFIT_DEBUG > 0
-    if (AllowIncludes) LOG_MSG("R E A D   C O N F I G U R A T I O N   F I L E");
+    if (AllowIncludes) LOG_MSG("R E A D   C O N F I G U R A T I O N   T O K E N S");
     MuteLogger = TRUE;
     #endif
 
@@ -2327,16 +2327,17 @@ VOID AddSubmenu (
         BREAD_CRUMB(L"%s:  7a 1", FuncTag);
 
         SubEntry->me.Title = StrDuplicate (
-            (Title != NULL) ? Title : L"Unknown"
+            (Title != NULL) ? Title : L"Unknown Instance"
         );
     }
     else {
         BREAD_CRUMB(L"%s:  7b 1", FuncTag);
 
         SubEntry->me.Title = PoolPrint (
-            L"Boot %s on %s",
-            (Title != NULL) ? Title : L"Unknown",
-            Volume->VolName
+            L"Load %s on %s%s",
+            (Title != NULL) ? Title : L"Unknown Instance",
+            Volume->VolName,
+            GetVolumeTag (Volume->VolName)
         );
     }
 
@@ -2393,8 +2394,8 @@ LOADER_ENTRY * AddStanzaEntries (
     }
 
     Entry->Title = (Title != NULL)
-        ? StrDuplicate (Title)
-        : StrDuplicate (L"Unknown");
+        ? PoolPrint (L"%s Stanza", Title)
+        : StrDuplicate (L"Untitled Manual Stanza");
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
     Entry->Volume          = CopyVolume (CurrentVolume);
@@ -2404,7 +2405,7 @@ LOADER_ENTRY * AddStanzaEntries (
     // Parse the config file to add options for a single stanza, terminating when the token
     // is "}" or when the end of file is reached.
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
 
     static BOOLEAN OtherCall;
     if (OtherCall) {
@@ -2413,7 +2414,7 @@ LOADER_ENTRY * AddStanzaEntries (
     }
     OtherCall = TRUE;
 
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Loader:- '%s'", Entry->Title);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Stanza:- '%s'", Entry->Title);
     #endif
 
     while (Entry->Enabled
@@ -2491,6 +2492,8 @@ LOADER_ENTRY * AddStanzaEntries (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
+                // DA-TAG: Avoid Memory Leak
+                MY_FREE_IMAGE(Entry->me.Image);
                 Entry->me.Image = egLoadIcon (
                     CurrentVolume->RootDir,
                     TokenList[1],
@@ -2508,6 +2511,7 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
             #endif
 
+            // DA-TAG: Avoid Memory Leak
             MY_FREE_POOL(Entry->InitrdPath);
             Entry->InitrdPath = StrDuplicate (TokenList[1]);
         }
@@ -2516,6 +2520,8 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
             #endif
 
+            // DA-TAG: Avoid Memory Leak
+            MY_FREE_POOL(LoadOptions);
             LoadOptions = StrDuplicate (TokenList[1]);
         }
         else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
@@ -2586,9 +2592,10 @@ LOADER_ENTRY * AddStanzaEntries (
     // Set Screen Title
     if (!FirmwareBootNum && Entry->Volume->VolName) {
         Entry->me.Title = PoolPrint (
-            L"Boot %s on %s",
-            (Title != NULL) ? Title : L"Unknown",
-            Entry->Volume->VolName
+            L"Load %s on %s%s",
+            Entry->Title,
+            Entry->Volume->VolName,
+            GetVolumeTag (Entry->Volume->VolName)
         );
     }
     else {
@@ -2600,16 +2607,16 @@ LOADER_ENTRY * AddStanzaEntries (
             MY_FREE_POOL(Entry->InitrdPath);
 
             Entry->me.Title = PoolPrint (
-                L"Boot %s [Firmware Boot Number]",
-                (Title != NULL) ? Title : L"Unknown"
+                L"Load %s ... [Firmware Boot Number]",
+                Entry->Title
             );
 
             Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
         }
         else {
             Entry->me.Title = PoolPrint (
-                L"Boot %s",
-                (Title != NULL) ? Title : L"Unknown"
+                L"Load %s",
+                Entry->Title
             );
         }
     }
@@ -2694,11 +2701,13 @@ VOID ScanUserConfigured (
 
                     ValidEntryCount = ValidEntryCount + 1;
                     #if REFIT_DEBUG > 0
+                    CHAR16 *TmpName = (SelfVolume->VolName)
+                        ? SelfVolume->VolName
+                        : Entry->LoaderPath;
                     LOG_MSG(
-                        "%s  - Found '%s' on '%s'",
-                        OffsetNext,
-                        Entry->Title,
-                        (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
+                        "%s  - Found %s on %s%s",
+                        OffsetNext, Entry->Title,
+                        TmpName, GetVolumeTag (TmpName)
                     );
                     #endif
 

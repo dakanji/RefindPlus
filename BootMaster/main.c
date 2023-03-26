@@ -281,7 +281,7 @@ VOID UnexpectedReturn (
 
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("\n\n");
-    LOG_MSG("**%s", MsgStr);
+    LOG_MSG("*** %s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
 } // static VOID UnexpectedReturn()
@@ -1532,14 +1532,14 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"EFI Version   : %s %d.%02d %s",
+            L"EFI Version   : %s %d.%02d%s",
             ((gST->Hdr.Revision >> 16U) > 1) ? L"UEFI" : L"EFI",
             gST->Hdr.Revision >> 16U,
             gST->Hdr.Revision & ((1 << 16) - 1),
             (WarnVersionEFI)
-                ? L"(Spoofed by Others)"
+                ? L" (Spoofed by Others)"
                 : (SetSysTab)
-                    ? L"(Spoofed)"
+                    ? L" (Spoofed)"
                     : L""
         ),
         TRUE
@@ -1799,7 +1799,7 @@ VOID SetConfigFilename (
     CHAR16                     *Options;
     CHAR16                     *FileName;
     CHAR16                     *SubString;
-    CHAR16                     *MsgStr = NULL;
+    CHAR16                     *MsgStr;
     EFI_LOADED_IMAGE_PROTOCOL  *Info;
 
     #if REFIT_DEBUG > 0
@@ -1890,7 +1890,7 @@ VOID AdjustDefaultSelection (VOID) {
     CHAR16     *MsgStr            = NULL;
     BOOLEAN     LoggedOnce        = FALSE;
 
-    LOG_MSG("A L I G N   D E F A U L T   S E L E C T I O N");
+    LOG_MSG("U P D A T E   D E F A U L T   S E L E C T I O N");
     #endif
 
     while ((Element = FindCommaDelimited (
@@ -2631,7 +2631,7 @@ EFI_STATUS EFIAPI efi_main (
     } // if GlobalConfig.DirectBoot
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"I N I T I A L I S E   S C R E E N   D I S P L A Y");
+    MsgStr = StrDuplicate (L"I N I T I A L I S E   M O N I T O R   D I S P L A Y");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
@@ -3568,7 +3568,7 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Run rEFIt Variant");
+                    MsgStr = StrDuplicate (L"Load rEFIt Variant");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3583,7 +3583,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Run UEFI File");
+                    MsgStr = StrDuplicate (L"Load EFI File");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3623,9 +3623,10 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Boot %s on '%s'",
+                        L"Load %s on %s%s",
                         ourLegacyEntry->Volume->OSName,
-                        ourLegacyEntry->Volume->VolName
+                        ourLegacyEntry->Volume->VolName,
+                        GetVolumeTag (ourLegacyEntry->Volume->VolName)
                     );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -3634,7 +3635,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Run 'Mac-Style' Legacy BIOS Loader");
+                    MsgStr = StrDuplicate (L"Load 'Mac-Style' Legacy Bootcode");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
@@ -3659,7 +3660,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Run 'UEFI-Style' Legacy BIOS Loader");
+                MsgStr = StrDuplicate (L"Load 'UEFI-Style' Legacy Bootcode");
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 LOG_MSG("Received User Input:");
                 LOG_MSG(

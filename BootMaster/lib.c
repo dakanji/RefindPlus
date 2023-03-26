@@ -616,7 +616,7 @@ EFI_STATUS EfivarGetRaw (
     VOID        *TmpBuffer    = NULL;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
     BOOLEAN  HybridLogger = FALSE;
     MY_HYBRIDLOGGER_SET;
     #endif
@@ -1077,7 +1077,11 @@ static
 CHAR16 * FSTypeName (
     IN REFIT_VOLUME *Volume
 ) {
-    CHAR16 *retval = L"Unknown";
+    CHAR16 *retval;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+    #endif
 
     switch (Volume->FSType) {
         case FS_TYPE_WHOLEDISK: retval = L"Whole Disk";       break;
@@ -1093,21 +1097,23 @@ CHAR16 * FSTypeName (
         case FS_TYPE_BTRFS:     retval = L"BtrFS"     ;       break;
         case FS_TYPE_ISO9660:   retval = L"ISO-9660"  ;       break;
         case FS_TYPE_REISERFS:  retval = L"ReiserFS"  ;       break;
+        default:                retval = L"Unknown"   ;       break;
     } // switch
 
-    if (MyStriCmp (retval, L"Unknown")) {
-        if (0);
-        else if (FindSubStr (Volume->VolName, L"Optical Disc Drive")         ) retval = L"ISO-9660 (Assumed)";
-        else if (FindSubStr (Volume->VolName, L"APFS/FileVault Container")   ) retval = L"APFS (Assumed)"    ;
-        else if (FindSubStr (Volume->VolName, L"Fusion/FileVault Container") ) retval = L"HFS+ (Assumed)"    ;
-        else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) retval = L"NTFS (Assumed)"    ;
-        else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) retval = L"NTFS (Assumed)"    ;
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) retval = L"Mac Raid (OFF)"    ;
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) retval = L"Mac Raid (ON)"     ;
-    }
-
-    // DA-TAG: Most likely only just overwrites 'HFS+ (Assumed)'
-    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) retval = L"Container (HFS+)";
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    if (0);
+    else if (FindSubStr      (Volume->VolName, L"Optical Disc Drive"          )) retval = L"ISO-9660 (Assumed)";
+    else if (FindSubStr      (Volume->VolName, L"APFS/FileVault Container"    )) retval = L"APFS (Assumed)"    ;
+    else if (FindSubStr      (Volume->VolName, L"Fusion/FileVault Container"  )) retval = L"HFS+ (Assumed)"    ;
+    else if (MyStriCmp       (Volume->VolName, L"Microsoft Reserved Partition")) retval = L"NTFS (Assumed)"    ;
+    else if (MyStriCmp       (Volume->VolName, L"Basic Data Partition"        )) retval = L"NTFS (Assumed)"    ;
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff          )) retval = L"Mac Raid (OFF)"    ;
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn           )) retval = L"Mac Raid (ON)"     ;
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 
     return retval;
 } // CHAR16 *FSTypeName()
@@ -1375,13 +1381,13 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"linux";
-        Volume->OSName       = L"Linux (Legacy)";
+        Volume->OSName       = L"Linux (Legacy) Instance";
     }
     else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
         // GRUB
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"grub,linux";
-        Volume->OSName       = L"Linux (Legacy)";
+        Volume->OSName       = L"Linux (Legacy) Instance";
     }
     else if (
         (
@@ -1394,7 +1400,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freebsd";
-        Volume->OSName       = L"FreeBSD (Legacy)";
+        Volume->OSName       = L"FreeBSD (Legacy) Instance";
     }
     else if (
         (*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
@@ -1405,7 +1411,7 @@ VOID ScanVolumeBootcode (
         // "Invalid Partition Table" &/or "Missing boot loader".
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freebsd";
-        Volume->OSName       = L"FreeBSD (Legacy)";
+        Volume->OSName       = L"FreeBSD (Legacy) Instance";
     }
     else if (
         FindMem (Buffer, 512,         "!Loading",            8) >= 0 ||
@@ -1413,7 +1419,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"openbsd";
-        Volume->OSName       = L"OpenBSD (Legacy)";
+        Volume->OSName       = L"OpenBSD (Legacy) Instance";
     }
     else if (
         FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
@@ -1421,7 +1427,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"netbsd";
-        Volume->OSName       = L"NetBSD (Legacy)";
+        Volume->OSName       = L"NetBSD (Legacy) Instance";
     }
     else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
         // Windows NT/200x/XP
@@ -1433,7 +1439,7 @@ VOID ScanVolumeBootcode (
         // Windows Vista/7/8/10
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"win8,win";
-        Volume->OSName       = L"Windows (Legacy)";
+        Volume->OSName       = L"Windows (Legacy) Instance";
     }
     else if (
         FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
@@ -1441,7 +1447,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freedos";
-        Volume->OSName       = L"FreeDOS (Legacy)";
+        Volume->OSName       = L"FreeDOS (Legacy) Instance";
     }
     else if (
         FindMem (Buffer, 512, "OS2LDR",  6) >= 0 ||
@@ -1449,17 +1455,17 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"ecomstation";
-        Volume->OSName       = L"eComStation (Legacy)";
+        Volume->OSName       = L"eComStation (Legacy) Instance";
     }
     else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"beos";
-        Volume->OSName       = L"BeOS (Legacy)";
+        Volume->OSName       = L"BeOS (Legacy) Instance";
     }
     else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"zeta,beos";
-        Volume->OSName       = L"ZETA (Legacy)";
+        Volume->OSName       = L"ZETA (Legacy) Instance";
     }
     else if (
         FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
@@ -1467,7 +1473,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"haiku,beos";
-        Volume->OSName       = L"Haiku (Legacy)";
+        Volume->OSName       = L"Haiku (Legacy) Instance";
     } // CompareMem
 
     /**
@@ -2274,11 +2280,11 @@ VOID VetMultiInstanceAPFS (VOID) {
 static
 VOID VetSyncAPFS (VOID) {
     UINTN   i, j;
-    CHAR16 *CheckName = NULL;
-    CHAR16 *TweakName = NULL;
+    CHAR16 *CheckName;
+    CHAR16 *TweakName;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
     #endif
 
     if (PreBootVolumesCount == 0) {
@@ -2337,6 +2343,7 @@ VOID VetSyncAPFS (VOID) {
     #endif
 
     // Filter '- Data' string tag out of Volume Group name if present
+    TweakName = CheckName = NULL;
     for (i = 0; i < DataVolumesCount; i++) {
         if (MyStrStr (DataVolumes[i]->VolName, L"- Data")) {
             for (j = 0; j < SystemVolumesCount; j++) {

@@ -739,7 +739,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
     #endif
 
     if (GOPDraw == NULL) {
@@ -770,7 +770,7 @@ EFI_STATUS egSetGopMode (
     INT32        Mode;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
 
     LOG_MSG("Set GOP Mode:");
     #endif
@@ -858,7 +858,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     UINTN        SizeOfInfo;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
     #endif
 
     if (GOPDraw == NULL) {
@@ -1045,7 +1045,7 @@ VOID egInitConsoleControl (VOID) {
     EFI_HANDLE                    *HandleBuffer   = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s  - Seek Console Control", OffsetNext);
+    LOG_MSG("%s  - Locate Console Control", OffsetNext);
     #endif
 
     // Check ConsoleOut Handle
@@ -1065,7 +1065,7 @@ VOID egInitConsoleControl (VOID) {
             &HandleCount, &HandleBuffer
         );
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
+        LOG_MSG("%s    * Seek on GPU Handle Buffer ... %r", OffsetNext, Status);
         #endif
         if (!EFI_ERROR(Status)) {
             for (i = 0; i < HandleCount; i++) {
@@ -1147,7 +1147,7 @@ BOOLEAN egInitUGADraw (
     #if REFIT_DEBUG > 0
     EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
     LOG_MSG("%s", OffsetNext);
-    LOG_MSG("%s  - Seek Universal Graphics Adapter", OffsetNext);
+    LOG_MSG("%s  - Locate Universal Graphics Adapter", OffsetNext);
     LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
     #endif
     if (!EFI_ERROR(Status)) {
@@ -1168,7 +1168,7 @@ BOOLEAN egInitUGADraw (
         Status = EFI_NOT_FOUND;
     }
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
+    LOG_MSG("%s    * Seek on GPU Handle Buffer ... %r", OffsetNext, Status);
     #endif
 
     UGAonGPU = FALSE;
@@ -1318,7 +1318,7 @@ VOID egInitScreen (VOID) {
             #if REFIT_DEBUG > 0
             EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
             LOG_MSG("%s", OffsetNext);
-            LOG_MSG("%s  - Seek Graphics Output Protocol", OffsetNext);
+            LOG_MSG("%s  - Locate Graphics Output Protocol", OffsetNext);
             LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
             #endif
             if (!EFI_ERROR(Status)) {
@@ -1333,7 +1333,7 @@ VOID egInitScreen (VOID) {
                 &HandleCount, &HandleBuffer
             );
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
+            LOG_MSG("%s    * Seek on GPU Handle Buffer ... %r", OffsetNext, Status);
             #endif
             if (EFI_ERROR(Status)) {
                 // Force to NOT FOUND on error as subsequent code relies on this
@@ -1880,16 +1880,16 @@ BOOLEAN egSetScreenSize (
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    EFI_STATUS   Status  = EFI_SUCCESS;
-    BOOLEAN      ModeSet = FALSE;
+    EFI_STATUS   Status;
+    BOOLEAN      ModeSet;
     UINTN        Size;
-    UINT32       ModeNum = 0;
-    UINT32       CurrentModeNum;
+    CHAR16      *MsgStr;
+    UINT32       ModeNum;
     UINT32       ScreenW;
     UINT32       ScreenH;
     UINT32       UgaDepth;
     UINT32       UgaRefreshRate;
-    CHAR16      *MsgStr = NULL;
+    UINT32       CurrentModeNum;
 
     #if REFIT_DEBUG > 0
     LOG_MSG("Set Screen Size Manually ... H = %d and W = %d", ScreenHeight, ScreenWidth);
@@ -1910,6 +1910,7 @@ BOOLEAN egSetScreenSize (
         return FALSE;
     }
 
+    ModeSet = FALSE;
     if (GOPDraw != NULL) {
         // GOP mode (UEFI)
         CurrentModeNum = GOPDraw->Mode->Mode;
@@ -1960,6 +1961,7 @@ BOOLEAN egSetScreenSize (
             // Do a loop through the modes to see if the specified one is available.
             // Switch to it if so.
             do {
+                ModeNum = 0;
                 Status = REFIT_CALL_4_WRAPPER(
                     GOPDraw->QueryMode, GOPDraw,
                     ModeNum, &Size, &Info
@@ -2124,70 +2126,62 @@ BOOLEAN egSetTextMode (
     UINT32 RequestedMode
 ) {
     EFI_STATUS   Status;
-    BOOLEAN      ChangedIt = FALSE;
-    UINTN        i = 0;
+    UINTN        i;
     UINTN        Width;
     UINTN        Height;
-    CHAR16      *MsgStr = NULL;
+    CHAR16      *MsgStr;
 
-    if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
-        (RequestedMode != gST->ConOut->Mode->Mode)
+    if ((RequestedMode == DONT_CHANGE_TEXT_MODE) ||
+        (RequestedMode == gST->ConOut->Mode->Mode)
     ) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Text Mode to %d", RequestedMode);
-        #endif
+        // Early Return
+        return FALSE;
+    }
 
-        Status = REFIT_CALL_2_WRAPPER(gST->ConOut->SetMode, gST->ConOut, RequestedMode);
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Text Mode to %d", RequestedMode);
+    #endif
+
+    Status = REFIT_CALL_2_WRAPPER(gST->ConOut->SetMode, gST->ConOut, RequestedMode);
+    if (!EFI_ERROR(Status)) {
+        // Early Return
+        return TRUE;
+    }
+
+    SwitchToText (FALSE);
+
+    MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode!!");
+    PrintUglyText (MsgStr, NEXTLINE);
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    #endif
+
+    MY_FREE_POOL(MsgStr);
+
+    MsgStr = StrDuplicate (L"Seek Available Modes:");
+    PrintUglyText (MsgStr, NEXTLINE);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Error Setting Text Mode %d ... Available Modes Are:",
+        RequestedMode
+    );
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    #endif
+
+    MY_FREE_POOL(MsgStr);
+
+    i = 0;
+    do {
+        Status = REFIT_CALL_4_WRAPPER(
+            gST->ConOut->QueryMode, gST->ConOut,
+            i, &Width, &Height
+        );
         if (!EFI_ERROR(Status)) {
-            ChangedIt = TRUE;
-        }
-        else {
-            SwitchToText (FALSE);
-
-            MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode!!");
-            PrintUglyText (MsgStr, NEXTLINE);
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n");
-            #endif
-
-            MY_FREE_POOL(MsgStr);
-
-            MsgStr = StrDuplicate (L"Seek Available Modes:");
-            PrintUglyText (MsgStr, NEXTLINE);
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Error Setting Text Mode %d ... Available Modes Are:",
-                RequestedMode
-            );
-            LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n");
-            #endif
-
-            MY_FREE_POOL(MsgStr);
-
-            do {
-                Status = REFIT_CALL_4_WRAPPER(
-                    gST->ConOut->QueryMode, gST->ConOut,
-                    i, &Width, &Height
-                );
-                if (!EFI_ERROR(Status)) {
-                    MsgStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
-                    PrintUglyText (MsgStr, NEXTLINE);
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("%s", MsgStr);
-                    LOG_MSG("\n");
-                    #endif
-
-                    MY_FREE_POOL(MsgStr);
-                }
-            } while (++i < gST->ConOut->Mode->MaxMode);
-
-            MsgStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+            MsgStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
             PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -2196,13 +2190,24 @@ BOOLEAN egSetTextMode (
             LOG_MSG("\n");
             #endif
 
-            PauseForKey();
-            SwitchToGraphicsAndClear (TRUE);
             MY_FREE_POOL(MsgStr);
-        } // if/else successful change
-    } // if need to change mode
+        }
+    } while (++i < gST->ConOut->Mode->MaxMode);
 
-    return ChangedIt;
+    MsgStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+    PrintUglyText (MsgStr, NEXTLINE);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    #endif
+
+    PauseForKey();
+    SwitchToGraphicsAndClear (TRUE);
+    MY_FREE_POOL(MsgStr);
+
+    return FALSE;
 } // BOOLEAN egSetTextMode()
 
 CHAR16 * egScreenDescription (VOID) {

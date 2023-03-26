@@ -29,10 +29,27 @@
  * Modifications distributed under the preceding terms.
  */
 
-#include "global.h"
 #include "../BootMaster/screenmgt.h"
 #include "../BootMaster/rp_funcs.h"
 #include "lodepng.h"
+
+typedef struct _lode_color {
+   UINT8 red;
+   UINT8 green;
+   UINT8 blue;
+   UINT8 alpha;
+} lode_color;
+
+static
+size_t report_size (
+    VOID *ptr
+) {
+    if (!ptr) {
+        return 0;
+    }
+
+    return * (((size_t *) ptr) - 1);
+} // static size_t report_size()
 
 // EFI's equivalent of realloc requires the original buffer's size as an
 // input parameter, which the standard libc realloc does not require. Thus,
@@ -42,73 +59,81 @@
 // interchangeable with the standard EFI functions; memory allocated via
 // lodepng_refit_malloc() should be freed via lodepng_refit_free(), and myfree() should
 // NOT be used with memory allocated via AllocatePool() or AllocateZeroPool()!
+VOID * lodepng_refit_malloc (
+    size_t size
+) {
+    VOID *ptr;
 
-void* lodepng_refit_malloc(size_t size) {
-   void *ptr;
+    ptr = AllocateZeroPool(size + sizeof (size_t));
+    if (!ptr) {
+        return NULL;
+    }
 
-   ptr = AllocateZeroPool(size + sizeof (size_t));
-   if (ptr) {
-      *(size_t *) ptr = size;
-      return ((size_t *) ptr) + 1;
-   } else {
-      return NULL;
-   }
-} // void* lodepng_refit_malloc()
+    *(size_t *) ptr = size;
 
-void lodepng_refit_free (void *ptr) {
-   if (ptr) {
-      ptr = (void *) (((size_t *) ptr) - 1);
-      FreePool(ptr);
-   }
-} // void lodepng_refit_free()
+    return ((size_t *) ptr) + 1;
+} // VOID * lodepng_refit_malloc()
 
-static size_t report_size(void *ptr) {
-   if (ptr)
-      return * (((size_t *) ptr) - 1);
-   else
-      return 0;
-} // size_t report_size()
+VOID lodepng_refit_free (
+    VOID *ptr
+) {
+    if (ptr) {
+        ptr = (VOID *) (((size_t *) ptr) - 1);
+        MY_FREE_POOL(ptr);
+    }
+} // VOID lodepng_refit_free()
 
-void* lodepng_refit_realloc(void *ptr, size_t new_size) {
-   size_t *new_pool;
-   size_t old_size;
+VOID * lodepng_refit_realloc (
+    VOID   *ptr,
+    size_t  new_size
+) {
+    size_t *new_pool;
+    size_t  old_size;
 
-   new_pool = lodepng_refit_malloc(new_size);
-   if (new_pool && ptr) {
-      old_size = report_size(ptr);
-      CopyMem(new_pool, ptr, (old_size < new_size) ? old_size : new_size);
-   }
-   return new_pool;
-} // lodepng_refit_realloc()
+    new_pool = lodepng_refit_malloc (new_size);
+    if (new_pool && ptr) {
+        old_size = report_size (ptr);
+        CopyMem (new_pool, ptr, (old_size < new_size) ? old_size : new_size);
+    }
+
+    return new_pool;
+} // VOID * lodepng_refit_realloc()
 
 // Finds length of ASCII string, which MUST be NULL-terminated.
-int MyStrlen(const char *InString) {
-   int Length = 0;
+int MyStrlen (
+    const char *InString
+) {
+    int Length = 0;
 
-   if (InString) {
-      while (InString[Length] != '\0')
-         Length++;
-   }
-   return Length;
+    if (InString) {
+        while (InString[Length] != '\0') {
+            Length++;
+        }
+    }
+
+    return Length;
 } // int MyStrlen()
 
-VOID *MyMemSet(VOID *s, int c, size_t n) {
+VOID * MyMemSet (
+    VOID   *s,
+    int     c,
+    size_t  n
+) {
     // DA-TAG: Changed order of params
     SetMem(s, n, c);
+
     return s;
-}
+} // VOID * MyMemSet()
 
-VOID *MyMemCpy(void *__restrict __dest, const void *__restrict __src, size_t __n) {
-    CopyMem(__dest, __src, __n);
+VOID * MyMemCpy (
+    VOID       *__restrict __dest,
+    const VOID *__restrict __src,
+    size_t      __n
+) {
+    CopyMem (__dest, __src, __n);
+
     return __dest;
-}
-
-typedef struct _lode_color {
-   UINT8 red;
-   UINT8 green;
-   UINT8 blue;
-   UINT8 alpha;
-} lode_color;
+} // VOID * MyMemCpy
 
 EG_IMAGE * egDecodePNG (
     IN UINT8   *FileData,
@@ -116,48 +141,53 @@ EG_IMAGE * egDecodePNG (
     IN UINTN    IconSize,
     IN BOOLEAN  WantAlpha
 ) {
-   EG_IMAGE *NewImage = NULL;
-   unsigned Error, Width, Height;
-   EG_PIXEL *PixelData;
-   lode_color *LodeData;
-   UINTN i;
+    unsigned    Error;
+    unsigned    Width;
+    unsigned    Height;
+    lode_color *LodeData;
+    EG_IMAGE   *NewImage;
+    EG_PIXEL   *PixelData;
+    UINTN       i;
 
-   Error = lodepng_decode_memory (
-       (unsigned char **) &PixelData,
+    Error = lodepng_decode_memory (
+        (unsigned char **) &PixelData,
         &Width,
         &Height,
         (unsigned char *) FileData,
         (size_t) FileDataLength,
         LCT_RGBA, 8
     );
+    if (Error) {
+        return NULL;
+    }
 
-   if (Error) {
-      return NULL;
-   }
+    // Allocate image structure and buffer
+    NewImage = egCreateImage (Width, Height, WantAlpha);
+    if (NewImage == NULL) {
+        return NULL;
+    }
 
-   // allocate image structure and buffer
-   NewImage = egCreateImage (Width, Height, WantAlpha);
-   if (NewImage == NULL) {
-       return NULL;
-   }
-   if (NewImage->Width != Width || NewImage->Height != Height) {
-       // Should never happen; just being paranoid.
-       MY_FREE_IMAGE(NewImage);
-       return NULL;
-   }
+    if (NewImage->Width != Width || NewImage->Height != Height) {
+        // Should never happen ... just being paranoid.
+        MY_FREE_IMAGE(NewImage);
 
-   LodeData = (lode_color *) PixelData;
+        return NULL;
+    }
 
-   // Annoyingly, EFI and LodePNG use different ordering of RGB values in
-   // their pixel data representations, so we've got to adjust them.
-   for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
-      NewImage->PixelData[i].r = LodeData[i].red;
-      NewImage->PixelData[i].g = LodeData[i].green;
-      NewImage->PixelData[i].b = LodeData[i].blue;
-      if (WantAlpha)
-         NewImage->PixelData[i].a = LodeData[i].alpha;
-   }
-   lodepng_refit_free (PixelData);
+    LodeData = (lode_color *) PixelData;
 
-   return NewImage;
+    // UEFI and LodePNG use different ordering of RGB values in
+    // their pixel data representations, so we must adjust them.
+    for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
+        NewImage->PixelData[i].r = LodeData[i].red;
+        NewImage->PixelData[i].g = LodeData[i].green;
+        NewImage->PixelData[i].b = LodeData[i].blue;
+
+        if (WantAlpha) {
+            NewImage->PixelData[i].a = LodeData[i].alpha;
+        }
+    }
+    lodepng_refit_free (PixelData);
+
+    return NewImage;
 } // EG_IMAGE * egDecodePNG()

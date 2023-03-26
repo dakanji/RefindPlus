@@ -246,9 +246,9 @@ REFIT_VOLUME * PickOneESP (
 
 static
 EFI_STATUS RenameFile (
-    EFI_FILE_PROTOCOL *BaseDir,
-    CHAR16            *OldName,
-    CHAR16            *NewName
+    EFI_FILE_PROTOCOL  *BaseDir,
+    CHAR16             *OldName,
+    CHAR16             *NewName
 ) {
     EFI_STATUS          Status;
     EFI_FILE_PROTOCOL  *FilePtr;
@@ -314,7 +314,7 @@ EFI_STATUS BackupOldFile (
     EFI_FILE_PROTOCOL   *BaseDir,
     CHAR16              *FileName
 ) {
-    EFI_STATUS          Status;
+    EFI_STATUS           Status;
     CHAR16              *NewName;
 
     #if REFIT_DEBUG > 0
@@ -340,7 +340,7 @@ EFI_STATUS BackupOldFile (
 // Create directories in which RefindPlus will reside.
 static
 EFI_STATUS CreateDirectories (
-    EFI_FILE_PROTOCOL *BaseDir
+    EFI_FILE_PROTOCOL  *BaseDir
 ) {
     EFI_STATUS          Status   = EFI_SUCCESS;
     EFI_FILE_PROTOCOL  *TheDir   = NULL;
@@ -492,12 +492,15 @@ EFI_STATUS CopyDirectory (
     EFI_FILE_PROTOCOL *DestDirPtr,
     CHAR16            *DestDirName
 ) {
-    REFIT_DIR_ITER  DirIter;
-    EFI_FILE_INFO   *DirEntry;
-    CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
-    EFI_STATUS      Status = EFI_SUCCESS;
+    EFI_STATUS         Status;
+    CHAR16            *DestFileName   = NULL;
+    CHAR16            *SourceFileName = NULL;
+    EFI_FILE_INFO     *DirEntry;
+    REFIT_DIR_ITER     DirIter;
 
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
+
+    Status         = EFI_SUCCESS;
     while (Status == EFI_SUCCESS && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
         SourceFileName = PoolPrint (L"%s\\%s", SourceDirName, DirEntry->FileName);
         DestFileName   = PoolPrint (L"%s\\%s", DestDirName, DirEntry->FileName);
@@ -526,12 +529,12 @@ EFI_STATUS CopyDrivers (
     EFI_FILE_PROTOCOL *DestDirPtr,
     CHAR16            *DestDirName
 ) {
-    UINTN           i;
-    CHAR16         *DestFileName   = NULL;
-    CHAR16         *SourceFileName = NULL;
-    CHAR16         *DriverName     = NULL; // Note: Assign to string constants ... do not free.
-    EFI_STATUS      Status         = EFI_SUCCESS;
-    EFI_STATUS      WorstStatus    = EFI_SUCCESS;
+    UINTN              i;
+    CHAR16            *DestFileName   = NULL;
+    CHAR16            *SourceFileName = NULL;
+    CHAR16            *DriverName     = NULL; // Note: Assigned to string constants ... do not free.
+    EFI_STATUS         WorstStatus    = EFI_SUCCESS;
+    EFI_STATUS         Status;
 
 
     #if REFIT_DEBUG > 0
@@ -656,11 +659,15 @@ static
 EFI_STATUS CopyFiles (
     EFI_FILE_PROTOCOL *TargetDir
 ) {
-    REFIT_VOLUME    *SourceVolume = NULL; // Do not free
-    CHAR16          *SourceFile   = NULL, *SourceDir, *ConfFile;
-    CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindPlusName;
-    EFI_STATUS       Status;
-    EFI_STATUS       WorstStatus = EFI_SUCCESS;
+    REFIT_VOLUME      *SourceVolume = NULL; // Do not free
+    CHAR16            *SourceFile   = NULL;
+    CHAR16            *SourceDir;
+    CHAR16            *ConfFile;
+    CHAR16            *RefindPlusName;
+    CHAR16            *TargetDriversDir;
+    CHAR16            *SourceDriversDir;
+    EFI_STATUS         Status;
+    EFI_STATUS         WorstStatus = EFI_SUCCESS;
 
     FindVolumeAndFilename (
         GlobalConfig.SelfDevicePath,

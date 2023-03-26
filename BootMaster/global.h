@@ -101,7 +101,7 @@
 #define GRAPHICS_FOR_OPENCORE    (32)
 #define GRAPHICS_FOR_CLOVER      (64)
 
-// Type of legacy (BIOS) boot support detected
+// Type of Legacy Boot support detected
 #define LEGACY_TYPE_NONE          (0)
 #define LEGACY_TYPE_MAC           (1)
 #define LEGACY_TYPE_UEFI          (2)
@@ -129,7 +129,7 @@
 #define DEVICE_TYPE_ACPI       (0x02) /* returned by UEFI boot loader on USB */
 #define DEVICE_TYPE_MESSAGING  (0x03)
 #define DEVICE_TYPE_MEDIA      (0x04) /* returned by EFI boot loaders on hard disk */
-#define DEVICE_TYPE_BIOS       (0x05) /* returned by legacy (BIOS) boot loaders */
+#define DEVICE_TYPE_BIOS       (0x05) /* returned by Legacy Boot loaders */
 #define DEVICE_TYPE_END        (0x75) /* end of path */
 
 // Filesystem type identifiers ... Not all are used.

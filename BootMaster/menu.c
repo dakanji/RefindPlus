@@ -475,9 +475,10 @@ VOID AddSubMenuEntry (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Set SubMenu Entry in %s - %s",
+        L"Set SubMenu Entry in %s - %s%s",
         SubScreen->Title,
-        SubEntry->Title
+        SubEntry->Title,
+        GetVolumeTag (SubEntry->Title)
     );
     #endif
 
@@ -501,7 +502,8 @@ VOID AddMenuEntry (
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"Adding Menu Entry to %s - %s",
         Screen->Title,
-        Entry->Title
+        Entry->Title,
+        GetVolumeTag (Entry->Title)
     );
     #endif
 
@@ -3111,7 +3113,7 @@ BOOLEAN HideLegacyTag (
         Name = StrDuplicate (LegacyLoader->BdsOption->Description);
     }
     else {
-        Name = StrDuplicate (L"Legacy BIOS Loader");
+        Name = StrDuplicate (L"Legacy Bootcode");
     }
 
     AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Tag Below?", FALSE);

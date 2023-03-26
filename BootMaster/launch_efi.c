@@ -357,7 +357,7 @@ EFI_STATUS StartEFIImage (
     }
 
     MsgStr = PoolPrint (
-        L"Starting '%s' ... Load Options:- '%s'",
+        L"Loading '%s' ... Load Options:- '%s'",
         ImageTitle, FullLoadOptions ? FullLoadOptions : L"NULL"
     );
 

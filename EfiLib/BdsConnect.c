@@ -259,6 +259,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     CHAR16 *DevicePathStr    = NULL;
     CHAR16 *DeviceData       = NULL;
     CHAR16 *MsgStr           = NULL;
+    CHAR16 *TmpStr           = NULL;
     #endif
 
     DetectedDevices = FALSE;
@@ -322,7 +323,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         );
         if (EFI_ERROR(XStatus)) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X     - ERROR: %r", HexIndex, XStatus);
+            MsgStr = PoolPrint (L"Handle 0x%03X      - ERROR: %r", HexIndex, XStatus);
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -330,7 +331,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         }
         else if (HandleType == NULL) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X     - ERROR: Invalid Handle", HexIndex);
+            MsgStr = PoolPrint (L"Handle 0x%03X      - ERROR: Invalid Handle", HexIndex);
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -353,7 +354,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
             if (!Device) {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Handle 0x%03X   Discounted [Other Item]", HexIndex);
+                MsgStr = PoolPrint (L"Handle 0x%03X     Discounted [Other Item]", HexIndex);
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -517,7 +518,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 if (Parent) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X   Skipped [Parent Device] . %s",
+                        L"Handle 0x%03X     Skipped [Parent Device]     %s",
                         HexIndex, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -530,7 +531,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X * %r                   %s",
+                        L"Handle 0x%03X  *  %r                  -  %s",
                         HexIndex, XStatus, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -543,7 +544,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     if (XStatus == EFI_NOT_STARTED) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X   Declined [Empty Device] . %s",
+                            L"Handle 0x%03X     Declined [Empty Device]     %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -552,7 +553,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_NOT_FOUND) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X   Bypassed [Not Linkable] . %s",
+                            L"Handle 0x%03X     Bypassed [Not Linkable]     %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -561,7 +562,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_INVALID_PARAMETER) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X   - ERROR: Invalid Param  * %s",
+                            L"Handle 0x%03X  -  ERROR: Invalid Param     *  %s",
                             HexIndex, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -569,13 +570,15 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                         MY_FREE_POOL(MsgStr);
                     }
                     else {
+                        TmpStr = PoolPrint (L"WARN: %r", XStatus);
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X   - WARN: %r  * %s",
-                            HexIndex, XStatus, DeviceData
+                            L"Handle 0x%03X  -  %-23s  *  %s",
+                            HexIndex, TmpStr, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s", MsgStr);
                         MY_FREE_POOL(MsgStr);
+                        MY_FREE_POOL(TmpStr);
                     }
 
                     #endif
@@ -624,7 +627,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     BOOLEAN     RescanDrivers = (GlobalConfig.RescanDXE || ForceRescanDXE);
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr = NULL;
+    CHAR16  *MsgStr;
     #endif
 
     // DA-TAG: Limit to TianoCore
@@ -664,7 +667,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                LOG_MSG("INFO: Could Not Locate GOP on Device Handles");
+                LOG_MSG("INFO: Could Not Identify Path to GOP on Device Handles");
             }
         }
         else {
@@ -707,7 +710,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr;
     #endif
 
     // Update Boot Services to permit reloading OptionROM

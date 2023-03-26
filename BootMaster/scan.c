@@ -320,10 +320,11 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         }
     }
 
+    CHAR16 *TmpName = (DisplayName) ? DisplayName : Entry->Volume->VolName;
     SubScreen->Title = PoolPrint (
-        L"Boot Options for %s on %s",
+        L"Boot Options for %s on %s%s",
         (Entry->Title != NULL) ? Entry->Title  : FileName,
-        (DisplayName) ? DisplayName : Entry->Volume->VolName
+        TmpName, GetVolumeTag (TmpName)
     );
 
     #if REFIT_DEBUG > 0
@@ -351,10 +352,10 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         else if (Entry->OSType == 'X')                                             NameOS = L"XoM";
         else if (Entry->OSType == 'E')                                             NameOS = L"Elilo";
         else if (Entry->OSType == 'R')                                             NameOS = L"rEFit Variant";
-        else if (FindSubStr (SubScreen->Title, L"OpenCore"))                       NameOS = L"OpenCore Item";
-        else if (FindSubStr (SubScreen->Title, L"Clover"))                         NameOS = L"Clover Item";
+        else if (FindSubStr (SubScreen->Title, L"OpenCore"))                       NameOS = L"OpenCore";
+        else if (FindSubStr (SubScreen->Title, L"Clover"))                         NameOS = L"Clover";
 
-        SubEntry->me.Title    = PoolPrint (L"Boot %s with Default Options", NameOS);
+        SubEntry->me.Title    = PoolPrint (L"Load %s Instance with Default Options", NameOS);
         MainOptions           = StrDuplicate (SubEntry->LoadOptions);
         SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -414,7 +415,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS with a 64-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance with a 64-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=x86_64");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -422,7 +423,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS with a 32-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance with a 32-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=i386");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -431,7 +432,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -440,14 +441,14 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (64-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode (64-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (32-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode (32-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -457,14 +458,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode (Quiet)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Safe Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Safe Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -474,14 +475,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode (Quiet)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Single User Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Single User Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -545,34 +546,36 @@ VOID GenerateSubScreen (
             BREAD_CRUMB(L"%s:  2", FuncTag);
             if (File) {
                 BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-                InitrdName    = FindInitrd (Entry->LoaderPath, Volume);
-
-                BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-                TokenCount    = ReadTokenLine (File, &TokenList);
-
-                BREAD_CRUMB(L"%s:  2a 3", FuncTag);
                 KernelVersion = FindNumbers (Entry->LoaderPath);
 
-                BREAD_CRUMB(L"%s:  2a 4", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+                TokenCount = ReadTokenLine (File, &TokenList);
+
+                BREAD_CRUMB(L"%s:  2a 3", FuncTag);
                 if (TokenCount >= 2) {
-                    BREAD_CRUMB(L"%s:  2a 4a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  2a 3a 1", FuncTag);
                     ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
                 }
 
-                BREAD_CRUMB(L"%s:  2a 5", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 4", FuncTag);
                 // First entry requires special processing, since it was initially set
                 // up with a default title but correct options by InitializeSubScreen(),
                 // earlier.
-                if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
-                    BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
+                if ((TokenCount > 1)             &&
+                    (SubScreen->Entries != NULL) &&
+                    (SubScreen->Entries[0] != NULL)
+                ) {
+                    BREAD_CRUMB(L"%s:  2a 4a 1", FuncTag);
                     MY_FREE_POOL(SubScreen->Entries[0]->Title);
-                    SubScreen->Entries[0]->Title = TokenList[0]
-                        ? StrDuplicate (TokenList[0])
-                        : StrDuplicate (L"Boot Linux");
+                    SubScreen->Entries[0]->Title = StrDuplicate (
+                        (TokenList[0]) ? TokenList[0] : L"Load Linux Instance"
+                    );
                 }
+                BREAD_CRUMB(L"%s:  2a 5", FuncTag);
+                FreeTokenLine (&TokenList, &TokenCount);
 
                 BREAD_CRUMB(L"%s:  2a 6", FuncTag);
-                FreeTokenLine (&TokenList, &TokenCount);
+                InitrdName = FindInitrd (Entry->LoaderPath, Volume);
 
                 BREAD_CRUMB(L"%s:  2a 7", FuncTag);
                 while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
@@ -588,7 +591,7 @@ VOID GenerateSubScreen (
                         BREAD_CRUMB(L"%s:  2a 7a 3a 1", FuncTag);
                         SubEntry->me.Title = TokenList[0]
                             ? StrDuplicate (TokenList[0])
-                            : StrDuplicate (L"Boot Linux");
+                            : StrDuplicate (L"Load Linux Instance");
 
                         BREAD_CRUMB(L"%s:  2a 7a 3a 2", FuncTag);
                         MY_FREE_POOL(SubEntry->LoadOptions);
@@ -609,9 +612,10 @@ VOID GenerateSubScreen (
                     BREAD_CRUMB(L"%s:  2a 7a 5 - WHILE LOOP:- END", FuncTag);
                     LOG_SEP(L"X");
                 } // while
+                BREAD_CRUMB(L"%s:  2a 8", FuncTag);
                 FreeTokenLine (&TokenList, &TokenCount);
 
-                BREAD_CRUMB(L"%s:  2a 8", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 9", FuncTag);
                 MY_FREE_POOL(KernelVersion);
                 MY_FREE_POOL(InitrdName);
                 MY_FREE_FILE(File);
@@ -632,7 +636,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Linux for a 17\" iMac or a 15\" MacBook Pro (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a 17\" iMac or a 15\" MacBook Pro (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 i17");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -640,7 +644,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Linux for a 20\" iMac (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a 20\" iMac (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 i20");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -648,7 +652,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Linux for a Mac Mini (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a Mac Mini (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 mini");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -667,7 +671,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Windows on Hard Disk");
+                SubEntry->me.Title        = StrDuplicate (L"Load Windows Instance on Hard Disk");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -h");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -675,7 +679,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Windows on Optical Disc");
+                SubEntry->me.Title        = StrDuplicate (L"Load Windows Instance on Optical Disc");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -c");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -683,7 +687,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Run XOM in Text Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load XOM Instance in Text Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -1252,8 +1256,8 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
         Entry->me.Row        = Row;
         Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-        Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
-        Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
+        Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown Instance");
+        Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown Instance"); // without "Reboot to"
         Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
         TempStr              = DevicePathToStr (EfiLoaderPath);
 
@@ -1309,8 +1313,9 @@ LOADER_ENTRY * AddLoaderEntry (
 ) {
     EFI_STATUS     Status;
     LOADER_ENTRY  *Entry;
-    CHAR16        *TitleEntry  =  NULL;
-    CHAR16        *DisplayName =  NULL;
+    CHAR16        *DisplayName;
+    CHAR16        *TmpName;
+
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute          = FALSE;
     #endif
@@ -1330,6 +1335,7 @@ LOADER_ENTRY * AddLoaderEntry (
         }
     }
 
+    DisplayName = NULL;
     if (Volume->FSType == FS_TYPE_APFS) {
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
@@ -1394,16 +1400,16 @@ LOADER_ENTRY * AddLoaderEntry (
     if (FindSubStr(Volume->VolName, L"OS X Install") ||
         FindSubStr(Volume->VolName, L"Mac OS Install")
     ) {
-        TitleEntry = L"MacOS Installer";
+        Entry->Title = StrDuplicate (L"MacOS Installer");
     }
     else {
-        TitleEntry = (LoaderTitle) ? LoaderTitle : LoaderPath;
+        Entry->Title = StrDuplicate (
+            (LoaderTitle) ? LoaderTitle : LoaderPath
+        );
     }
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
-
-    Entry->Title = StrDuplicate (TitleEntry);
 
     #if REFIT_DEBUG > 0
     if (DisplayName) {
@@ -1413,14 +1419,15 @@ LOADER_ENTRY * AddLoaderEntry (
     ALT_LOG(1, LOG_LINE_NORMAL, L"UEFI Loader File:- '%s'", LoaderPath);
     #endif
 
+    TmpName = (DisplayName) ? DisplayName : Volume->VolName;
     Entry->me.Title = (DisplayName || Volume->VolName)
         ? PoolPrint (
-            L"Boot %s on %s",
-            TitleEntry,
-            (DisplayName) ? DisplayName : Volume->VolName
+            L"Load %s on %s%s",
+            Entry->Title,
+            TmpName, GetVolumeTag (TmpName)
         )
         : PoolPrint (
-            L"Boot %s",
+            L"Load %s",
             (LoaderTitle) ? LoaderTitle : LoaderPath
         );
     Entry->me.Row = 0;
@@ -1440,15 +1447,15 @@ LOADER_ENTRY * AddLoaderEntry (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
+    TmpName = (DisplayName)
+        ? DisplayName
+        : (Volume->VolName)
+            ? Volume->VolName
+            : Entry->LoaderPath;
     LOG_MSG(
-        "%s  - Found '%s' on '%s'",
-        OffsetNext,
-        TitleEntry,
-        (DisplayName)
-            ? DisplayName
-            : (Volume->VolName)
-                ? Volume->VolName
-                : Entry->LoaderPath
+        "%s  - Found %s on %s%s",
+        OffsetNext, Entry->Title,
+        TmpName, GetVolumeTag (TmpName)
     );
 
     ALT_LOG(1, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
@@ -1555,6 +1562,20 @@ VOID CleanUpLoaderList (
         MY_FREE_POOL(Temp);
     } // while
 } // static VOID CleanUpLoaderList()
+
+CHAR16 * GetVolumeTag (
+    IN CHAR16 *VolumeName
+) {
+    CHAR16 *RetVal = MyStriCmp (VolumeName, L"EFI")
+        ? L" System Partition"
+        : MyStriCmp (VolumeName, L"ESP")
+            ? L""
+            : MyStriCmp (VolumeName, L"Partition")
+                ? L""
+                : L" Volume";
+
+    return RetVal;
+} // CHAR16 * GetVolumeTag()
 
 // Returns FALSE if the specified file/volume matches the GlobalConfig.DontScanDirs
 // or GlobalConfig.DontScanVolumes specification, or if Path points to a volume
@@ -2158,7 +2179,7 @@ BOOLEAN ScanMacOsLoader (
         if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
-            AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
+            AddLoaderEntry (FullFileName, L"RefindPlus Instance", Volume, TRUE);
         }
         else {
             HasMacOS = TRUE;
@@ -2172,7 +2193,7 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                AddLoaderEntry (FullFileName, L"MacOS", Volume, TRUE);
+                AddLoaderEntry (FullFileName, L"MacOS Instance", Volume, TRUE);
             }
         }
 
@@ -2424,7 +2445,7 @@ VOID ScanEfiFiles (
             !FilenameIn (Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
         ) {
             //BREAD_CRUMB(L"%s:  6a 7a 1", FuncTag);
-            AddLoaderEntry (FileName, L"Windows XP (XoM)", Volume, TRUE);
+            AddLoaderEntry (FileName, L"Windows XP (XoM) Instance", Volume, TRUE);
 
             //BREAD_CRUMB(L"%s:  6a 7a 2", FuncTag);
             if (DuplicatesFallback (Volume, FileName)) {
@@ -2455,7 +2476,7 @@ VOID ScanEfiFiles (
         ) {
             //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
             // Boot Repair Backup
-            AddLoaderEntry (FileName, L"UEFI Windows (BRBackup)", Volume, TRUE);
+            AddLoaderEntry (FileName, L"UEFI Windows (BRBackup) Instance", Volume, TRUE);
 
             //BREAD_CRUMB(L"%s:  7a 2a 2", FuncTag);
             FoundBRBackup = TRUE;
@@ -2477,7 +2498,9 @@ VOID ScanEfiFiles (
                 GlobalConfig.DontScanFiles
             )
         ) {
-            CHAR16 *TmpMsg = (FoundBRBackup) ? L"Assumed UEFI Windows (Potentially GRUB)" : L"Windows (UEFI)";
+            CHAR16 *TmpMsg = (FoundBRBackup)
+                ? L"Assumed UEFI Windows Instance (Potentially GRUB)"
+                : L"Windows (UEFI) Instance";
             AddLoaderEntry (FileName, TmpMsg, Volume, TRUE);
 
             if (DuplicatesFallback (Volume, FileName)) {
@@ -2518,15 +2541,15 @@ VOID ScanEfiFiles (
 
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  9a 1a 1 - WHILE LOOP:- START", FuncTag);
-        if (SkipDir                                     ||
-            EfiDirEntry->FileName[0] == '.'             ||
-            MyStriCmp (Extension, L".log")              ||
-            MyStriCmp (Extension, L".txt")              ||
-            MyStriCmp (Extension, L".png")              ||
-            MyStriCmp (Extension, L".bmp")              ||
-            MyStriCmp (Extension, L".jpg")              ||
-            MyStriCmp (Extension, L".jpeg")             ||
-            MyStriCmp (Extension, L".icns")             ||
+        if (SkipDir                                  ||
+            EfiDirEntry->FileName[0] == '.'          ||
+            MyStriCmp (Extension, L".log")           ||
+            MyStriCmp (Extension, L".txt")           ||
+            MyStriCmp (Extension, L".png")           ||
+            MyStriCmp (Extension, L".bmp")           ||
+            MyStriCmp (Extension, L".jpg")           ||
+            MyStriCmp (Extension, L".jpeg")          ||
+            MyStriCmp (Extension, L".icns")          ||
             MyStriCmp (EfiDirEntry->FileName, L"tools")
         ) {
             //BREAD_CRUMB(L"%s:  9a 1a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
@@ -2942,7 +2965,7 @@ VOID ScanForBootloaders (VOID) {
 
     #if REFIT_DEBUG > 0
     UINTN    KeyNum;
-    CHAR16  *MsgStr = NULL;
+    CHAR16  *MsgStr;
     #endif
 
     ScanningLoaders = TRUE;
@@ -3292,7 +3315,7 @@ VOID ScanForBootloaders (VOID) {
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"Set Key '%d' to Run Loader:- '%s'",
+                L"Set Key '%d' to Run Item:- '%s'",
                 KeyNum, MainMenu->Entries[i]->Title
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -3799,18 +3822,28 @@ VOID ScanForTools (VOID) {
                     &ItemBuffer, NULL
                 ) != EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"'Showtools' Includes Firmware Tool but 'OsIndicationsSupported' Variable is Missing!!"
+                    ToolStr = PoolPrint (
+                        L"Did Not Enable Tool:- '%s' ... 'OsIndicationsSupported' Flag Was Not Found",
+                        ToolName
                     );
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG_MSG(" * NOTE *     %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
                     #endif
                 }
                 else {
                     osind = *(UINT64 *) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         MenuEntryFirmware = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                        if (MenuEntryFirmware) {
-                            FoundTool = TRUE;
-
+                        if (!MenuEntryFirmware) {
+                            #if REFIT_DEBUG > 0
+                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                            ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            LOG_MSG("*_ WARN _*    %s", ToolStr);
+                            MY_FREE_POOL(ToolStr);
+                            #endif
+                        }
+                        else {
                             MenuEntryFirmware->Title          = StrDuplicate (ToolName);
                             MenuEntryFirmware->Tag            = TAG_FIRMWARE;
                             MenuEntryFirmware->Row            = 1;
@@ -3827,29 +3860,17 @@ VOID ScanForTools (VOID) {
                             MY_FREE_POOL(ToolStr);
                             #endif
                         }
-                        else {
-                            #if REFIT_DEBUG > 0
-                            // Fake 'FoundTool' to bypass downstream logging
-                            FoundTool = TRUE;
-
-                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
-                            ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            LOG_MSG("*_ WARN _*    %s", ToolStr);
-                            MY_FREE_POOL(ToolStr);
-                            #endif
-                        }
+                    }
+                    else {
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG_MSG("*_ WARN _*    %s", ToolStr);
+                        MY_FREE_POOL(ToolStr);
+                        #endif
                     }
                     MY_FREE_POOL(ItemBuffer);
                 }
-
-                #if REFIT_DEBUG > 0
-                if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("*_ WARN _*    %s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                }
-                #endif
 
             break;
             case TAG_SHELL:

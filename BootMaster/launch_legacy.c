@@ -51,6 +51,7 @@
 #include "icns.h"
 #include "lib.h"
 #include "menu.h"
+#include "scan.h"
 #include "mystrings.h"
 #include "screenmgt.h"
 #include "launch_legacy.h"
@@ -442,7 +443,7 @@ EFI_STATUS StartLegacyImageList (
         }
     } // for
 
-    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy BIOS Loader")) {
+    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy Bootcode")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
@@ -471,7 +472,7 @@ EFI_STATUS StartLegacyImageList (
 
     // Close open file handles
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy BIOS Loader");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Loading 'Mac-Style' Legacy Bootcode");
     #endif
 
     UninitRefitLib();
@@ -530,13 +531,13 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Starting 'Mac-Style' Legacy BIOS Loader:- '%s'",
+        L"Loading 'Mac-Style' Legacy Bootcode:- '%s'",
         SelectionName
     );
     #endif
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    BeginExternalScreen (TRUE, L"Booting 'Mac-Style' Legacy BIOS Loader");
+    BeginExternalScreen (TRUE, L"Loading 'Mac-Style' Legacy Bootcode");
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
@@ -658,8 +659,8 @@ VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
-    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy BIOS Loader";
-    CHAR16 *MsgStrB = PoolPrint (L"Booting %s", MsgStrA);
+    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy Bootcode";
+    CHAR16 *MsgStrB = PoolPrint (L"Loading %s", MsgStrA);
     CHAR16 *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
 
     #if REFIT_DEBUG > 0
@@ -705,9 +706,9 @@ VOID AddLegacyEntry (
     LEGACY_ENTRY      *Entry;
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
-    const CHAR16      *VolDesc = NULL;
+    CHAR16            *VolDesc;
     CHAR16            *LegacyTitle;
-    CHAR16             ShortcutLetter = 0;
+    CHAR16             ShortcutLetter;
 
     if (Volume == NULL) {
         // Early Return
@@ -724,9 +725,10 @@ VOID AddLegacyEntry (
         }
     }
 
+    ShortcutLetter = 0;
     if (LoaderTitle == NULL) {
         if (!Volume->OSName) {
-            LoaderTitle = L"Legacy BIOS Loader";
+            LoaderTitle = L"Legacy Bootcode";
         }
         else {
             LoaderTitle = Volume->OSName;
@@ -741,7 +743,12 @@ VOID AddLegacyEntry (
         : (Volume->DiskKind == DISK_KIND_OPTICAL)
             ? L"CD" : L"HD";
 
-    LegacyTitle = PoolPrint (L"Boot %s on %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint (
+        L"Load %s on %s%s",
+        LoaderTitle,
+        VolDesc,
+        GetVolumeTag (VolDesc)
+    );
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MY_FREE_POOL(LegacyTitle);
@@ -786,7 +793,11 @@ VOID AddLegacyEntry (
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s  - Found '%s' on '%s'", OffsetNext, LoaderTitle, VolDesc);
+    LOG_MSG(
+        "%s  - Found %s on %s%s",
+        OffsetNext,LoaderTitle,
+        VolDesc, GetVolumeTag (VolDesc)
+    );
     #endif
 
     // Create the submenu
@@ -799,9 +810,11 @@ VOID AddLegacyEntry (
     }
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-    SubScreen->Title      = PoolPrint (
-        L"Boot Options for %s on %s",
-        LoaderTitle, VolDesc
+    SubScreen->Title  = PoolPrint (
+        L"Boot Options for %s on %s%s",
+        LoaderTitle,
+        VolDesc,
+        GetVolumeTag (VolDesc)
     );
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -819,7 +832,7 @@ VOID AddLegacyEntry (
         return;
     }
 
-    SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
+    SubEntry->me.Title    = PoolPrint (L"Load %s", LoaderTitle);
     SubEntry->me.Tag      = TAG_LEGACY;
     SubEntry->Volume      = CopyVolume (Entry->Volume);
     SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
@@ -846,7 +859,6 @@ VOID AddLegacyEntryUEFI (
     LEGACY_ENTRY      *Entry;
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
-    CHAR16             ShortcutLetter = 0;
 
     if (IsInSubstring (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
         // Early Return
@@ -866,8 +878,9 @@ VOID AddLegacyEntryUEFI (
     }
 
     Entry->me.Title = PoolPrint (
-        L"Boot Legacy BIOS Loader on %s",
-        BdsOption->Description
+        L"Load Legacy Bootcode on %s%s",
+        BdsOption->Description,
+        GetVolumeTag (BdsOption->Description)
     );
 
     #if REFIT_DEBUG > 0
@@ -880,7 +893,7 @@ VOID AddLegacyEntryUEFI (
     Entry->me.Row            = 0;
     Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.SubScreen      = NULL; // Initial Setting
-    Entry->me.ShortcutLetter = ShortcutLetter;
+    Entry->me.ShortcutLetter = 0;
     Entry->me.Image          = LoadOSIcon (L"legacy", L"legacy", TRUE);
     Entry->LoadOptions       = (DiskType == BBS_CDROM)
                                 ? L"CD"
@@ -900,9 +913,13 @@ VOID AddLegacyEntryUEFI (
     }
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-    SubScreen->Title      = PoolPrint (L"Boot Options for Legacy BIOS Loader on %s", BdsOption->Description);
-    SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
-    SubScreen->Hint2      = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
+    SubScreen->Title = PoolPrint (
+        L"Boot Options for Legacy Bootcode on %s%s",
+        BdsOption->Description,
+        GetVolumeTag (BdsOption->Description)
+    );
+    SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
+    SubScreen->Hint2 = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
         ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
         : StrDuplicate (SUBSCREEN_HINT2);
 
@@ -916,7 +933,7 @@ VOID AddLegacyEntryUEFI (
         return;
     }
 
-    SubEntry->me.Title  = PoolPrint (L"Boot %s", BdsOption->Description);
+    SubEntry->me.Title  = PoolPrint (L"Load %s", BdsOption->Description);
     SubEntry->me.Tag    = TAG_LEGACY_UEFI;
     SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
@@ -930,7 +947,7 @@ VOID AddLegacyEntryUEFI (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s  - Found 'UEFI-Style' Legacy BIOS Loader on '%s'", OffsetNext, BdsOption->Description);
+    LOG_MSG("%s  - Found 'UEFI-Style' Legacy Bootcode on '%s'", OffsetNext, BdsOption->Description);
     #endif
 } // static VOID AddLegacyEntryUEFI()
 
@@ -1147,7 +1164,7 @@ VOID ScanLegacyVolume (
 } // static VOID ScanLegacyVolume()
 
 
-// Scan attached optical discs for legacy (BIOS) boot code
+// Scan attached optical discs for Legacy Boot code
 //   and add anything found to the list.
 VOID ScanLegacyDisc (VOID) {
     UINTN         VolumeIndex;
@@ -1186,7 +1203,7 @@ VOID ScanLegacyDisc (VOID) {
     LOG_SEP(L"X");
 } // VOID ScanLegacyDisc()
 
-// Scan internal hard disks for legacy (BIOS) boot code
+// Scan internal hard disks for Legacy Boot code
 //   and add anything found to the list.
 VOID ScanLegacyInternal (VOID) {
     UINTN         VolumeIndex;
@@ -1225,7 +1242,7 @@ VOID ScanLegacyInternal (VOID) {
     LOG_SEP(L"X");
 } // VOID ScanLegacyInternal()
 
-// Scan external disks for legacy (BIOS) boot code
+// Scan external disks for Legacy Boot code
 //   and add anything found to the list.
 VOID ScanLegacyExternal (VOID) {
     UINTN         VolumeIndex;
@@ -1266,7 +1283,7 @@ VOID ScanLegacyExternal (VOID) {
     LOG_SEP(L"X");
 } // VOID ScanLegacyExternal()
 
-// Determine what (if any) type of legacy (BIOS) boot support is available
+// Determine what (if any) type of Legacy Boot support is available
 VOID FindLegacyBootType (VOID) {
     EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
@@ -1301,7 +1318,7 @@ VOID FindLegacyBootType (VOID) {
 VOID WarnIfLegacyProblems (VOID) {
     UINTN     i      = 0;
     BOOLEAN   found  = FALSE;
-    CHAR16   *MsgStr = NULL;
+    CHAR16   *MsgStr;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"WarnIfLegacyProblems";

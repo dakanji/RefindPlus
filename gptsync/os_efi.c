@@ -33,6 +33,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "gptsync.h"
 #include "../include/refit_call_wrapper.h"
@@ -286,8 +292,8 @@ EFI_STATUS EFIAPI efi_main (
 
             if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH &&
                 (
-                    DevicePathSubType (DevicePath) == MSG_USB_DP ||
-                    DevicePathSubType (DevicePath) == MSG_1394_DP ||
+                    DevicePathSubType (DevicePath) == MSG_USB_DP       ||
+                    DevicePathSubType (DevicePath) == MSG_1394_DP      ||
                     DevicePathSubType (DevicePath) == MSG_USB_CLASS_DP ||
                     DevicePathSubType (DevicePath) == MSG_FIBRECHANNEL_DP
                 )

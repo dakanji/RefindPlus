@@ -1236,13 +1236,6 @@ EFI_STATUS EFIAPI NvmExpressLoad (
     VOID        *DummyProtocol;
 
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol, ImageHandle,
-        &gEfiNvmExpressPassThruProtocolGuid, (VOID *) &DummyProtocol
-    );
-    if (!EFI_ERROR(Status)) {
-        return EFI_ALREADY_STARTED;
-    }
-    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &gEfiNvmExpressPassThruProtocolGuid,
         NULL, (VOID *) &DummyProtocol
     );

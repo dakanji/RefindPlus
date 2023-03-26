@@ -240,11 +240,11 @@ VOID SetupScreen (VOID) {
     BOOLEAN BannerLoaded = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    CHAR16 *TmpStr = NULL;
+    CHAR16 *MsgStr;
+    CHAR16 *TmpStr;
 
     if (!BannerLoaded) {
-        LOG_MSG("S H O W   T I T L E   B A N N E R");
+        LOG_MSG("D I S P L A Y   T I T L E   B A N N E R");
         LOG_MSG("\n");
     }
     #endif
@@ -738,7 +738,7 @@ VOID BeginExternalScreen (
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr = NULL;
+    CHAR16  *MsgStr;
     BOOLEAN  CheckMute = FALSE;
     #endif
 
@@ -968,7 +968,7 @@ VOID PauseForKey (VOID) {
     BOOLEAN Breakout  = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr = NULL;
+    CHAR16  *MsgStr;
     BOOLEAN  CheckMute = FALSE;
     #endif
 
@@ -1283,10 +1283,15 @@ BOOLEAN CheckError (
     LOG_MSG("** WARN: '%r' %s", Status, where);
     #endif
 #endif
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
+    #endif
 
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (Temp, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+    PauseSeconds (3);
 
     // Defeat need to "Press a Key to Continue" in debug mode
     // Override this if volume is full
@@ -1295,10 +1300,6 @@ BOOLEAN CheckError (
         MyStrStr (where, L"in ReadHiddenTags")
     ) ? FALSE : TRUE;
     haveError = (!haveError && (Status == EFI_VOLUME_FULL)) ? TRUE : FALSE;
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
-    #endif
 
     MY_FREE_POOL(Temp);
 
@@ -1442,7 +1443,7 @@ VOID BltClearScreen (
 
     #if REFIT_DEBUG > 0
     static BOOLEAN  LoggedBanner;
-    CHAR16         *MsgStr = NULL;
+    CHAR16         *MsgStr;
 
     if (!IsBoot) {
         LOG_MSG("Refresh Screen:");
