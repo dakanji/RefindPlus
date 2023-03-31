@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
-          actions: 'open-issue'
+          actions: 'unlock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
-          actions: 'unlock-issue'
+          actions: 'open-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
@@ -119,22 +119,27 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
-  issue_close:
-    name: Issue - Close
+  issue_close1:
+    name: Issue - Close1
     runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Close'
     steps:
-      - id: tag_issue
-        uses: actions-cool/issues-helper@v3
+      - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           labels: 'Tagged'
 
-      - id: close_issue
-        uses: actions-cool/issues-helper@v3
+  issue_close2:
+    name: Issue - Close2
+    needs: [issue_close1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
         with:
           close-reason: 'completed'
           actions: 'close-issue'
@@ -153,11 +158,25 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.inputs.item_id }}
 
-  issue_thread_lock:
-    name: Issue - Thread - Lock
+  issue_thread_lock1:
+    name: Issue - Thread - Lock1
     runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Issue - Thread - Lock'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Tagged,Stale'
+
+  issue_thread_lock2:
+    name: Issue - Thread - Lock2
+    needs: [issue_thread_lock1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
