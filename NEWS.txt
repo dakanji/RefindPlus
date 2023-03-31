@@ -20,6 +20,8 @@
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible
+- Improves `AlsoScan` Feature
+  * The '@root/boot' path was added to the default 'also_scan_dirs' list
 - Improves Generic Menu Handling
   * Now provides a `Return to Main Menu` option on all such menus
 - Exposes `MitigatePrimedBuffer` Feature for User Configuration

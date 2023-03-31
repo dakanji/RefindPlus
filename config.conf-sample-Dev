@@ -491,6 +491,26 @@
 ##--------------------------------------------------------------##
 #
 #
+# When scanning volumes for EFI bootloaders, RefindPlus always looks for
+# the MacOS and Microsoft Windows bootloaders in their normal locations
+# and scans the root directory as well as sub folders under the "EFI"
+# folder for more bootloaders (Does not recurse into sub folders).
+#
+# The "also_scan_dirs" option adds more directories to the scan list and
+# directories are specified relative to the volume's root directory. This
+# option applies to ALL the volumes that RefindPlus scans UNLESS a volume
+# name and a colon are included before the directory name (myvol:/somedir)
+# to scan the "somedir" directory only on the filesystem named "myvol". If
+# a specified directory does not exist, it is ignored (no error message).
+# The "+" symbol denotes appending to the list of scanned directories
+# as opposed to overwriting this list.
+#
+# Scans "boot", "@/boot" and "@root/boot" when commented out
+#
+#also_scan_dirs boot,ESP2:EFI/linux/kernels
+#also_scan_dirs boot,@/boot,@root/boot
+#also_scan_dirs +,@/kernels
+
 # Set the CSR values for Apple's System Integrity Protection (SIP) and
 # Sealed System Volume (SSV) features that define access levels on MacOS.
 # Values are hexadecimal numbers that define which specific security features
@@ -669,26 +689,6 @@
 ##--------------------------------------------------------------##
 #
 #
-# When scanning volumes for EFI bootloaders, RefindPlus always looks for
-# the MacOS and Microsoft Windows bootloaders in their normal locations
-# and scans the root directory as well as sub folders under the "EFI"
-# folder for more bootloaders (Does not recurse into sub folders).
-#
-# The "also_scan_dirs" option adds more directories to the scan list and
-# directories are specified relative to the volume's root directory. This
-# option applies to ALL the volumes that RefindPlus scans UNLESS a volume
-# name and a colon are included before the directory name (myvol:/somedir)
-# to scan the "somedir" directory only on the filesystem named "myvol". If
-# a specified directory does not exist, it is ignored (no error message).
-# The "+" symbol denotes appending to the list of scanned directories
-# as opposed to overwriting this list.
-#
-# Scans hardcoded, "boot" and "@/boot" directories when commented out
-#
-#also_scan_dirs boot,ESP2:EFI/linux/kernels
-#also_scan_dirs boot,@/boot
-#also_scan_dirs +,@/kernels
-
 # Use a custom title banner and not the default (embedded) banner. The
 # file path is relative to the directory where the RefindPlus binary is
 # located. The colour of the top left corner of the image is used for the

@@ -80,7 +80,7 @@ typedef struct {
 #define DONT_SCAN_FILES L"shim.efi,shim-fedora.efi,shim-centos.efi,shimx64.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi"
 #endif
 #define DONT_SCAN_VOLUMES L"LRS_ESP"
-#define ALSO_SCAN_DIRS L"boot,@/boot"
+#define ALSO_SCAN_DIRS L"boot,@/boot,@root/boot"
 
 EFI_STATUS RefitReadFile (IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);
 VOID ReadConfig (CHAR16 *FileName);
