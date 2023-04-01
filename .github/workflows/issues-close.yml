@@ -1,4 +1,4 @@
-name: 'Manage Issues'
+name: 'Issues Close'
 
 on:
   workflow_dispatch:
