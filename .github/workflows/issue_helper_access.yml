@@ -102,6 +102,23 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This thread is being locked.
+
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
+
+  issue_close_lock4:
+    name: Issue - CloseLock4
+    needs: [issue_close_lock3]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
           actions: 'lock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
@@ -129,7 +146,7 @@ jobs:
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.issue.number }}
+          issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Tagged'
 
   issue_close2:
@@ -174,6 +191,23 @@ jobs:
   issue_thread_lock2:
     name: Issue - Thread - Lock2
     needs: [issue_thread_lock1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This thread is being locked.
+
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
+
+  issue_thread_lock3:
+    name: Issue - Thread - Lock3
+    needs: [issue_thread_lock2]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}

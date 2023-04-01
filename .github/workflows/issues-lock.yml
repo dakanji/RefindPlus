@@ -21,7 +21,6 @@ jobs:
   # Lock Threads - https://github.com/dakanji/lock-threads
   lock:
     name: Lock Threads
-    needs: stale
     runs-on: ubuntu-20.04
 
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
