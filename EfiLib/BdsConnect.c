@@ -654,8 +654,8 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
-        // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' is false.
-        Status = (RescanDrivers) ? gDS->Dispatch() : EFI_NOT_FOUND;
+        // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' or 'gDS' is unset.
+        Status = (RescanDrivers && gDS) ? gDS->Dispatch() : EFI_NOT_FOUND;
 
         if (SetPreferUGA) {
             // DA-TAG: Rig 'FoundGOP' if forcing UGA-Only

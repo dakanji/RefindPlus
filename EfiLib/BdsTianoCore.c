@@ -113,7 +113,7 @@ EFI_STATUS BdsLibConnectDevicePath (
                     // may now be found.
                     // Status == EFI_SUCCESS means a driver was dispatched
                     // Status == EFI_NOT_FOUND means no new drivers were dispatched
-                    Status = gDS->Dispatch ();
+                    Status = (gDS) ? gDS->Dispatch() : EFI_NOT_FOUND;
                 }
 #endif
 

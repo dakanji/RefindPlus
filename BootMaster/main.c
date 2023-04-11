@@ -1705,10 +1705,14 @@ VOID InitializeLib (
     gBS          = SystemTable->BootServices;
     gRT          = SystemTable->RuntimeServices;
 
-    EfiGetSystemConfigurationTable (
+    EFI_STATUS Status = EfiGetSystemConfigurationTable (
         &gEfiDxeServicesTableGuid,
         (VOID **) &gDS
     );
+    if (EFI_ERROR(Status)) {
+        // DA-TAG: Always check gDS before use
+        gDS = 0;
+    }
 
     // Upgrade EFI_BOOT_SERVICES.HandleProtocol
     gBS->HandleProtocol = HandleProtocolEx;
@@ -2009,7 +2013,13 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gST->Hdr, L"    System Table", sizeof (*gST),  TRUE);
     LogRevisionInfo (&gBS->Hdr, L"   Boot Services", sizeof (*gBS),  TRUE);
     LogRevisionInfo (&gRT->Hdr, L"Runtime Services", sizeof (*gRT),  TRUE);
-    LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof (*gDS), FALSE);
+    if (gDS) {
+        LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof (*gDS), FALSE);
+    }
+    else {
+        LOG_MSG("\n");
+        LOG_MSG("    DXE Services:- 'Not Found' ... Some Functionality Will be Lost!!");
+    }
     LOG_MSG("\n\n");
 #endif
 
