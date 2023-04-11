@@ -12,9 +12,7 @@ on:
 
 permissions:
   issues: write
-
-concurrency:
-  group: lock
+  pull-requests: write
 
 jobs:
 

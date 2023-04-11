@@ -12,6 +12,7 @@ on:
 
 permissions:
   issues: write
+  pull-requests: write
 
 concurrency:
   group: lock
@@ -25,20 +26,6 @@ jobs:
 
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
-
-      - name: Lock Declined Pull Requests
-        uses: dakanji/lock-threads@v4.0.0.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-lock-reason: ''
-          issue-inactive-days: '0'
-          include-any-issue-labels: 'Declined'
-          remove-issue-labels: 'Tagged, Queries'
-          process-only: 'prs'
-
-      - name: Inter-Step-Pause
-        run: |
-          sleep 150s
 
       - name: Lock Not-Planned issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -56,7 +43,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 150s
+          sleep 64s
 
       - name: Lock Invalid/Resolved Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -74,7 +61,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 150s
+          sleep 64s
 
       - name: Lock Misc Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -93,7 +80,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 150s
+          sleep 64s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -110,7 +97,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 150s
+          sleep 64s
 
       - name: Lock Unclear Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -128,7 +115,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 150s
+          sleep 64s
 
       - name: Lock Inactive Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -145,3 +132,17 @@ jobs:
 
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 64s
+
+      - name: Lock Declined Pull Requests
+        uses: dakanji/lock-threads@v4.0.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-lock-reason: ''
+          pr-inactive-days: '2'
+          include-any-pr-labels: 'Declined'
+          remove-pr-labels: 'Tagged'
+          process-only: 'prs'

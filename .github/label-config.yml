@@ -29,6 +29,23 @@ Declined:
     # Add labels
     label:
       - 'Tagged'
+    # Remove labels
+    unlabel:
+      - 'Uncertain'
+      - 'Cancelled'
+      - 'Resolved'
+      - 'Triage'
+      - 'Not-Planned'
+      - 'Parked'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
     # Close thread
     close: true
 
