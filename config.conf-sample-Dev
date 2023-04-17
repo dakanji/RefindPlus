@@ -644,6 +644,18 @@
 #
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
+# Stub support for gzipped loaders. Linux kernels are self-decompressing on x86
+# and on x86-64 platforms while on ARM64, Linux kernel files, including the EFI
+# stub loader are typically compressed with gzip. This prevents them from being
+# loaded by tools such as RefindPlus unless the tool uncompresses them itself.
+# This option was added upstream to do this but as it cannot be fully compiled
+# into RefindPlus and is unnecessary on x86 and on x86-64 systems, only a stub
+# implementation that logs the situation is currently provided by RefindPlus.
+#
+# Inactive when commented out (The "GZippedLoaders" Feature is not active)
+#
+#support_gzipped_loaders
+
 # Timeout in seconds for the main menu screen. Setting the timeout to "0"
 # disables automatic booting (i.e., no timeout). Setting "-1" results in
 # an immediate boot to the default OS (DirectBoot Feature) unless there

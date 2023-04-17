@@ -112,6 +112,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableAMFI = */ FALSE,
     /* NvramProtectEx = */ FALSE,
     /* FollowSymlinks = */ FALSE,
+    /* GzippedLoaders = */ FALSE,
     /* PreferUGA = */ FALSE,
     /* SupplyNVME = */ FALSE,
     /* SupplyAPFS = */ TRUE,

@@ -57,6 +57,11 @@
 #endif
 #include "global.h"
 
+// Return values for IsValidLoader()
+#define LOADER_TYPE_INVALID 0
+#define LOADER_TYPE_EFI     1
+#define LOADER_TYPE_GZIP    2
+
 EFI_STATUS StartEFIImage (
     IN   REFIT_VOLUME  *Volume,
     IN   CHAR16        *Filename,

@@ -79,6 +79,10 @@
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
+// Amount of a file to read to search for the EFI identifying signatures.
+// Signatures as far in as 3680 (0xE60) have been found, so read a bit more.
+#define EFI_HEADER_SIZE 3800
+
 CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
@@ -145,16 +149,11 @@ VOID WarnSecureBootError(
     MY_FREE_POOL(MsgStrE);
 } // VOID WarnSecureBootError()
 
-// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
-BOOLEAN IsValidLoader (
-    EFI_FILE_PROTOCOL *RootDir,
-    CHAR16            *FileName
+#if REFIT_DEBUG > 0
+static
+VOID LogAssumedValid (
+    CHAR16  *FileName
 ) {
-#if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
-    // DA-TAG: Investigate This
-    //
-    // Return TRUE
-    #if REFIT_DEBUG > 0
     ValidText = L"EFI File is *CONSIDERED* Valid";
     ALT_LOG(1, LOG_THREE_STAR_MID,
         L"%s:- '%s'",
@@ -165,110 +164,189 @@ BOOLEAN IsValidLoader (
         LOG_MSG("\n");
         LOG_MSG("%s ... Loading", ValidText);
     }
-    #endif
+} // VOID LogAssumedValid()
+#endif
 
-    return TRUE;
-#else
-    EFI_FILE_HANDLE FileHandle;
-    EFI_STATUS      Status;
-    BOOLEAN         IsValid;
-    CHAR8           Header[512];
-    UINTN           Size;
+// Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
+BOOLEAN IsValidLoader (
+    EFI_FILE_PROTOCOL *RootDir,
+    CHAR16            *FileName
+) {
+    //UINTN            LoaderType;
 
-    if ((RootDir == NULL) || (FileName == NULL)) {
+    if (RootDir == NULL || FileName == NULL) {
         // DA-TAG: Investigate This
         //         Assume "Valid" here, because Macs produce a NULL RootDir, and maybe FileName,
         //         when launching from Firewire drives. This should be handled better, but the
         //         fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
-        ValidText = L"EFI File is *ASSUMED* to be Valid";
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"%s:- '%s'",
-            ValidText,
-            FileName ? FileName : L"NULL File"
-        );
-        if (IsBoot) {
-            LOG_MSG("\n");
-            LOG_MSG("%s ... Loading", ValidText);
-        }
+        LogAssumedValid (FileName);
         #endif
+
+        //LoaderType = LOADER_TYPE_EFI;
 
         return TRUE;
     }
 
-    if (!FileExists (RootDir, FileName)) {
+#if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
+    #if REFIT_DEBUG > 0
+    LogAssumedValid (FileName);
+    #endif
+
+    //LoaderType = LOADER_TYPE_EFI;
+
+    return TRUE;
+#else
+    EFI_STATUS       Status;
+    BOOLEAN          IsValid;
+    UINTN            SignaturePosition;
+    UINTN            Size;
+    CHAR8           *Header;
+    EFI_FILE_HANDLE  FileHandle;
+
+    #if REFIT_DEBUG > 0
+    CHAR16          *AbortReason;
+    #endif
+
+    Header = AllocatePool (EFI_HEADER_SIZE);
+    if (!Header) {
         // DA-TAG: Set ValidText in REL for 'FALSE' outcome
         //         Allows accurate screen message
-        ValidText = L"EFI File *NOT* Found";
+        ValidText = L"EFI File is *ASSUMED* to be Invalid";
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"%s:- '%s'",
-            ValidText,
-            FileName ? FileName : L"NULL File"
-        );
-        if (IsBoot) {
-            LOG_MSG("\n\n");
-            LOG_MSG("INFO: %s ... Aborting", ValidText);
-            LOG_MSG("\n\n");
-        }
+        AbortReason = L":- 'Unable to Allocate Memory'";
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s ... Aborting%s", ValidText, AbortReason);
+        LOG_MSG("\n\n");
+        LOG_MSG("INFO: %s ... Aborting%s", ValidText, AbortReason);
+        LOG_MSG("\n\n");
         #endif
 
-        // Early return if file does not exist
-        return FALSE;
-    }
-
-    Status = REFIT_CALL_5_WRAPPER(
-        RootDir->Open, RootDir,
-        &FileHandle, FileName,
-        EFI_FILE_MODE_READ, 0
-    );
-
-    if (EFI_ERROR(Status)) {
-        // DA-TAG: Set ValidText in REL for 'FALSE' outcome
-        //         Allows accurate screen message
-        ValidText = L"EFI File is *NOT* Readable";
-
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"%s:- '%s'",
-            ValidText,
-            FileName ? FileName : L"NULL File"
-        );
-        if (IsBoot) {
-            LOG_MSG("\n\n");
-            LOG_MSG("INFO: %s ... Aborting", ValidText);
-            LOG_MSG("\n\n");
-        }
-        #endif
+        //LoaderType = LOADER_TYPE_INVALID;
 
         return FALSE;
     }
 
-    Size = sizeof (Header);
-    Status = REFIT_CALL_3_WRAPPER(
-        FileHandle->Read, FileHandle,
-        &Size, Header
-    );
-    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+    do {
+        IsValid = FALSE;
 
-    IsValid = (
-        !EFI_ERROR(Status) &&
-        Size == sizeof (Header) &&
-        (
+        #if REFIT_DEBUG > 0
+        AbortReason = L"";
+        #endif
+
+        if (!FileExists (RootDir, FileName)) {
+            #if REFIT_DEBUG > 0
+            AbortReason = L":- 'File *NOT* Found'";
+            #endif
+
+            //LoaderType = LOADER_TYPE_INVALID;
+
+            // Early Return
+            break;
+        }
+
+        Status = REFIT_CALL_5_WRAPPER(
+            RootDir->Open, RootDir,
+            &FileHandle, FileName,
+            EFI_FILE_MODE_READ, 0
+        );
+        if (EFI_ERROR(Status)) {
+            #if REFIT_DEBUG > 0
+            AbortReason = L":- 'File Handle *NOT* Accessible'";
+            #endif
+
+            //LoaderType = LOADER_TYPE_INVALID;
+
+            // Early Return
+            break;
+        }
+
+        Size = EFI_HEADER_SIZE;
+        Status = REFIT_CALL_3_WRAPPER(
+            FileHandle->Read, FileHandle,
+            &Size, Header
+        );
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+        if (EFI_ERROR(Status)) {
+            #if REFIT_DEBUG > 0
+            AbortReason = L":- 'File is *NOT* Readable'";
+            #endif
+
+            //LoaderType = LOADER_TYPE_INVALID;
+
+            // Early Return
+            break;
+        }
+
+        IsValid = (
+            Size == EFI_HEADER_SIZE &&
             (
-                (Size = *(UINT32 *) &Header[0x3c]) < 0x180  &&
-                Header[0]                    == 'M'         &&
-                Header[1]                    == 'Z'         &&
-                Header[Size]                 == 'P'         &&
-                Header[Size+1]               == 'E'         &&
-                Header[Size+2]               ==  0          &&
-                Header[Size+3]               ==  0          &&
-                *(UINT16 *) &Header[Size+4]  ==  EFI_STUB_ARCH
-            ) ||
-            (*(UINT32 *) &Header == FAT_ARCH)
-        )
-    );
+                (
+                    (Size = *(UINT32 *) &Header[0x3c]) < 0x180   &&
+                    Header[0]                     == 'M'         &&
+                    Header[1]                     == 'Z'         &&
+                    Header[Size]                  == 'P'         &&
+                    Header[Size + 1]              == 'E'         &&
+                    Header[Size + 2]              ==  0          &&
+                    Header[Size + 3]              ==  0          &&
+                    *(UINT16 *) &Header[Size + 4] ==  EFI_STUB_ARCH
+                ) || (
+                    *(UINT32 *) &Header == FAT_ARCH
+                )
+            )
+        );
+        if (IsValid) {
+            //LoaderType = LOADER_TYPE_EFI;
+
+            // Early Return
+            break;
+        }
+
+        SignaturePosition = *(UINT32 *) &Header[0x3c];
+        IsValid = (
+            Size == EFI_HEADER_SIZE &&
+            (
+                (
+                    SignaturePosition < (EFI_HEADER_SIZE - 8)                 &&
+                    Header[0]                                  == 'M'         &&
+                    Header[1]                                  == 'Z'         &&
+                    Header[SignaturePosition]                  == 'P'         &&
+                    Header[SignaturePosition + 1]              == 'E'         &&
+                    Header[SignaturePosition + 2]              ==  0          &&
+                    Header[SignaturePosition + 3]              ==  0          &&
+                    *(UINT16 *) &Header[SignaturePosition + 4] ==  EFI_STUB_ARCH
+                ) || (
+                    *(UINT32 *) &Header == FAT_ARCH
+                )
+            )
+        );
+        if (IsValid) {
+            //LoaderType = LOADER_TYPE_EFI;
+
+            // Early Return
+            break;
+        }
+
+        // DA-TAG: EFI File is "invalid" as of this line
+        //
+        // Search for indications that this is a gzipped file.
+        // NB: This is currently only used for logging in RefindPlus
+        // and that all loaders at this point are considered invalid.
+        // GZipped loaders are mainly ARM related and focus is on X86_64
+        if (GlobalConfig.GzippedLoaders &&
+            (
+                Header[0] == (CHAR8) 0x1F &&
+                Header[1] == (CHAR8) 0x8B
+            )
+        ) {
+            #if REFIT_DEBUG > 0
+            AbortReason = L":- 'GZipped Loader'";
+            #endif
+
+            //LoaderType = LOADER_TYPE_GZIP;
+        }
+    } while (0); // This 'loop' only runs once
+
 
     // DA-TAG: Set ValidText in REL for 'FALSE' outcome
     //         Allows accurate screen message
@@ -277,11 +355,21 @@ BOOLEAN IsValidLoader (
         : L"EFI File is *NOT* Valid";
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"%s:- '%s'",
-        ValidText,
-        FileName ? FileName : L"NULL File"
-    );
+    if (!IsValid) {
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"%s:- '%s' ... Aborting%s",
+            ValidText,
+            FileName ? FileName : L"NULL File",
+            AbortReason
+        );
+    }
+    else {
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"%s:- '%s'",
+            ValidText,
+            FileName ? FileName : L"NULL File"
+        );
+    }
     #endif
 
     if (IsBoot) {
@@ -291,7 +379,7 @@ BOOLEAN IsValidLoader (
         #if REFIT_DEBUG > 0
         if (!IsValid) {
             LOG_MSG("\n\n");
-            LOG_MSG("INFO: %s ... Aborting", ValidText);
+            LOG_MSG("INFO: %s ... Aborting%s", ValidText, AbortReason);
             LOG_MSG("\n\n");
         }
         else {
@@ -300,6 +388,8 @@ BOOLEAN IsValidLoader (
         }
         #endif
     }
+
+    MY_FREE_POOL(Header);
 
     return IsValid;
 #endif
@@ -386,12 +476,11 @@ EFI_STATUS StartEFIImage (
 
     MY_FREE_POOL(MsgStr);
 
-    LoaderValid = IsValidLoader (Volume->RootDir, Filename);
-
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     // Some EFIs crash if attempting to load drivers for an invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
+    LoaderValid = IsValidLoader (Volume->RootDir, Filename);
     if (!LoaderValid) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ERROR: Invalid Loader!!");
@@ -1010,7 +1099,7 @@ VOID StartLoader (
     IsBoot        = TRUE;
     BootSelection = SelectionName;
     LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"Loading:- '%s'", SelectionName);
+    MsgStr        = PoolPrint (L"Starting:- '%s'", SelectionName);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

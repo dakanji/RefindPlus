@@ -7,6 +7,8 @@
 - Adds `HelpIcon` Feature
   * Improves loading speed by preferring the current theme's generic/default loader icons
   * Enabled by default but can be disabled using a new `decline_help_icon` configuration token
+- Adds `GZippedLoaders` Feature
+  * Stub implementation of upstream ARM Linux focused feature
 - Adds Misc Upstream Changes/Fixes
   * Adoption of the RefindPlus `FollowSymlinks` Feature
   * 'also_scan_dirs' Volume Specification Bugfix

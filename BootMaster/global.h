@@ -440,6 +440,7 @@ typedef struct {
     BOOLEAN                    DisableAMFI;
     BOOLEAN                    NvramProtectEx;
     BOOLEAN                    FollowSymlinks;
+    BOOLEAN                    GzippedLoaders;
     BOOLEAN                    PreferUGA;
     BOOLEAN                    SupplyNVME;
     BOOLEAN                    SupplyAPFS;

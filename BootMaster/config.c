@@ -1217,6 +1217,18 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (MyStriCmp (TokenList[0], L"support_gzipped_loaders")) {
+            GlobalConfig.GzippedLoaders = HandleBoolean (TokenList, TokenCount);
+
+
+            #if REFIT_DEBUG > 0
+            if (!AllowIncludes) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'support_gzipped_loaders'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
         else if (MyStriCmp (TokenList[0], L"banner")) {
             HandleString (TokenList, TokenCount, &(GlobalConfig.BannerFileName));
 
