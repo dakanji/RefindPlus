@@ -77,7 +77,10 @@ ESP_LIST * FindAllESPs (VOID) {
     AllESPs = NULL;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL
-            && Volumes[VolumeIndex]->FSType == FS_TYPE_FAT
+            && (
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT ||
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT32
+            )
             && GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid)
             && !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)
         ) {
@@ -563,6 +566,7 @@ EFI_STATUS CopyDrivers (
     DriverCopied[FS_TYPE_UNKNOWN]   = FALSE;
     DriverCopied[FS_TYPE_WHOLEDISK] = FALSE;
     DriverCopied[FS_TYPE_FAT]       = FALSE;
+    DriverCopied[FS_TYPE_FAT32]     = FALSE;
     DriverCopied[FS_TYPE_EXFAT]     = FALSE;
     DriverCopied[FS_TYPE_NTFS]      = FALSE;
     DriverCopied[FS_TYPE_EXT2]      = FALSE;

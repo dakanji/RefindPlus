@@ -1107,7 +1107,8 @@ CHAR16 * FSTypeName (
         case FS_TYPE_EXT4:      retval = L"Ext4"      ;       break;
         case FS_TYPE_EXT3:      retval = L"Ext3"      ;       break;
         case FS_TYPE_EXT2:      retval = L"Ext2"      ;       break;
-        case FS_TYPE_FAT:       retval = L"FAT"       ;       break;
+        case FS_TYPE_FAT32:     retval = L"FAT-32"    ;       break;
+        case FS_TYPE_FAT:       retval = L"FAT-12/16" ;       break;
         case FS_TYPE_XFS:       retval = L"XFS"       ;       break;
         case FS_TYPE_JFS:       retval = L"JFS"       ;       break;
         case FS_TYPE_BTRFS:     retval = L"BtrFS"     ;       break;
@@ -1282,7 +1283,7 @@ VOID SetFilesystemData (
                     CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
                 }
                 else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
-                    Volume->FSType = FS_TYPE_FAT;
+                    Volume->FSType = FS_TYPE_FAT32;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
                 }
                 else if (!Volume->BlockIO->Media->LogicalPartition) {
