@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -247,6 +247,15 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 // no harm on other computers, AFAIK. In theory, every case variation should be done for
 // completeness, but that is ridiculous.
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
+
+// Patterns that identify Linux kernels. Added to the loader match pattern when the
+// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
+// a ".efi" extension to be found when scanning for boot loaders.
+#if defined(EFIAARCH64)
+#define LINUX_PREFIXES          L"vmlinuz,Image,kernel"
+#else
+#define LINUX_PREFIXES          L"vmlinuz,bzImage,kernel"
+#endif
 
 // Definitions for the "hideui" option in config.conf
 #define HIDEUI_FLAG_NONE        (0x0000)
@@ -500,6 +509,8 @@ typedef struct {
     CHAR16                    *MacOSRecoveryFiles;
     CHAR16                    *DriverDirs;
     CHAR16                    *IconsDir;
+    CHAR16                    *LinuxPrefixes;      // Linux prefixes (e.g., L"vmlinuz,bzImage"
+    CHAR16                    *LinuxMatchPatterns; // Linux prefixes PLUS wildcards (e.g., L"vmlinuz*,bzImage*")
     CHAR16                    *SetBootArgs;
     CHAR16                    *ExtraKernelVersionStrings;
     CHAR16                    *SpoofOSXVersion;

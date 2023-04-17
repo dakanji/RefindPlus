@@ -977,6 +977,15 @@
 #icons_dir myicons
 #icons_dir icons/snowy
 
+# Filename prefixes that indicate a file is a Linux kernel. Files that
+# begin with any of these strings are treated as Linux kernels, if they
+# are also EFI boot loaders. To include the default string, use "+"
+# Default is "vmlinuz,bzImage,kernel", except on ARM64, where it is
+# "vmlinuz,Image,kernel".
+#
+#linux_prefixes vmlinuz,bzImage,kernel
+#linux_prefixes +,zImage
+
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, RefindPlus shows
 # a subset in a scrolling list. If this value is set too high for the screen

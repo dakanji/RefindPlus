@@ -35,7 +35,7 @@
  */
 
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3) or (at your option) any later version.
@@ -91,9 +91,29 @@ BOOLEAN FoundFontImage =  TRUE;
 
 extern BOOLEAN         ForceTextOnly;
 
-//
-// Read a file into a buffer
-//
+// Sets GlobalConfig.LinuxMatchPatterns based on the input comma-delimited set
+// of prefixes. An asterisk ("*") is added to each of the input prefixes and
+// GlobalConfig.LinuxMatchPatterns is set to the resulting comma-delimited
+// string.
+static
+VOID SetLinuxMatchPatterns (
+    CHAR16 *Prefixes
+) {
+    UINTN i;
+    CHAR16 *Pattern;
+    CHAR16 *PatternSet;
+
+    i = 0;
+    PatternSet = NULL;
+    while ((Pattern = FindCommaDelimited(Prefixes, i++)) != NULL) {
+        MergeStrings (&Pattern, L"*", 0);
+        MergeStrings (&PatternSet, Pattern, L',');
+        MY_FREE_POOL(Pattern);
+    }
+
+    MY_FREE_POOL(GlobalConfig.LinuxMatchPatterns);
+    GlobalConfig.LinuxMatchPatterns = PatternSet;
+} // VOID SetLinuxMatchPatterns()
 
 EFI_STATUS RefitReadFile (
     IN     EFI_FILE_HANDLE  BaseDir,
@@ -773,6 +793,9 @@ VOID ReadConfig (
 
         MY_FREE_POOL(GlobalConfig.DefaultSelection);
         GlobalConfig.DefaultSelection = StrDuplicate (L"+");
+
+        MY_FREE_POOL(GlobalConfig.LinuxPrefixes);
+        GlobalConfig.LinuxPrefixes = StrDuplicate (L"+");
     } // if
 
     if (!FileExists (SelfDir, FileName)) {
@@ -1480,6 +1503,17 @@ VOID ReadConfig (
             if (!AllowIncludes) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'fold_linux_kernels'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
+        else if (MyStriCmp (TokenList[0], L"linux_prefixes")) {
+            HandleStrings (TokenList, TokenCount, &(GlobalConfig.LinuxPrefixes));
+
+            #if REFIT_DEBUG > 0
+            if (!AllowIncludes) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'linux_prefixes'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -2198,6 +2232,8 @@ VOID ReadConfig (
         MergeStrings (&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     }
     MY_FREE_POOL(File.Buffer);
+
+    SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);
 
     if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0

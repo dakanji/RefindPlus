@@ -22,6 +22,8 @@
     - https://sourceforge.net/p/refind/code/ci/8825e5e815b4be3708edd7b8d9fa3ea658094d3b/
   * Apparent Memory Allocation Conflict
     - https://sourceforge.net/p/refind/code/ci/5e2d0ac3fb76a8daab3a8199d0b0c52dc792b84f/
+  * Upstream `LinuxPrefixes` Feature
+    - https://sourceforge.net/p/refind/code/ci/d5c0a48a01427ed7a3cb3eb324c59fb965358b1d/
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible

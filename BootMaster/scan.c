@@ -106,11 +106,6 @@
 #define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
 #define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
 
-// Patterns that identify Linux kernels. Added to the loader match pattern when the
-// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
-// a ".efi" extension to be found when scanning for boot loaders.
-#define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
-
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 extern EFI_GUID GuidAPFS;
@@ -1010,10 +1005,7 @@ VOID SetLoaderDefaults (
     // Detect specific loaders
     BREAD_CRUMB(L"%s:  5", FuncTag);
     if (GetImage) TmpIconName = NULL;
-    if (FindSubStr (NameClues, L"bzImage") ||
-        FindSubStr (NameClues, L"vmlinuz") ||
-        FindSubStr (NameClues, L"kernel")
-    ) {
+    if (IsInSubstring (NameClues, GlobalConfig.LinuxPrefixes)) {
         BREAD_CRUMB(L"%s:  5a 1", FuncTag);
         if (Volume->DiskKind != DISK_KIND_NET) {
             BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
@@ -2106,11 +2098,7 @@ BOOLEAN ScanLoaderDir (
             while (NewLoader != NULL) {
 
                 //BREAD_CRUMB(L"%s:  2a 3a 1a 1 - WHILE LOOP:- START", FuncTag);
-                IsLinux = (
-                    StriSubCmp (L"bzImage", NewLoader->FileName) ||
-                    StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
-                    StriSubCmp (L"kernel", NewLoader->FileName)
-                );
+                IsLinux = IsInSubstring (NewLoader->FileName, GlobalConfig.LinuxPrefixes);
 
                 //BREAD_CRUMB(L"%s:  2a 3a 1a 2", FuncTag);
                 if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
@@ -2507,7 +2495,7 @@ VOID ScanEfiFiles (
     MatchPatterns = StrDuplicate (LOADER_MATCH_PATTERNS);
     if (GlobalConfig.ScanAllLinux) {
         //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
-        MergeStrings (&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
+        MergeStrings (&MatchPatterns, GlobalConfig.LinuxMatchPatterns, L',');
     }
 
     //BREAD_CRUMB(L"%s:  6", FuncTag);
