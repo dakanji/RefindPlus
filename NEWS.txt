@@ -1,10 +1,13 @@
 0.14.0.AA (PRE_RELEASE):
 -----------------------
 - Synced with Upstream v0.14.0
-- Syncs Deprecated EFI 1.x Protocols
+- Updates Deprecated EFI 1.x Protocols
   * Misc deprecated protocols aligned with UEFI 2.x specs
   * Some are related to filesystem drivers; for which updated versions are created accordingly
-- Syncs Misc Upstream Changes/Fixes
+- Adds `HelpIcon` Feature
+  * Improves loading speed by preferring the current theme's generic/default loader icons
+  * Enabled by default but can be disabled using a new `decline_help_icon` configuration token
+- Adds Misc Upstream Changes/Fixes
   * Adoption of the RefindPlus `FollowSymlinks` Feature
   * 'also_scan_dirs' Volume Specification Bugfix
     - https://sf.net/p/refind/code/ci/fde8116021e1c6ea7edaf3fae15fced47bbb38cf/

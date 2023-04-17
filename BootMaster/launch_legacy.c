@@ -912,7 +912,12 @@ VOID AddLegacyEntryUEFI (
     Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = 0;
-    Entry->me.Image          = LoadOSIcon (L"legacy", L"legacy", TRUE);
+    if (GlobalConfig.HelpIcon) {
+        Entry->me.Image      = egFindIcon (L"os_legacy", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+    }
+    if (Entry->me.Image == NULL) {
+        Entry->me.Image      = LoadOSIcon (L"legacy", L"legacy", TRUE);
+    }
     Entry->LoadOptions       = (DiskType == BBS_CDROM)
                                 ? L"CD"
                                 : ((DiskType == BBS_USB)

@@ -61,6 +61,7 @@ decline_apfs_load     |Disables built in provision of APFS filesystem capability
 decline_apfs_mute     |Disables suppression of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
+decline_help_icon     |Disables feature that may enhance loading speed by preferring default icons
 decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
 decline_help_text     |Disables complementary text colours if not required
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM

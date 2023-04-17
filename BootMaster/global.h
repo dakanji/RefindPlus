@@ -448,6 +448,7 @@ typedef struct {
     BOOLEAN                    SyncAPFS;
     BOOLEAN                    NvramProtect;
     BOOLEAN                    ScanAllESP;
+    BOOLEAN                    HelpIcon;
     BOOLEAN                    HelpTags;
     BOOLEAN                    HelpText;
     BOOLEAN                    NormaliseCSR;

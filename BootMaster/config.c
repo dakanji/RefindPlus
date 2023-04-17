@@ -1878,6 +1878,18 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (MyStriCmp (TokenList[0], L"decline_help_icon")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.HelpIcon = (DeclineSetting) ? FALSE : TRUE;
+
+            #if REFIT_DEBUG > 0
+            if (!AllowIncludes) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'decline_help_icon'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
         else if (
             MyStriCmp (TokenList[0], L"decline_help_tags")  ||
             MyStriCmp (TokenList[0], L"decline_tags_help") ||

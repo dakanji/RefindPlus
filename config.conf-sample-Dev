@@ -123,6 +123,18 @@
 #
 #decline_reload_gop
 
+# The "HelpIcon" feature prefers loading default/generic loader icons which are used
+# in most cases. Searches for custom icons are only executed if a generic loader icon
+# is not found. This is a change from the original rEFInd implementation; which is the
+# other way round (Custom icons are searched for first). This implementation can result
+# in significantly faster loading speeds in the best case and should make no difference
+# to loading speed in the worst case. The default/generic loader icons searched for will
+# be those for the current active theme. That is, the current active theme default icons.
+#
+# The "HelpIcon" feature is enabled when commented out
+#
+#decline_help_icon
+
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
@@ -245,10 +257,12 @@
 # RefindPlus boot process down. When active, this speeds booting
 # RefindPlus up by skipping scanning volumes for these files.
 #
-# NB: This token overrides the "hidden_icons_external" and
-# the "hidden_icons_prefer" tokens when it is active.
+# NOTES:
+# 1. This token overrides the "hidden_icons_external" and
+#    the "hidden_icons_prefer" tokens when it is active.
+# 2. This token is overridden by "decline_help_icon"
 #
-# Always scans for ".VolumeIcon" image icons when commented out
+# Scans for ".VolumeIcon" icons when commented out
 #
 #hidden_icons_ignore
 

@@ -740,6 +740,7 @@ VOID SetLoaderDefaults (
     CHAR16                 *PathOnly;
     CHAR16                 *NameClues;
     CHAR16                 *OSIconName;
+    CHAR16                 *TmpIconName;
     CHAR16                 *TargetName;
     CHAR16                 *DisplayName;
     CHAR16                 *NoExtension;
@@ -788,6 +789,7 @@ VOID SetLoaderDefaults (
         else {
             BREAD_CRUMB(L"%s:  3b 1b 1", FuncTag);
             if (!Entry->me.Image &&
+                !GlobalConfig.HelpIcon &&
                 !GlobalConfig.HiddenIconsIgnore &&
                 GlobalConfig.HiddenIconsPrefer
             ) {
@@ -805,7 +807,8 @@ VOID SetLoaderDefaults (
             if (!Entry->me.Image) {
                 BREAD_CRUMB(L"%s:  3b 1b 2a 1", FuncTag);
                 #if REFIT_DEBUG > 0
-                if (!GlobalConfig.HiddenIconsIgnore &&
+                if (!GlobalConfig.HelpIcon &&
+                    !GlobalConfig.HiddenIconsIgnore &&
                     GlobalConfig.HiddenIconsPrefer
                 ) {
                     ALT_LOG(1, LOG_LINE_NORMAL, L"Could Not Find '.VolumeIcon' Image");
@@ -1006,6 +1009,7 @@ VOID SetLoaderDefaults (
 
     // Detect specific loaders
     BREAD_CRUMB(L"%s:  5", FuncTag);
+    if (GetImage) TmpIconName = NULL;
     if (FindSubStr (NameClues, L"bzImage") ||
         FindSubStr (NameClues, L"vmlinuz") ||
         FindSubStr (NameClues, L"kernel")
@@ -1013,14 +1017,14 @@ VOID SetLoaderDefaults (
         BREAD_CRUMB(L"%s:  5a 1", FuncTag);
         if (Volume->DiskKind != DISK_KIND_NET) {
             BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
-            GuessLinuxDistribution (&OSIconName, Volume, LoaderPath);
+            GuessLinuxDistribution (&TmpIconName, Volume, LoaderPath);
 
             BREAD_CRUMB(L"%s:  5a 1a 2", FuncTag);
             Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
         }
 
         BREAD_CRUMB(L"%s:  5a 2", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"linux", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"linux", L',');
         Entry->OSType = 'L';
 
         BREAD_CRUMB(L"%s:  5a 3", FuncTag);
@@ -1034,7 +1038,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refindplus")) {
         BREAD_CRUMB(L"%s:  5b 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"refindplus", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"refindplus", L',');
 
         BREAD_CRUMB(L"%s:  5b 2", FuncTag);
         Entry->OSType = 'R';
@@ -1042,7 +1046,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refind")) {
         BREAD_CRUMB(L"%s:  5c 1 - A", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"refind", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"refind", L',');
 
         BREAD_CRUMB(L"%s:  5c 2 - A", FuncTag);
         Entry->OSType = 'R';
@@ -1050,7 +1054,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (LoaderPath, L"refit")) {
         BREAD_CRUMB(L"%s:  5c 1 - B", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"refit", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"refit", L',');
 
         BREAD_CRUMB(L"%s:  5c 2 - B", FuncTag);
         Entry->OSType = 'R';
@@ -1064,7 +1068,7 @@ VOID SetLoaderDefaults (
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
             BREAD_CRUMB(L"%s:  5d 1a 1", FuncTag);
-            if (GetImage) MergeUniqueStrings (&OSIconName, L"refind", L',');
+            if (GetImage) MergeUniqueStrings (&TmpIconName, L"refind", L',');
 
             BREAD_CRUMB(L"%s:  5d 1a 2", FuncTag);
             Entry->OSType = 'R';
@@ -1072,7 +1076,7 @@ VOID SetLoaderDefaults (
         }
         else {
             BREAD_CRUMB(L"%s:  5d 1b 1", FuncTag);
-            if (GetImage) MergeUniqueStrings (&OSIconName, L"mac", L',');
+            if (GetImage) MergeUniqueStrings (&TmpIconName, L"mac", L',');
 
             BREAD_CRUMB(L"%s:  5d 1b 2", FuncTag);
             Entry->OSType = 'M';
@@ -1083,14 +1087,14 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"diags.efi")) {
         BREAD_CRUMB(L"%s:  5e 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"hwtest", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"hwtest", L',');
     }
     else if (MyStriCmp (NameClues, L"e.efi") ||
         MyStriCmp (NameClues, L"elilo.efi")  ||
         FindSubStr (NameClues, L"elilo")
     ) {
         BREAD_CRUMB(L"%s:  5f 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"elilo,linux", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
 
         BREAD_CRUMB(L"%s:  5f 2", FuncTag);
@@ -1104,7 +1108,7 @@ VOID SetLoaderDefaults (
     }
     else if (FindSubStr (NameClues, L"grub")) {
         BREAD_CRUMB(L"%s:  5g 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"grub,linux", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"grub,linux", L',');
 
         BREAD_CRUMB(L"%s:  5g 2", FuncTag);
         Entry->OSType = 'G';
@@ -1117,7 +1121,7 @@ VOID SetLoaderDefaults (
         MyStriCmp (NameClues, L"bkpbootmgfw.efi")
     ) {
         BREAD_CRUMB(L"%s:  5h 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"win8", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"win8", L',');
 
         BREAD_CRUMB(L"%s:  5h 2", FuncTag);
         Entry->OSType = 'W';
@@ -1126,7 +1130,7 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"xom.efi")) {
         BREAD_CRUMB(L"%s:  5i 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"xom,win,win8", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"xom,win,win8", L',');
 
         BREAD_CRUMB(L"%s:  5i 2", FuncTag);
         Entry->OSType = 'X';
@@ -1135,21 +1139,21 @@ VOID SetLoaderDefaults (
     }
     else if (MyStriCmp (NameClues, L"opencore")) {
         BREAD_CRUMB(L"%s:  5j 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"opencore", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"opencore", L',');
 
         BREAD_CRUMB(L"%s:  5j 2", FuncTag);
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
     }
     else if (MyStriCmp (NameClues, L"clover")) {
         BREAD_CRUMB(L"%s:  5k 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"clover", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"clover", L',');
 
         BREAD_CRUMB(L"%s:  5k 2", FuncTag);
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
     }
     else if (FindSubStr (NameClues, L"ipxe")) {
         BREAD_CRUMB(L"%s:  5l 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&OSIconName, L"network", L',');
+        if (GetImage) MergeUniqueStrings (&TmpIconName, L"network", L',');
 
         BREAD_CRUMB(L"%s:  5l 2", FuncTag);
         Entry->OSType = 'N';
@@ -1157,15 +1161,28 @@ VOID SetLoaderDefaults (
     }
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
-    if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
+    if (GlobalConfig.HelpIcon) {
         BREAD_CRUMB(L"%s:  6a 1", FuncTag);
-        ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
+        if (GetImage) {
+            BREAD_CRUMB(L"%s:  6a 1a 1", FuncTag);
+            MergeStrings (&TmpIconName, OSIconName, L',');
+            MY_FREE_POOL(OSIconName);
+            OSIconName = TmpIconName;
+        }
+    }
+    else {
+        BREAD_CRUMB(L"%s:  6b 1", FuncTag);
+        if (GetImage) MergeStrings (&OSIconName, TmpIconName, L',');
     }
 
     BREAD_CRUMB(L"%s:  7", FuncTag);
-    Entry->me.ShortcutLetter = ShortcutLetter;
+    if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
+        BREAD_CRUMB(L"%s:  7a 1", FuncTag);
+        ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
+    }
 
     BREAD_CRUMB(L"%s:  8", FuncTag);
+    Entry->me.ShortcutLetter = ShortcutLetter;
     if (GetImage) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,

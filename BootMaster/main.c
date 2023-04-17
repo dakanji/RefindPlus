@@ -120,6 +120,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SyncAPFS = */ TRUE,
     /* NvramProtect = */ TRUE,
     /* ScanAllESP = */ TRUE,
+    /* HelpIcon = */ TRUE,
     /* HelpTags = */ TRUE,
     /* HelpText = */ TRUE,
     /* NormaliseCSR = */ FALSE,

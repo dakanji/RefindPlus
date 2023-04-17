@@ -3213,10 +3213,12 @@ VOID SetVolumeIcons (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    if (GlobalConfig.HiddenIconsIgnore) {
+    if (GlobalConfig.HelpIcon || GlobalConfig.HiddenIconsIgnore) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'hidden_icons_ignore'"
+            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is %sActive:- '%s'",
+            (GlobalConfig.HelpIcon) ? L"*NOT* " : L"",
+            (GlobalConfig.HelpIcon) ? L"decline_help_icon" : L"hidden_icons_ignore"
         );
         #endif
 
