@@ -66,7 +66,9 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 VOID ScanForBootloaders(VOID);
 VOID ScanForTools(VOID);
-CHAR16 * GetVolumeTag (IN CHAR16 *VolumeName);
+CHAR16 * SetVolJoin (IN CHAR16 *InstanceName);
+CHAR16 * SetVolFlag (IN CHAR16 *InstanceName, IN CHAR16 *VolumeName);
+CHAR16 * SetVolType (IN CHAR16 *InstanceName OPTIONAL, IN CHAR16 *VolumeName);
 CHAR16 * GetVolumeGroupName (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path);
 

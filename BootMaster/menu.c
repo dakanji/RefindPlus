@@ -478,7 +478,7 @@ VOID AddSubMenuEntry (
         L"Set SubMenu Entry in %s - %s%s",
         SubScreen->Title,
         SubEntry->Title,
-        GetVolumeTag (SubEntry->Title)
+        SetVolType (NULL, SubEntry->Title)
     );
     #endif
 
@@ -503,8 +503,10 @@ VOID AddMenuEntry (
         L"Adding Menu Entry to %s - %s",
         Screen->Title,
         Entry->Title,
-        GetVolumeTag (Entry->Title)
+        SetVolType (NULL, Entry->Title)
     );
+    // DA-TAG: Doubled Delibrately in SetVolType
+    //         Find a better way
     #endif
 
     AddListElement (

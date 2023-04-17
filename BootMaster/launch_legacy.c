@@ -756,10 +756,11 @@ VOID AddLegacyEntry (
             ? L"CD" : L"HD";
 
     LegacyTitle = PoolPrint (
-        L"Load %s on %s%s",
+        L"Load %s%s%s%s",
         LoaderTitle,
-        VolDesc,
-        GetVolumeTag (VolDesc)
+        SetVolJoin (LoaderTitle),
+        SetVolFlag (LoaderTitle, VolDesc),
+        SetVolType (LoaderTitle, VolDesc)
     );
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
@@ -806,9 +807,12 @@ VOID AddLegacyEntry (
 
     #if REFIT_DEBUG > 0
     LOG_MSG(
-        "%s  - Found %s on %s%s",
-        OffsetNext,LoaderTitle,
-        VolDesc, GetVolumeTag (VolDesc)
+        "%s  - Found %s%s%s%s",
+        OffsetNext,
+        LoaderTitle,
+        SetVolJoin (LoaderTitle),
+        SetVolFlag (LoaderTitle, VolDesc),
+        SetVolType (LoaderTitle, VolDesc)
     );
     #endif
 
@@ -823,10 +827,11 @@ VOID AddLegacyEntry (
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title  = PoolPrint (
-        L"Boot Options for %s on %s%s",
+        L"Boot Options for %s%s%s%s",
         LoaderTitle,
-        VolDesc,
-        GetVolumeTag (VolDesc)
+        SetVolJoin (LoaderTitle),
+        SetVolFlag (LoaderTitle, VolDesc),
+        SetVolType (LoaderTitle, VolDesc)
     );
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -890,9 +895,10 @@ VOID AddLegacyEntryUEFI (
     }
 
     Entry->me.Title = PoolPrint (
-        L"Load Legacy Bootcode on %s%s",
-        BdsOption->Description,
-        GetVolumeTag (BdsOption->Description)
+        L"Load Legacy Bootcode%s%s%s",
+        SetVolJoin (L"Legacy Bootcode"),
+        SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
+        SetVolType (L"Legacy Bootcode", BdsOption->Description)
     );
 
     #if REFIT_DEBUG > 0
@@ -926,9 +932,10 @@ VOID AddLegacyEntryUEFI (
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title = PoolPrint (
-        L"Boot Options for Legacy Bootcode on %s%s",
-        BdsOption->Description,
-        GetVolumeTag (BdsOption->Description)
+        L"Boot Options for Legacy Bootcode%s%s%s",
+        SetVolJoin (L"Legacy Bootcode"),
+        SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
+        SetVolType (L"Legacy Bootcode", BdsOption->Description)
     );
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
     SubScreen->Hint2 = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)

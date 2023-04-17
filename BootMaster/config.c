@@ -2224,6 +2224,7 @@ VOID AddSubmenu (
     REFIT_MENU_SCREEN   *SubScreen;
     LOADER_ENTRY        *SubEntry;
     UINTN                TokenCount;
+    CHAR16              *TmpName;
     CHAR16             **TokenList;
     BOOLEAN              TitleVolume;
 
@@ -2362,11 +2363,15 @@ VOID AddSubmenu (
     else {
         BREAD_CRUMB(L"%s:  7b 1", FuncTag);
 
+        TmpName = (Title != NULL)
+            ? Title
+            : L"Unknown Instance";
         SubEntry->me.Title = PoolPrint (
-            L"Load %s on %s%s",
-            (Title != NULL) ? Title : L"Unknown Instance",
-            Volume->VolName,
-            GetVolumeTag (Volume->VolName)
+            L"Load %s%s%s%s",
+            TmpName,
+            SetVolJoin (TmpName),
+            SetVolFlag (TmpName, Volume->VolName),
+            SetVolType (TmpName, Volume->VolName)
         );
     }
 
@@ -2639,10 +2644,11 @@ LOADER_ENTRY * AddStanzaEntries (
     // Set Screen Title
     if (!FirmwareBootNum && Entry->Volume->VolName) {
         Entry->me.Title = PoolPrint (
-            L"Load %s on %s%s",
+            L"Load %s%s%s%s",
             Entry->Title,
-            Entry->Volume->VolName,
-            GetVolumeTag (Entry->Volume->VolName)
+            SetVolJoin (Entry->Title),
+            SetVolFlag (Entry->Title, Volume->VolName),
+            SetVolType (Entry->Title, Volume->VolName)
         );
     }
     else {
@@ -2759,9 +2765,12 @@ VOID ScanUserConfigured (
                         ? SelfVolume->VolName
                         : Entry->LoaderPath;
                     LOG_MSG(
-                        "%s  - Found %s on %s%s",
-                        OffsetNext, Entry->Title,
-                        TmpName, GetVolumeTag (TmpName)
+                        "%s  - Found %s%s%s%s",
+                        OffsetNext,
+                        Entry->Title,
+                        SetVolJoin (Entry->Title),
+                        SetVolFlag (Entry->Title, TmpName),
+                        SetVolType (Entry->Title, TmpName)
                     );
                     #endif
 

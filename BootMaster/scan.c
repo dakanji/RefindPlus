@@ -281,6 +281,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
 ) {
     EFI_STATUS              Status;
     CHAR16                 *NameOS;
+    CHAR16                 *TmpStr;
     CHAR16                 *TmpName;
     CHAR16                 *FileName;
     CHAR16                 *MainOptions;
@@ -324,11 +325,14 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         }
     }
 
+    TmpStr = (Entry->Title != NULL) ? Entry->Title  : FileName;
     TmpName = (DisplayName) ? DisplayName : Entry->Volume->VolName;
     SubScreen->Title = PoolPrint (
-        L"Boot Options for %s on %s%s",
-        (Entry->Title != NULL) ? Entry->Title  : FileName,
-        TmpName, GetVolumeTag (TmpName)
+        L"Boot Options for %s%s%s%s",
+        TmpStr,
+        SetVolJoin (TmpStr),
+        SetVolFlag (TmpStr, TmpName),
+        SetVolType (TmpStr, TmpName)
     );
 
     #if REFIT_DEBUG > 0
@@ -1438,9 +1442,11 @@ LOADER_ENTRY * AddLoaderEntry (
     TmpName = (DisplayName) ? DisplayName : Volume->VolName;
     Entry->me.Title = (DisplayName || Volume->VolName)
         ? PoolPrint (
-            L"Load %s on %s%s",
+            L"Load %s%s%s%s",
             Entry->Title,
-            TmpName, GetVolumeTag (TmpName)
+            SetVolJoin (Entry->Title),
+            SetVolFlag (Entry->Title, TmpName),
+            SetVolType (Entry->Title, TmpName)
         )
         : PoolPrint (
             L"Load %s",
@@ -1469,9 +1475,12 @@ LOADER_ENTRY * AddLoaderEntry (
             ? Volume->VolName
             : Entry->LoaderPath;
     LOG_MSG(
-        "%s  - Found %s on %s%s",
-        OffsetNext, Entry->Title,
-        TmpName, GetVolumeTag (TmpName)
+        "%s  - Found %s%s%s%s",
+        OffsetNext,
+        Entry->Title,
+        SetVolJoin (Entry->Title),
+        SetVolFlag (Entry->Title, TmpName),
+        SetVolType (Entry->Title, TmpName)
     );
 
     ALT_LOG(1, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
@@ -1582,19 +1591,74 @@ VOID CleanUpLoaderList (
     } // while
 } // static VOID CleanUpLoaderList()
 
-CHAR16 * GetVolumeTag (
-    IN CHAR16 *VolumeName
+CHAR16 * SetVolJoin (
+    IN CHAR16 *InstanceName
 ) {
-    CHAR16 *RetVal = MyStriCmp (VolumeName, L"EFI")
-        ? L" System Partition"
-        : MyStriCmp (VolumeName, L"ESP")
-            ? L""
-            : MyStriCmp (VolumeName, L"Partition")
-                ? L""
-                : L" Volume";
+    CHAR16 *RetVal;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    if (0);
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal =  L""     ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal =  L" for ";
+    else                                                    RetVal =  L" on " ;
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 
     return RetVal;
-} // CHAR16 * GetVolumeTag()
+} // CHAR16 * SetVolJoin()
+
+CHAR16 * SetVolFlag (
+    IN CHAR16 *InstanceName,
+    IN CHAR16 *VolumeName
+) {
+    CHAR16 *RetVal;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    if (0);
+    else if (FindSubStr (InstanceName, L"Manual Stanza:")) RetVal =  L""       ;
+    else                                                   RetVal =  VolumeName;
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    return RetVal;
+} // CHAR16 * SetVolFlag()
+
+CHAR16 * SetVolType (
+    IN CHAR16 *InstanceName OPTIONAL,
+    IN CHAR16 *VolumeName
+) {
+    CHAR16 *RetVal;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    if (0);
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal =  L""                 ;
+    else if (MyStriCmp  (VolumeName,   L"EFI"            )) RetVal =  L" System Partition";
+    else if (MyStriCmp  (VolumeName,   L"ESP"            )) RetVal =  L""                 ;
+    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       )) RetVal =  L" Partition"       ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal =  L" Partition"       ;
+    else if (FindSubStr (VolumeName,   L"Volume"         )) RetVal =  L""                 ;
+    else if (FindSubStr (VolumeName,   L"Partition"      )) RetVal =  L""                 ;
+    else                                                    RetVal =  L" Volume"          ;
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    return RetVal;
+} // CHAR16 * SetVolType()
 
 // Returns FALSE if the specified file/volume matches the GlobalConfig.DontScanDirs
 // or GlobalConfig.DontScanVolumes specification, or if Path points to a volume

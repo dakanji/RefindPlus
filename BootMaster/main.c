@@ -3728,10 +3728,11 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Load %s on %s%s",
+                        L"Load %s%s%s%s",
                         ourLegacyEntry->Volume->OSName,
-                        ourLegacyEntry->Volume->VolName,
-                        GetVolumeTag (ourLegacyEntry->Volume->VolName)
+                        SetVolJoin (ourLegacyEntry->Volume->OSName),
+                        SetVolFlag (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName),
+                        SetVolType (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName)
                     );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
