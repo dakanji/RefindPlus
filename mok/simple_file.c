@@ -55,11 +55,13 @@ EFI_STATUS generate_path (
     CHAR16                    **PathName
 ) {
         unsigned int pathlen;
-        EFI_STATUS efi_status = EFI_SUCCESS;
-        CHAR16 *devpathstr = DevicePathToStr(li->FilePath),
-                *found = NULL;
+        EFI_STATUS efi_status;
+        CHAR16 *devpathstr;
+        CHAR16 *found;
         int i;
 
+        found = NULL;
+        devpathstr = DevicePathToStr(li->FilePath);
         for (i = 0; i < StrLen(devpathstr); i++) {
                 if (devpathstr[i] == '/')
                         devpathstr[i] = '\\';
@@ -80,10 +82,13 @@ EFI_STATUS generate_path (
 
         *PathName = AllocatePool((pathlen + 1 + StrLen(name))*sizeof (CHAR16));
 
-        if (!*PathName) {
-                Print(L"Failed to allocate path buffer\n");
-                efi_status = EFI_OUT_OF_RESOURCES;
-                goto error;
+        if (*PathName) {
+            efi_status = EFI_SUCCESS;
+        }
+        else {
+            Print(L"Failed to allocate path buffer\n");
+            efi_status = EFI_OUT_OF_RESOURCES;
+            goto error;
         }
 
         StrCpy(*PathName, devpathstr);

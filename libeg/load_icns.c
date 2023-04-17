@@ -61,19 +61,24 @@ VOID egDecompressIcnsRLE (
     pp      =  PixelData;
     pp_left =  PixelCount;
 
-    // decode
+    // Decode
     while (cp + 1 < cp_end && pp_left > 0) {
         len = *cp++;
-        if (len & 0x80) {   // compressed data: repeat next byte
+
+        if (len & 0x80) {
+            // Compressed data: repeat next byte
             len -= 125;
-            if (len > pp_left)
+            if (len > pp_left) {
                 break;
+            }
             value = *cp++;
             for (i = 0; i < len; i++) {
                 *pp = value;
                 pp += 4;
             }
-        } else {            // uncompressed data: copy bytes
+        }
+        else {
+            // Uncompressed data: copy bytes
             len++;
             if (len > pp_left || cp + len > cp_end)
                 break;
@@ -85,11 +90,7 @@ VOID egDecompressIcnsRLE (
         pp_left -= len;
     }
 
-    if (pp_left > 0) {
-        Print (L" egDecompressIcnsRLE: still need %d bytes of pixel data\n", pp_left);
-    }
-
-    // record what's left of the compressed data stream
+    // Record what is left of the compressed data stream
     *CompData = cp;
     *CompLen = (UINTN)(cp_end - cp);
 }

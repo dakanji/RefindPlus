@@ -47,10 +47,11 @@ EFI_STATUS GetCsrStatus (
 ) {
     EFI_STATUS  Status;
     UINTN       CsrLength;
-    UINT32     *ReturnValue  = NULL;
+    UINT32     *ReturnValue;
 
     MY_FREE_POOL(gCsrStatus);
 
+    ReturnValue  = NULL;
     Status = EfivarGetRaw (
         &AppleVendorOsGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
@@ -98,8 +99,8 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
-    CHAR16   *MsgStr    = NULL;
     EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
+    CHAR16   *MsgStr;
 
     MY_FREE_POOL(gCsrStatus);
 
@@ -212,8 +213,9 @@ EFI_STATUS FlagNoCSR (VOID) {
 // value is not on the list.
 VOID RotateCsrValue (VOID) {
     EFI_STATUS    Status;
-    UINT32        CurrentValue, TargetCsr;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
+    UINT32        TargetCsr;
+    UINT32        CurrentValue;
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
@@ -582,10 +584,10 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     IN  CONST CHAR16                     *LabelFilename
 ) {
     UINTN     DiskLabelPathSize;
-    UINTN     MaxVolumelabelSize = 64;
+    UINTN     MaxVolumelabelSize;
     CHAR8    *AsciiDiskLabel;
     CHAR16   *DiskLabelPath;
-    CHAR16   *UnicodeDiskLabel = NULL;
+    CHAR16   *UnicodeDiskLabel;
     UINT32    DiskLabelLength;
 
     DiskLabelPathSize = StrSize (BootDirectoryName) + StrSize (LabelFilename) - sizeof (CHAR16);
@@ -598,6 +600,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
 
     UnicodeSPrint (DiskLabelPath, DiskLabelPathSize, L"%s%s", BootDirectoryName, LabelFilename);
 
+    MaxVolumelabelSize = 64;
     AsciiDiskLabel = (CHAR8 *) OcReadFile (
         FileSystem,
         DiskLabelPath,
@@ -613,9 +616,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     }
 
     UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
-
     MY_FREE_POOL(AsciiDiskLabel);
-
     if (UnicodeDiskLabel == NULL) {
         // Early Return ... Return NULL
         return NULL;
@@ -631,7 +632,7 @@ CHAR16 * RP_GetAppleDiskLabel (
 ) {
     EFI_STATUS                        Status;
     CHAR16                           *BootDirectoryName;
-    CHAR16                           *AppleDiskLabel = NULL;
+    CHAR16                           *AppleDiskLabel;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
 
     BootDirectoryName = RP_GetBootPathName (Volume->DevicePath);
@@ -954,7 +955,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
-    CHAR16 *DotGap = L" ... ";
+    CHAR16 *DotGap;
     #endif
 
     static
@@ -968,6 +969,8 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s      %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
+
+    DotGap = L" ... ";
     #endif
 
     if (Reinstall) {
@@ -1029,11 +1032,13 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
 VOID ClearRecoveryBootFlag (VOID) {
     EFI_STATUS  Status;
     UINTN       BufferSize;
-    VOID       *TmpBuffer       = NULL;
-    CHAR16     *VariableName    = NULL;
     UINT32      AccessFlagsFull = ACCESS_FLAGS_FULL;
+    VOID       *TmpBuffer;
+    CHAR16     *VariableName;
 
     BufferSize   = 0;
+    TmpBuffer    = NULL;
+    VariableName = NULL;
     VariableName = L"recovery-boot-mode";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,

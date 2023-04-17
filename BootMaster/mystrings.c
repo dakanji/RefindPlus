@@ -25,13 +25,18 @@ BOOLEAN StriSubCmp (
     IN CHAR16 *SmallStr,
     IN CHAR16 *BigStr
 ) {
-    BOOLEAN Found = FALSE, Terminate = FALSE;
-    UINTN BigIndex = 0, SmallIndex = 0, BigStart = 0;
+    UINTN   BigStart;
+    UINTN   BigIndex;
+    UINTN   SmallIndex;
+    BOOLEAN Terminate;
+    BOOLEAN Found;
 
     if (!SmallStr || !BigStr) {
         return FALSE;
     }
 
+    Found = Terminate = FALSE;
+    BigIndex = SmallIndex = BigStart = 0;
     while (!Terminate) {
         if (BigStr[BigIndex] == '\0') {
             Terminate = TRUE;
@@ -84,12 +89,13 @@ BOOLEAN MyStrBegins (
     IN CHAR16 *FirstString,
     IN CHAR16 *SecondString
 ) {
-    BOOLEAN StrBegins = FALSE;
+    BOOLEAN StrBegins;
 
     if (!FirstString || !SecondString) {
         return FALSE;
     }
 
+    StrBegins = FALSE;
     while (*FirstString != L'\0') {
         if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
             StrBegins = TRUE;
@@ -361,13 +367,15 @@ VOID MergeStrings (
     IN     CHAR16  *Second,
     IN     CHAR16   AddChar
 ) {
-    UINTN   Length1 = 0;
-    UINTN   Length2 = 0;
+    UINTN   Length1;
+    UINTN   Length2;
     CHAR16 *NewString;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeStrings";
-    CHAR16 *MsgStr = PoolPrint (
+    CHAR16 *MsgStr;
+
+    MsgStr = PoolPrint (
         L"Add '%s' to the end of '%s' (%s Separator)",
         Second  ? Second  : L"NULL",
         *First  ? *First  : L"NULL",
@@ -394,8 +402,12 @@ VOID MergeStrings (
     Length1 = StrLen (*First);
 
     //BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (Second != NULL) {
+    if (Second == NULL) {
         //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        Length2 = 0;
+    }
+    else {
+        //BREAD_CRUMB(L"%s:  3b 1", FuncTag);
         Length2 = StrLen (Second);
     }
 
@@ -450,13 +462,18 @@ VOID MergeUniqueStrings (
     IN     CHAR16  *Second,
     IN     CHAR16   AddChar
 ) {
-    UINTN   Length1 = 0;
-    UINTN   Length2 = 0;
-    CHAR16 *NewString;
+    UINTN    i;
+    UINTN    Length1;
+    UINTN    Length2;
+    CHAR16  *TestStr;
+    CHAR16  *NewString;
+    BOOLEAN  SkipMerge;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"MergeUniqueStrings";
-    CHAR16 *MsgStr = PoolPrint (
+    CHAR16 *MsgStr;
+
+    MsgStr = PoolPrint (
         L"If not already present as a substring, add '%s' to the end of '%s' (%s Separator)",
         Second  ? Second  : L"NULL",
         *First  ? *First  : L"NULL",
@@ -483,8 +500,12 @@ VOID MergeUniqueStrings (
     Length1 = StrLen (*First);
 
     //BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (Second != NULL) {
+    if (Second == NULL) {
         //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        Length2 = 0;
+    }
+    else {
+        //BREAD_CRUMB(L"%s:  3b 1", FuncTag);
         Length2 = StrLen (Second);
     }
 
@@ -525,13 +546,13 @@ VOID MergeUniqueStrings (
     //BREAD_CRUMB(L"%s:  8", FuncTag);
     if (Second != NULL) {
         //BREAD_CRUMB(L"%s:  8a 1", FuncTag);
-        BOOLEAN SkipMerge = FALSE;
+        SkipMerge = FALSE;
 
         //BREAD_CRUMB(L"%s:  8a 2", FuncTag);
         if (AddChar) {
             //BREAD_CRUMB(L"%s:  8a 2a 1", FuncTag);
-            UINTN   i       = 0;
-            CHAR16 *TestStr = NULL;
+            i = 0;
+            TestStr = NULL;
 
             while (!SkipMerge
                 && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
@@ -582,7 +603,7 @@ VOID MergeWords (
     CHAR16   AddChar
 ) {
     CHAR16  *Temp, *Word, *p;
-    BOOLEAN  LineFinished = FALSE;
+    BOOLEAN  LineFinished;
 
     if (!InString) {
         return;
@@ -590,6 +611,8 @@ VOID MergeWords (
 
     Temp = Word = p = StrDuplicate (InString);
     if (Temp) {
+        LineFinished = FALSE;
+
         while (!LineFinished) {
             if ((*p == L' ') ||
                 (*p == L':') ||
@@ -624,7 +647,7 @@ VOID MergeUniqueWords (
     CHAR16   AddChar
 ) {
     CHAR16 *Temp, *Word, *p;
-    BOOLEAN LineFinished = FALSE;
+    BOOLEAN LineFinished;
 
     if (!InString) {
         return;
@@ -632,6 +655,8 @@ VOID MergeUniqueWords (
 
     Temp = Word = p = StrDuplicate (InString);
     if (Temp) {
+        LineFinished = FALSE;
+
         while (!LineFinished) {
             if ((*p == L' ') ||
                 (*p == L':') ||
@@ -664,15 +689,18 @@ CHAR16 * SanitiseString (
     CHAR16  *InString
 ) {
     CHAR16  *Temp, *Word, *p;
-    CHAR16  *OutString    = NULL;
-    BOOLEAN  LineFinished = FALSE;
+    CHAR16  *OutString;
+    BOOLEAN  LineFinished;
 
     if (!InString) {
         return NULL;
     }
 
+    OutString = NULL;
     Temp = Word = p = StrDuplicate (InString);
     if (Temp) {
+        LineFinished = FALSE;
+
         while (!LineFinished) {
             if (
                 (*p != L' ') &&
@@ -726,6 +754,7 @@ BOOLEAN LimitStringLength (
     CHAR16   *SubString;
     CHAR16   *TempString;
     BOOLEAN   HasChanged;
+    BOOLEAN   WasTruncated;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"LimitStringLength";
@@ -757,7 +786,6 @@ BOOLEAN LimitStringLength (
 
         if (i >= StrLen (SubString)) {
             SubString[0] = '\0';
-            HasChanged = TRUE;
         }
         else {
             TempString = StrDuplicate (&SubString[i]);
@@ -765,19 +793,18 @@ BOOLEAN LimitStringLength (
                 // Memory Allocation Problem ... abort to avoid potential infinite loop!
                 break;
             }
-            else {
-                StrCpy (&SubString[1], TempString);
-                MY_FREE_POOL(TempString);
-                HasChanged = TRUE;
-            }
+
+            StrCpy (&SubString[1], TempString);
+            MY_FREE_POOL(TempString);
         }
 
+        HasChanged = TRUE;
         SubString = MyStrStr (TheString, L"  ");
     } // while
     //BREAD_CRUMB(L"%s:  4 - WHILE LOOP:- END/EXIT", FuncTag);
 
     // Truncate if still too long.
-    BOOLEAN WasTruncated = TruncateString (TheString, Limit);
+    WasTruncated = TruncateString (TheString, Limit);
 
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     if (!HasChanged) {
@@ -800,9 +827,12 @@ BOOLEAN TruncateString (
     CHAR16 *TheString,
     UINTN   Limit
 ) {
-    BOOLEAN WasTruncated = FALSE;
+    BOOLEAN WasTruncated;
 
-    if (StrLen (TheString) > Limit) {
+    if (StrLen (TheString) <= Limit) {
+        WasTruncated = FALSE;
+    }
+    else {
         TheString[Limit] = '\0';
         WasTruncated     = TRUE;
     }
@@ -819,8 +849,8 @@ BOOLEAN TruncateString (
 CHAR16 * FindNumbers (
     IN CHAR16 *InString
 ) {
-    UINTN   i = 0, EndOfElement = 0, StartOfElement, CopyLength;
-    CHAR16 *Found = NULL, *ExtraFound = NULL, *LookFor;
+    UINTN   i, EndOfElement, StartOfElement, CopyLength;
+    CHAR16 *Found, *ExtraFound, *LookFor;
 
     if (InString == NULL) {
         return NULL;
@@ -829,6 +859,8 @@ CHAR16 * FindNumbers (
     StartOfElement = StrLen (InString);
 
     // Find extra_kernel_version_strings
+    EndOfElement = i = 0;
+    ExtraFound = NULL;
     while ((ExtraFound == NULL) &&
         (LookFor = FindCommaDelimited (GlobalConfig.ExtraKernelVersionStrings, i++))
     ) {
@@ -854,6 +886,7 @@ CHAR16 * FindNumbers (
     } // for
 
     // Extract the target element
+    Found = NULL;
     if (EndOfElement > 0) {
         if (EndOfElement >= StartOfElement) {
             CopyLength = EndOfElement - StartOfElement + 1;
@@ -900,14 +933,15 @@ CHAR16 * FindCommaDelimited (
     IN CHAR16 *InString,
     IN UINTN   Index
 ) {
-    UINTN    StartPos = 0, CurPos = 0, InLength;
-    BOOLEAN  Found = FALSE;
-    CHAR16   *FoundString = NULL;
+    UINTN     StartPos, CurPos, InLength;
+    BOOLEAN   Found;
+    CHAR16   *FoundString;
 
     if (InString == NULL) {
         return NULL;
     }
 
+    StartPos = CurPos = 0;
     InLength = StrLen (InString);
     // After while() loop, StartPos marks start of item #Index
     while (Index > 0 && CurPos < InLength) {
@@ -920,6 +954,7 @@ CHAR16 * FindCommaDelimited (
     } // while
 
     // After while() loop, CurPos is one past the end of the element
+    Found = FALSE;
     while (!Found && CurPos < InLength) {
         if (InString[CurPos] == L',') {
             Found = TRUE;
@@ -929,6 +964,7 @@ CHAR16 * FindCommaDelimited (
         }
     } // while
 
+    FoundString = NULL;
     if (Index == 0) {
         FoundString = StrDuplicate (&InString[StartPos]);
     }
@@ -947,8 +983,8 @@ BOOLEAN DeleteItemFromCsvList (
     CHAR16 *ToDelete,
     CHAR16 *List
 ) {
-    CHAR16 *Found = NULL;
-    CHAR16 *Comma = NULL;
+    CHAR16 *Found;
+    CHAR16 *Comma;
 
     if ((ToDelete == NULL) || (List == NULL)) {
         return FALSE;
@@ -1252,7 +1288,7 @@ BOOLEAN IsGuid (
 CHAR16 * GuidAsString (
     EFI_GUID *GuidData
 ) {
-    CHAR16 *TheString = NULL;
+    CHAR16 *TheString;
 
     if (GuidData == NULL) {
         // Early Return

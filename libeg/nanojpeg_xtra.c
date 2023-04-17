@@ -46,41 +46,46 @@ typedef struct _jpeg_color {
 // Decode JPEG data into something libeg can use. This function is a wrapper around
 // various NanoJPEG functions.
 EG_IMAGE * egDecodeJPEG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN IconSize, IN BOOLEAN WantAlpha) {
-    EG_IMAGE *NewImage = NULL;
+    EG_IMAGE *NewImage;
     unsigned Width, Height;
     jpeg_color *JpegData;
     UINTN i;
     nj_result_t Result;
 
-    if (njInit()) {
-        Result = njDecode((VOID *) FileData, FileDataLength);
-        if (Result != NJ_OK)
-            return NULL;
-
-        Width = njGetWidth();
-        Height = njGetHeight();
-
-        // allocate image structure and buffer
-        NewImage = egCreateImage(Width, Height, WantAlpha);
-        if ((NewImage == NULL) || (NewImage->Width != Width) || (NewImage->Height != Height))
-            return NULL;
-
-        JpegData = (jpeg_color *) njGetImage();
-
-        // Annoyingly, EFI and NanoJPEG use different ordering of RGB values in
-        // their pixel data representations, so we must adjust them.
-        for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
-            NewImage->PixelData[i].r = JpegData[i].red;
-            NewImage->PixelData[i].g = JpegData[i].green;
-            NewImage->PixelData[i].b = JpegData[i].blue;
-            // NB: NanoJPEG does not appear to support alpha/transparency,
-            //     so if requested, set it to be fully opaque.
-            if (WantAlpha)
-                NewImage->PixelData[i].a = 255;
-        }
-        FreePool(JpegData);
-        njDone();
+    if (!njInit()) {
+        return NULL;
     }
+
+    Result = njDecode((VOID *) FileData, FileDataLength);
+    if (Result != NJ_OK) {
+        return NULL;
+    }
+
+    Width  = njGetWidth();
+    Height = njGetHeight();
+
+    // allocate image structure and buffer
+    NewImage = egCreateImage(Width, Height, WantAlpha);
+    if ((NewImage == NULL) || (NewImage->Width != Width) || (NewImage->Height != Height)) {
+        return NULL;
+    }
+
+    JpegData = (jpeg_color *) njGetImage();
+
+    // Annoyingly, EFI and NanoJPEG use different ordering of RGB values in
+    // their pixel data representations, so we must adjust them.
+    for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
+        NewImage->PixelData[i].r = JpegData[i].red;
+        NewImage->PixelData[i].g = JpegData[i].green;
+        NewImage->PixelData[i].b = JpegData[i].blue;
+        // NB: NanoJPEG does not appear to support alpha/transparency,
+        //     so if requested, set it to be fully opaque.
+        if (WantAlpha) {
+            NewImage->PixelData[i].a = 255;
+        }
+    }
+    FreePool(JpegData);
+    njDone();
 
     return NewImage;
 } // EG_IMAGE * egDecodeJPEG()

@@ -232,9 +232,10 @@ BOOLEAN MyStriCmp (
 // Returns TRUE if Apple firmware or if user assents to use, FALSE otherwise.
 static
 BOOLEAN VerifyGoOn (VOID) {
-    BOOLEAN GoOn = TRUE;
+    BOOLEAN GoOn;
     UINTN invalid;
 
+    GoOn = TRUE;
     if (!MyStriCmp(L"Apple", gST->FirmwareVendor)) {
         Print (L"Your firmware is made by %s.\n", gST->FirmwareVendor);
         Print (L"Ordinarily, a hybrid MBR (which this program creates) should be used ONLY on\n");

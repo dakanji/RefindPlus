@@ -59,22 +59,21 @@
 #include "../include/egemb_refindplus_banner_lorez.h"
 #include "../include/egemb_refindplus_banner_hidpi.h"
 
-// Console defines and variables
+UINTN      ConWidth               = 80;
+UINTN      ConHeight              = 25;
 
-UINTN   ConWidth;
-UINTN   ConHeight;
-CHAR16 *BlankLine = NULL;
-
-// UGA defines and variables
+CHAR16    *BlankLine              = NULL;
 
 UINTN      ScreenW                = 0;
 UINTN      ScreenH                = 0;
 UINTN      ScreenLongest          = 0;
 UINTN      ScreenShortest         = 0;
 
+BOOLEAN    GraphicsScreenDirty    = FALSE;
 BOOLEAN    AllowGraphicsMode      = FALSE;
 BOOLEAN    ClearedBuffer          = FALSE;
 BOOLEAN    DefaultBanner          =  TRUE;
+BOOLEAN    haveError              = FALSE;
 
 EG_PIXEL   BlackPixel             = { 0x00, 0x00, 0x00, 0 };
 EG_PIXEL   GrayPixel              = { 0xBF, 0xBF, 0xBF, 0 };
@@ -84,10 +83,6 @@ EG_PIXEL   StdBackgroundPixel     = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   MenuBackgroundPixel    = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
 
-
-// General defines and variables
-static BOOLEAN     GraphicsScreenDirty;
-static BOOLEAN     haveError = FALSE;
 
 extern BOOLEAN            IsBoot;
 extern BOOLEAN            IconScaleSet;
@@ -236,8 +231,8 @@ VOID SetupScreen (VOID) {
     UINTN   NewWidth;
     UINTN   NewHeight;
     BOOLEAN gotGraphics;
-    static
-    BOOLEAN BannerLoaded = FALSE;
+
+    static BOOLEAN BannerLoaded = FALSE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -532,8 +527,13 @@ VOID SwitchToText (
 ) {
     EFI_STATUS Status;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN TextModeOnEntry;
+
     #if REFIT_DEBUG > 1
+    BOOLEAN TextModeOnEntry
     CHAR16 *FuncTag = L"SwitchToText";
+    #endif
     #endif
 
     LOG_SEP(L"X");
@@ -566,7 +566,7 @@ VOID SwitchToText (
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
-    BOOLEAN TextModeOnEntry = (
+    TextModeOnEntry = (
         egIsGraphicsModeEnabled()
         && !AllowGraphicsMode
         && !IsBoot
@@ -882,6 +882,10 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     static BOOLEAN       FirstCall     = TRUE;
     EFI_INPUT_KEY        key;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+    #endif
+
     if (FirstCall || !GlobalConfig.DirectBoot) {
         for (;;) {
             Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
@@ -922,7 +926,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
         FlushFailedTag = TRUE;
     }
 
-    CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
+    MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
     LOG_MSG("INFO: %s", MsgStr);
     LOG_MSG("\n\n");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1218,7 +1222,7 @@ BOOLEAN CheckFatalError (
     IN EFI_STATUS  Status,
     IN CHAR16     *where
 ) {
-    CHAR16 *Temp = NULL;
+    CHAR16 *Temp;
 
     if (!EFI_ERROR(Status)) {
         return FALSE;
@@ -1260,7 +1264,7 @@ BOOLEAN CheckError (
     IN EFI_STATUS  Status,
     IN CHAR16     *where
 ) {
-    CHAR16 *Temp = NULL;
+    CHAR16 *Temp;
 
     if (!EFI_ERROR(Status)) {
         // Early Return
@@ -1428,13 +1432,22 @@ EG_PIXEL FontComplement (VOID) {
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
+    EG_IMAGE         *NewBanner;
+    INTN              BannerPosX;
+    INTN              BannerPosY;
+    BOOLEAN           BannerPass;
+
     static EG_IMAGE  *Banner     = NULL;
-    EG_IMAGE         *NewBanner  = NULL;
-    INTN              BannerPosX = 0;
-    INTN              BannerPosY = 0;
+
+    #if REFIT_DEBUG > 0
+    CHAR16         *MsgStr;
+    CHAR16         *StrSpacer;
+
+    static BOOLEAN  LoggedBanner = FALSE;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"BltClearScreen";
+    #endif
     #endif
 
     LOG_SEP(L"X");
@@ -1442,16 +1455,13 @@ VOID BltClearScreen (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     #if REFIT_DEBUG > 0
-    static BOOLEAN  LoggedBanner;
-    CHAR16         *MsgStr;
-
     if (!IsBoot) {
         LOG_MSG("Refresh Screen:");
         BRK_MAX("\n");
     }
     #endif
 
-    BOOLEAN BannerPass = (
+    BannerPass = (
         !IsBoot ||
         (
             ShowBanner &&
@@ -1520,7 +1530,7 @@ VOID BltClearScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                CHAR16 *StrSpacer = L"    ";
+                StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
                 LOG_MSG("%s%s* %s", OffsetNext, StrSpacer, MsgStr);
                 if (!LoggedBanner) {
@@ -1607,16 +1617,14 @@ VOID BltClearScreen (
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Scale Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
-                    ? OffsetNext
-                    : L""
+                    ? OffsetNext : L""
             );
             BRK_MAX("\n");
             #endif
 
             if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-                if (Banner->Width != ScreenW || Banner->Height != ScreenH) {
-                    NewBanner = egScaleImage (Banner, ScreenW, ScreenH);
-                }
+                NewBanner = (Banner->Width != ScreenW || Banner->Height != ScreenH)
+                    ? egScaleImage (Banner, ScreenW, ScreenH) : NULL;
             }
             else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
                 NewBanner = egCropImage (
@@ -1624,6 +1632,9 @@ VOID BltClearScreen (
                     (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
                     (Banner->Height > ScreenH) ? ScreenH : Banner->Height
                 );
+            }
+            else {
+                NewBanner = NULL;
             }
 
             if (NewBanner != NULL) {

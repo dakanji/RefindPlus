@@ -344,8 +344,7 @@ EFI_STATUS EncodeAsPNG (
     OUT VOID    **Buffer,
     OUT UINTN    *BufferSize
 ) {
-    EFI_STATUS Status = EFI_SUCCESS;
-    UINTN      ErrorCode;
+    UINTN ErrorCode;
 
     // Should return 0 on success
     ErrorCode = lodepng_encode32 (
@@ -356,24 +355,33 @@ EFI_STATUS EncodeAsPNG (
         Height
     );
 
-    if (ErrorCode != 0) {
-        Status = EFI_INVALID_PARAMETER;
-    }
-
-    return Status;
+    return (ErrorCode == 0) ? EFI_SUCCESS : EFI_INVALID_PARAMETER;
 } // static EFI_STATUS EncodeAsPNG()
 
 static
 EFI_STATUS RefitCheckGOP (
     BOOLEAN FixGOP
 ) {
-    EFI_STATUS                     Status;
-    UINTN                          index;
-    UINTN                          HandleCount;
-    EFI_HANDLE                    *HandleBuffer;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop = NULL;
+    EFI_STATUS                            Status;
+    UINTN                                 index;
+    UINTN                                 HandleCount;
+    UINTN                                 SizeOfInfo;
+    UINT32                                Mode;
+    UINT32                                Width;
+    UINT32                                Height;
+    BOOLEAN                               DoneLoop;
+    BOOLEAN                               OurValidGOP;
+    EFI_HANDLE                           *HandleBuffer;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL         *OrigGop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL         *Gop;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *TmpStr;
+    #endif
 
     // Search for GOP on ConsoleOut handle
+    OrigGop = NULL;
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &GOPDrawProtocolGuid, (VOID **) &OrigGop
@@ -393,7 +401,7 @@ EFI_STATUS RefitCheckGOP (
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16 *TmpStr = (FixGOP) ? L"Replacement" : L"Appropriate";
+    TmpStr = (FixGOP) ? L"Replacement" : L"Appropriate";
     LOG_MSG("\n\n");
     LOG_MSG("Seek %s ConsoleOut GOP Candidates:", TmpStr);
     #endif
@@ -416,15 +424,8 @@ EFI_STATUS RefitCheckGOP (
         return EFI_NOT_FOUND;
     }
 
-    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL         *Gop;
-
-    UINTN   SizeOfInfo;
-    UINT32  Mode;
-    UINT32  Width;
-    UINT32  Height;
-    BOOLEAN DoneLoop;
-    BOOLEAN OurValidGOP = FALSE;
+    Info = NULL;
+    OurValidGOP = FALSE;
 
     // Assess GOP instances on handle buffer
     for (index = 0; index < HandleCount; index++) {
@@ -543,13 +544,14 @@ static
 BOOLEAN SupplyConsoleGop (
     BOOLEAN FixGOP
 ) {
-    BOOLEAN    ValueValidGOP = FALSE;
+    EFI_STATUS Status;
+    BOOLEAN    ValueValidGOP;
 
 // DA-TAG: Limit to TianoCore
-#ifdef __MAKEWITH_TIANO
-    EFI_STATUS Status;
-
-    GotGoodGOP = FALSE;
+#ifndef __MAKEWITH_TIANO
+    ValueValidGOP = FALSE;
+#else
+    ValueValidGOP = GotGoodGOP = FALSE;
     if (GlobalConfig.ProvideConsoleGOP) {
         Status = RefitCheckGOP (FixGOP);
         if (Status == EFI_ALREADY_STARTED) {
@@ -608,10 +610,10 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     UINT32     MaxMode;
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
-    BOOLEAN    OurValidGOP = FALSE;
+    BOOLEAN    OurValidGOP;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr   = NULL;
+    CHAR16 *MsgStr;
     CHAR16 *PixelFormatDesc;
     #endif
 
@@ -626,6 +628,8 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
         return EFI_UNSUPPORTED;
     }
+
+    OurValidGOP = FALSE;
 
     // Get dump
     MaxMode = GOPDraw->Mode->MaxMode;
@@ -762,12 +766,13 @@ static
 EFI_STATUS egSetGopMode (
     INT32 Next
 ) {
+    EFI_STATUS                            Status;
+    UINT32                                i;
+    UINT32                                MaxMode;
+    UINTN                                 SizeOfInfo;
+    INT32                                 Mode;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status;
-    UINT32       i, MaxMode;
-    UINTN        SizeOfInfo;
-    INT32        Mode;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -964,7 +969,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
 // unchanged if neither GOPDraw nor UGADraw is a valid pointer.
 static
 VOID egDetermineScreenSize (VOID) {
-    EFI_STATUS Status = EFI_SUCCESS;
+    EFI_STATUS Status;
     UINT32     ScreenW;
     UINT32     ScreenH;
     UINT32     UgaDepth;
@@ -983,7 +988,6 @@ VOID egDetermineScreenSize (VOID) {
             &ScreenW, &ScreenH,
             &UgaDepth, &UgaRefreshRate
         );
-
         if (EFI_ERROR(Status)) {
             // Graphics not Available
             UGADraw = NULL;
@@ -997,25 +1001,25 @@ VOID egDetermineScreenSize (VOID) {
 } // static VOID egDetermineScreenSize()
 
 UINTN egCountAppleFramebuffers (VOID) {
-    EFI_STATUS  Status;
-    UINTN       HandleCount                       = 0;
-    EFI_GUID    AppleFramebufferInfoProtocolGuid  = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
-    EFI_HANDLE *HandleBuffer                      = NULL;
+    EFI_STATUS                       Status;
+    UINTN                            HandleCount;
+    EFI_GUID                         AppleFramebufferInfoProtocolGuid  = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
+    EFI_HANDLE                      *HandleBuffer;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
 
     Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
     if (EFI_ERROR(Status)) {
-        HandleCount = 0;
+        return 0;
     }
-    else {
-        Status = REFIT_CALL_5_WRAPPER(
-            gBS->LocateHandleBuffer, ByProtocol,
-            &AppleFramebufferInfoProtocolGuid, NULL,
-            &HandleCount, &HandleBuffer
-        );
-        if (EFI_ERROR(Status)) {
-            HandleCount = 0;
-        }
+
+    HandleBuffer = NULL;
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &AppleFramebufferInfoProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        HandleCount = 0;
     }
 
     MY_FREE_POOL(HandleBuffer);
@@ -1042,9 +1046,11 @@ VOID egInitConsoleControl (VOID) {
     EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
-    EFI_HANDLE                    *HandleBuffer   = NULL;
+    EFI_HANDLE                    *HandleBuffer;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+
     LOG_MSG("%s  - Locate Console Control", OffsetNext);
     #endif
 
@@ -1059,6 +1065,7 @@ VOID egInitConsoleControl (VOID) {
     #endif
     if (EFI_ERROR(Status)) {
         // Try Locating by Handle
+        HandleBuffer = NULL;
         Status = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer, ByProtocol,
             &ConsoleControlProtocolGuid, NULL,
@@ -1087,16 +1094,16 @@ VOID egInitConsoleControl (VOID) {
                 if (!EFI_ERROR(Status)) {
                     break;
                 }
-            }
-            MY_FREE_POOL(HandleBuffer);
+            } // for
         }
         if (EFI_ERROR(Status)) {
             DetectedDevices  = FALSE;
         }
+        MY_FREE_POOL(HandleBuffer);
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = (EFI_ERROR(Status))
+    MsgStr = (EFI_ERROR(Status))
         ? L"Assess Console Control ... NOT OK!!"
         : L"Assess Console Control ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1110,7 +1117,8 @@ VOID LogUGADrawExit (
     EFI_STATUS Status
 ) {
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = (EFI_ERROR(Status))
+    CHAR16 *MsgStr;
+    MsgStr = (EFI_ERROR(Status))
         ? L"Assess Universal Graphics Adapter ... NOT OK!!"
         : L"Assess Universal Graphics Adapter ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1124,12 +1132,19 @@ BOOLEAN egInitUGADraw (
     EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
+    UINT32                         Width;
+    UINT32                         Depth;
+    UINT32                         Height;
+    UINT32                         UGAWidth;
+    UINT32                         UGAHeight;
+    UINT32                         RefreshRate;
     BOOLEAN                        UGAonGPU;
     EFI_HANDLE                    *HandleBuffer;
     EFI_UGA_DRAW_PROTOCOL         *TmpUGA;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
+
     if (!LogOutput) {
         MY_MUTELOGGER_SET;
     }
@@ -1173,13 +1188,8 @@ BOOLEAN egInitUGADraw (
 
     UGAonGPU = FALSE;
     if (!EFI_ERROR(Status)) {
-        UINT32                 UGAWidth  = 0;
-        UINT32                 UGAHeight = 0;
-        UINT32                 RefreshRate;
-        UINT32                 Height;
-        UINT32                 Width;
-        UINT32                 Depth;
-
+        UGAWidth  = 0;
+        UGAHeight = 0;
         for (i = 0; i < HandleCount; i++) {
             if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                 #if REFIT_DEBUG > 0
@@ -1249,17 +1259,30 @@ BOOLEAN egInitUGADraw (
 } // static BOOLEAN egInitUGADraw()
 
 VOID egInitScreen (VOID) {
-    EFI_STATUS                     Status;
-    EFI_STATUS                     XFlag;
-    UINTN                          i;
-    UINTN                          HandleCount;
-    BOOLEAN                        FlagUGA        = FALSE;
-    BOOLEAN                        thisValidGOP   = FALSE;
-    EFI_HANDLE                    *HandleBuffer   = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGop         = NULL;
+    EFI_STATUS                             Status;
+    EFI_STATUS                             XFlag;
+    UINTN                                  i;
+    UINTN                                  HandleCount;
+    UINTN                                  SizeOfInfo;
+    UINT32                                 MaxMode;
+    UINT32                                 GopMode;
+    UINT32                                 GopWidth;
+    UINT32                                 GopHeight;
+    UINT32                                 TmpScreenW;
+    UINT32                                 TmpScreenH;
+    UINT32                                 TmpUgaDepth;
+    UINT32                                 TmpUgaRefreshRate;
+    BOOLEAN                                FlagUGA;
+    BOOLEAN                                thisValidGOP;
+    BOOLEAN                                FoundHandleUGA;
+    BOOLEAN                                NewAppleFramebuffers;
+    EFI_HANDLE                            *HandleBuffer;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL          *OldGop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL          *TmpGop;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr   = NULL;
+    CHAR16  *MsgStr;
     BOOLEAN  PrevFlag = FALSE;
 
     LOG_MSG("Check for Graphics:");
@@ -1269,15 +1292,10 @@ VOID egInitScreen (VOID) {
     egInitConsoleControl();
 
     // Get UGADraw Protocol
-    BOOLEAN FoundHandleUGA = egInitUGADraw (TRUE);
+    FoundHandleUGA = egInitUGADraw (TRUE);
 
     // Align PreferUGA
     if (GlobalConfig.PreferUGA && FoundHandleUGA && !SetPreferUGA) {
-        UINT32     TmpScreenW;
-        UINT32     TmpScreenH;
-        UINT32     TmpUgaDepth;
-        UINT32     TmpUgaRefreshRate;
-
         Status = REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &TmpScreenW, &TmpScreenH,
@@ -1298,6 +1316,7 @@ VOID egInitScreen (VOID) {
 
     // Get GOPDraw Protocol
     XFlag = EFI_NOT_STARTED;
+    HandleBuffer = NULL;
     if (FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
@@ -1343,13 +1362,10 @@ VOID egInitScreen (VOID) {
                 break;
             }
 
-            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
-            EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGop = NULL;
-            UINT32 GopWidth  = 0;
-            UINT32 GopHeight = 0;
-            UINT32 MaxMode   = 0;
-            UINT32 GopMode;
-            UINTN  SizeOfInfo;
+            TmpGop = NULL;
+            GopWidth  = 0;
+            GopHeight = 0;
+            MaxMode   = 0;
             for (i = 0; i < HandleCount; i++) {
                 if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                     #if REFIT_DEBUG > 0
@@ -1424,6 +1440,7 @@ VOID egInitScreen (VOID) {
         } while (0); // This 'loop' only runs once
 
         XFlag = EFI_UNSUPPORTED;
+        thisValidGOP = FALSE;
         if (EFI_ERROR(Status)) {
             // Tag as "Not Found"
             XFlag = EFI_NOT_FOUND;
@@ -1649,6 +1666,7 @@ VOID egInitScreen (VOID) {
         } while (0); // This 'loop' only runs once
     } // if GOPDraw != NULL
 
+    FlagUGA = FALSE;
     if (GOPDraw == NULL && UGADraw == NULL) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Graphics Not Available ... Falling Back on Text Mode");
@@ -1704,7 +1722,7 @@ VOID egInitScreen (VOID) {
     #endif
 
 // DA-TAG: Limit to TianoCore
-BOOLEAN NewAppleFramebuffers = FALSE;
+NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
     do {
@@ -1845,9 +1863,10 @@ BOOLEAN egGetResFromMode (
 ) {
     UINTN                                  Size;
     EFI_STATUS                             Status;
-    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
     if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
+        Info = NULL;
         Status = REFIT_CALL_4_WRAPPER(
             GOPDraw->QueryMode, GOPDraw,
             *ModeWidth, &Size, &Info
@@ -2404,8 +2423,8 @@ VOID egDrawImage (
     IN UINTN     ScreenPosX,
     IN UINTN     ScreenPosY
 ) {
-    EG_IMAGE *CompImage = NULL;
-    BOOLEAN   SetImage  = FALSE;
+    BOOLEAN   SetImage;
+    EG_IMAGE *CompImage;
 
     // DA-TAg: Investigate This
     //         Weird seemingly redundant tests because some placement code can "wrap around" and
@@ -2420,6 +2439,7 @@ VOID egDrawImage (
         return;
     }
 
+    SetImage = FALSE;
     if (GlobalConfig.ScreenBackground == NULL ||
         (
             (Image->Width == egScreenWidth) && (Image->Height == egScreenHeight)
@@ -2446,7 +2466,6 @@ VOID egDrawImage (
         }
 
         egComposeImage (CompImage, Image, 0, 0);
-
         SetImage = TRUE;
     }
 
@@ -2553,7 +2572,9 @@ VOID egDisplayMessageEx (
     UINTN      PositionCode,
     BOOLEAN    ResetPosition
 ) {
-    UINTN BoxWidth, BoxHeight;
+    UINTN LumIndex;
+    UINTN BoxWidth;
+    UINTN BoxHeight;
     static UINTN Position = 1;
     EG_IMAGE *Box;
 
@@ -2572,7 +2593,7 @@ VOID egDisplayMessageEx (
 
     if (!ResetPosition) {
         // Get Luminance Index
-        UINTN LumIndex = GetLumIndex (
+        LumIndex = GetLumIndex (
             (UINTN) BGColor->r,
             (UINTN) BGColor->g,
             (UINTN) BGColor->b
@@ -2693,8 +2714,8 @@ VOID egScreenShot (VOID) {
     UINTN                 i;
     UINTN                 FileDataSize;         ///< Size in bytes
     UINTN                 FilePixelSize;        ///< Size in pixels
-    CHAR16               *FileName    = NULL;
-    CHAR16               *MsgStr      = NULL;
+    CHAR16               *FileName;
+    CHAR16               *MsgStr;
     EG_PIXEL              BGColorWarn = COLOR_RED;
     EG_PIXEL              BGColorGood = COLOR_LIGHTBLUE;
     EFI_FILE_PROTOCOL    *BaseDir;
@@ -2869,6 +2890,8 @@ VOID egScreenShot (VOID) {
             return;
         }
     }
+
+    FileName = NULL;
 
     // Search for existing screen shot files ... Increment index to an unused value
     i = 0;

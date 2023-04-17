@@ -52,10 +52,10 @@ VOID UpdateBbsTable (
     UINT16                     Idx;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
     EFI_STATUS                 Status;
-    UINT16                     HddCount      = 0;
-    HDD_INFO                  *HddInfo       = NULL;
-    UINT16                     BbsCount      = 0;
-    BBS_TABLE                 *LocalBbsTable = NULL;
+    UINT16                     HddCount;
+    HDD_INFO                  *HddInfo;
+    UINT16                     BbsCount;
+    BBS_TABLE                 *LocalBbsTable;
     BBS_BBS_DEVICE_PATH       *OptionBBS;
     CHAR16                     Desc[100];
 
@@ -67,6 +67,9 @@ VOID UpdateBbsTable (
         return;
     }
 
+    BbsCount = HddCount = 0;
+    HddInfo = NULL;
+    LocalBbsTable = NULL;
     OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
     REFIT_CALL_5_WRAPPER(
         LegacyBios->GetBbsInfo, LegacyBios,
@@ -113,7 +116,7 @@ VOID UpdateBbsTable (
 EFI_STATUS BdsLibDoLegacyBoot (
     IN  BDS_COMMON_OPTION *Option
 ) {
-    EFI_STATUS                Status;
+    EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     #if REFIT_DEBUG > 0

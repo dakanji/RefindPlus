@@ -169,7 +169,7 @@ EG_IMAGE * egCropImage (
     IN UINTN      Width,
     IN UINTN      Height
 ) {
-    EG_IMAGE *NewImage = NULL;
+    EG_IMAGE *NewImage;
     UINTN x, y;
 
     if (((StartX + Width) > Image->Width) || ((StartY + Height) > Image->Height)) {
@@ -208,8 +208,8 @@ EG_IMAGE * egScaleImage (
     EG_IMAGE  *NewImage;
     EG_PIXEL   a, b, c, d;
     UINTN      i, j;
+    UINTN      Offset;
     UINTN      x, y, Index;
-    UINTN      Offset = 0;
     UINTN      x_diff, y_diff;
     UINTN      x_ratio, y_ratio;
 
@@ -240,6 +240,7 @@ EG_IMAGE * egScaleImage (
         return NULL;
     }
 
+    Offset = 0;
     x_ratio = ((Image->Width - 1) * FP_MULTIPLIER) / NewWidth;
     y_ratio = ((Image->Height - 1) * FP_MULTIPLIER) / NewHeight;
 
@@ -392,9 +393,10 @@ EFI_STATUS egFindESP (
 ) {
     EFI_STATUS   Status;
     EFI_HANDLE  *Handles;
-    UINTN        HandleCount = 0;
+    UINTN        HandleCount;
     EFI_GUID     ESPGuid = ESP_GUID_VALUE;
 
+    HandleCount = 0;
     Status = LibLocateHandle (
         ByProtocol,
         &ESPGuid, NULL,
@@ -527,8 +529,10 @@ EG_IMAGE * egLoadIcon (
     IN UINTN               IconSize
 ) {
     EFI_STATUS      Status;
-    UINTN           FileDataLength = 0;
+    UINTN           w, h;
+    UINTN           FileDataLength;
     UINT8          *FileData;
+    CHAR16         *MsgStr;
     EG_IMAGE       *NewImage;
     EG_IMAGE       *Image;
 
@@ -560,6 +564,7 @@ EG_IMAGE * egLoadIcon (
     }
 
     // Try to load file if able to get to image
+    FileDataLength = 0;
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
@@ -591,8 +596,8 @@ EG_IMAGE * egLoadIcon (
 
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
         // Do proportional scaling
-        UINTN w = Image->Width;
-        UINTN h = Image->Height;
+        w = Image->Width;
+        h = Image->Height;
         if (h < w) {
             h = IconSize * h / w;
             w = IconSize;
@@ -613,7 +618,7 @@ EG_IMAGE * egLoadIcon (
             Image = NewImage;
         }
         else {
-            CHAR16 *MsgStr = PoolPrint (
+            MsgStr = PoolPrint (
                 L"Could Not Scale Icon in '%s' from %d x %d to %d x %d!!",
                 Path, Image->Width, Image->Height, IconSize, IconSize
             );
@@ -642,10 +647,10 @@ EG_IMAGE * egLoadIconAnyType (
     IN CHAR16              *BaseName,
     IN UINTN                IconSize
 ) {
-    EG_IMAGE  *Image = NULL;
-    CHAR16    *Extension;
+    UINTN      i;
     CHAR16    *FileName;
-    UINTN      i = 0;
+    CHAR16    *Extension;
+    EG_IMAGE  *Image;
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
@@ -669,6 +674,8 @@ EG_IMAGE * egLoadIconAnyType (
     );
     #endif
 
+    Image = NULL;
+    i = 0;
     while ((Image == NULL) && ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL)) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
@@ -721,7 +728,7 @@ EG_IMAGE * egFindIcon (
 static
 VOID egInvertPlane (
     IN UINT8 *DestPlanePtr,
-    IN UINTN PixelCount
+    IN UINTN  PixelCount
 ) {
     UINTN i;
 
@@ -738,11 +745,20 @@ EG_IMAGE * egPrepareEmbeddedImage (
     IN BOOLEAN            WantAlpha,
     IN EG_PIXEL          *ForegroundColor
 ) {
+    UINTN     CompLen;
+    UINTN     PixelCount;
+    UINT8     PixelValueR;
+    UINT8     PixelValueG;
+    UINT8     PixelValueB;
+    UINT8    *CompData;
+    EG_IMAGE *NewImage;
+
     #if REFIT_DEBUG > 0
     static BOOLEAN LogTextColour = TRUE;
     #endif
 
     #if REFIT_DEBUG > 1
+    UINT8  *CompStart;
     CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
     #endif
 
@@ -777,7 +793,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
     // Allocate image structure and pixel buffer
     //BREAD_CRUMB(L"%s:  3", FuncTag);
-    EG_IMAGE *NewImage = egCreateImage (
+    NewImage = egCreateImage (
         EmbeddedImage->Width,
         EmbeddedImage->Height,
         WantAlpha
@@ -795,11 +811,11 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     #if REFIT_DEBUG > 1
-    UINT8 *CompStart  = 0;
+    CompStart  = 0;
     #endif
-    UINT8 *CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
-    UINTN  CompLen    = EmbeddedImage->DataLength;
-    UINTN  PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
+    CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
+    CompLen    = EmbeddedImage->DataLength;
+    PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
     //BREAD_CRUMB(L"%s:  6", FuncTag);
     // DA-TAG: Investigate This
@@ -870,9 +886,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
         //BREAD_CRUMB(L"%s:  7c 1", FuncTag);
 
         // Set Colour Planes to 'ForegroundColor' or to Black
-        UINT8   PixelValueR = ForegroundColor ? ForegroundColor->r : 0;
-        UINT8   PixelValueG = ForegroundColor ? ForegroundColor->g : 0;
-        UINT8   PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
+        PixelValueR = ForegroundColor ? ForegroundColor->r : 0;
+        PixelValueG = ForegroundColor ? ForegroundColor->g : 0;
+        PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
 
         //BREAD_CRUMB(L"%s:  7c 2", FuncTag);
         #if REFIT_DEBUG > 0
@@ -1060,10 +1076,11 @@ VOID egRawCompose (
     IN UINTN         TopLineOffset
 ) {
     UINTN        x, y;
-    EG_PIXEL    *TopPtr, *CompPtr;
     UINTN        Alpha;
     UINTN        RevAlpha;
     UINTN        Temp;
+    EG_PIXEL    *TopPtr;
+    EG_PIXEL    *CompPtr;
 
     if (CompBasePtr && TopBasePtr) {
         for (y = 0; y < Height; y++) {

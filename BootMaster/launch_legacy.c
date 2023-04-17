@@ -157,7 +157,7 @@ EFI_STATUS ActivateMbrPartition (
     UINT8                SectorBuffer[512];
     MBR_PARTITION_INFO  *MbrTable, *EMbrTable;
     UINT32               ExtBase, ExtCurrent, NextExtCurrent;
-    UINTN                LogicalPartitionIndex = 4;
+    UINTN                LogicalPartitionIndex;
     UINTN                i;
     BOOLEAN              HaveBootCode;
 
@@ -242,8 +242,9 @@ EFI_STATUS ActivateMbrPartition (
             }
 
             // Scan EMBR, set appropriate partition active
-            EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
             NextExtCurrent = 0;
+            LogicalPartitionIndex = 4;
+            EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
             for (i = 0; i < 4; i++) {
                 if (EMbrTable[i].Flags != 0x00 && EMbrTable[i].Flags != 0x80) {
                     return EFI_NOT_FOUND;   // safety measure #4
@@ -314,8 +315,8 @@ VOID ExtractLegacyLoaderPaths (
 ) {
     EFI_STATUS                            Status;
     UINTN                                 PathIndex;
-    UINTN                                 PathCount   = 0;
-    UINTN                                 HandleCount = 0;
+    UINTN                                 PathCount;
+    UINTN                                 HandleCount;
     UINTN                                 HandleIndex;
     UINTN                                 HardcodedIndex;
     BOOLEAN                               Seen;
@@ -327,12 +328,14 @@ VOID ExtractLegacyLoaderPaths (
     MaxPaths--;  // leave space for the terminating NULL pointer
 
     // Get all LoadedImage handles
+    HandleCount = 0;
     Status = LibLocateHandle (
         ByProtocol,
         &LoadedImageProtocol, NULL,
         &HandleCount, &Handles
     );
 
+    PathCount = 0;
     if (CheckError (Status, L"while listing LoadedImage handles")) {
         if (HardcodedPathList) {
             for (HardcodedIndex = 0; HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths; HardcodedIndex++) {
@@ -417,16 +420,19 @@ EFI_STATUS StartLegacyImageList (
 ) {
     EFI_STATUS                        Status;
     EFI_HANDLE                        ChildImageHandle;
-    EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage = NULL;
+    EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage;
     UINTN                             DevicePathIndex;
-    CHAR16                           *FullLoadOptions = NULL;
+    CHAR16                           *FullLoadOptions;
 
     if (ErrorInStep != NULL) {
         *ErrorInStep = 0;
     }
 
     // Set load options
-    if (LoadOptions != NULL) {
+    if (LoadOptions == NULL) {
+        FullLoadOptions = NULL;
+    }
+    else {
         FullLoadOptions = StrDuplicate (LoadOptions);
     }
 
@@ -451,6 +457,7 @@ EFI_STATUS StartLegacyImageList (
         goto bailout;
     }
 
+    ChildLoadedImage = NULL;
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, ChildImageHandle,
         &LoadedImageProtocol, (VOID **) &ChildLoadedImage
@@ -513,11 +520,11 @@ VOID StartLegacy (
 ) {
     EFI_STATUS       Status;
     EG_IMAGE        *BootLogoImage;
-    UINTN            ErrorInStep = 0;
+    UINTN            ErrorInStep;
     EFI_DEVICE_PATH_PROTOCOL *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
-    CHAR16 *MsgStrA = NULL;
-    CHAR16 *MsgStrB = NULL;
+    CHAR16 *MsgStrA;
+    CHAR16 *MsgStrB;
 
     IsBoot = TRUE;
 
@@ -583,6 +590,7 @@ VOID StartLegacy (
     StoreLoaderName (SelectionName);
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
+    ErrorInStep = 0;
     Status = StartLegacyImageList (
         DiscoveredPathList,
         Entry->LoadOptions,
@@ -710,6 +718,10 @@ VOID AddLegacyEntry (
     CHAR16            *LegacyTitle;
     CHAR16             ShortcutLetter;
 
+    #if REFIT_DEBUG > 0
+    UINTN              LogLineType;
+    #endif
+
     if (Volume == NULL) {
         // Early Return
         return;
@@ -758,7 +770,7 @@ VOID AddLegacyEntry (
     }
 
     #if REFIT_DEBUG > 0
-    UINTN LogLineType = (FirstLegacyScan)
+    LogLineType = (FirstLegacyScan)
         ? LOG_STAR_HEAD_SEP
         : LOG_THREE_STAR_SEP;
 
@@ -961,15 +973,15 @@ VOID ScanLegacyUEFI (
     IN UINTN DiskType
 ) {
     EFI_STATUS                 Status;
-    UINT16                    *BootOrder       = NULL;
-    UINTN                      Index           = 0;
-    UINTN                      BootOrderSize   = 0;
+    UINT16                    *BootOrder;
+    UINTN                      Index;
+    UINTN                      BootOrderSize;
     CHAR16                     Buffer[20];
     CHAR16                     BootOption[10];
-    BOOLEAN                    SearchingForUsb = FALSE;
+    BOOLEAN                    SearchingForUsb;
     LIST_ENTRY                 TempList;
     BDS_COMMON_OPTION         *BdsOption;
-    BBS_BBS_DEVICE_PATH       *BbsDevicePath   = NULL;
+    BBS_BBS_DEVICE_PATH       *BbsDevicePath;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     #if REFIT_DEBUG > 1
@@ -1011,12 +1023,14 @@ VOID ScanLegacyUEFI (
     // EFI calls USB drives BBS_HARDDRIVE, but we want to distinguish them,
     //   so we set DiskType inappropriately elsewhere in the program and
     //   "translate" it here.
+    SearchingForUsb = FALSE;
     if (DiskType == BBS_USB) {
        DiskType = BBS_HARDDISK;
        SearchingForUsb = TRUE;
     }
 
     // Grab the boot order
+    BootOrderSize = 0;
     BootOrder = BdsLibGetVariableAndSize (
         L"BootOrder",
         &gEfiGlobalVariableGuid,
@@ -1028,6 +1042,7 @@ VOID ScanLegacyUEFI (
     }
 
     Index = 0;
+    BbsDevicePath = NULL;
     while (Index < BootOrderSize / sizeof (UINT16)) {
         // Grab each boot option variable from the boot order and convert
         //   the variable into a BDS boot option
@@ -1082,9 +1097,11 @@ VOID ScanLegacyVolume (
     UINTN         VolumeIndex
 ) {
     UINTN   VolumeIndex2;
-    BOOLEAN ShowVolume, HideIfOthersFound;
+    BOOLEAN ShowVolume;
+    BOOLEAN HideIfOthersFound;
 
     #if REFIT_DEBUG > 1
+    CHAR16 *TheVolName;
     CHAR16 *FuncTag = L"ScanLegacyVolume";
     #endif
 
@@ -1093,9 +1110,11 @@ VOID ScanLegacyVolume (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     #if REFIT_DEBUG > 1
-    CHAR16 *TheVolName = L"Unnamed Volume";
     if (StrLen (Volume->VolName) > 0) {
         TheVolName = Volume->VolName;
+    }
+    else {
+        TheVolName = L"Unnamed Volume";
     }
     ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning %s", TheVolName);
     #endif
@@ -1316,9 +1335,11 @@ VOID FindLegacyBootType (VOID) {
 
 // Warn user if legacy OS scans are enabled but the firmware does not support them
 VOID WarnIfLegacyProblems (VOID) {
-    UINTN     i      = 0;
-    BOOLEAN   found  = FALSE;
+    UINTN     i;
+    BOOLEAN   found;
     CHAR16   *MsgStr;
+    CHAR16   *TmpMsgA;
+    CHAR16   *TmpMsgB;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"WarnIfLegacyProblems";
@@ -1329,6 +1350,8 @@ VOID WarnIfLegacyProblems (VOID) {
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
+        i = 0;
+        found = FALSE;
         do {
             if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
                 GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
@@ -1356,8 +1379,8 @@ VOID WarnIfLegacyProblems (VOID) {
             );
 
             if (!GlobalConfig.DirectBoot) {
-                CHAR16 *TmpMsgA = L"** WARN: Legacy BIOS Boot Issues                                          ";
-                CHAR16 *TmpMsgB = L"                                                                          ";
+                TmpMsgA = L"** WARN: Legacy BIOS Boot Issues                                          ";
+                TmpMsgB = L"                                                                          ";
 
                 #if REFIT_DEBUG > 0
                 BOOLEAN CheckMute = FALSE;

@@ -73,19 +73,19 @@ CHAR16 * FindInitrd (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    UINTN                SharedChars       = 0;
-    UINTN                MaxSharedChars    = 0;
-    CHAR16              *Path              = NULL;
-    CHAR16              *FileName          = NULL;
-    CHAR16              *InitrdName        = NULL;
-    CHAR16              *KernelPostNum     = NULL;
-    CHAR16              *InitrdPostNum     = NULL;
-    CHAR16              *KernelVersion     = NULL;
-    CHAR16              *InitrdVersion     = NULL;
-    STRING_LIST         *InitrdNames       = NULL;
-    STRING_LIST         *FinalInitrdName   = NULL;
-    STRING_LIST         *MaxSharedInitrd   = NULL;
-    STRING_LIST         *CurrentInitrdName = NULL;
+    UINTN                SharedChars;
+    UINTN                MaxSharedChars;
+    CHAR16              *Path;
+    CHAR16              *FileName;
+    CHAR16              *InitrdName;
+    CHAR16              *KernelPostNum;
+    CHAR16              *InitrdPostNum;
+    CHAR16              *KernelVersion;
+    CHAR16              *InitrdVersion;
+    STRING_LIST         *InitrdNames;
+    STRING_LIST         *FinalInitrdName;
+    STRING_LIST         *MaxSharedInitrd;
+    STRING_LIST         *CurrentInitrdName;
     EFI_FILE_INFO       *DirEntry;
     REFIT_DIR_ITER       DirIter;
 
@@ -139,6 +139,7 @@ CHAR16 * FindInitrd (
     }
 
     BREAD_CRUMB(L"%s:  8", FuncTag);
+    InitrdNames = FinalInitrdName = CurrentInitrdName = NULL;
     while (DirIterNext (&DirIter, 2, L"init*,booster*", &DirEntry)) {
         BREAD_CRUMB(L"%s:  8a 0", FuncTag);
         InitrdVersion = FindNumbers (DirEntry->FileName);
@@ -195,6 +196,7 @@ CHAR16 * FindInitrd (
     } // while
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
+    InitrdName = NULL;
     if (InitrdNames) {
         BREAD_CRUMB(L"%s:  9a 1", FuncTag);
         if (InitrdNames->Next == NULL) {
@@ -204,7 +206,7 @@ CHAR16 * FindInitrd (
         else {
             BREAD_CRUMB(L"%s:  9b 1", FuncTag);
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
-            MaxSharedChars = 0;
+            SharedChars = MaxSharedChars = 0;
 
             BREAD_CRUMB(L"%s:  9b 2", FuncTag);
             while (CurrentInitrdName != NULL) {
@@ -261,7 +263,7 @@ CHAR16 * FindInitrd (
     #endif
 
     BREAD_CRUMB(L"%s:  12 - END:- return CHAR16 *InitrdName = '%s'", FuncTag,
-        InitrdName ? InitrdName : L"NULL"
+        (InitrdName) ? InitrdName : L"NULL"
     );
     LOG_DECREMENT();
     LOG_SEP(L"X");
@@ -282,7 +284,8 @@ CHAR16 * AddInitrdToOptions (
     CHAR16 *Options,
     CHAR16 *InitrdPath
 ) {
-    CHAR16 *NewOptions = NULL;
+    CHAR16 *NewOptions;
+    CHAR16 *InitrdVersion;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"AddInitrdToOptions";
@@ -291,8 +294,12 @@ CHAR16 * AddInitrdToOptions (
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-    if (Options != NULL) {
+    if (Options == NULL) {
         BREAD_CRUMB(L"%s:  1a 1", FuncTag);
+        NewOptions = NULL;
+    }
+    else {
+        BREAD_CRUMB(L"%s:  1b 1", FuncTag);
         NewOptions = StrDuplicate (Options);
     }
 
@@ -301,7 +308,7 @@ CHAR16 * AddInitrdToOptions (
         BREAD_CRUMB(L"%s:  2a 1", FuncTag);
         if (FindSubStr (Options, L"%v")) {
             BREAD_CRUMB(L"%s:  2a 1a 1", FuncTag);
-            CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
+            InitrdVersion = FindNumbers (InitrdPath);
 
             BREAD_CRUMB(L"%s:  2a 1a 2", FuncTag);
             ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
@@ -391,8 +398,8 @@ VOID ParseReleaseFile (
     REFIT_VOLUME  *Volume,
     CHAR16        *FileName
 ) {
-    UINTN         FileSize   = 0;
-    UINTN         TokenCount = 0;
+    UINTN         FileSize;
+    UINTN         TokenCount;
     CHAR16      **TokenList;
     REFIT_FILE    File;
 
@@ -402,6 +409,7 @@ VOID ParseReleaseFile (
         return;
     }
 
+    FileSize = 0;
     if (FileExists (Volume->RootDir, FileName) &&
         (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)
     ) {
@@ -474,8 +482,12 @@ VOID AddKernelToSubmenu (
     REFIT_VOLUME *Volume
 ) {
     REFIT_FILE          *File;
-    CHAR16             **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
-    CHAR16              *Path = NULL, *KernelVersion = NULL;
+    CHAR16             **TokenList = NULL;
+    CHAR16              *Path;
+    CHAR16              *VolName;
+    CHAR16              *InitrdName;
+    CHAR16              *SubmenuName;
+    CHAR16              *KernelVersion;
     REFIT_MENU_SCREEN   *SubScreen;
     LOADER_ENTRY        *SubEntry;
     UINTN                TokenCount;
@@ -513,6 +525,7 @@ VOID AddKernelToSubmenu (
     KernelVersion = FindNumbers (FileName);
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
+    Path = VolName = SubmenuName = NULL;
     while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
         LOG_SEP(L"X");
         BREAD_CRUMB(L"%s:  6a 1 - WHILE LOOP:- START", FuncTag);
@@ -597,12 +610,18 @@ VOID AddKernelToSubmenu (
 // behave identically on non-SB systems, or when one will fail when SB
 // is active.
 // CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
-BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
-    CHAR16 *NewFile = NULL;
-    BOOLEAN retval = FALSE;
+BOOLEAN HasSignedCounterpart (
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *FullName
+) {
+    CHAR16  *NewFile;
+    BOOLEAN  retval;
 
+    NewFile = NULL;
     MergeStrings(&NewFile, FullName, 0);
     MergeStrings(&NewFile, L".efi.signed", 0);
+
+    retval = FALSE;
     if (NewFile != NULL) {
         if (FileExists(Volume->RootDir, NewFile)) {
             #if REFIT_DEBUG > 0

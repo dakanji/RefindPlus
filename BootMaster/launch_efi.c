@@ -90,11 +90,11 @@ VOID WarnSecureBootError(
     CHAR16  *Name,
     BOOLEAN  Verbose
 ) {
-    CHAR16 *MsgStrA = NULL;
-    CHAR16 *MsgStrB = NULL;
-    CHAR16 *MsgStrC = NULL;
-    CHAR16 *MsgStrD = NULL;
-    CHAR16 *MsgStrE = NULL;
+    CHAR16 *MsgStrA;
+    CHAR16 *MsgStrB;
+    CHAR16 *MsgStrC;
+    CHAR16 *MsgStrD;
+    CHAR16 *MsgStrE;
 
     if (Name == NULL) {
         Name = L"the Loader";
@@ -173,7 +173,7 @@ BOOLEAN IsValidLoader (
     EFI_STATUS      Status;
     BOOLEAN         IsValid;
     CHAR8           Header[512];
-    UINTN           Size = sizeof (Header);
+    UINTN           Size;
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // DA-TAG: Investigate This
@@ -245,6 +245,7 @@ BOOLEAN IsValidLoader (
         return FALSE;
     }
 
+    Size = sizeof (Header);
     Status = REFIT_CALL_3_WRAPPER(
         FileHandle->Read, FileHandle,
         &Size, Header
@@ -317,17 +318,22 @@ EFI_STATUS StartEFIImage (
 ) {
     EFI_STATUS                           Status;
     EFI_STATUS                           ReturnStatus;
-    EFI_HANDLE                           ChildImageHandle  = NULL;
-    EFI_HANDLE                           ChildImageHandle2 = NULL;
-    EFI_DEVICE_PATH_PROTOCOL            *DevicePath        = NULL;
-    EFI_LOADED_IMAGE_PROTOCOL           *ChildLoadedImage  = NULL;
-    CHAR16                              *FullLoadOptions   = NULL;
-    CHAR16                              *EspGUID           = NULL;
-    CHAR16                              *MsgStr            = NULL;
     EFI_GUID                             SystemdGuid       = SYSTEMD_GUID_VALUE;
+    CHAR16                              *MsgStrTmp;
+    CHAR16                              *MsgStrEx;
+    CHAR16                              *MsgStr;
+    CHAR16                              *EspGUID;
+    CHAR16                              *FullLoadOptions;
+    BOOLEAN                              LoaderValid;
+    EFI_HANDLE                           ChildImageHandle;
+    EFI_HANDLE                           ChildImageHandle2;
+    EFI_DEVICE_PATH_PROTOCOL            *DevicePath;
+    EFI_LOADED_IMAGE_PROTOCOL           *ChildLoadedImage;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    CHAR16  *ConstMsgStr;
+
+    BOOLEAN  CheckMute = FALSE;
     #endif
 
     if (!Volume) {
@@ -348,6 +354,7 @@ EFI_STATUS StartEFIImage (
     }
 
     // Set load options
+    FullLoadOptions = NULL;
     if (LoadOptions != NULL) {
         FullLoadOptions = StrDuplicate (LoadOptions);
 
@@ -358,7 +365,7 @@ EFI_STATUS StartEFIImage (
 
     MsgStr = PoolPrint (
         L"Loading '%s' ... Load Options:- '%s'",
-        ImageTitle, FullLoadOptions ? FullLoadOptions : L"NULL"
+        ImageTitle, (FullLoadOptions) ? FullLoadOptions : L"NULL"
     );
 
     #if REFIT_DEBUG > 0
@@ -379,7 +386,7 @@ EFI_STATUS StartEFIImage (
 
     MY_FREE_POOL(MsgStr);
 
-    BOOLEAN LoaderValid = IsValidLoader (Volume->RootDir, Filename);
+    LoaderValid = IsValidLoader (Volume->RootDir, Filename);
 
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     // Some EFIs crash if attempting to load drivers for an invalid architecture, so
@@ -429,6 +436,7 @@ EFI_STATUS StartEFIImage (
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
         }
 
+        ChildImageHandle = NULL;
         // DA-TAG: Investigate This
         //         Commented-out lines below could be more efficient if file were read ahead of
         //         time and passed as a pre-loaded image to LoadImage(), but it does not work on my
@@ -474,6 +482,7 @@ EFI_STATUS StartEFIImage (
             #endif
 
             // Ignore return status here
+            ChildImageHandle2 = NULL;
             REFIT_CALL_6_WRAPPER(
                 gBS->LoadImage, FALSE,
                 SelfImageHandle, GlobalConfig.SelfDevicePath,
@@ -498,6 +507,7 @@ EFI_STATUS StartEFIImage (
         goto bailout;
     }
 
+    ChildLoadedImage = NULL;
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, ChildImageHandle,
         &LoadedImageProtocol, (VOID **) &ChildLoadedImage
@@ -562,7 +572,7 @@ EFI_STATUS StartEFIImage (
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    CHAR16 *ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
+    ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
     if (!IsDriver) {
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
         OUT_TAG();
@@ -578,7 +588,6 @@ EFI_STATUS StartEFIImage (
     ReturnStatus = Status;
     NewImageHandle = ChildImageHandle;
 
-    CHAR16 *MsgStrEx = NULL;
     #if REFIT_DEBUG > 0
     MsgStrEx = PoolPrint (L"'%r' When %s", ReturnStatus, ConstMsgStr);
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
@@ -590,7 +599,7 @@ EFI_STATUS StartEFIImage (
     #endif
 
     if (EFI_ERROR(ReturnStatus)) {
-        CHAR16 *MsgStrTmp = L"Returned from Child Image";
+        MsgStrTmp = L"Returned from Child Image";
         if (!IsDriver) {
             MsgStrEx = StrDuplicate (MsgStrTmp);
         }
@@ -630,13 +639,19 @@ static
 BOOLEAN ConfirmReboot (
     CHAR16 *PromptUser
 ) {
-    BOOLEAN Confirmation = TRUE;
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    BOOLEAN            Confirmation;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmRebootMenu;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm %s' Screen", PromptUser);
     #endif
 
-    REFIT_MENU_SCREEN *ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (!ConfirmRebootMenu) {
         // Early Return ... Fail
         return FALSE;
@@ -649,7 +664,7 @@ BOOLEAN ConfirmReboot (
 
     AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
 
-    BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
+    RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
     if (!RetVal) {
         FreeMenuScreen (&ConfirmRebootMenu);
 
@@ -657,10 +672,9 @@ BOOLEAN ConfirmReboot (
         return FALSE;
     }
 
-    INTN           DefaultEntry = 1;
-    REFIT_MENU_ENTRY  *ChosenOption;
-    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    UINTN MenuExit = RunGenericMenu (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
@@ -672,6 +686,9 @@ BOOLEAN ConfirmReboot (
     if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
         Confirmation = FALSE;
     }
+    else {
+        Confirmation = TRUE;
+    }
 
     FreeMenuScreen (&ConfirmRebootMenu);
 
@@ -680,10 +697,12 @@ BOOLEAN ConfirmReboot (
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
-    CHAR16     *TmpStr = L"Reboot into Firmware";
+    EFI_STATUS  Status;
+    CHAR16     *TmpStr;
+    CHAR16     *MsgStr;
     UINT64     *ItemBuffer;
     UINT64      osind;
-    EFI_STATUS  Status;
+    BOOLEAN     ConfirmAction;
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
@@ -696,11 +715,12 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     }
     MY_FREE_POOL(ItemBuffer);
 
+    TmpStr = L"Reboot into Firmware";
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
     #endif
 
-    BOOLEAN ConfirmAction = ConfirmReboot(TmpStr);
+    ConfirmAction = ConfirmReboot(TmpStr);
     if (!ConfirmAction) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted by User");
@@ -737,7 +757,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
 
     Status = EFI_LOAD_ERROR;
-    CHAR16 *MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
+    MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -763,23 +783,28 @@ VOID RebootIntoLoader (
     LOADER_ENTRY *Entry
 ) {
     EFI_STATUS  Status;
-    CHAR16     *TmpStr    = L"Reboot into NVRAM Boot Option";
-    CHAR16     *MsgStr    = NULL;
+    CHAR16     *TmpStr;
+    CHAR16     *MsgStr;
+    BOOLEAN     ConfirmAction;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
 
+    TmpStr = L"Reboot into NVRAM Boot Option";
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
     #endif
 
-    BOOLEAN ConfirmAction = ConfirmReboot(TmpStr);
+    ConfirmAction = ConfirmReboot(TmpStr);
     if (!ConfirmAction) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted by User", MsgStr);
-        LOG_MSG("%s    ** Aborted by User", OffsetNext, MsgStr);
+        MsgStr = StrDuplicate (L"Aborted by User");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return;
@@ -863,15 +888,17 @@ VOID RebootIntoLoader (
 static
 VOID DoEnableAndLockVMX(VOID) {
 #if defined (EFIX64) | defined (EFI32)
-    UINT32 msr       = 0x3a;
-    UINT32 low_bits  = 0;
-    UINT32 high_bits = 0;
+    UINT32 msr;
+    UINT32 low_bits;
+    UINT32 high_bits;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
     #endif
 
     // is VMX active ?
+    msr = 0x3a;
+    low_bits = high_bits = 0;
     __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
 
     // enable and lock vmx if not locked
@@ -900,12 +927,15 @@ EFI_STATUS ApfsRecoveryBoot (
 
 
     EFI_STATUS  Status;
-    CHAR16     *NameNVRAM = NULL;
-    CHAR8      *DataNVRAM = NULL;
+    CHAR16     *InitNVRAM;
+    CHAR16     *NameNVRAM;
+    CHAR8      *DataNVRAM;
+    UINTN       Size;
 
     // Set Relevant NVRAM Variable
-    CHAR16 *InitNVRAM = L"RecoveryModeDisk";
+    InitNVRAM = L"RecoveryModeDisk";
     NameNVRAM = L"internet-recovery-mode";
+    DataNVRAM = NULL;
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
         &AppleVendorOsGuid, NameNVRAM,
@@ -936,7 +966,6 @@ EFI_STATUS ApfsRecoveryBoot (
     MY_FREE_POOL(Entry->EfiLoaderPath);
     Entry->EfiLoaderPath = FileDevicePath (Entry->Volume->DeviceHandle, Entry->LoaderPath);
 
-    UINTN Size;
     Status = ConstructBootEntry (
         Entry->Volume->DeviceHandle,
         Basename (Entry->EfiLoaderPath),
@@ -975,8 +1004,8 @@ VOID StartLoader (
     LOADER_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
-    CHAR16 *MsgStr     = NULL;
-    CHAR16 *LoaderPath = NULL;
+    CHAR16 *MsgStr;
+    CHAR16 *LoaderPath;
 
     IsBoot        = TRUE;
     BootSelection = SelectionName;
@@ -1010,16 +1039,16 @@ VOID StartLoader (
 VOID StartTool (
     IN LOADER_ENTRY *Entry
 ) {
-    CHAR16  *MsgStr     =  NULL;
-    CHAR16  *LoaderPath =  NULL;
+    CHAR16  *MsgStr;
+    CHAR16  *LoaderPath;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
 
-    IsBoot        = FALSE;
-    LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"Launching Child (Tool) Image:- '%s'", Entry->me.Title);
+    IsBoot     = FALSE;
+    LoaderPath = Basename (Entry->LoaderPath);
+    MsgStr     = PoolPrint (L"Launching Child (Tool) Image:- '%s'", Entry->me.Title);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

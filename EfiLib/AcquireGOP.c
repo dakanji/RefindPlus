@@ -225,17 +225,19 @@ EFI_STATUS ReloadOptionROM (
   @retval Other value               Unknown error.
 **/
 EFI_STATUS AcquireGOP (VOID) {
-    UINTN                 Index                = 0;
-    UINTN                 HandleIndex          = 0;
-    UINTN                 HandleArrayCount     = 0;
-    UINTN                 BindingHandleCount   = 0;
-    CHAR16               *RomFileName          = NULL;
-    EFI_HANDLE           *HandleArray          = NULL;
-    EFI_HANDLE           *BindingHandleBuffer  = NULL;
-    EFI_STATUS            ReturnStatus         = EFI_LOAD_ERROR;
+    UINTN                 Index;
+    UINTN                 HandleIndex;
+    UINTN                 HandleArrayCount;
+    UINTN                 BindingHandleCount;
+    CHAR16               *RomFileName;
+    EFI_HANDLE           *HandleArray;
+    EFI_HANDLE           *BindingHandleBuffer;
+    EFI_STATUS            ReturnStatus;
     EFI_STATUS            Status;
     EFI_PCI_IO_PROTOCOL  *PciIo;
 
+    HandleArrayCount = 0;
+    HandleArray = NULL;
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &gEfiPciIoProtocolGuid, NULL,
@@ -246,6 +248,7 @@ EFI_STATUS AcquireGOP (VOID) {
         return EFI_PROTOCOL_ERROR;
     }
 
+    ReturnStatus = EFI_LOAD_ERROR;
     for (Index = 0; Index < HandleArrayCount; Index++) {
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol, HandleArray[Index],
@@ -263,6 +266,8 @@ EFI_STATUS AcquireGOP (VOID) {
             continue;
         }
 
+        BindingHandleCount = 0;
+        BindingHandleBuffer = NULL;
         REFIT_CALL_3_WRAPPER(
             PARSE_HANDLE_DATABASE_UEFI_DRIVERS, HandleArray[Index],
             &BindingHandleCount, &BindingHandleBuffer

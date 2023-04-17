@@ -47,7 +47,7 @@ EFI_FILE_PROTOCOL *mRootDir = NULL;
 
 static
 CHAR16 * GetAltMonth (VOID) {
-    CHAR16 *AltMonth = NULL;
+    CHAR16 *AltMonth;
 
     switch (NowMonth) {
         case  1: AltMonth = L"b";  break;
@@ -69,7 +69,7 @@ CHAR16 * GetAltMonth (VOID) {
 
 static
 CHAR16 * GetAltHour (VOID) {
-    CHAR16 *AltHour = NULL;
+    CHAR16 *AltHour;
 
     switch (NowHour) {
         case  0: AltHour = L"a";  break;
@@ -103,15 +103,19 @@ CHAR16 * GetAltHour (VOID) {
 
 static
 CHAR16 * GetDateString (VOID) {
+    INT16    ourYear;
+    CHAR16  *ourMonth;
+    CHAR16  *ourHour;
+
     static CHAR16 *DateStr = NULL;
 
     if (DateStr != NULL) {
         return DateStr;
     }
 
-    INT16    ourYear   = (NowYear % 100);
-    CHAR16  *ourMonth  = GetAltMonth();
-    CHAR16  *ourHour   = GetAltHour();
+    ourYear   = (NowYear % 100);
+    ourMonth  = GetAltMonth();
+    ourHour   = GetAltHour();
     DateStr = PoolPrint(
         L"%02d%s%02d%s%02d%02d",
         ourYear, ourMonth,
@@ -125,6 +129,7 @@ CHAR16 * GetDateString (VOID) {
 static
 EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     EFI_STATUS                    Status;
+    CHAR16                       *DateStr;
     EFI_LOADED_IMAGE_PROTOCOL    *LoadedImage;
     EFI_FILE_PROTOCOL            *LogProtocol;
 
@@ -150,7 +155,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     }
 
     if (mDebugLog == NULL) {
-        CHAR16 *DateStr = GetDateString();
+        DateStr = GetDateString();
         mDebugLog = PoolPrint (L"EFI\\%s.log", DateStr);
         MY_FREE_POOL(DateStr);
     }
@@ -210,10 +215,13 @@ static
 VOID SaveMessageToDebugLogFile (
     IN CHAR8 *LastMessage
 ) {
+    EFI_STATUS        Status;
     UINTN             TextLen;
     CHAR8            *Text;
     EFI_FILE_INFO    *Info;
     EFI_FILE_HANDLE   LogFile;
+
+    static BOOLEAN FirstTimeSave = FALSE;
 
     // Get/Open Logfile
     LogFile = GetDebugLogFile();
@@ -226,7 +234,7 @@ VOID SaveMessageToDebugLogFile (
         //         Allows using DEBUG build without logging
         //         Set 'log-level' to negative value to activate
         // Delete Logfile on invalid log level
-        EFI_STATUS Status = REFIT_CALL_5_WRAPPER(
+        Status = REFIT_CALL_5_WRAPPER(
             mRootDir->Open, mRootDir,
             &LogFile, mDebugLog,
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
@@ -253,8 +261,6 @@ VOID SaveMessageToDebugLogFile (
         //         Means removing 'FirstTimeSave'
         //         Currently just set to 'FALSE'
         //         Change to 'TRUE' if keeping
-        static BOOLEAN FirstTimeSave = FALSE;
-
         // Use whole buffer on 'FirstTimeSave'
         Text = (FirstTimeSave)
             ? GetMemLogBuffer()
@@ -280,6 +286,8 @@ VOID SaveMessageToDebugLogFile (
 VOID WayPointer (
     IN CHAR16 *Msg
 ) {
+    UINTN TmpLogLevelStore;
+
     if (gKernelStarted) {
         // Early Return
         return;
@@ -292,7 +300,7 @@ VOID WayPointer (
 
     // Stash and swap LogLevel
     // Needed to force DeepLogger on LogLevel 0
-    UINTN TmpLogLevelStore = GlobalConfig.LogLevel;
+    TmpLogLevelStore = GlobalConfig.LogLevel;
     if (GlobalConfig.LogLevel < 1) GlobalConfig.LogLevel = 1;
 
     // Call DeepLogger
@@ -308,10 +316,13 @@ VOID DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN    Limit     = 213;
-    CHAR8   *FormatMsg = NULL;
-    CHAR16  *StoreMsg  = NULL;
-    CHAR16  *Tmp       = NULL;
+    UINTN    Limit;
+    CHAR8   *FormatMsg;
+    CHAR16  *Tmp;
+    CHAR16  *OurPad;
+    CHAR16  *StoreMsg;
+    BOOLEAN  LongStr;
+    BOOLEAN  EarlyReturn;
 
     if (!(*Msg)) {
         // Early Return
@@ -319,7 +330,7 @@ VOID DeepLoggger (
     }
 
     // Make sure we are able to write
-    BOOLEAN  EarlyReturn = (
+    EarlyReturn = (
         REFIT_DEBUG <= MINLOGLEVEL
         || GlobalConfig.LogLevel < level
         || GlobalConfig.LogLevel == MINLOGLEVEL
@@ -336,17 +347,19 @@ VOID DeepLoggger (
         return;
     }
 
-    CHAR16 *OurPad = (PadStr) ? PadStr : L"[ ";
+    OurPad = (PadStr) ? PadStr : L"[ ";
 
     // Truncate message at MAXLOGLEVEL and lower (if required)
     if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {
-        BOOLEAN LongStr = TruncateString (*Msg, Limit);
+        Limit = 213;
+        LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
         MY_FREE_POOL(*Msg);
         *Msg = (LongStr)
             ? PoolPrint (L"%s ... Snipped!!", StoreMsg)
             : StrDuplicate (StoreMsg);
+        MY_FREE_POOL(StoreMsg);
     }
 
     // Disable Timestamp
@@ -373,26 +386,23 @@ VOID DeepLoggger (
             TimeStamp = TRUE;
     } // switch
 
-    if (Tmp) {
-        FormatMsg = AllocatePool (
-            (StrLen (Tmp) + 1) * sizeof (CHAR8)
-        );
-        if (FormatMsg) {
-            // Use Native Logging
-            UseMsgLog = TRUE;
+    FormatMsg = AllocatePool (
+        (StrLen (Tmp) + 1) * sizeof (CHAR8)
+    );
+    if (FormatMsg) {
+        // Use Native Logging
+        UseMsgLog = TRUE;
 
-            // Write the Message String to File
-            UnicodeStrToAsciiStr (Tmp, FormatMsg);
-            DebugLog ((const CHAR8 *) FormatMsg);
+        // Write the Message String to File
+        UnicodeStrToAsciiStr (Tmp, FormatMsg);
+        DebugLog ((const CHAR8 *) FormatMsg);
 
-            // Disable Native Logging
-            UseMsgLog = FALSE;
-        }
+        // Disable Native Logging
+        UseMsgLog = FALSE;
     }
 
     MY_FREE_POOL(Tmp);
     MY_FREE_POOL(*Msg);
-    MY_FREE_POOL(StoreMsg);
     MY_FREE_POOL(FormatMsg);
 } // VOID DeepLoggger()
 
@@ -432,6 +442,9 @@ VOID EFIAPI DebugLog (
 VOID LogPadding (
     BOOLEAN Increment
 ) {
+    CHAR16 *TmpPad;
+    UINTN   PadPos;
+
     if (MuteLogger) {
         // Early Return
         return;
@@ -444,8 +457,8 @@ VOID LogPadding (
         return;
     }
 
-    CHAR16 *TmpPad = StrDuplicate (PadStr);
-    UINTN   PadPos = StrLen (PadStr);
+    TmpPad = StrDuplicate (PadStr);
+    PadPos = StrLen (PadStr);
     MY_FREE_POOL(PadStr);
 
     if (Increment == TRUE) {

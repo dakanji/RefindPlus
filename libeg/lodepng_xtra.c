@@ -103,8 +103,9 @@ VOID * lodepng_refit_realloc (
 int MyStrlen (
     const char *InString
 ) {
-    int Length = 0;
+    int Length;
 
+    Length = 0;
     if (InString) {
         while (InString[Length] != '\0') {
             Length++;

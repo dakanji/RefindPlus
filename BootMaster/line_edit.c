@@ -77,12 +77,13 @@ BOOLEAN line_edit (
     CHAR16 **line_out,
     UINTN    x_max
 ) {
+    CHAR16  *MsgStr;
+    CHAR16  *print;
     CHAR16  *line;
     UINTN    size;
     UINTN    len;
     UINTN    first;
-    UINTN    y_pos = 3;
-    CHAR16  *print;
+    UINTN    y_pos;
     UINTN    cursor;
     BOOLEAN  exit;
     BOOLEAN  enter;
@@ -93,7 +94,7 @@ BOOLEAN line_edit (
         (ConWidth - 71) / 2, ConHeight - 1
     );
 
-    CHAR16 *MsgStr = L"Use Cursor Keys to Edit, 'ESC' to Exit, 'Enter' to Boot with Edited Options";
+    MsgStr = L"Use Cursor Keys to Edit, 'ESC' to Exit, 'Enter' to Boot with Edited Options";
     REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, MsgStr);
 
     if (!line_in) {
@@ -115,6 +116,7 @@ BOOLEAN line_edit (
         return FALSE;
     }
 
+    y_pos  = 3;
     first  = 0;
     cursor = 0;
     enter  = FALSE;

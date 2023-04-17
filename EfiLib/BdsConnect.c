@@ -230,36 +230,37 @@ EFI_STATUS ScanDeviceHandles (
 
 EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     EFI_STATUS            XStatus;
-    EFI_STATUS            Status           = EFI_SUCCESS;
-    EFI_HANDLE           *AllHandleBuffer = NULL;
-    EFI_HANDLE           *HandleBuffer    = NULL;
-    UINTN                 i, k;
+    EFI_STATUS            Status;
+    UINTN                 i, k, m;
+    UINTN                 BusPCI;
+    UINTN                 GOPCount;
+    UINTN                 DevicePCI;
+    UINTN                 SegmentPCI;
+    UINTN                 FunctionPCI;
     UINTN                 HandleCount;
-    UINT32               *HandleType = NULL;
+    UINT32               *HandleType;
     BOOLEAN               Parent;
     BOOLEAN               Device;
     BOOLEAN               DevTag;
+    BOOLEAN               VGADevice;
+    BOOLEAN               GFXDevice;
     BOOLEAN               MakeConnection;
+    EFI_HANDLE           *AllHandleBuffer;
+    EFI_HANDLE           *HandleBuffer;
+    EFI_HANDLE           *GOPArray;
     PCI_TYPE00            Pci;
     EFI_PCI_IO_PROTOCOL *PciIo;
 
-    UINTN       GOPCount;
-    EFI_HANDLE *GOPArray = NULL;
-
-    UINTN  SegmentPCI;
-    UINTN  BusPCI;
-    UINTN  DevicePCI;
-    UINTN  FunctionPCI;
-    UINTN  m;
 
 
     #if REFIT_DEBUG > 0
-    UINTN   HexIndex         = 0;
-    CHAR16 *GopDevicePathStr = NULL;
-    CHAR16 *DevicePathStr    = NULL;
-    CHAR16 *DeviceData       = NULL;
-    CHAR16 *MsgStr           = NULL;
-    CHAR16 *TmpStr           = NULL;
+    CHAR16 *GopDevicePathStr;
+    CHAR16 *DevicePathStr;
+    CHAR16 *DeviceData;
+    CHAR16 *MsgStr;
+    CHAR16 *TmpStr;
+    UINTN   HexIndex;
+    UINTN   AllHandleCountTrigger;
     #endif
 
     DetectedDevices = FALSE;
@@ -285,6 +286,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     //    NULL, NULL,
     //    &AllHandleCount, &AllHandleBuffer
     //);
+    AllHandleBuffer = NULL;
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &gEfiDevicePathProtocolGuid, NULL,
@@ -304,9 +306,12 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    UINTN AllHandleCountTrigger = AllHandleCount - 1;
+    AllHandleCountTrigger = AllHandleCount - 1;
+    DevicePathStr = GopDevicePathStr = NULL;
     #endif
 
+    HandleType = NULL;
+    GOPArray = HandleBuffer = NULL;
     for (i = 0; i < AllHandleCount; i++) {
         MakeConnection = TRUE;
 
@@ -419,8 +424,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             #endif
                         }
                         else {
-                            BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
-                            BOOLEAN GFXDevice = IS_PCI_GFX(&Pci);
+                            VGADevice = IS_PCI_VGA(&Pci);
+                            GFXDevice = IS_PCI_GFX(&Pci);
 
                             if (VGADevice) {
                                 // DA-TAG: Investigate This
@@ -624,11 +629,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 static
 EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     EFI_STATUS  Status;
-    BOOLEAN     RescanDrivers = (GlobalConfig.RescanDXE || ForceRescanDXE);
+    BOOLEAN     RescanDrivers;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
     #endif
+
+    RescanDrivers = (GlobalConfig.RescanDXE || ForceRescanDXE);
 
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO
@@ -708,6 +715,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
 // then reloads the OptionROM from RAM (If Present) which will install GOP (If Available).
 EFI_STATUS ApplyGOPFix (VOID) {
     EFI_STATUS Status;
+    BOOLEAN    TempRescanDXE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -752,7 +760,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     BRK_MOD("\n\n");
     #endif
 
-    BOOLEAN TempRescanDXE  = GlobalConfig.RescanDXE;
+    TempRescanDXE = GlobalConfig.RescanDXE;
     GlobalConfig.RescanDXE = FALSE;
     Status = BdsLibConnectAllDriversToAllControllersEx();
     GlobalConfig.RescanDXE = TempRescanDXE;
@@ -771,9 +779,14 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
     IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS Status;
+    BOOLEAN    KeyStrokeFound;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+    #endif
 
     // Remove any buffered key strokes
-    BOOLEAN KeyStrokeFound = ReadAllKeyStrokes();
+    KeyStrokeFound = ReadAllKeyStrokes();
     if (!KeyStrokeFound && !AppleFirmware) {
         // No KeyStrokes found ... Reset the buffer on UEFI PC anyway
         REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
@@ -787,7 +800,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
-                CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
+                MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 LOG_MSG("\n\n");
                 LOG_MSG("INFO: %s", MsgStr);

@@ -455,17 +455,19 @@ VOID ConnectFilesystemDriver (
     EFI_HANDLE DriverHandle
 ) {
     EFI_STATUS                             Status;
-    UINTN                                  HandleCount = 0;
+    UINTN                                  HandleCount;
     UINTN                                  Index;
-    UINTN                                  OpenInfoIndex;
-    EFI_HANDLE                            *Handles = NULL;
-    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *Fs;
-    MY_EFI_BLOCK_IO_PROTOCOL              *BlockIo;
-    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
     UINTN                                  OpenInfoCount;
+    UINTN                                  OpenInfoIndex;
     EFI_HANDLE                             DriverHandleList[2];
+    EFI_HANDLE                            *Handles;
+    MY_EFI_BLOCK_IO_PROTOCOL              *BlockIo;
+    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *Fs;
+    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
 
     // Get all DiskIo handles
+    Handles = NULL;
+    HandleCount = 0;
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &gEfiDiskIoProtocolGuid, NULL,
@@ -551,16 +553,16 @@ UINTN ScanDriverDir (
     EFI_STATUS                     XStatus;
     EFI_GUID                     **ProtocolGuidArray;
     BOOLEAN                        DriverBindingFlag;
-    BOOLEAN                        FirstLoop = TRUE;
+    BOOLEAN                        FirstLoop;
     CHAR16                        *FileName;
     CHAR16                        *ErrMsg;
-    UINTN                          NumFound          = 0;
-    UINTN                          DriversArrSizeNew = 16;
-    UINTN                          DriversArrSize    = 16;
-    UINTN                          DriversArrNum     = 0;
-    UINTN                          ProtocolIndex     = 0;
-    UINTN                          ArrayCount        = 0;
-    EFI_HANDLE                    *DriversArr        = NULL;
+    UINTN                          NumFound;
+    UINTN                          DriversArrSizeNew;
+    UINTN                          DriversArrSize;
+    UINTN                          DriversArrNum;
+    UINTN                          ProtocolIndex;
+    UINTN                          ArrayCount;
+    EFI_HANDLE                    *DriversArr;
     EFI_HANDLE                     DriverHandle;
     EFI_FILE_INFO                 *DirEntry;
     REFIT_DIR_ITER                 DirIter;
@@ -575,6 +577,10 @@ UINTN ScanDriverDir (
     // Look through contents of the directory
     DirIterOpen (SelfRootDir, Path, &DirIter);
 
+    DriversArr = NULL;
+    FirstLoop = TRUE;
+    ArrayCount = ProtocolIndex = DriversArrNum = NumFound = 0;
+    DriversArrSize = DriversArrSizeNew = 16;
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
             // Skip this
@@ -671,18 +677,24 @@ UINTN ScanDriverDir (
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
 BOOLEAN LoadDrivers (VOID) {
     CHAR16      *Directory;
-    CHAR16      *SelfDirectory   = NULL;
-    UINTN        i               =    0;
-    UINTN        k               =    0;
-    UINTN        NumFound        =    0;
-    UINTN        CurFound        =    0;
-    UINTN        DriversIndex    =    0;
-    EFI_HANDLE  *DriversListProg = NULL;
-    EFI_HANDLE  *DriversListUser = NULL;
-    EFI_HANDLE  *DriversListAll  = NULL;
+    CHAR16      *SelfDirectory;
+    UINTN        i;
+    UINTN        k;
+    UINTN        NumFound;
+    UINTN        CurFound;
+    EFI_HANDLE  *DriversListProg;
+    EFI_HANDLE  *DriversListUser;
+    EFI_HANDLE  *DriversListAll;
+
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore
+    UINTN        HandleSize;
+    UINTN        DriversIndex;
+#endif
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgNotFound = L"Not Found or Empty";
+    CHAR16  *MsgStr;
+    CHAR16  *MsgNotFound;
 
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
@@ -697,6 +709,14 @@ BOOLEAN LoadDrivers (VOID) {
 #endif
     #endif
 
+
+    SelfDirectory = NULL;
+    DriversListProg = DriversListUser = DriversListAll = NULL;
+    NumFound = CurFound = i = 0;
+
+    #if REFIT_DEBUG > 0
+    MsgNotFound = L"Not Found or Empty";
+    #endif
 
     while ((CurFound == 0) && (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         CleanUpPathNameSlashes (Directory);
@@ -788,7 +808,7 @@ BOOLEAN LoadDrivers (VOID) {
     #endif
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
+    MsgStr = PoolPrint (
         L"Processed %d UEFI Driver%s",
         NumFound, (NumFound == 1) ? L"" : L"s"
     );
@@ -798,8 +818,9 @@ BOOLEAN LoadDrivers (VOID) {
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
+    DriversIndex = 0;
     if (NumFound > 0 && GlobalConfig.RansomDrives) {
-        UINTN HandleSize = sizeof (EFI_HANDLE) * 16;
+        HandleSize = sizeof (EFI_HANDLE) * 16;
         /* Program Default Folders - START */
         if (DriversListProg) {
             i = 0;

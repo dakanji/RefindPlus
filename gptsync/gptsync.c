@@ -265,7 +265,8 @@ static VOID sort_mbr(PARTITION_INFO *parts) {
 
 // Generate a hybrid MBR based on the current GPT. Stores the result in the
 // new_mbr_parts[] array.
-static VOID generate_hybrid_mbr(VOID) {
+static
+VOID generate_hybrid_mbr(VOID) {
     UINTN i, k, iter, count_active;
     UINT64 first_used_lba;
 
@@ -320,9 +321,11 @@ static VOID generate_hybrid_mbr(VOID) {
     new_mbr_parts[0].index     = 0;
     new_mbr_parts[0].start_lba = 1;
     new_mbr_parts[0].end_lba   = (disk_size() > first_used_lba) ? (first_used_lba - 1) : disk_size() - 1;
-    if (new_mbr_parts[0].end_lba > MAX_MBR_LBA)
-       new_mbr_parts[0].end_lba = MAX_MBR_LBA;
+    if (new_mbr_parts[0].end_lba > MAX_MBR_LBA) {
+        new_mbr_parts[0].end_lba = MAX_MBR_LBA;
+    }
     new_mbr_parts[0].mbr_type  = 0xEE;
+
     i = 0;
     while (i < gpt_part_count && new_mbr_part_count <= 3) {
        if ((gpt_parts[i].start_lba > new_mbr_parts[0].end_lba) && (gpt_parts[i].end_lba > 0) &&
@@ -340,8 +343,9 @@ static VOID generate_hybrid_mbr(VOID) {
        for (k = 0; k < mbr_part_count; k++) {
            if (mbr_parts[k].start_lba == new_mbr_parts[i].start_lba) {
                // keep type if not detected
-               if (new_mbr_parts[i].mbr_type == 0)
+               if (new_mbr_parts[i].mbr_type == 0) {
                    new_mbr_parts[i].mbr_type = mbr_parts[k].mbr_type;
+               }
                // keep active flag
                new_mbr_parts[i].active = mbr_parts[k].active;
                break;
@@ -400,12 +404,16 @@ static VOID generate_hybrid_mbr(VOID) {
 // Note that this function MAY ask user for advice.
 // Note that this function assumes the new hybrid MBR has already
 // been computed and stored in new_mbr_parts[].
-static BOOLEAN should_rewrite(VOID) {
-   BOOLEAN retval = TRUE, all_identical = TRUE, invalid;
-   UINTN i, num_existing_hybrid = 0, num_new_hybrid = 0;
+static
+BOOLEAN should_rewrite(VOID) {
+   BOOLEAN retval, all_identical, invalid;
+   UINTN i, num_existing_hybrid, num_new_hybrid;
 
    // Check to see if the proposed table is identical to the current one;
    // if so, synchronizing is pointless.
+   num_existing_hybrid = 0;
+   num_new_hybrid = 0;
+   all_identical = TRUE;
    for (i = 0; i < 4; i++) {
       if ((new_mbr_parts[i].mbr_type != 0xEE) && (mbr_parts[i].mbr_type != 0xEE) &&
           ((new_mbr_parts[i].active != mbr_parts[i].active) ||
@@ -428,6 +436,7 @@ static BOOLEAN should_rewrite(VOID) {
 
    // If there is nothing to hybridize, but an existing hybrid MBR exists, offer to replace
    // the hybrid MBR with a protective MBR.
+   retval = TRUE;
    if ((num_new_hybrid == 0) && (num_existing_hybrid > 0)) {
       Print(L"Found no partitions that could be hybridized, but an existing hybrid MBR exists.\n");
       Print(L"If you proceed, a fresh protective MBR will be created. Do you want to create\n");
@@ -449,8 +458,8 @@ static BOOLEAN should_rewrite(VOID) {
    return retval;
 } // BOOLEAN should_rewrite()
 
-static UINTN analyze(VOID)
-{
+static
+UINTN analyze (VOID) {
     UINTN   i, detected_parttype;
     CHARN   *fsname;
     UINTN   status;
@@ -502,11 +511,10 @@ static UINTN analyze(VOID)
 // sync algorithm entry point
 //
 
-UINTN gptsync(VOID)
-{
-    UINTN   status = 0;
+UINTN gptsync(VOID) {
+    UINTN   status;
     UINTN   status_gpt, status_mbr;
-    BOOLEAN proceed = FALSE;
+    BOOLEAN proceed;
 
     Print(L"gptsync\ncopyright (c) 2006-2007 Christoph Pfisterer & 2013 Roderick W. Smith\n");
 
@@ -531,6 +539,7 @@ UINTN gptsync(VOID)
         return status;
 
     // offer user the choice what to do
+    proceed = FALSE;
     status = input_boolean(STR("\nMay I update the MBR as printed above? [y/N] "), &proceed);
     if (status != 0 || proceed != TRUE)
         return status;

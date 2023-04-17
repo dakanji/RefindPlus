@@ -56,6 +56,11 @@ POINTER_STATE                   State;
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize (VOID) {
     EFI_STATUS Status;
+    EFI_STATUS HandleStatus;
+    UINTN      Index;
+    UINTN      NumPointerHandles;
+    BOOLEAN    GotMouse;
+
 
     #if REFIT_DEBUG > 0
     EFI_STATUS EnableStatusTouch;
@@ -97,8 +102,8 @@ VOID pdInitialize (VOID) {
 
     EnableStatusTouch = EFI_NOT_STARTED;
     #endif
-    UINTN NumPointerHandles = 0;
-    EFI_STATUS HandleStatus = REFIT_CALL_5_WRAPPER(
+    NumPointerHandles = 0;
+    HandleStatus = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &APointerGuid, NULL,
         &NumPointerHandles, &HandleA
@@ -114,7 +119,6 @@ VOID pdInitialize (VOID) {
     }
     else {
         ProtocolA = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
-        UINTN Index;
         for (Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
             Status = REFIT_CALL_6_WRAPPER(
@@ -164,8 +168,7 @@ VOID pdInitialize (VOID) {
     }
     else {
         ProtocolS = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
-        UINTN Index;
-        BOOLEAN GotMouse = FALSE;
+        GotMouse = FALSE;
         for (Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
             Status = REFIT_CALL_6_WRAPPER(
@@ -234,7 +237,9 @@ VOID pdCleanup (VOID) {
     UINTN Index;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = L"Reset Pointer Devices";
+    CHAR16 *MsgStr;
+
+    MsgStr = L"Reset Pointer Devices";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
@@ -319,6 +324,16 @@ EFI_EVENT pdWaitEvent (
 // the first available device's state
 ////////////////////////////////////////////////////////////////////////////////
 EFI_STATUS pdUpdateState (VOID) {
+    EFI_STATUS                 Status;
+    EFI_STATUS                 PointerStatus;
+    UINTN                      Index;
+    INT32                      TargetX;
+    INT32                      TargetY;
+    BOOLEAN                    LastHolding;
+    EFI_ABSOLUTE_POINTER_STATE APointerState;
+    EFI_SIMPLE_POINTER_STATE   SPointerState;
+
+
 #if defined (EFI32) && defined (__MAKEWITH_GNUEFI)
     return EFI_NOT_READY;
 #else
@@ -326,13 +341,8 @@ EFI_STATUS pdUpdateState (VOID) {
         return EFI_NOT_READY;
     }
 
-    EFI_STATUS Status = EFI_NOT_READY;
-    EFI_ABSOLUTE_POINTER_STATE APointerState;
-    EFI_SIMPLE_POINTER_STATE SPointerState;
-    BOOLEAN LastHolding = State.Holding;
-
-    UINTN Index;
-    EFI_STATUS PointerStatus;
+    Status = EFI_NOT_READY;
+    LastHolding = State.Holding;
     for (Index = 0; Index < NumAPointerDevices; Index++) {
         PointerStatus = REFIT_CALL_2_WRAPPER(ProtocolA[Index]->GetState, ProtocolA[Index], &APointerState);
 
@@ -365,8 +375,8 @@ EFI_STATUS pdUpdateState (VOID) {
         if (!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 
-            INT32 TargetX = 0;
-            INT32 TargetY = 0;
+            TargetX = 0;
+            TargetY = 0;
 
 #ifdef EFI32
 	    TargetX = State.X + (INTN) DivS64x64Remainder (
@@ -427,6 +437,9 @@ POINTER_STATE pdGetState (VOID) {
 // Draw the mouse at the current coordinates
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdDraw (VOID) {
+    UINTN Width;
+    UINTN Height;
+
     if (NoMouseActive) {
         // Early Return
         return;
@@ -434,8 +447,8 @@ VOID pdDraw (VOID) {
 
     MY_FREE_IMAGE(Background);
     if (MouseImage) {
-        UINTN Width = MouseImage->Width;
-        UINTN Height = MouseImage->Height;
+        Width = MouseImage->Width;
+        Height = MouseImage->Height;
 
         if (State.X + Width > ScreenW) {
             Width = ScreenW - State.X;
@@ -457,6 +470,13 @@ VOID pdDraw (VOID) {
 // Restores the background at the position the mouse was last drawn
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdClear (VOID) {
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+
+    static BOOLEAN NotLogged = TRUE;
+    #endif
+
+
     if (NoMouseActive) {
         // Early Return
         return;
@@ -468,9 +488,8 @@ VOID pdClear (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    static BOOLEAN NotLogged = TRUE;
     if (NotLogged) {
-        CHAR16 *MsgStr = L"Clear Pointer Artefacts ... Success";
+        MsgStr = L"Clear Pointer Artefacts ... Success";
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         LOG_MSG("%s  - %s", OffsetNext, MsgStr);
         NotLogged = FALSE;

@@ -80,16 +80,17 @@ EG_IMAGE * egDecodeBMP(
     IN UINTN    IconSize,
     IN BOOLEAN  WantAlpha
 ) {
-    EG_IMAGE            *NewImage;
-    BMP_IMAGE_HEADER    *BmpHeader;
-    BMP_COLOR_MAP       *BmpColorMap;
     UINTN                x, y;
+    UINTN                Index, BitIndex;
     UINT8               *ImagePtr;
     UINT8               *ImagePtrBase;
     UINTN                ImageLineOffset;
-    UINT8                ImageValue = 0, AlphaValue;
+    UINT8                ImageValue;
+    UINT8                AlphaValue;
     EG_PIXEL            *PixelPtr;
-    UINTN                Index, BitIndex;
+    EG_IMAGE            *NewImage;
+    BMP_COLOR_MAP       *BmpColorMap;
+    BMP_IMAGE_HEADER    *BmpHeader;
 
     // read and check header
     if (FileDataLength < sizeof (BMP_IMAGE_HEADER) || FileData == NULL)
@@ -130,6 +131,8 @@ EG_IMAGE * egDecodeBMP(
         return NULL;
     }
     AlphaValue = WantAlpha ? 255 : 0;
+
+    ImageValue = 0;
 
     // convert image
     BmpColorMap = (BMP_COLOR_MAP *)(FileData + sizeof (BMP_IMAGE_HEADER));
@@ -223,14 +226,14 @@ VOID egEncodeBMP(
     OUT UINT8   **FileDataReturn,
     OUT UINTN    *FileDataLengthReturn
 ) {
-    BMP_IMAGE_HEADER    *BmpHeader;
-    UINT8               *FileData;
+    UINTN                x, y;
+    UINTN                ImageLineOffset;
     UINTN                FileDataLength;
+    UINT8               *FileData;
     UINT8               *ImagePtr;
     UINT8               *ImagePtrBase;
-    UINTN                ImageLineOffset;
     EG_PIXEL            *PixelPtr;
-    UINTN                x, y;
+    BMP_IMAGE_HEADER    *BmpHeader;
 
     ImageLineOffset = Image->Width * 3;
     if ((ImageLineOffset % 4) != 0)
@@ -247,7 +250,7 @@ VOID egEncodeBMP(
     }
 
     // fill header
-    BmpHeader = (BMP_IMAGE_HEADER *)FileData;
+    BmpHeader = (BMP_IMAGE_HEADER *) FileData;
     BmpHeader->CharB = 'B';
     BmpHeader->CharM = 'M';
     BmpHeader->Size = FileDataLength;
