@@ -122,13 +122,20 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
 static
 VOID PauseForKey (VOID) {
     UINTN Index;
+    UINTN StallIndex;
 
     Print (L"\n* Press a Key to Continue *");
 
     // Remove buffered key strokes
     if (ReadAllKeyStrokes()) {
         // 5 second delay
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 5000000);
+        // DA-TAG: 100 Loops = 1 Sec
+        for (StallIndex = 0; StallIndex < 500; ++StallIndex) {
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 9999);
+        } // for
+        // DA-TAG: Add Stall Difference
+        REFIT_CALL_1_WRAPPER(gBS->Stall, (StallIndex + 1));
+
         // Empty the buffer again
         ReadAllKeyStrokes();
     }

@@ -10,6 +10,10 @@
 
 extern BOOLEAN gKernelStarted;
 
+extern VOID RefitStall (
+    UINTN StallLoops
+);
+
 // Control NativeLogger ... Especially Nested Instances
 #define MY_NATIVELOGGER_SET                             \
     do {                                                \

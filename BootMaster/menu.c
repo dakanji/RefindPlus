@@ -2607,7 +2607,9 @@ UINTN WaitForInput (
     }
     else {
         if (EFI_ERROR(Status)) {
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
+            // Pause for 100 ms
+            // DA-TAG: 100 Loops = 1 Sec
+            RefitStall (10);
 
             return INPUT_TIMER_ERROR;
         }
@@ -2627,7 +2629,10 @@ UINTN WaitForInput (
     REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
 
     if (EFI_ERROR(Status)) {
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
+        // Pause for 100 ms
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (10);
+
         return INPUT_TIMER_ERROR;
     }
 

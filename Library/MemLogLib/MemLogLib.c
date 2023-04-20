@@ -163,9 +163,13 @@ CHAR8 * GetTiming (VOID) {
 **/
 EFI_STATUS EFIAPI MemLogInit (VOID) {
     EFI_STATUS      Status;
-    UINT32          TimerAddr = 0;
-    UINT64          Tsc0, Tsc1;
-    UINT32          AcpiTick0, AcpiTick1, AcpiTicksDelta, AcpiTicksTarget;
+    UINT32          TimerAddr;
+    UINT64          Tsc0;
+    UINT64          Tsc1;
+    UINT32          AcpiTick0;
+    UINT32          AcpiTick1;
+    UINT32          AcpiTicksDelta;
+    UINT32          AcpiTicksTarget;
     CHAR8           InitError[50];
 
     static BOOLEAN  SkipLog = FALSE;
@@ -232,6 +236,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device Not Found");
     }
     else if ((PciRead8 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
+        TimerAddr = 0;
         AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space Not Enabled");
     }
     else {
@@ -263,7 +268,8 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         Tsc0 = AsmReadTsc();
 
         // Wait for 100ms
-        gBS->Stall(100000); // 100ms
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (10);
 
         // Read New Current Tsc
         Tsc1 = AsmReadTsc();

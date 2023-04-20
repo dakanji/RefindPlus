@@ -947,8 +947,8 @@ VOID EFIAPI NvmeShutdownAllControllers (
                         break;
                     }
 
-                    // Stall for 10ms
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, (10 * 1000));
+                    // Stall for ~10ms
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 9999);
                 }
             }
         }

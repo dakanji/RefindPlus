@@ -1162,10 +1162,8 @@ VOID HaltSeconds (
 
     for (i = 0; i < Seconds; ++i) {
         // Wait 1 second
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (100);
     } // for
 
     #if REFIT_DEBUG > 0

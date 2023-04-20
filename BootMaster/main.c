@@ -2247,6 +2247,18 @@ VOID LogBasicInfo (VOID) {
 #endif
 } // static VOID LogBasicInfo()
 
+VOID RefitStall (
+    UINTN StallLoops
+) {
+    UINTN StallIndex;
+
+    for (StallIndex = 0; StallIndex < StallLoops; ++StallIndex) {
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 9999);
+    } // for
+    // DA-TAG: Add Stall Difference
+    REFIT_CALL_1_WRAPPER(gBS->Stall, (StallIndex + 1));
+} // VOID RefitStall()
+
 //
 // main entry point
 //
@@ -2827,10 +2839,8 @@ EFI_STATUS EFIAPI efi_main (
             #endif
 
             // Wait 1 second
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            // DA-TAG: 100 Loops = 1 Sec
+            RefitStall (100);
         }
 
         #if REFIT_DEBUG > 0
@@ -2908,10 +2918,8 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("\n\n");
 
         // Wait 1 second
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (100);
     } // if WarnMissingQVInfo
     #endif
 
@@ -2967,7 +2975,8 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         // Wait 0.25 second
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (25);
     } // if ConfigWarn
     #endif
 
