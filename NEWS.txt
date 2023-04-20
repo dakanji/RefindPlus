@@ -24,6 +24,9 @@
     - https://sourceforge.net/p/refind/code/ci/5e2d0ac3fb76a8daab3a8199d0b0c52dc792b84f/
   * Upstream `LinuxPrefixes` Feature
     - https://sourceforge.net/p/refind/code/ci/d5c0a48a01427ed7a3cb3eb324c59fb965358b1d/
+- Fixes `ReloadGOP` Feature
+  * A regression had meant that the feature was not active
+  * This bug was introduced in v0.13.3.AD (Commit dc642c6)
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible

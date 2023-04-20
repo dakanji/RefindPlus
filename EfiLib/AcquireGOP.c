@@ -20,6 +20,14 @@ EFI_STATUS AcquireGOP (VOID) {
     return EFI_INCOMPATIBLE_VERSION;
 }
 
+/**
+  @retval EFI_INCOMPATIBLE_VERSION  Not running on compatible TianoCore compiled version
+**/
+EFI_STATUS ReissueGOP (VOID) {
+    // NOOP if not compiled using EDK II
+    return EFI_INCOMPATIBLE_VERSION;
+}
+
 #else
 
 #include "Platform.h"
@@ -40,6 +48,7 @@ EFI_STATUS AcquireGOP (VOID) {
   @retval EFI_NOT_FOUND             Failed to Locate Suitable Option ROM.
   @retval Other value               Unknown error.
 **/
+static
 EFI_STATUS ReloadOptionROM (
     IN       VOID    *RomBar,
     IN       UINT64   RomSize,
@@ -219,12 +228,11 @@ EFI_STATUS ReloadOptionROM (
   @retval EFI_VOLUME_CORRUPTED      Inconsistent signatures.
   @retval EFI_PROTOCOL_ERROR        PciIoProtocolGuid not found.
   @retval EFI_LOAD_ERROR            Failed to get PciIoProtocolGuid handle.
-  @retval EFI_INCOMPATIBLE_VERSION  Not running on compatible TianoCore compiled version.
   @retval EFI_NO_MAPPING            Invalid Binding Handle Count.
   @retval EFI_NOT_FOUND             Failed to Locate Suitable Option ROM.
   @retval Other value               Unknown error.
 **/
-EFI_STATUS AcquireGOP (VOID) {
+EFI_STATUS ReissueGOP (VOID) {
     UINTN                 Index;
     UINTN                 HandleIndex;
     UINTN                 HandleArrayCount;
@@ -255,6 +263,10 @@ EFI_STATUS AcquireGOP (VOID) {
             &gEfiPciIoProtocolGuid, (void **) &PciIo
         );
         if (EFI_ERROR(Status)) {
+            if (EFI_ERROR(ReturnStatus)) {
+                ReturnStatus = Status;
+            }
+
             continue;
         }
 
@@ -296,6 +308,97 @@ EFI_STATUS AcquireGOP (VOID) {
 
         MY_FREE_POOL(RomFileName);
         MY_FREE_POOL(BindingHandleBuffer);
+    } // for
+
+    MY_FREE_POOL(HandleArray);
+
+    return ReturnStatus;
+} // EFI_STATUS ReissueGOP()
+
+/**
+  @retval EFI_SUCCESS               The command completed successfully.
+  @retval EFI_INVALID_PARAMETER     Command usage error.
+  @retval EFI_UNSUPPORTED           Protocols unsupported.
+  @retval EFI_OUT_OF_RESOURCES      Out of memory.
+  @retval EFI_VOLUME_CORRUPTED      Inconsistent signatures.
+  @retval EFI_PROTOCOL_ERROR        PciIoProtocolGuid not found.
+  @retval EFI_LOAD_ERROR            Failed to get PciIoProtocolGuid handle.
+  @retval EFI_NO_MAPPING            Invalid Binding Handle Count.
+  @retval EFI_NOT_FOUND             Failed to Locate Suitable Option ROM.
+  @retval Other value               Unknown error.
+**/
+EFI_STATUS AcquireGOP (VOID) {
+    UINTN                 Index;
+    UINTN                 HandleArrayCount;
+    UINTN                 BindingHandleCount;
+    BOOLEAN               FirstLoop;
+    EFI_HANDLE           *HandleArray;
+    EFI_HANDLE           *BindingHandleBuffer;
+    EFI_STATUS            ReturnStatus;
+    EFI_STATUS            Status;
+    EFI_PCI_IO_PROTOCOL  *PciIo;
+
+    HandleArrayCount = 0;
+    HandleArray = NULL;
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiPciIoProtocolGuid, NULL,
+        &HandleArrayCount, &HandleArray
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return EFI_PROTOCOL_ERROR;
+    }
+
+    FirstLoop = TRUE;
+    BindingHandleBuffer = NULL;
+    ReturnStatus = EFI_LOAD_ERROR;
+    for (Index = 0; Index < HandleArrayCount; Index++) {
+        do {
+            if (FirstLoop == TRUE) {
+                // Initialise on First Loop
+                BindingHandleBuffer = NULL;
+            }
+
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol, HandleArray[Index],
+                &gEfiPciIoProtocolGuid, (void **) &PciIo
+            );
+            if (EFI_ERROR(Status)) {
+                break;
+            }
+
+            if (!PciIo->RomImage || !PciIo->RomSize) {
+                if (EFI_ERROR(ReturnStatus)) {
+                    ReturnStatus = EFI_NOT_FOUND;
+                }
+
+                break;
+            }
+
+            BindingHandleCount = 0;
+            REFIT_CALL_3_WRAPPER(
+                PARSE_HANDLE_DATABASE_UEFI_DRIVERS, HandleArray[Index],
+                &BindingHandleCount, &BindingHandleBuffer
+            );
+            if (BindingHandleCount != 0) {
+                if (EFI_ERROR(ReturnStatus)) {
+                    ReturnStatus = EFI_NO_MAPPING;
+                }
+
+                break;
+            }
+
+            ReturnStatus = EFI_SUCCESS;
+        } while (0); // This 'loop' only runs once
+
+        FirstLoop = FALSE;
+
+        MY_FREE_POOL(BindingHandleBuffer);
+
+        if (!EFI_ERROR(ReturnStatus)) {
+            break;
+        }
     } // for
 
     MY_FREE_POOL(HandleArray);

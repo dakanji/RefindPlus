@@ -43,6 +43,7 @@ UINTN   AllHandleCount;
 
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
+extern EFI_STATUS ReissueGOP (VOID);
 
 extern BOOLEAN SetSysTab;
 extern BOOLEAN SetPreferUGA;
@@ -721,7 +722,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     CHAR16 *MsgStr;
     #endif
 
-    // Update Boot Services to permit reloading OptionROM
+    // Check whether OptionROMs are available in RAM
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
@@ -738,7 +739,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
         return Status;
     }
 
-    // Update Boot Services to permit reloading OptionROM
+    // Update Boot Services Table to permit reloading OptionROMs
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"System Table Convert ... %r", Status);
@@ -751,15 +752,24 @@ EFI_STATUS ApplyGOPFix (VOID) {
         Status = EFI_SUCCESS;
     }
     if (EFI_ERROR(Status)) {
+        AcquireErrorGOP = TRUE;
+
         // Early Return
         return Status;
     }
 
-    // Connect all devices if no error
+    // Reload OptionROMs
+    Status = ReissueGOP();
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
     #if REFIT_DEBUG > 0
     BRK_MOD("\n\n");
     #endif
 
+    // Connect all devices if no error
     TempRescanDXE = GlobalConfig.RescanDXE;
     GlobalConfig.RescanDXE = FALSE;
     Status = BdsLibConnectAllDriversToAllControllersEx();
