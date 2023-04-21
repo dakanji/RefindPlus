@@ -87,8 +87,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            Dear @${{ github.event.issue.user.login }},
-
             Thank you for taking the time to report a problem with RefindPlus.
             However, at least one required item is missing.
             This is typically debug log(s).
@@ -125,8 +123,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            Dear @${{ github.event.issue.user.login }},
-
             Thank you for taking the time to suggest improvements to RefindPlus.
             However, at least one required item is missing.
             This is typically useful background information.

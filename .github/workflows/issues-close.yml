@@ -47,11 +47,11 @@ jobs:
           ignore-updates: false
           close-issue-reason: 'completed'
           stale-issue-message: |-
-            Dear @${{ github.event.issue.user.login }},
-
-            This item has been flagged for closure due to missing required information.
-          close-issue-message: >
-            This item is being closed due to missing required information.
+            This item has been flagged for closure.
+            Trigger: Missing Required Information
+          close-issue-message: |-
+            This item is being closed.
+            Trigger: Missing Required Information
           days-before-stale: 0
           days-before-close: 3
           exempt-assignees: 'dakanji'
@@ -89,11 +89,11 @@ jobs:
           ignore-updates: false
           close-issue-reason: 'completed'
           stale-issue-message: |-
-            Dear @${{ github.event.issue.user.login }},
-
-            This item has been flagged for closure due to a lack of response.
+            This item has been flagged for closure.
+            Trigger: Failure to Respond
           close-issue-message: |-
-            This item is being closed due to a lack of response.
+            This item is being closed.
+            Trigger: Failure to Respond
           days-before-stale: 2
           days-before-close: 3
           exempt-assignees: 'dakanji'
@@ -111,11 +111,13 @@ jobs:
         with:
           ignore-updates: false
           close-issue-reason: 'completed'
-          stale-issue-message: >
-            This item has been flagged for closure due to inactivity.
-          close-issue-message: >
-            This item is being closed due to inactivity.
-          days-before-stale: 30
+          stale-issue-message: |-
+            This item has been flagged for closure.
+            Trigger: Inactivity Threshold
+          close-issue-message: |-
+            This item is being closed.
+            Trigger: Inactivity Threshold
+          days-before-stale: 20
           days-before-close: 30
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'

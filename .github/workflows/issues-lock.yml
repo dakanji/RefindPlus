@@ -92,7 +92,8 @@ jobs:
           include-any-issue-labels: 'Stale, Incomplete'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
-            This thread is being locked as the item appears to have abandoned.
+            This item is being locked.
+            Trigger: Apparent Abandonment
           process-only: 'issues'
 
       - name: Inter-Step-Pause

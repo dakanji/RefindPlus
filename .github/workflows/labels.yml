@@ -5,8 +5,6 @@ on:
   workflow_dispatch:
   issues:
     types: [labeled, unlabeled]
-  pull_request:
-    types: [labeled]
 
 permissions:
   contents: read
@@ -38,7 +36,7 @@ jobs:
       status: ${{ steps.handle_enhance_check_main.outputs.status }}
     steps:
       - id: handle_enhance_check_main
-        uses: mheap/github-action-required-labels@v2
+        uses: mheap/github-action-required-labels@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
