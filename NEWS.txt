@@ -39,6 +39,9 @@
   * A limited base implementation is always active on Non-Apple firmware
   * Can now be extended on by activating a new `mitigate_primed_buffer` token
   * The feature does not operate on Apple firwmare regardless of the token setting
+- Amends EFI File Validity Checks
+  * Apple `Fat` Binaries are now assumed to be valid on Apple firmware
+  * This similarly applies to binaries with missing PE32+ headers
 
 
 0.13.3.AD (07 Mar 23):

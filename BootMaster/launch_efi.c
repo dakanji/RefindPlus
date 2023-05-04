@@ -77,7 +77,7 @@
 #else
 #endif
 
-#define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
+#define APPLE_FAT_BINARY        0x0ef1fab9 /* ID for Apple "fat" binary */
 
 // Amount of a file to read to search for the EFI identifying signatures.
 // Signatures as far in as 3680 (0xE60) have been found, so read a bit more.
@@ -152,19 +152,21 @@ VOID WarnSecureBootError(
 #if REFIT_DEBUG > 0
 static
 VOID LogAssumedValid (
-    CHAR16  *FileName
+    CHAR16   *FileName,
+    BOOLEAN   FIreWire
 ) {
-    ValidText = L"EFI File is *CONSIDERED* Valid";
+    ValidText = L"EFI File is *CONSIDERED* to be Valid";
     ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"%s:- '%s'",
+        L"%s%s:- '%s'",
         ValidText,
+        FIreWire ? L" on Apple Firmware (FireWire Workaround)" : L""
         FileName ? FileName : L"NULL File"
     );
     if (IsBoot) {
         LOG_MSG("\n");
         LOG_MSG("%s ... Loading", ValidText);
     }
-} // VOID LogAssumedValid()
+} // static VOID LogAssumedValid()
 #endif
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
@@ -174,13 +176,15 @@ BOOLEAN IsValidLoader (
 ) {
     //UINTN            LoaderType;
 
-    if (RootDir == NULL || FileName == NULL) {
+    if (AppleFirmware &&
+        (RootDir == NULL || FileName == NULL)
+    ) {
         // DA-TAG: Investigate This
         //         Assume "Valid" here, because Macs produce a NULL RootDir, and maybe FileName,
         //         when launching from Firewire drives. This should be handled better, but the
         //         fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
-        LogAssumedValid (FileName);
+        LogAssumedValid (FileName, TRUE);
         #endif
 
         //LoaderType = LOADER_TYPE_EFI;
@@ -190,7 +194,7 @@ BOOLEAN IsValidLoader (
 
 #if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
     #if REFIT_DEBUG > 0
-    LogAssumedValid (FileName);
+    LogAssumedValid (FileName, FALSE);
     #endif
 
     //LoaderType = LOADER_TYPE_EFI;
@@ -199,6 +203,8 @@ BOOLEAN IsValidLoader (
 #else
     EFI_STATUS       Status;
     BOOLEAN          IsValid;
+    BOOLEAN          AppleFatBinary;
+    BOOLEAN          ApplePlainBinary;
     UINTN            SignaturePosition;
     UINTN            Size;
     CHAR8           *Header;
@@ -228,7 +234,7 @@ BOOLEAN IsValidLoader (
     }
 
     do {
-        IsValid = FALSE;
+        IsValid = AppleFatBinary = ApplePlainBinary = FALSE;
 
         #if REFIT_DEBUG > 0
         AbortReason = L"";
@@ -278,81 +284,85 @@ BOOLEAN IsValidLoader (
             break;
         }
 
-        IsValid = (
-            Size == EFI_HEADER_SIZE &&
-            (
-                (
-                    (Size = *(UINT32 *) &Header[0x3c]) < 0x180   &&
-                    Header[0]                     == 'M'         &&
-                    Header[1]                     == 'Z'         &&
-                    Header[Size]                  == 'P'         &&
-                    Header[Size + 1]              == 'E'         &&
-                    Header[Size + 2]              ==  0          &&
-                    Header[Size + 3]              ==  0          &&
-                    *(UINT16 *) &Header[Size + 4] ==  EFI_STUB_ARCH
-                ) || (
-                    *(UINT32 *) &Header == FAT_ARCH
-                )
-            )
-        );
-        if (IsValid) {
-            //LoaderType = LOADER_TYPE_EFI;
-
-            // Early Return
-            break;
-        }
-
-        SignaturePosition = *(UINT32 *) &Header[0x3c];
-        IsValid = (
-            Size == EFI_HEADER_SIZE &&
-            (
-                (
-                    SignaturePosition < (EFI_HEADER_SIZE - 8)                 &&
-                    Header[0]                                  == 'M'         &&
-                    Header[1]                                  == 'Z'         &&
-                    Header[SignaturePosition]                  == 'P'         &&
-                    Header[SignaturePosition + 1]              == 'E'         &&
-                    Header[SignaturePosition + 2]              ==  0          &&
-                    Header[SignaturePosition + 3]              ==  0          &&
-                    *(UINT16 *) &Header[SignaturePosition + 4] ==  EFI_STUB_ARCH
-                ) || (
-                    *(UINT32 *) &Header == FAT_ARCH
-                )
-            )
-        );
-        if (IsValid) {
-            //LoaderType = LOADER_TYPE_EFI;
-
-            // Early Return
-            break;
-        }
-
-        // DA-TAG: EFI File is "invalid" as of this line
-        //
         // Search for indications that this is a gzipped file.
         // NB: This is currently only used for logging in RefindPlus
         // and that all loaders at this point are considered invalid.
         // GZipped loaders are mainly ARM related and focus is on X86_64
-        if (GlobalConfig.GzippedLoaders &&
-            (
-                Header[0] == (CHAR8) 0x1F &&
-                Header[1] == (CHAR8) 0x8B
-            )
+        if (
+            Header[0] == (CHAR8) 0x1F   &&
+            Header[1] == (CHAR8) 0x8B   &&
+            GlobalConfig.GzippedLoaders
         ) {
             #if REFIT_DEBUG > 0
-            AbortReason = L":- 'GZipped Loader'";
+            AbortReason = L":- 'GZipped Binary'";
             #endif
 
             //LoaderType = LOADER_TYPE_GZIP;
+
+            // Early Return
+            break;
         }
+
+        // Search for standard PE32+ signature
+        SignaturePosition = *((UINT32 *) &Header[0x3c]);
+        IsValid = (
+            Size == EFI_HEADER_SIZE                                     &&
+            SignaturePosition < (EFI_HEADER_SIZE - 8)                   &&
+            Header[0]                                    == 'M'         &&
+            Header[1]                                    == 'Z'         &&
+            Header[SignaturePosition]                    == 'P'         &&
+            Header[SignaturePosition + 1]                == 'E'         &&
+            Header[SignaturePosition + 2]                ==  0          &&
+            Header[SignaturePosition + 3]                ==  0          &&
+            *((UINT16 *) &Header[SignaturePosition + 4]) ==  EFI_STUB_ARCH
+        );
+        if (IsValid) {
+            //LoaderType = LOADER_TYPE_EFI;
+
+            // Early Return
+            break;
+        }
+
+        // Search for Apple's 'Fat' Binary signature
+        IsValid = AppleFatBinary = (
+            AppleFirmware &&
+            *((UINT32 *) &Header[0]) == APPLE_FAT_BINARY
+        );
+        if (IsValid) {
+            //LoaderType = LOADER_TYPE_EFI;
+
+            // Early Return
+            break;
+        }
+
+        // Allow plain binaries on Apple Firmware
+        IsValid = ApplePlainBinary = AppleFirmware;
+        if (IsValid) {
+            //LoaderType = LOADER_TYPE_EFI;
+
+            // Early Return
+            break;
+        }
+
+        // Invalid if we get here
+        #if REFIT_DEBUG > 0
+        AbortReason = L":- 'Unknown Binary Type'";
+        #endif
     } while (0); // This 'loop' only runs once
 
 
     // DA-TAG: Set ValidText in REL for 'FALSE' outcome
     //         Allows accurate screen message
-    ValidText = (IsValid)
-        ? L"EFI File is Valid"
-        : L"EFI File is *NOT* Valid";
+    // NOTES:  Assume 'Fat' binaries are valid on Apple firmware
+    //         Assume the same for plain binaries on Apple firmware
+    //         Test variables are only ever true on Apple firmware
+    ValidText = (!IsValid)
+        ? L"EFI File is *NOT* Valid"
+        : (AppleFatBinary)
+            ? L"Apple 'Fat' Binary is *ASSUMED* to be Valid on Apple Firmware"
+            : (ApplePlainBinary)
+                ? L"Plain Binary is *ASSUMED* to be Valid on Apple Firmware"
+                : L"EFI File is Valid";
 
     #if REFIT_DEBUG > 0
     if (!IsValid) {
@@ -377,14 +387,14 @@ BOOLEAN IsValidLoader (
         IsBoot = IsValid;
 
         #if REFIT_DEBUG > 0
-        if (!IsValid) {
+        if (IsValid) {
+            LOG_MSG("\n");
+            LOG_MSG("%s ... Loading", ValidText);
+        }
+        else {
             LOG_MSG("\n\n");
             LOG_MSG("INFO: %s ... Aborting%s", ValidText, AbortReason);
             LOG_MSG("\n\n");
-        }
-        else {
-            LOG_MSG("\n");
-            LOG_MSG("%s ... Loading", ValidText);
         }
         #endif
     }
