@@ -861,7 +861,7 @@ VOID DrawScreenHeader (
         gST->ConOut->SetCursorPosition, gST->ConOut,
         3, 1
     );
-    Print (L"RefindPlus ... %s", Title);
+    Print (L"%s", Title);
 
     // Reposition cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);

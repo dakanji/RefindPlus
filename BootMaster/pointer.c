@@ -94,7 +94,7 @@ VOID pdInitialize (VOID) {
     // Get all handles that support absolute pointer protocol
     // Usually touchscreens but sometimes mice
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"Initialise Pointer Devices:");
+    MsgStr = StrDuplicate (L"Activate Pointer Devices:");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n");
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);

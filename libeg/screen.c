@@ -563,10 +563,10 @@ BOOLEAN SupplyConsoleGop (
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
         LOG_MSG(
-            "%s ConsoleOut GOP:",
-            (FixGOP) ? L"Replace" : L"Supply"
+            "%s ConOut GOP:",
+            (FixGOP) ? L"Replace" : L"Provide"
         );
-        LOG_MSG("%s  - Status:- '%r' on RefitCheckGOP", OffsetNext, Status);
+        LOG_MSG("%s  - Status:- '%r' ... RefitCheckGOP", OffsetNext, Status);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -574,7 +574,7 @@ BOOLEAN SupplyConsoleGop (
             Status = OcProvideConsoleGop (TRUE);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Status:- '%r' on OcProvideConsoleGop", OffsetNext, Status);
+            LOG_MSG("%s  - Status:- '%r' ... OcProvideConsoleGop", OffsetNext, Status);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -584,7 +584,7 @@ BOOLEAN SupplyConsoleGop (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s  - Status:- '%r' on HandleProtocol", OffsetNext, Status);
+                LOG_MSG("%s  - Status:- '%r' ... HandleProtocol", OffsetNext, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -830,8 +830,8 @@ EFI_STATUS egSetGopMode (
 
                 Status = GopSetModeAndReconnectTextOut ((UINT32) Mode);
                 if (!EFI_ERROR(Status)) {
-                    egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
                     egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+                    egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
                 }
             }
 
@@ -922,7 +922,9 @@ EFI_STATUS egSetMaxResolution (VOID) {
 
     // Check if requested mode is equal to current mode
     if (BestMode == GOPDraw->Mode->Mode) {
-        Status = EFI_SUCCESS;
+        Status         = EFI_SUCCESS;
+        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Screen Resolution Already Set");
@@ -931,9 +933,6 @@ EFI_STATUS egSetMaxResolution (VOID) {
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
-
-        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
-        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
     }
     else {
         Status = GopSetModeAndReconnectTextOut (BestMode);
@@ -978,9 +977,9 @@ VOID egDetermineScreenSize (VOID) {
     // Get screen size
     egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
-        egScreenWidth   = GOPDraw->Mode->Info->HorizontalResolution;
-        egScreenHeight  = GOPDraw->Mode->Info->VerticalResolution;
-        egHasGraphics   = TRUE;
+        egHasGraphics  = TRUE;
+        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
     }
     else if (UGADraw != NULL) {
         Status = REFIT_CALL_5_WRAPPER(
@@ -1465,6 +1464,10 @@ VOID egInitScreen (VOID) {
                 if (!GlobalConfig.ProvideConsoleGOP) {
                     GOPDraw = OldGop;
                     thisValidGOP = TRUE;
+
+                    #if REFIT_DEBUG > 0
+                    LOG_MSG("\n\n");
+                    #endif
                 }
                 else {
                     thisValidGOP = SupplyConsoleGop (FALSE);
@@ -1480,7 +1483,7 @@ VOID egInitScreen (VOID) {
                     }
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
-                        MsgStr = PoolPrint (L"Supply GOP on ConsoleOut Handle ... %r", XFlag);
+                        MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", XFlag);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
                         LOG_MSG("INFO: %s", MsgStr);
                     }

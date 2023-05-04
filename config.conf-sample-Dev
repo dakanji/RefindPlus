@@ -111,7 +111,7 @@
 # UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
 # do not activate on classic MacPros for instance, as these are not actually
 # UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. RefindPlus is configred by default to
+# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
 # amend a device's EFI Revision to v2.x, and then try to reinstall a copy
 # of the GPU's Option ROM whenever it detects that GOP is not available.
 # This permits running modern GPUs on some legacy units when they would
@@ -148,7 +148,7 @@
 
 # RefindPlus defaults to using complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
-# coulr of first pixel in the pixel array (top left pixel). This may not always embody
+# colour of first pixel in the pixel array (top left pixel). This may not always embody
 # all pixels in banners with multiple colours. Thus, the selected complementary colour
 # for the text may not be suitable for all portions of the title banner in such cases.
 # In such cases, users may wish to disable the "HelpText" feature by activating this

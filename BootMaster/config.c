@@ -2509,10 +2509,11 @@ LOADER_ENTRY * AddStanzaEntries (
     // Parse the config file to add options for a single stanza, terminating when the token
     // is "}" or when the end of file is reached.
     #if REFIT_DEBUG > 0
-    if (OtherCall) {
-        /* Exception for LOG_THREE_STAR_SEP */
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
-    }
+    /* Exception for LOG_THREE_STAR_SEP */
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"%s",
+        (!OtherCall) ? L"FIRST STANZA" : L"NEXT STANZA"
+    );
     OtherCall = TRUE;
 
     ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Stanza:- '%s'", Entry->Title);
@@ -2864,7 +2865,6 @@ VOID ScanUserConfigured (
                         #if REFIT_DEBUG > 0
                         #if REFIT_DEBUG < 2
                         ALT_LOG(1, LOG_THREE_STAR_MID, L"Scanned Include File for Manual Stanzas");
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                         #else
                         BREAD_CRUMB(L"%s:  A2 - INCLUDE FILE (%s): END", FuncTag, TokenList[1]);
                         LOG_SEP(L"X");

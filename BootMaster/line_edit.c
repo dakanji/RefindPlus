@@ -64,7 +64,7 @@ VOID cursor_right (
     UINTN  x_max,
     UINTN  len
 ) {
-    if ((*cursor)+2 < x_max) {
+    if (((*cursor) + 2) < x_max) {
         (*cursor)++;
     }
     else if ((*first) + (*cursor) < len) {
@@ -88,6 +88,11 @@ BOOLEAN line_edit (
     BOOLEAN  exit;
     BOOLEAN  enter;
 
+    UINTN         index;
+    EFI_STATUS    err;
+    EFI_INPUT_KEY key;
+    UINTN         i;
+
     DrawScreenHeader (L"Line Editor");
     REFIT_CALL_3_WRAPPER(
         gST->ConOut->SetCursorPosition, gST->ConOut,
@@ -100,8 +105,7 @@ BOOLEAN line_edit (
     if (!line_in) {
         line_in = L"";
     }
-    size = StrLen (line_in) + 1024;
-    line = AllocatePool (sizeof (CHAR16) * size);
+    line = AllocateZeroPool (sizeof (CHAR16) * (StrLen (line_in) + 1));
     if (line == NULL) {
         // Early Return
         return FALSE;
@@ -122,17 +126,13 @@ BOOLEAN line_edit (
     enter  = FALSE;
     exit   = FALSE;
     len    = StrLen (line);
+    size   = StrLen (line_in) + 1024; // DA-TAG: Confirm This ... Seems should be '1'
 
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
     while (!exit) {
-        UINTN         index;
-        EFI_STATUS    err;
-        EFI_INPUT_KEY key;
-        UINTN         i;
-
         i = len - first;
-        if (i >= x_max-2) {
-            i = x_max-2;
+        if (i >= (x_max - 2)) {
+            i = (x_max - 2);
         }
 
         CopyMem (print, line + first, i * sizeof (CHAR16));
@@ -171,8 +171,8 @@ BOOLEAN line_edit (
             case SCAN_END:
                 cursor = len;
                 if (cursor >= x_max) {
-                    cursor = x_max-2;
-                    first  = len - (x_max-2);
+                    cursor = (x_max - 2);
+                    first  = len - x_max - 2;
                 }
 
             continue;
@@ -212,7 +212,7 @@ BOOLEAN line_edit (
 
             continue;
             case SCAN_RIGHT:
-                if (first + cursor == len) {
+                if ((first + cursor) == len) {
                     continue;
                 }
                 cursor_right (&cursor, &first, x_max, len);
@@ -239,10 +239,10 @@ BOOLEAN line_edit (
                 }
 
                 for (i = first + cursor; i < len; i++) {
-                    line[i] = line[i+1];
+                    line[i] = line[i + 1];
                 }
 
-                line[len-1] = ' ';
+                line[len - 1] = ' ';
                 len--;
 
             continue;
@@ -264,8 +264,8 @@ BOOLEAN line_edit (
                     continue;
                 }
 
-                for (i = first + cursor-1; i < len; i++) {
-                    line[i] = line[i+1];
+                for (i = first + cursor - 1; i < len; i++) {
+                    line[i] = line[i + 1];
                 }
                 len--;
 
@@ -277,7 +277,7 @@ BOOLEAN line_edit (
                 }
 
                 /* show full line if it fits */
-                if (len < x_max-2) {
+                if (len < (x_max - 2)) {
                     cursor = first;
                     first = 0;
 
@@ -298,19 +298,19 @@ BOOLEAN line_edit (
             case '\t':
             case ' ' ... '~':
             case 0x80 ... 0xffff:
-                if (len+1 == size) {
+                if (size == (len + 1)) {
                     continue;
                 }
 
-                for (i = len; i > first + cursor; i--) {
-                    line[i] = line[i-1];
+                for (i = len; i > (first + cursor); i--) {
+                    line[i] = line[i - 1];
                 }
 
                 line[first + cursor] = key.UnicodeChar;
                 len++;
                 line[len] = '\0';
 
-                if (cursor+2 < x_max) {
+                if ((cursor + 2) < x_max) {
                     cursor++;
                 }
                 else if (first + cursor < len) {

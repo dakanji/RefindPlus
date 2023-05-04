@@ -258,10 +258,12 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     CHAR16 *GopDevicePathStr;
     CHAR16 *DevicePathStr;
     CHAR16 *DeviceData;
+    CHAR16 *FillStr;
     CHAR16 *MsgStr;
     CHAR16 *TmpStr;
     UINTN   HexIndex;
     UINTN   AllHandleCountTrigger;
+    BOOLEAN CheckMute = FALSE;
     #endif
 
     DetectedDevices = FALSE;
@@ -517,28 +519,66 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (DeviceData == NULL) {
+                    FillStr = L"";
                     DeviceData = StrDuplicate (L"");
+                }
+                else {
+                    MY_MUTELOGGER_SET;
+                    if (FindSubStr (DeviceData, L"Monitor Display")) {
+                        FillStr = L"  x  ";
+                    }
+                    else if (FindSubStr (DeviceData, L"GraphicsFX Card")) {
+                        FillStr = L"  @  ";
+                    }
+                    else if (Parent) {
+                        FillStr = L"     ";
+                    }
+                    else if (
+                        XStatus != EFI_SUCCESS &&
+                        XStatus != EFI_NOT_FOUND &&
+                        XStatus != EFI_NOT_STARTED
+                    ) {
+                        FillStr = L"  .  ";
+                    }
+                    else if (EFI_ERROR(XStatus)) {
+                        FillStr = L"     ";
+                    }
+                    else {
+                        FillStr = L"  -  ";
+                    }
+                    MY_MUTELOGGER_OFF;
                 }
                 #endif
 
                 if (Parent) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X     Skipped [Parent Device]     %s",
-                        HexIndex, DeviceData
+                        L"Handle 0x%03X     Skipped [Parent Device]%s%s",
+                        HexIndex, FillStr, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("%s", MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (!EFI_ERROR(XStatus)) {
+                else if (XStatus == EFI_NOT_FOUND) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (
+                        L"Handle 0x%03X     Bypassed [Not Linkable]%s%s",
+                        HexIndex, FillStr, DeviceData
+                    );
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("%s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (XStatus == EFI_SUCCESS) {
                     DetectedDevices = TRUE;
 
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Handle 0x%03X  *  %r                  -  %s",
-                        HexIndex, XStatus, DeviceData
+                        L"Handle 0x%03X  *  %r                %s%s",
+                        HexIndex, XStatus, FillStr, DeviceData
                     );
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("%s", MsgStr);
@@ -550,17 +590,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                     if (XStatus == EFI_NOT_STARTED) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X     Declined [Empty Device]     %s",
-                            HexIndex, DeviceData
-                        );
-                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                        LOG_MSG("%s", MsgStr);
-                        MY_FREE_POOL(MsgStr);
-                    }
-                    else if (XStatus == EFI_NOT_FOUND) {
-                        MsgStr = PoolPrint (
-                            L"Handle 0x%03X     Bypassed [Not Linkable]     %s",
-                            HexIndex, DeviceData
+                            L"Handle 0x%03X     Declined [Empty Device]%s%s",
+                            HexIndex, FillStr, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s", MsgStr);
@@ -568,8 +599,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else if (XStatus == EFI_INVALID_PARAMETER) {
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X  -  ERROR: Invalid Param     *  %s",
-                            HexIndex, DeviceData
+                            L"Handle 0x%03X  .  ERROR: Invalid Param   %s%s",
+                            HexIndex, FillStr, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s", MsgStr);
@@ -578,8 +609,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     else {
                         TmpStr = PoolPrint (L"WARN: %r", XStatus);
                         MsgStr = PoolPrint (
-                            L"Handle 0x%03X  -  %-23s  *  %s",
-                            HexIndex, TmpStr, DeviceData
+                            L"Handle 0x%03X  .  %-23s%s%s",
+                            HexIndex, TmpStr, FillStr, DeviceData
                         );
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s", MsgStr);
@@ -588,7 +619,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
 
                     #endif
-                } // if Parent elseif !EFI_ERROR(XStatus) else
+                } // if Parent elseif
             } // if !Device
         } // if EFI_ERROR(XStatus)
 
@@ -726,7 +757,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
+    MsgStr = PoolPrint (L"Status:- '%r'... Acquire OptionROM on Volatile Storage", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
@@ -742,7 +773,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     // Update Boot Services Table to permit reloading OptionROMs
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"System Table Convert ... %r", Status);
+    MsgStr = PoolPrint (L"Status:- '%r' ... Amend Boot Services Table", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s      %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
@@ -810,10 +841,9 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
-                MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
+                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM from Volatile Storage", Status);
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-                LOG_MSG("\n\n");
-                LOG_MSG("INFO: %s", MsgStr);
+                LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
             }
             #endif

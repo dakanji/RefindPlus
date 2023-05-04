@@ -50,7 +50,6 @@
 
 #include "global.h"
 
-VOID ScanShell(VOID);
 VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName);
 VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName);
 VOID ScanLegacyDisc(VOID);

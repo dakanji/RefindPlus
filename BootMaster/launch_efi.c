@@ -147,7 +147,183 @@ VOID WarnSecureBootError(
     MY_FREE_POOL(MsgStrC);
     MY_FREE_POOL(MsgStrD);
     MY_FREE_POOL(MsgStrE);
-} // VOID WarnSecureBootError()
+} // static VOID WarnSecureBootError()
+
+static
+BOOLEAN ConfirmReboot (
+    CHAR16 *PromptUser
+) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    BOOLEAN            Confirmation;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmRebootMenu;
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm %s' Screen", PromptUser);
+    #endif
+
+    ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (!ConfirmRebootMenu) {
+        // Early Return ... Fail
+        return FALSE;
+    }
+
+    ConfirmRebootMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
+    ConfirmRebootMenu->Title      = PoolPrint (L"Confirm %s", PromptUser   );
+    ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
+
+    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
+
+    RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&ConfirmRebootMenu);
+
+        // Early Return
+        return FALSE;
+    }
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(2, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmReboot'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
+        Confirmation = FALSE;
+    }
+    else {
+        Confirmation = TRUE;
+    }
+
+    FreeMenuScreen (&ConfirmRebootMenu);
+
+    return Confirmation;
+} // static BOOLEAN ConfirmReboot()
+
+// See http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
+// for information on Intel VMX features
+static
+VOID DoEnableAndLockVMX(VOID) {
+#if defined (EFIX64) | defined (EFI32)
+    UINT32 msr;
+    UINT32 low_bits;
+    UINT32 high_bits;
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
+    #endif
+
+    // is VMX active ?
+    msr = 0x3a;
+    low_bits = high_bits = 0;
+    __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
+
+    // enable and lock vmx if not locked
+    if ((low_bits & 1) == 0) {
+        high_bits = 0;
+        low_bits = 0x05;
+        msr = 0x3a;
+        __asm__ volatile ("wrmsr" : : "c" (msr), "a" (low_bits), "d" (high_bits));
+    }
+#endif
+} // static VOID DoEnableAndLockVMX()
+
+// Load APFS Recovery Instance
+static
+EFI_STATUS ApfsRecoveryBoot (
+    IN LOADER_ENTRY *Entry
+) {
+    if (!SingleAPFS) {
+        // Early Return
+        return EFI_INVALID_PARAMETER;
+    }
+
+
+#if 0
+// DA-TAG: Force Load Error until finalised
+
+
+    EFI_STATUS  Status;
+    CHAR16     *InitNVRAM;
+    CHAR16     *NameNVRAM;
+    CHAR8      *DataNVRAM;
+    UINTN       Size;
+
+    // Set Relevant NVRAM Variable
+    InitNVRAM = L"RecoveryModeDisk";
+    NameNVRAM = L"internet-recovery-mode";
+    DataNVRAM = NULL;
+    UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
+    Status = EfivarSetRaw (
+        &AppleVendorOsGuid, NameNVRAM,
+        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
+    );
+    MY_FREE_POOL(NameNVRAM);
+    MY_FREE_POOL(DataNVRAM);
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Set Recovery Initiator
+    NameNVRAM = L"RecoveryBootInitiator";
+    Status = EfivarSetRaw (
+        &AppleVendorOsGuid, NameNVRAM,
+        (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
+    );
+    MY_FREE_POOL(NameNVRAM);
+    MY_FREE_POOL(DataNVRAM);
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Construct Boot Entry
+    Entry->EfiBootNum = StrToHex (L"80", 0, 16);
+    MY_FREE_POOL(Entry->EfiLoaderPath);
+    Entry->EfiLoaderPath = FileDevicePath (Entry->Volume->DeviceHandle, Entry->LoaderPath);
+
+    Status = ConstructBootEntry (
+        Entry->Volume->DeviceHandle,
+        Basename (Entry->EfiLoaderPath),
+        L"Mac Recovery",
+        (CHAR8**) &Entry->EfiLoaderPath,
+        &Size
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Set as BootNext entry
+    Status = EfivarSetRaw (
+        &GlobalGuid, L"BootNext",
+        &(Entry->EfiBootNum), sizeof (UINT16), TRUE
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Reboot into new BootNext entry
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
+    );
+
+#endif
+
+    return EFI_LOAD_ERROR;
+} // static EFI_STATUS ApfsRecoveryBoot()
 
 #if REFIT_DEBUG > 0
 static
@@ -159,7 +335,7 @@ VOID LogAssumedValid (
     ALT_LOG(1, LOG_THREE_STAR_MID,
         L"%s%s:- '%s'",
         ValidText,
-        FIreWire ? L" on Apple Firmware (FireWire Workaround)" : L""
+        FIreWire ? L" on Apple Firmware (FireWire Workaround)" : L"",
         FileName ? FileName : L"NULL File"
     );
     if (IsBoot) {
@@ -418,7 +594,7 @@ EFI_STATUS StartEFIImage (
 ) {
     EFI_STATUS                           Status;
     EFI_STATUS                           ReturnStatus;
-    EFI_GUID                             SystemdGuid       = SYSTEMD_GUID_VALUE;
+    EFI_GUID                             SystemdGuid = SYSTEMD_GUID_VALUE;
     CHAR16                              *MsgStrTmp;
     CHAR16                              *MsgStrEx;
     CHAR16                              *MsgStr;
@@ -486,32 +662,34 @@ EFI_STATUS StartEFIImage (
 
     MY_FREE_POOL(MsgStr);
 
-    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
-    // Some EFIs crash if attempting to load drivers for an invalid architecture, so
-    // protect for this condition; but sometimes Volume comes back NULL, so provide
-    // an exception. (TODO: Handle this special condition better.)
-    LoaderValid = IsValidLoader (Volume->RootDir, Filename);
-    if (!LoaderValid) {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"ERROR: Invalid Loader!!");
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("* %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
+    do {
+        ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
+        // Some EFIs crash if attempting to load drivers for an invalid architecture, so
+        // protect for this condition; but sometimes Volume comes back NULL, so provide
+        // an exception. (TODO: Handle this special condition better.)
+        LoaderValid = IsValidLoader (Volume->RootDir, Filename);
+        if (!LoaderValid) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"ERROR: Invalid Binary!!");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG_MSG("* %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
 
-        MsgStr = PoolPrint (
-            L"When Loading %s ... %s",
-            ImageTitle,
-            ValidText
-        );
-        ValidText = L"Invalid Loader";
-        CheckError (Status, MsgStr);
-        MY_FREE_POOL(MsgStr);
+            MsgStr = PoolPrint (
+                L"When Loading %s ... %s",
+                ImageTitle,
+                ValidText
+            );
+            ValidText = L"Invalid Binary";
+            CheckError (Status, MsgStr);
+            MY_FREE_POOL(MsgStr);
 
-        goto bailout;
-    }
-    else {
+            // Bail Out
+            break;
+        }
+
         // Store loader name if booting and set to do so
         if (BootSelection != NULL) {
             if (IsBoot) {
@@ -582,211 +760,156 @@ EFI_STATUS StartEFIImage (
                 NULL, 0, &ChildImageHandle2
             );
         }
-    } // if/else !IsValidLoader
 
-    if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"'%r' Returned by Secure Boot While Loading %s!!",
-            Status, ImageTitle
-        );
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        LOG_MSG("* ERROR: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        WarnSecureBootError (ImageTitle, Verbose);
-        goto bailout;
-    }
-
-    ChildLoadedImage = NULL;
-    Status = REFIT_CALL_3_WRAPPER(
-        gBS->HandleProtocol, ChildImageHandle,
-        &LoadedImageProtocol, (VOID **) &ChildLoadedImage
-    );
-    ReturnStatus = Status;
-
-    if (CheckError (Status, L"while Getting LoadedImageProtocol Handle")) {
-        goto bailout_unload;
-    }
-
-    ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
-
-    // DA-TAG: Investigate This
-    //         Re-enable the EFI watchdog timer (optionally)
-    //
-    // Turn control over to the image
-    if ((GlobalConfig.WriteSystemdVars) &&
-        ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
-    ) {
-        // Tell systemd what ESP RefindPlus used
-        EspGUID = GuidAsString (&(SelfVolume->PartGuid));
-
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Systemd LoaderDevicePartUUID:- '%s'",
-            EspGUID
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        Status = EfivarSetRaw (
-            &SystemdGuid, L"LoaderDevicePartUUID",
-            EspGUID, StrLen (EspGUID) * 2 + 2, TRUE
-        );
-        #if REFIT_DEBUG > 0
-        if (EFI_ERROR(Status)) {
+        if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
+            #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
-                Status
+                L"'%r' Returned by Secure Boot While Loading %s!!",
+                Status, ImageTitle
             );
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
             LOG_MSG("* ERROR: %s", MsgStr);
             LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
+            #endif
+
+            WarnSecureBootError (ImageTitle, Verbose);
+
+            // Bail Out
+            break;
         }
-        #endif
 
-        MY_FREE_POOL(EspGUID);
-    } // if write systemd UEFI variables
+        do {
+            ChildLoadedImage = NULL;
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol, ChildImageHandle,
+                &LoadedImageProtocol, (VOID **) &ChildLoadedImage
+            );
+            ReturnStatus = Status;
 
-    // DA-TAG: SyncAPFS items are typically no longer required if not loading drivers
-    //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
-    //         These may return to the RefindPlus screen but any issues will be trivial
-    if (!IsDriver) FreeSyncVolumes();
+            if (CheckError (Status, L"while Getting LoadedImageProtocol Handle")) {
+                // Unload and Bail Out
+                break;
+            }
 
-    // Close open file handles
-    UninitRefitLib();
+            ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
+            ChildLoadedImage->LoadOptionsSize = FullLoadOptions
+                ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
 
-    #if REFIT_DEBUG > 0
-    ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
-    if (!IsDriver) {
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
-        OUT_TAG();
-    }
-    #endif
+            // DA-TAG: Investigate This
+            //         Re-enable the EFI watchdog timer (optionally)
+            //
+            // Turn control over to the image
+            if ((GlobalConfig.WriteSystemdVars) &&
+                ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
+            ) {
+                // Tell systemd what ESP RefindPlus used
+                EspGUID = GuidAsString (&(SelfVolume->PartGuid));
 
-    Status = REFIT_CALL_3_WRAPPER(
-        gBS->StartImage, ChildImageHandle,
-        NULL, NULL
-    );
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (
+                    L"Systemd LoaderDevicePartUUID:- '%s'",
+                    EspGUID
+                );
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("INFO: %s", MsgStr);
+                LOG_MSG("\n\n");
+                MY_FREE_POOL(MsgStr);
+                #endif
 
-    // Control returns here if the child image calls 'Exit()'
-    ReturnStatus = Status;
-    NewImageHandle = ChildImageHandle;
+                Status = EfivarSetRaw (
+                    &SystemdGuid, L"LoaderDevicePartUUID",
+                    EspGUID, StrLen (EspGUID) * 2 + 2, TRUE
+                );
+                #if REFIT_DEBUG > 0
+                if (EFI_ERROR(Status)) {
+                    MsgStr = PoolPrint (
+                        L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
+                        Status
+                    );
+                    ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- '%s'", MsgStr);
+                    LOG_MSG("* ERROR: %s", MsgStr);
+                    LOG_MSG("\n\n");
+                    MY_FREE_POOL(MsgStr);
+                }
+                #endif
 
-    #if REFIT_DEBUG > 0
-    MsgStrEx = PoolPrint (L"'%r' When %s", ReturnStatus, ConstMsgStr);
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
-    if (!IsDriver) {
-        LOG_MSG("%s", MsgStrEx);
-        RET_TAG();
-    }
-    MY_FREE_POOL(MsgStrEx);
-    #endif
+                MY_FREE_POOL(EspGUID);
+            } // if write systemd UEFI variables
 
-    if (EFI_ERROR(ReturnStatus)) {
-        MsgStrTmp = L"Returned from Child Image";
-        if (!IsDriver) {
-            MsgStrEx = StrDuplicate (MsgStrTmp);
-        }
-        else {
-            MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
-        }
-        CheckError (ReturnStatus, MsgStrEx);
-        MY_FREE_POOL(MsgStrEx);
-    }
+            // DA-TAG: SyncAPFS items are typically no longer required if not loading drivers
+            //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
+            //         These may return to the RefindPlus screen but any issues will be trivial
+            if (!IsDriver) FreeSyncVolumes();
 
-    // DA-TAG: Exclude TianoCore - START
-    #ifndef __MAKEWITH_TIANO
-    if (IsDriver && GlobalConfig.RansomDrives) {
-        // The function below should have no effect on most systems, but
-        // works around a bug with some firmware implementations that
-        // prevent filesystem drivers from binding to partitions.
-        ConnectFilesystemDriver (ChildImageHandle);
-    }
-    #endif
-    // DA-TAG: Exclude TianoCore - END
+            // Close open file handles
+            UninitRefitLib();
 
-    // Re-open file handles
-    ReinitRefitLib();
+            #if REFIT_DEBUG > 0
+            ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
+            if (!IsDriver) {
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+                OUT_TAG();
+            }
+            #endif
 
-bailout_unload:
-    // Unload the image, we do not care if it works or not
-    if (!IsDriver) REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->StartImage, ChildImageHandle,
+                NULL, NULL
+            );
 
-bailout:
+            // Control returns here if the child image calls 'Exit()'
+            ReturnStatus = Status;
+            NewImageHandle = ChildImageHandle;
+
+            #if REFIT_DEBUG > 0
+            MsgStrEx = PoolPrint (L"'%r' When %s", ReturnStatus, ConstMsgStr);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
+            if (!IsDriver) {
+                LOG_MSG("%s", MsgStrEx);
+                RET_TAG();
+            }
+            MY_FREE_POOL(MsgStrEx);
+            #endif
+
+            if (EFI_ERROR(ReturnStatus)) {
+                MsgStrTmp = L"Returned from Child Image";
+                if (!IsDriver) {
+                    MsgStrEx = StrDuplicate (MsgStrTmp);
+                }
+                else {
+                    MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
+                }
+                CheckError (ReturnStatus, MsgStrEx);
+                MY_FREE_POOL(MsgStrEx);
+            }
+
+            // DA-TAG: Exclude TianoCore - START
+            #ifndef __MAKEWITH_TIANO
+            if (IsDriver && GlobalConfig.RansomDrives) {
+                // The function below should have no effect on most systems, but
+                // works around a bug with some firmware implementations that
+                // prevent filesystem drivers from binding to partitions.
+                ConnectFilesystemDriver (ChildImageHandle);
+            }
+            #endif
+            // DA-TAG: Exclude TianoCore - END
+
+            // Re-open file handles
+            ReinitRefitLib();
+        } while (0); // This 'loop' only runs once
+
+        // DA-TAG: bailout_unload:
+        // Unload the image ... we do not care if it works or not
+        if (!IsDriver) REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
+    } while (0); // This 'loop' only runs once
+
+    // DA-TAG: bailout:
     MY_FREE_POOL(FullLoadOptions);
     if (!IsDriver) FinishExternalScreen();
 
     return ReturnStatus;
 } // EFI_STATUS StartEFIImage()
-
-static
-BOOLEAN ConfirmReboot (
-    CHAR16 *PromptUser
-) {
-    INTN               DefaultEntry;
-    UINTN              MenuExit;
-    BOOLEAN            RetVal;
-    BOOLEAN            Confirmation;
-    MENU_STYLE_FUNC    Style;
-    REFIT_MENU_ENTRY  *ChosenOption;
-    REFIT_MENU_SCREEN *ConfirmRebootMenu;
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm %s' Screen", PromptUser);
-    #endif
-
-    ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (!ConfirmRebootMenu) {
-        // Early Return ... Fail
-        return FALSE;
-    }
-
-    ConfirmRebootMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
-    ConfirmRebootMenu->Title      = PoolPrint (L"Confirm %s", PromptUser   );
-    ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
-    ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
-
-    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
-
-    RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&ConfirmRebootMenu);
-
-        // Early Return
-        return FALSE;
-    }
-
-    DefaultEntry = 1;
-    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    MenuExit = RunGenericMenu (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmReboot'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
-    #endif
-
-    if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
-        Confirmation = FALSE;
-    }
-    else {
-        Confirmation = TRUE;
-    }
-
-    FreeMenuScreen (&ConfirmRebootMenu);
-
-    return Confirmation;
-} // BOOLEAN ConfirmReboot()
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
@@ -972,126 +1095,6 @@ VOID RebootIntoLoader (
     MY_FREE_POOL(MsgStr);
 } // VOID RebootIntoLoader()
 
-//
-// EFI OS loader functions
-//
-
-// See http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
-// for information on Intel VMX features
-static
-VOID DoEnableAndLockVMX(VOID) {
-#if defined (EFIX64) | defined (EFI32)
-    UINT32 msr;
-    UINT32 low_bits;
-    UINT32 high_bits;
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
-    #endif
-
-    // is VMX active ?
-    msr = 0x3a;
-    low_bits = high_bits = 0;
-    __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
-
-    // enable and lock vmx if not locked
-    if ((low_bits & 1) == 0) {
-        high_bits = 0;
-        low_bits = 0x05;
-        msr = 0x3a;
-        __asm__ volatile ("wrmsr" : : "c" (msr), "a" (low_bits), "d" (high_bits));
-    }
-#endif
-} // VOID DoEnableAndLockVMX()
-
-// Load APFS Recovery Instance
-static
-EFI_STATUS ApfsRecoveryBoot (
-    IN LOADER_ENTRY *Entry
-) {
-    if (!SingleAPFS) {
-        // Early Return
-        return EFI_INVALID_PARAMETER;
-    }
-
-
-#if 0
-// DA-TAG: Force Load Error until finalised
-
-
-    EFI_STATUS  Status;
-    CHAR16     *InitNVRAM;
-    CHAR16     *NameNVRAM;
-    CHAR8      *DataNVRAM;
-    UINTN       Size;
-
-    // Set Relevant NVRAM Variable
-    InitNVRAM = L"RecoveryModeDisk";
-    NameNVRAM = L"internet-recovery-mode";
-    DataNVRAM = NULL;
-    UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
-    Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
-        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-    );
-    MY_FREE_POOL(NameNVRAM);
-    MY_FREE_POOL(DataNVRAM);
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
-
-    // Set Recovery Initiator
-    NameNVRAM = L"RecoveryBootInitiator";
-    Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
-        (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
-    );
-    MY_FREE_POOL(NameNVRAM);
-    MY_FREE_POOL(DataNVRAM);
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
-
-    // Construct Boot Entry
-    Entry->EfiBootNum = StrToHex (L"80", 0, 16);
-    MY_FREE_POOL(Entry->EfiLoaderPath);
-    Entry->EfiLoaderPath = FileDevicePath (Entry->Volume->DeviceHandle, Entry->LoaderPath);
-
-    Status = ConstructBootEntry (
-        Entry->Volume->DeviceHandle,
-        Basename (Entry->EfiLoaderPath),
-        L"Mac Recovery",
-        (CHAR8**) &Entry->EfiLoaderPath,
-        &Size
-    );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
-
-    // Set as BootNext entry
-    Status = EfivarSetRaw (
-        &GlobalGuid, L"BootNext",
-        &(Entry->EfiBootNum), sizeof (UINT16), TRUE
-    );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
-
-    // Reboot into new BootNext entry
-    REFIT_CALL_4_WRAPPER(
-        gRT->ResetSystem, EfiResetCold,
-        EFI_SUCCESS, 0, NULL
-    );
-
-#endif
-
-    return EFI_LOAD_ERROR;
-} // EFI_STATUS ApfsRecoveryBoot()
-
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader (
     LOADER_ENTRY *Entry,
@@ -1113,7 +1116,7 @@ VOID StartLoader (
         DoEnableAndLockVMX();
     }
 
-    BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
+    BeginExternalScreen (Entry->UseGraphicsMode, SelectionName);
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
