@@ -260,7 +260,7 @@ jobs:
             Please do not close accepted `Accepted` Enhancements.
             Work has aleady started, or is planned, on such items.
 
-  # Check Labels - https://github.com/mheap/github-action-required-labels
+  # Check Labels Bug - https://github.com/mheap/github-action-required-labels
   handle_bug_tag_check:
     name: Handle Bug Tag - Check
     runs-on: ubuntu-20.04
@@ -279,7 +279,7 @@ jobs:
           labels: "Bug"
           exit_type: success
 
-  # Bug Close Tag - https://github.com/actions-cool/issues-helper
+  # Bug Close Action - https://github.com/actions-cool/issues-helper
   handle_bug_act:
     name: Handle Bug Tag - Act
     needs: [handle_bug_tag_check]

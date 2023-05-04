@@ -27,13 +27,13 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
-      - name: Lock Not-Planned issues
+      - name: Lock Resolved issues
         uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '0'
-          include-any-issue-labels: 'Not-Planned'
+          include-any-issue-labels: 'Resolved'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.
@@ -45,13 +45,13 @@ jobs:
         run: |
           sleep 64s
 
-      - name: Lock Invalid/Resolved Issues
+      - name: Lock Invalid/Not-Planned Issues
         uses: dakanji/lock-threads@v4.0.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Invalid, Resolved'
+          include-any-issue-labels: 'Invalid, Not-Planned'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
           issue-comment: |-
             This thread is being locked.

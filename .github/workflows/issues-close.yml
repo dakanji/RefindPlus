@@ -64,25 +64,6 @@ jobs:
         run: |
           sleep 8s
 
-      - name: Handle Resolved Issues
-        uses: actions/stale@v7
-        with:
-          ignore-updates: true
-          close-issue-reason: 'completed'
-          stale-issue-message: ''
-          close-issue-message: ''
-          days-before-stale: 0
-          days-before-close: 1
-          exempt-assignees: ''
-          stale-issue-label: 'Tagged'
-          any-of-labels: 'Resolved'
-          remove-issue-stale-when-updated: false
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Inter-Step-Pause
-        run: |
-          sleep 8s
-
       - name: Handle No-Response Issues
         uses: actions/stale@v7
         with:
@@ -117,10 +98,9 @@ jobs:
           close-issue-message: |-
             This item is being closed.
             Trigger: Inactivity Threshold
-          days-before-stale: 20
+          days-before-stale: 30
           days-before-close: 30
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Tagged'
-          exempt-issue-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned, Resolved, Queries, Incomplete'
+          stale-issue-label: 'Stale'
           remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}

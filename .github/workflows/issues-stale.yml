@@ -1,0 +1,47 @@
+name: 'Issue Stale'
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Check Labels Stale - https://github.com/mheap/github-action-required-labels
+  label_stale_check:
+    name: Label Stale - Check
+    runs-on: ubuntu-20.04
+
+    if: github.actor == 'dakanji'
+    outputs:
+      status: ${{ steps.label_stale_check_main.outputs.status }}
+    steps:
+      - id: label_stale_check_main
+        uses: mheap/github-action-required-labels@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: exactly
+          count: 1
+          labels: "Stale"
+          exit_type: success
+
+  # Stale Comment Action - https://github.com/actions-cool/issues-helper
+  label_stale_act:
+    name: Label Stale - Act
+    needs: [label_stale_check]
+    runs-on: ubuntu-20.04
+
+    if: needs.label_stale_check.outputs.status == 'success'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          labels: 'Stale'
