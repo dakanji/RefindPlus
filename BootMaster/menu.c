@@ -136,7 +136,7 @@ static
 VOID InitSelection (VOID) {
     EG_IMAGE  *TempBigImage;
     EG_IMAGE  *TempSmallImage;
-    UINTN      MaxAllowedSize;
+    UINTN      MaxAllowedImageSmallSize;
 
     #if REFIT_DEBUG > 0
     CHAR16    *MsgStr;
@@ -149,7 +149,7 @@ VOID InitSelection (VOID) {
     }
 
     // Load small selection image
-    MaxAllowedSize = 256;
+    MaxAllowedImageSmallSize = 256;
     if (GlobalConfig.SelectionSmallFileName == NULL) {
         TempSmallImage = NULL;
     }
@@ -159,8 +159,8 @@ VOID InitSelection (VOID) {
         // DA-TAG: Impose maximum size for security
         if ((TempSmallImage != NULL) &&
             (
-                TempSmallImage->Width  > MaxAllowedSize ||
-                TempSmallImage->Height > MaxAllowedSize
+                TempSmallImage->Width  > MaxAllowedImageSmallSize ||
+                TempSmallImage->Height > MaxAllowedImageSmallSize
             )
         ) {
             #if REFIT_DEBUG > 0
@@ -201,8 +201,8 @@ VOID InitSelection (VOID) {
         // DA-TAG: Impose maximum size for security
         if ((TempBigImage != NULL) &&
             (
-                (TempBigImage->Width  * 100) > (MaxAllowedSize * 125) ||
-                (TempBigImage->Height * 100) > (MaxAllowedSize * 125)
+                TempBigImage->Width  > (MaxAllowedImageSmallSize * 2) ||
+                TempBigImage->Height > (MaxAllowedImageSmallSize * 2)
             )
         ) {
             #if REFIT_DEBUG > 0

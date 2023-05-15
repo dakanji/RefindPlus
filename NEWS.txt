@@ -42,6 +42,9 @@
   * A limited base implementation is always active on Non-Apple firmware
   * Can now be extended on by activating a new `mitigate_primed_buffer` token
   * The feature does not operate on Apple firwmare regardless of the token setting
+- Amends `Big Selection Image` Size Filtering
+  * The maximum Big Selection image size is increased to 512px from 320px
+  * The Small Selection image maximum is maintained at 256px
 - Amends EFI File Validity Checks
   * Apple `Fat` Binaries are now assumed to be valid on Apple firmware
   * This similarly applies to binaries with missing PE32+ headers

@@ -1101,7 +1101,7 @@
 #
 # NB: The file used for 'selection_small' must be no more
 # than 256px on the longest side while that used as the
-# 'selection_big' image must be no larger than 320px.
+# 'selection_big' image must be no larger than 512px.
 # Custom selection images larger these thresholds
 # will be replaced with default embedded images.
 #
