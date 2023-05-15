@@ -751,7 +751,7 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Delete(
     EFI_STATUS          Status;
 
     Status = REFIT_CALL_1_WRAPPER(This->Close, This);
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         // this driver is read-only
         Status = EFI_WARN_DELETE_FAILURE;
     }

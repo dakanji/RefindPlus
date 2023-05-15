@@ -1845,7 +1845,7 @@ BOOLEAN DuplicatesFallback (
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         return FALSE;
     }
 
@@ -1858,7 +1858,7 @@ BOOLEAN DuplicatesFallback (
         &FallbackHandle, FALLBACK_FULLNAME,
         EFI_FILE_MODE_READ, 0
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         return FALSE;
     }
@@ -1876,13 +1876,13 @@ BOOLEAN DuplicatesFallback (
                 FileHandle->Read, FileHandle,
                 &FileSize, FileContents
             );
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 Status = REFIT_CALL_3_WRAPPER(
                     FallbackHandle->Read, FallbackHandle,
                     &FallbackSize, FallbackContents
                 );
             }
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 AreIdentical = (CompareMem (
                     FileContents,
                     FallbackContents,
@@ -1930,7 +1930,7 @@ BOOLEAN IsSymbolicLink (
         &FileHandle, FullName,
         EFI_FILE_MODE_READ, 0
     );
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         FileInfo = LibFileInfo (FileHandle);
         if (FileInfo != NULL) {
             FileSize2 = FileInfo->FileSize;
@@ -2204,7 +2204,7 @@ CHAR16 * RuniPXEDiscover (
         SelfImageHandle, FilePath,
         NULL, 0, &iPXEHandle
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         return NULL;
     }
 
@@ -4523,7 +4523,7 @@ VOID ScanForTools (VOID) {
                     Status = FlagNoCSR();
                 }
 
-                if (Status != EFI_SUCCESS) {
+                if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
                         L"Did Not Enable Tool:- '%s' ... %r (%s)",

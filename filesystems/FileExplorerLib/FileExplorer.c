@@ -1051,7 +1051,7 @@ Done:
     FreePool (TempDevicePathNode);
   }
 
-  if ((FileHandle != NULL) && (EFI_ERROR(Status))) {
+  if (EFI_ERROR(Status) && FileHandle != NULL) {
     FileHandle->Close (FileHandle);
   }
 
@@ -1538,7 +1538,7 @@ ChooseFile (
                          );
 
 Done:
-  if ((Status == EFI_SUCCESS) && (File != NULL)) {
+  if (!EFI_ERROR(Status) && File != NULL) {
     *File  = gFileExplorerPrivate.RetDevicePath;
   } else if (gFileExplorerPrivate.RetDevicePath != NULL) {
     FreePool (gFileExplorerPrivate.RetDevicePath);

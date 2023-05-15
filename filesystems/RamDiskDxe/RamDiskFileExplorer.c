@@ -221,7 +221,7 @@ OpenFileByDevicePath(
     //
     // see if the error was that it needs to be created
     //
-    if ((EFI_ERROR(Status)) && (OpenMode != (OpenMode &~EFI_FILE_MODE_CREATE))) {
+    if (EFI_ERROR(Status) && OpenMode != (OpenMode &~EFI_FILE_MODE_CREATE)) {
       Status = Handle2->Open (
                             Handle2,
                             &Handle1,

@@ -501,7 +501,7 @@ VOID ConnectFilesystemDriver (
             gBS->HandleProtocol, Handles[Index],
             &gEfiSimpleFileSystemProtocolGuid, (VOID **) &Fs
         );
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             continue;
         }
 

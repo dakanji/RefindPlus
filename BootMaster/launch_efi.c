@@ -926,7 +926,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
         &GlobalGuid, L"OsIndications",
         (VOID **) &ItemBuffer, NULL
     );
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         osind |= *ItemBuffer;
     }
     MY_FREE_POOL(ItemBuffer);
@@ -951,7 +951,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
         &GlobalGuid, L"OsIndications",
         &osind, sizeof (UINT64), TRUE
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications not Found");
         LOG_MSG("%s    ** Aborted ... OsIndications not Found", OffsetNext);

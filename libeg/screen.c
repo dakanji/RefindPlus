@@ -1988,9 +1988,8 @@ BOOLEAN egSetScreenSize (
                     GOPDraw->QueryMode, GOPDraw,
                     ModeNum, &Size, &Info
                 );
-                if ((!EFI_ERROR(Status)) &&
-                    (Size >= sizeof (*Info) &&
-                    (Info != NULL)) &&
+                if (!EFI_ERROR(Status) &&
+                    (Info != NULL && Size >= sizeof (*Info)) &&
                     (Info->HorizontalResolution == *ScreenWidth) &&
                     (Info->VerticalResolution   == *ScreenHeight) &&
                     (

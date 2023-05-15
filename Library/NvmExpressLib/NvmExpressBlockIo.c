@@ -348,7 +348,7 @@ VOID EFIAPI AsyncIoCallback (
     Request    = Subtask->BlockIo2Request;
     Token      = Request->Token;
 
-    if (Token->TransactionStatus == EFI_SUCCESS) {
+    if (!EFI_ERROR(Token->TransactionStatus)) {
         // If previous subtask already fails, do not check the result of
         // subsequent subtasks.
         if ((Completion->Sct != 0) || (Completion->Sc != 0)) {

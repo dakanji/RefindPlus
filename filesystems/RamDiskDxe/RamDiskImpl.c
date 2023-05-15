@@ -373,7 +373,7 @@ HiiCreateRamDisk (
     Status = EFI_INVALID_PARAMETER;
   }
 
-  if ((StartingAddr == NULL) || EFI_ERROR(Status)) {
+  if (EFI_ERROR(Status) || StartingAddr == NULL) {
     do {
       CreatePopUp (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,

@@ -572,7 +572,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (XStatus == EFI_SUCCESS) {
+                else if (!EFI_ERROR(XStatus)) {
                     DetectedDevices = TRUE;
 
                     #if REFIT_DEBUG > 0
@@ -692,7 +692,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
 
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
-        // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
+        // If Dispatched status is EFI_SUCCESS, attempt to reconnect.
         // Forces 'EFI_NOT_FOUND' if 'RescanDrivers' or 'gDS' is unset.
         Status = (RescanDrivers && gDS) ? gDS->Dispatch() : EFI_NOT_FOUND;
 

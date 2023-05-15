@@ -111,8 +111,8 @@ EFI_STATUS BdsLibConnectDevicePath (
                     // If no forward progress is made try invoking the Dispatcher.
                     // A new FV may have been added to the system an new drivers
                     // may now be found.
-                    // Status == EFI_SUCCESS means a driver was dispatched
-                    // Status == EFI_NOT_FOUND means no new drivers were dispatched
+                    // EFI_SUCCESS means a driver was dispatched
+                    // EFI_NOT_FOUND means no new drivers were dispatched
                     Status = (gDS) ? gDS->Dispatch() : EFI_NOT_FOUND;
                 }
 #endif

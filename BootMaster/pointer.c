@@ -126,7 +126,7 @@ VOID pdInitialize (VOID) {
                 &APointerGuid, (VOID **) &ProtocolA[NumAPointerDevices],
                 SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
             );
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
                 if (GlobalConfig.EnableTouch) {
                     EnableStatusTouch = EFI_SUCCESS;
@@ -176,7 +176,7 @@ VOID pdInitialize (VOID) {
                 &SPointerGuid, (VOID **) &ProtocolS[NumSPointerDevices],
                 SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
             );
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 if (GlobalConfig.EnableMouse) {
                     GotMouse = TRUE;
                 }

@@ -345,7 +345,7 @@ EFI_STATUS GetHardwareNvramVariable (
         VendorGuid, NULL,
         &BufferSize, TmpBuffer
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         MY_FREE_POOL(TmpBuffer);
         *VariableData = NULL;
         *VariableSize = 0;
@@ -378,14 +378,14 @@ EFI_STATUS SetHardwareNvramVariable (
             VariableName, VendorGuid,
             &OldBuf, &OldSize
         );
-        if (Status != EFI_SUCCESS && Status != EFI_NOT_FOUND) {
+        if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
             // Early Return
             return Status;
         }
     }
 
     SettingMatch = FALSE;
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         if (VariableData && VariableSize != 0) {
             // Check for match
             SettingMatch = (
@@ -771,7 +771,7 @@ VOID AlignCSR (VOID) {
 
         // Try to get current CSR status
         Status = GetCsrStatus (&CsrStatus);
-        if (Status != EFI_SUCCESS) {
+        if (EFI_ERROR(Status)) {
             // Break Early ... Invalid CSR Status
             break;
         }
@@ -1636,7 +1636,7 @@ VOID AboutRefindPlus (VOID) {
         MY_MUTELOGGER_OFF;
         #endif
 
-        TmpStr = (Status == EFI_SUCCESS)
+        TmpStr = (!EFI_ERROR(Status))
             ? StrDuplicate (gCsrStatus)
             : PoolPrint (L"%s ... %r", gCsrStatus, Status);
     }
@@ -1840,7 +1840,7 @@ BOOLEAN SecureBootUninstall (VOID) {
     Success = TRUE;
     if (secure_mode()) {
         Status = security_policy_uninstall();
-        if (Status != EFI_SUCCESS) {
+        if (EFI_ERROR(Status)) {
             Success = FALSE;
             BeginTextScreen (L"Secure Boot Policy Failure");
 
@@ -1897,7 +1897,7 @@ VOID SetConfigFilename (
         gBS->HandleProtocol, ImageHandle,
         &LoadedImageProtocol, (VOID **) &Info
     );
-    if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
+    if (!EFI_ERROR(Status) && Info->LoadOptionsSize > 0) {
         Options   = (CHAR16 *) Info->LoadOptions;
         SubString = MyStrStr (Options, L" -c ");
         if (SubString) {
@@ -1958,7 +1958,7 @@ VOID SetConfigFilename (
 
             MY_FREE_POOL(FileName);
         } // if SubString
-    } // if (Status == EFI_SUCCESS) && Info->LoadOptionsSize
+    } // if !EFI_ERROR(Status) && Info->LoadOptionsSize
 } // static VOID SetConfigFilename()
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
@@ -2001,7 +2001,7 @@ VOID AdjustDefaultSelection (VOID) {
                     &RefindPlusGuid, L"PreviousBoot",
                     (VOID **) &PreviousBoot, NULL
                 );
-                if (Status == EFI_SUCCESS) {
+                if (!EFI_ERROR(Status)) {
                     Element = PreviousBoot;
                 }
             }

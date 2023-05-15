@@ -363,7 +363,7 @@ EFI_STATUS CreateDirectories (
     TheDir = NULL;
     FileName = NULL;
     Status = EFI_SUCCESS;
-    while (Status == EFI_SUCCESS &&
+    while (!EFI_ERROR(Status) &&
         (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL
     ) {
         REFIT_CALL_5_WRAPPER(
@@ -519,7 +519,7 @@ EFI_STATUS CopyDirectory (
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
 
     Status = EFI_SUCCESS;
-    while (Status == EFI_SUCCESS && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
+    while (!EFI_ERROR(Status) && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
         SourceFileName = PoolPrint (L"%s\\%s", SourceDirName, DirEntry->FileName);
         DestFileName   = PoolPrint (L"%s\\%s", DestDirName, DirEntry->FileName);
         Status = CopyOneFile (
@@ -821,7 +821,7 @@ VOID CreateFallbackCSV (
         ReadWriteCreate, 0
     );
 
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         Contents = PoolPrint (
             L"%s, RefindPlus Boot Manager,,This is the Boot Entry for RefindPlus\n",
             INST_REFINDPLUS_NAME
@@ -834,7 +834,7 @@ VOID CreateFallbackCSV (
                 &FileSize, Contents
             );
 
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
             }
             MY_FREE_POOL(FilePtr);
@@ -871,7 +871,7 @@ VOID CreateFallbackCSV (
         #endif
     }
 
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         Status = CreateDirectories (TargetDir);
 
         #if REFIT_DEBUG > 0
@@ -880,7 +880,7 @@ VOID CreateFallbackCSV (
         }
         #endif
     }
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         // Check status and log if it is an error; but do not pass on the
         // result code unless it is EFI_ABORTED, since it may not be a
         // critical error.
@@ -956,14 +956,14 @@ UINTN FindBootNum (
             &GlobalGuid, VarName,
             (VOID **) &Contents, &VarSize
         );
-        if ((Status == EFI_SUCCESS) &&
-            (VarSize == Size) &&
-            (CompareMem (Contents, Entry, VarSize) == 0)
+        if (!EFI_ERROR(Status) &&
+            VarSize == Size &&
+            CompareMem (Contents, Entry, VarSize) == 0
         ) {
             *AlreadyExists = TRUE;
         }
         MY_FREE_POOL(VarName);
-    } while ((Status == EFI_SUCCESS) && (*AlreadyExists == FALSE));
+    } while (!EFI_ERROR(Status) && *AlreadyExists == FALSE);
 
     if (i > 0x10000) {
         // Somehow ALL boot entries are occupied! VERY unlikely!
@@ -1046,7 +1046,7 @@ EFI_STATUS SetBootDefault (
         &GlobalGuid, L"BootOrder",
         (VOID **) &BootOrder, &VarSize
     );
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         IsAlreadyFirst = FALSE;
         ListSize = VarSize / sizeof (UINT16);
         for (i = 0; i < ListSize; i++) {
@@ -1105,7 +1105,7 @@ EFI_STATUS CreateNvramEntry (
     );
     MY_FREE_POOL(ProgName);
 
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         BootNum = 0;
         AlreadyExists = TRUE;
     }
@@ -1114,7 +1114,7 @@ EFI_STATUS CreateNvramEntry (
         BootNum = FindBootNum (Entry, Size, &AlreadyExists);
     }
 
-    if ((Status != EFI_SUCCESS) || (AlreadyExists != FALSE)) {
+    if (EFI_ERROR(Status) || AlreadyExists != FALSE) {
         VarName = NULL;
     }
     else {
@@ -1127,7 +1127,7 @@ EFI_STATUS CreateNvramEntry (
     }
     MY_FREE_POOL(Entry);
 
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         Status = SetBootDefault (BootNum);
     }
 
@@ -1161,11 +1161,11 @@ VOID InstallRefindPlus (VOID) {
     #endif
 
     Status = CopyRefindPlusFiles (SelectedESP->RootDir);
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         Status = CreateNvramEntry (SelectedESP->DeviceHandle);
     }
 
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         MsgStr = L"Problems Encountered During Installation!!";
         DisplaySimpleMessage (
             L"Warning", MsgStr
@@ -1220,7 +1220,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
         &GlobalGuid, L"BootOrder",
         (VOID **) &BootOrder, &VarSize
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         return NULL;
     }
 
@@ -1239,7 +1239,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
             (VOID **) &Contents, &VarSize
         );
 
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             L = AllocateZeroPool (sizeof (BOOT_ENTRY_LIST));
             if (L) {
                L->BootEntry.BootNum = BootOrder[i];
@@ -1515,7 +1515,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
         &GlobalGuid, L"BootOrder",
         (VOID **) &BootOrder, &VarSize
     );
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         ListSize = VarSize / sizeof (UINT16);
         NewBootOrder = AllocateZeroPool (VarSize);
 
@@ -1526,7 +1526,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
                 &GlobalGuid, VarName,
                 (VOID **) &Contents, &VarSize
             );
-            if (Status == EFI_SUCCESS) {
+            if (!EFI_ERROR(Status)) {
                 NewBootOrder[j++] = BootOrder[i];
                 MY_FREE_POOL(Contents);
             }

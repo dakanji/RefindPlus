@@ -76,7 +76,7 @@ MSABI EFI_STATUS security2_policy_authentication (
     Status = uefi_call_wrapper(es2fa, 5, This, DevicePath, FileBuffer, FileSize, BootPolicy);
 
     /* if OK, do not bother with MOK check */
-    if (Status == EFI_SUCCESS) {
+    if (!EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -119,7 +119,7 @@ MSABI EFI_STATUS security_policy_authentication (
         gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL,
         &DevPath, &h
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         goto out;
     }
 
@@ -127,13 +127,13 @@ MSABI EFI_STATUS security_policy_authentication (
 
     Status = simple_file_open_by_handle(h, DevPathStr, &f, EFI_FILE_MODE_READ);
     MY_FREE_POOL(DevPathStr);
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         goto out;
     }
 
     Status = simple_file_read_all(f, &FileSize, &FileBuffer);
     simple_file_close(f);
-    if (Status != EFI_SUCCESS)
+    if (EFI_ERROR(Status))
     goto out;
 
     if (ShimValidate(FileBuffer, FileSize)) {

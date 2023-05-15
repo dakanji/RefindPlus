@@ -991,7 +991,7 @@ UINTN RunGenericMenu (
             DrawSelection      = TRUE;
             TimeSinceKeystroke = 0;
         }
-        else if (PointerStatus == EFI_SUCCESS) {
+        else if (!EFI_ERROR(PointerStatus)) {
             if (StyleFunc != MainMenuStyle && pdGetState().Press) {
                 // Prevent user from getting stuck on submenus
                 // Only the 'About' screen is currently reachable without a keyboard
@@ -1043,7 +1043,7 @@ UINTN RunGenericMenu (
             } // if/else HaveTimeout
 
             continue;
-        } // if/else Status == EFI_SUCCESS
+        } // if/else !EFI_ERROR(Status)
 
         if (HaveTimeout) {
             // User pressed a key ... Cancel timeout
@@ -2801,7 +2801,7 @@ BOOLEAN RemoveInvalidFilenames (
                     EFI_FILE_MODE_READ, 0
                 );
 
-                if (Status == EFI_SUCCESS) {
+                if (!EFI_ERROR(Status)) {
                     DeleteIt = FALSE;
                     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
                 }
@@ -3019,13 +3019,13 @@ CHAR16 * ReadHiddenTags (
         (VOID **) &Buffer, &Size
     );
     #if REFIT_DEBUG > 0
-    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
+    if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
         CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
         CheckError (Status, CheckErrMsg);
         MY_FREE_POOL(CheckErrMsg);
     }
     #endif
-    if ((Status == EFI_SUCCESS) && (Size == 0)) {
+    if (!EFI_ERROR(Status) && Size == 0) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
             L"Zero Size in ReadHiddenTags ... Clearing Buffer"

@@ -49,7 +49,10 @@ EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
     Status = EFI_NOT_FOUND;
     for (Index = 0; Index < HandleCount; ++Index) {
         XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
-        if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED || XStatus == EFI_NO_MAPPING) {
+        if (!EFI_ERROR(XStatus) ||
+            XStatus == EFI_NO_MAPPING ||
+            XStatus == EFI_ALREADY_STARTED
+        ) {
             if (EFI_ERROR(Status)) {
                 Status = XStatus;
             }

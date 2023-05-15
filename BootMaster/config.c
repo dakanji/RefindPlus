@@ -669,7 +669,7 @@ VOID SetDefaultByTime (
 
     if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
         Status = REFIT_CALL_2_WRAPPER(gRT->GetTime, &CurrentTime, NULL);
-        if (Status != EFI_SUCCESS) {
+        if (EFI_ERROR(Status)) {
             return;
         }
 

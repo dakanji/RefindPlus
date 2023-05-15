@@ -184,7 +184,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         gBS->LocateProtocol, &mMemLogProtocolGuid,
         NULL, (VOID **) &mMemLog
     );
-    if (Status == EFI_SUCCESS && mMemLog != NULL) {
+    if (!EFI_ERROR(Status) && mMemLog != NULL) {
         if (!mTimerPrev) {
             // Set timer and flag this
             mTimerPrev        =         TRUE;
@@ -327,7 +327,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
         &mMemLogProtocolGuid, mMemLog, NULL
     );
-    if (Status != EFI_SUCCESS) {
+    if (EFI_ERROR(Status)) {
         MY_FREE_POOL(mMemLog->Buffer);
         MY_FREE_POOL(mMemLog);
 

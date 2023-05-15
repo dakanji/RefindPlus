@@ -497,7 +497,7 @@ VOID EFIAPI ProcessAsyncTaskList (
         BlkIo2Request->UnsubmittedSubtaskNum--;
 
         // If any previous subtask fails, do not process subsequent ones.
-        if (Token->TransactionStatus != EFI_SUCCESS) {
+        if (EFI_ERROR(Token->TransactionStatus)) {
             if (IsListEmpty (&BlkIo2Request->SubtasksQueue) &&
                 BlkIo2Request->LastSubtaskSubmitted &&
                 (BlkIo2Request->UnsubmittedSubtaskNum == 0)
@@ -824,7 +824,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
         &gEfiDevicePathProtocolGuid, (VOID **) &ParentDevicePath,
         This->DriverBindingHandle, Controller, EFI_OPEN_PROTOCOL_BY_DRIVER
     );
-    if ((EFI_ERROR(Status)) && (Status != EFI_ALREADY_STARTED)) {
+    if (EFI_ERROR(Status) && Status != EFI_ALREADY_STARTED) {
         return Status;
     }
 

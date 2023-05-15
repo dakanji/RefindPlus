@@ -109,7 +109,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     GotKeyStrokes = FALSE;
     for (;;) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &Key);
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             GotKeyStrokes = TRUE;
             continue;
         }

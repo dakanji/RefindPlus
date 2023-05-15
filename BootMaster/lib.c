@@ -232,7 +232,7 @@ UINTN GetUserInput (
         if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
             return 1;
         }
-    } while (Status != EFI_SUCCESS);
+    } while (EFI_ERROR(Status));
 
     if (Key.UnicodeChar == 'y' || Key.UnicodeChar == 'Y') {
         Print(L"Yes\n");
@@ -633,7 +633,7 @@ EFI_STATUS EfivarGetRaw (
         )
     ) {
         Status = FindVarsDir();
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             Status = egLoadFile (
                 gVarsDir,
                 VariableName,
@@ -820,7 +820,7 @@ EFI_STATUS EfivarSetRaw (
         )
     ) {
         Status = FindVarsDir();
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             // Clear the current value
             egSaveFile (
                 gVarsDir, VariableName,
@@ -3354,7 +3354,7 @@ BOOLEAN FileExists (
             &TestFile, RelativePath,
             EFI_FILE_MODE_READ, 0
         );
-        if (Status == EFI_SUCCESS) {
+        if (!EFI_ERROR(Status)) {
             REFIT_CALL_1_WRAPPER(TestFile->Close, TestFile);
 
             return TRUE;
