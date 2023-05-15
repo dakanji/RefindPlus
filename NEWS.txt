@@ -35,6 +35,10 @@
   * None encountered to date but theoretically possible
 - Improves `AlsoScan` Feature
   * The '@root/boot' path was added to the default 'also_scan_dirs' list
+- Improves `DynamicCSR` Feature
+  * Now also enables the `RotateCSR` tool if configured to be displayed
+  * The tool was previously always disabled when DynamicCSR was active
+  * A screen message about `NormalisedCSR` was additionally suppressed
 - Improves Generic Menu Handling
   * Now provides a `Return to Main Menu` option on all such menus
 - Exposes `MitigatePrimedBuffer` Feature for User Configuration

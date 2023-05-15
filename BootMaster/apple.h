@@ -219,6 +219,6 @@ EFI_STATUS NormaliseCSR (VOID);
 EFI_STATUS FlagNoCSR (VOID);
 
 VOID ClearRecoveryBootFlag (VOID);
+VOID RotateCsrValue (BOOLEAN UnsetDynamic);
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
-VOID RotateCsrValue (VOID);
 #endif

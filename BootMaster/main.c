@@ -806,7 +806,8 @@ VOID AlignCSR (VOID) {
 
         if (RotateCsr) {
             // Rotate SIP/SSV from current setting
-            RotateCsrValue();
+            // Do not Unset DynamicCSR
+            RotateCsrValue (FALSE);
 
             // Break Early
             break;
@@ -1633,7 +1634,18 @@ VOID AboutRefindPlus (VOID) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        Status = GetCsrStatus (&CsrStatus);
+        if (GlobalConfig.DynamicCSR == 1 || GlobalConfig.DynamicCSR == -1) {
+            Status = EFI_SUCCESS;
+            MY_FREE_POOL(gCsrStatus);
+            gCsrStatus = StrDuplicate (
+                (GlobalConfig.DynamicCSR == 1)
+                    ? L"Dynamic SIP/SSV Enable"
+                    : L"Dynamic SIP/SSV Disable"
+            );
+        }
+        else {
+            Status = GetCsrStatus (&CsrStatus);
+        }
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         #endif
@@ -3886,7 +3898,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 // No end dash line ... Expected to return
-                RotateCsrValue();
+                // Unset DynamicCSR if active
+                RotateCsrValue (TRUE);
 
             break;
             case TAG_INSTALL:

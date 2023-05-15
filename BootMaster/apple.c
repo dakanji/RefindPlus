@@ -214,7 +214,9 @@ EFI_STATUS FlagNoCSR (VOID) {
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
-VOID RotateCsrValue (VOID) {
+VOID RotateCsrValue (
+    BOOLEAN UnsetDynamic
+) {
     EFI_STATUS    Status;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
@@ -336,6 +338,11 @@ VOID RotateCsrValue (VOID) {
         TargetCsr
     );
     #endif
+
+    if (UnsetDynamic) {
+        // Disable DynamicCSR
+        GlobalConfig.DynamicCSR = 0;
+    }
 } // VOID RotateCsrValue()
 
 
@@ -372,7 +379,7 @@ EFI_STATUS NormaliseCSR (VOID) {
 
     // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
     OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
-    RecordgCsrStatus (OurCSR, TRUE);
+    RecordgCsrStatus (OurCSR, FALSE);
 
     EfivarSetRaw (
         &AppleVendorOsGuid, L"csr-active-config",

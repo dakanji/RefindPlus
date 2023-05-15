@@ -4537,21 +4537,21 @@ VOID ScanForTools (VOID) {
                     gCsrStatus = StrDuplicate (L"Incompatible Setup");
                     Status = EFI_UNSUPPORTED;
                 }
-                else if (GlobalConfig.DynamicCSR == -1) {
-                    MY_FREE_POOL(gCsrStatus);
-                    gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Disable");
-                    Status = EFI_NOT_STARTED;
-                }
-                else if (GlobalConfig.DynamicCSR == 1) {
-                    MY_FREE_POOL(gCsrStatus);
-                    gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Enable");
-                    Status = EFI_NOT_STARTED;
-                }
                 else if (GlobalConfig.CsrValues) {
                     // Only attempt to enable if CSR Values are set
                     MuteLogger = TRUE;
                     // Sets 'gCsrStatus' and returns a Status Code based on outcome
                     Status = GetCsrStatus (&CsrValue);
+                    if (!EFI_ERROR(Status)) {
+                        if (GlobalConfig.DynamicCSR == -1) {
+                            MY_FREE_POOL(gCsrStatus);
+                            gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Disable");
+                        }
+                        else if (GlobalConfig.DynamicCSR == 1) {
+                            MY_FREE_POOL(gCsrStatus);
+                            gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Enable");
+                        }
+                    }
                     MuteLogger = FALSE;
                 }
                 else {
