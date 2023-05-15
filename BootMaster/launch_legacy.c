@@ -756,9 +756,10 @@ VOID AddLegacyEntry (
             ? L"CD" : L"HD";
 
     LegacyTitle = PoolPrint (
-        L"Load %s%s%s%s",
+        L"Load %s%s%s%s%s",
         LoaderTitle,
         SetVolJoin (LoaderTitle),
+        SetVolKind (LoaderTitle, VolDesc),
         SetVolFlag (LoaderTitle, VolDesc),
         SetVolType (LoaderTitle, VolDesc)
     );
@@ -807,10 +808,11 @@ VOID AddLegacyEntry (
 
     #if REFIT_DEBUG > 0
     LOG_MSG(
-        "%s  - Found %s%s%s%s",
+        "%s  - Found %s%s%s%s%s",
         OffsetNext,
         LoaderTitle,
         SetVolJoin (LoaderTitle),
+        SetVolKind (LoaderTitle, VolDesc),
         SetVolFlag (LoaderTitle, VolDesc),
         SetVolType (LoaderTitle, VolDesc)
     );
@@ -827,9 +829,10 @@ VOID AddLegacyEntry (
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title  = PoolPrint (
-        L"Boot Options for %s%s%s%s",
+        L"Boot Options for %s%s%s%s%s",
         LoaderTitle,
         SetVolJoin (LoaderTitle),
+        SetVolKind (LoaderTitle, VolDesc),
         SetVolFlag (LoaderTitle, VolDesc),
         SetVolType (LoaderTitle, VolDesc)
     );
@@ -895,8 +898,9 @@ VOID AddLegacyEntryUEFI (
     }
 
     Entry->me.Title = PoolPrint (
-        L"Load Legacy Bootcode%s%s%s",
+        L"Load Legacy Bootcode%s%s%s%s",
         SetVolJoin (L"Legacy Bootcode"),
+        SetVolKind (L"Legacy Bootcode", BdsOption->Description),
         SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
         SetVolType (L"Legacy Bootcode", BdsOption->Description)
     );
@@ -937,8 +941,9 @@ VOID AddLegacyEntryUEFI (
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title = PoolPrint (
-        L"Boot Options for Legacy Bootcode%s%s%s",
+        L"Boot Options for Legacy Bootcode%s%s%s%s",
         SetVolJoin (L"Legacy Bootcode"),
+        SetVolKind (L"Legacy Bootcode", BdsOption->Description),
         SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
         SetVolType (L"Legacy Bootcode", BdsOption->Description)
     );

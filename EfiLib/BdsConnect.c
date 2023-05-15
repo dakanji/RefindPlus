@@ -757,7 +757,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"Status:- '%r'... Acquire OptionROM on Volatile Storage", Status);
+    MsgStr = PoolPrint (L"Status:- '%r' ... Acquire OptionROM on Volatile Storage", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);

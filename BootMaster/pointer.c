@@ -97,7 +97,7 @@ VOID pdInitialize (VOID) {
     MsgStr = StrDuplicate (L"Activate Pointer Devices:");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n");
-    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
 
     EnableStatusTouch = EFI_NOT_STARTED;
@@ -222,11 +222,12 @@ VOID pdInitialize (VOID) {
     else {
         Status = EFI_DEVICE_ERROR;
     }
-    MsgStr = L"Enable Pointer Devices";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s ... %r", MsgStr, Status);
+    MsgStr = PoolPrint (L"Enable Pointer Devices ... %r", Status);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("\n\n");
-    LOG_MSG("INFO: %s ... %r", MsgStr, Status);
+    LOG_MSG("INFO: %s", MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 } // VOID pdInitialize()
 

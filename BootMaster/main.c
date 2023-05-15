@@ -258,6 +258,8 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
+extern CHAR16                       *StrSelfUUID;
+
 extern EFI_GUID                      AppleVendorOsGuid;
 
 extern EFI_FILE_PROTOCOL            *gVarsDir;
@@ -2290,7 +2292,6 @@ EFI_STATUS EFIAPI efi_main (
 
 
     #if REFIT_DEBUG > 0
-    CHAR16            *SelfUUID;
     CHAR16            *SelfGUID;
     CHAR16            *CurDateStr;
     CHAR16            *DisplayName;
@@ -2413,7 +2414,7 @@ EFI_STATUS EFIAPI efi_main (
     /* TimeStamp */
     if (Now.TimeZone == EFI_UNSPECIFIED_TIMEZONE) {
         CurDateStr = PoolPrint (
-            L"%d-%02d-%02d %02d:%02d:%02d (GMT)",
+            L"%d-%02d-%02d %02d:%02d:%02d (UTC)",
             NowYear, NowMonth,
             NowDay, NowHour,
             NowMinute, NowSecond
@@ -2421,7 +2422,7 @@ EFI_STATUS EFIAPI efi_main (
     }
     else {
         CurDateStr = PoolPrint (
-            L"%d-%02d-%02d %02d:%02d:%02d (GMT%s%02d:%02d)",
+            L"%d-%02d-%02d %02d:%02d:%02d (UTC%s%02d:%02d)",
             NowYear, NowMonth,
             NowDay, NowHour,
             NowMinute, NowSecond,
@@ -2468,13 +2469,13 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
     }
     else {
-        SelfUUID = GuidAsString (&SelfVolume->VolUuid);
+        StrSelfUUID = GuidAsString (&SelfVolume->VolUuid);
         SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-        LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
+        LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, StrSelfUUID);
         LOG_MSG("%s      Install Dir:- '%s'", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
         LOG_MSG("\n\n");
         MY_FREE_POOL(SelfGUID);
-        MY_FREE_POOL(SelfUUID);
+        MY_FREE_POOL(StrSelfUUID);
     }
     #endif
 
@@ -3456,7 +3457,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load OpenCore Instance");
+                    MsgStr = StrDuplicate (L"Load Instance: OpenCore");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
@@ -3483,7 +3484,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Clover Instance");
+                    MsgStr = StrDuplicate (L"Load Instance: Clover");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
@@ -3504,7 +3505,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load MacOS Instance");
+                    MsgStr = StrDuplicate (L"Load Instance: MacOS");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
 
@@ -3567,7 +3568,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Windows (UEFI) Instance");
+                    MsgStr = StrDuplicate (L"Load Instance: Windows (UEFI)");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s%s '%s'",
@@ -3601,7 +3602,7 @@ EFI_STATUS EFIAPI efi_main (
                     || FindSubStr (ourLoaderEntry->Title, L"Grub")
                 ) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
+                    MsgStr = StrDuplicate (L"Load Instance: Linux (Grub)");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3616,7 +3617,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (FindSubStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load Linux Instance via VMLinuz Loader");
+                    MsgStr = StrDuplicate (L"Load Instance: Linux (VMLinuz)");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3631,7 +3632,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (FindSubStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load Linux Instance via BZImage Loader");
+                    MsgStr = StrDuplicate (L"Load Instance: Linux (BZImage)");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3646,7 +3647,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (FindSubStr (ourLoaderEntry->LoaderPath, L"kernel")) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load Linux Instance via Kernel Loader");
+                    MsgStr = StrDuplicate (L"Load Instance: Linux (Kernel)");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3669,7 +3670,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Linux Instance");
+                    MsgStr = StrDuplicate (L"Load Instance: Linux");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     if (ourLoaderEntry->Volume->VolName) {
@@ -3687,7 +3688,7 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load rEFIt Variant");
+                    MsgStr = StrDuplicate (L"Load Instance: rEFIt Variant");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
@@ -3742,9 +3743,10 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Load %s%s%s%s",
+                        L"Load %s%s%s%s%s",
                         ourLegacyEntry->Volume->OSName,
                         SetVolJoin (ourLegacyEntry->Volume->OSName),
+                        SetVolKind (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName),
                         SetVolFlag (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName),
                         SetVolType (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName)
                     );

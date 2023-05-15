@@ -323,9 +323,10 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     TmpStr = (Entry->Title != NULL) ? Entry->Title  : FileName;
     TmpName = (DisplayName) ? DisplayName : Entry->Volume->VolName;
     SubScreen->Title = PoolPrint (
-        L"Boot Options for %s%s%s%s",
+        L"Boot Options for %s%s%s%s%s",
         TmpStr,
         SetVolJoin (TmpStr),
+        SetVolKind (TmpStr, TmpName),
         SetVolFlag (TmpStr, TmpName),
         SetVolType (TmpStr, TmpName)
     );
@@ -347,17 +348,17 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         NameOS = Entry->Title;
         // DA-TAG: Maintain space after NameOS
         if (0);
-        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Windows (Legacy) Instance";
-        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"))   NameOS = L"Windows (UEFI) Instance";
-        else if (Entry->OSType == 'W')                                             NameOS = L"Windows Instance";
-        else if (Entry->OSType == 'M')                                             NameOS = L"MacOS Instance";
-        else if (Entry->OSType == 'L')                                             NameOS = L"Linux Instance";
-        else if (Entry->OSType == 'G')                                             NameOS = L"Grub Instance";
-        else if (Entry->OSType == 'X')                                             NameOS = L"XoM Instance";
-        else if (Entry->OSType == 'E')                                             NameOS = L"Elilo Instance";
-        else if (Entry->OSType == 'R')                                             NameOS = L"rEFit Variant Instance";
-        else if (FindSubStr (SubScreen->Title, L"OpenCore"))                       NameOS = L"OpenCore Instance";
-        else if (FindSubStr (SubScreen->Title, L"Clover"))                         NameOS = L"Clover Instance";
+        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Instance: Windows (Legacy)";
+        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"))   NameOS = L"Instance: Windows (UEFI)"  ;
+        else if (Entry->OSType == 'W')                                             NameOS = L"Instance: Windows"         ;
+        else if (Entry->OSType == 'M')                                             NameOS = L"Instance: MacOS"           ;
+        else if (Entry->OSType == 'L')                                             NameOS = L"Instance: Linux"           ;
+        else if (Entry->OSType == 'G')                                             NameOS = L"Instance: Grub"            ;
+        else if (Entry->OSType == 'X')                                             NameOS = L"Instance: XoM"             ;
+        else if (Entry->OSType == 'E')                                             NameOS = L"Instance: Elilo"           ;
+        else if (Entry->OSType == 'R')                                             NameOS = L"Instance: rEFit Variant"   ;
+        else if (FindSubStr (SubScreen->Title, L"OpenCore"))                       NameOS = L"Instance: OpenCore"        ;
+        else if (FindSubStr (SubScreen->Title, L"Clover"))                         NameOS = L"Instance: Clover"          ;
 
         SubEntry->me.Title    = PoolPrint (L"Load %s with Default Options", NameOS);
         MainOptions           = StrDuplicate (SubEntry->LoadOptions);
@@ -573,7 +574,7 @@ VOID GenerateSubScreen (
                     BREAD_CRUMB(L"%s:  2a 4a 1", FuncTag);
                     MY_FREE_POOL(SubScreen->Entries[0]->Title);
                     SubScreen->Entries[0]->Title = StrDuplicate (
-                        (TokenList[0]) ? TokenList[0] : L"Load Linux Instance"
+                        (TokenList[0]) ? TokenList[0] : L"Load Instance: Linux"
                     );
                 }
                 BREAD_CRUMB(L"%s:  2a 5", FuncTag);
@@ -596,7 +597,7 @@ VOID GenerateSubScreen (
                         BREAD_CRUMB(L"%s:  2a 7a 3a 1", FuncTag);
                         SubEntry->me.Title = TokenList[0]
                             ? StrDuplicate (TokenList[0])
-                            : StrDuplicate (L"Load Linux Instance");
+                            : StrDuplicate (L"Load Instance: Linux");
 
                         BREAD_CRUMB(L"%s:  2a 7a 3a 2", FuncTag);
                         MY_FREE_POOL(SubEntry->LoadOptions);
@@ -1241,7 +1242,7 @@ CHAR16 * GetVolumeGroupName (
                     GuidAsString (&(DataVolumes[i]->VolUuid))
                 )
             ) {
-                // DA-TAG: Using 'DATA' volume name as last resort
+                // DA-TAG: Use 'DATA' volume name as last resort if required
                 DataTag = L" - Data";
                 TempStr = StrDuplicate (DataVolumes[i]->VolName);
                 if (FindSubStr (TempStr, DataTag)) {
@@ -1253,7 +1254,7 @@ CHAR16 * GetVolumeGroupName (
                     }
                 }
 
-                VolumeGroupName = PoolPrint (L"Fallback Label ... %s", TempStr);
+                VolumeGroupName = PoolPrint (L"%s", TempStr);
                 MY_FREE_POOL(TempStr);
                 break;
             }
@@ -1289,8 +1290,8 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
     Entry->me.Row        = Row;
     Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-    Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown Instance");
-    Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown Instance"); // without "Reboot to"
+    Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Instance: Unknown");
+    Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Instance: Unknown"); // without "Reboot to"
     Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
     TempStr              = DevicePathToStr (EfiLoaderPath);
 
@@ -1451,9 +1452,10 @@ LOADER_ENTRY * AddLoaderEntry (
     TmpName = (DisplayName) ? DisplayName : Volume->VolName;
     Entry->me.Title = (DisplayName || Volume->VolName)
         ? PoolPrint (
-            L"Load %s%s%s%s",
+            L"Load %s%s%s%s%s",
             Entry->Title,
             SetVolJoin (Entry->Title),
+            SetVolKind (Entry->Title, TmpName),
             SetVolFlag (Entry->Title, TmpName),
             SetVolType (Entry->Title, TmpName)
         )
@@ -1484,10 +1486,11 @@ LOADER_ENTRY * AddLoaderEntry (
             ? Volume->VolName
             : Entry->LoaderPath;
     LOG_MSG(
-        "%s  - Found %s%s%s%s",
+        "%s  - Found %s%s%s%s%s",
         OffsetNext,
         Entry->Title,
         SetVolJoin (Entry->Title),
+        SetVolKind (Entry->Title, TmpName),
         SetVolFlag (Entry->Title, TmpName),
         SetVolType (Entry->Title, TmpName)
     );
@@ -1600,6 +1603,35 @@ VOID CleanUpLoaderList (
     } // while
 } // static VOID CleanUpLoaderList()
 
+CHAR16 * SetVolKind (
+    IN CHAR16 *InstanceName,
+    IN CHAR16 *VolumeName
+) {
+    CHAR16 *RetVal;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    if (0);
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""         ;
+    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L""         ;
+    else if (MyStriCmp  (VolumeName,   L"ESP"            ))   RetVal = L""         ;
+    else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L""         ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L""         ;
+    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L""         ;
+    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""         ;
+    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""         ;
+    else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L"Volume - ";
+    else                                                      RetVal = L""         ;
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    return RetVal;
+} // CHAR16 * SetVolKind()
+
 CHAR16 * SetVolJoin (
     IN CHAR16 *InstanceName
 ) {
@@ -1611,9 +1643,9 @@ CHAR16 * SetVolJoin (
     MY_MUTELOGGER_SET;
     #endif
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal =  L""     ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal =  L" for ";
-    else                                                    RetVal =  L" on " ;
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""     ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" for ";
+    else                                                      RetVal = L" on " ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1633,8 +1665,8 @@ CHAR16 * SetVolFlag (
     MY_MUTELOGGER_SET;
     #endif
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:")) RetVal =  L""       ;
-    else                                                   RetVal =  VolumeName;
+    else if (FindSubStr (InstanceName, L"Manual Stanza:"))   RetVal = L""       ;
+    else                                                     RetVal = VolumeName;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1654,14 +1686,16 @@ CHAR16 * SetVolType (
     MY_MUTELOGGER_SET;
     #endif
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal =  L""                 ;
-    else if (MyStriCmp  (VolumeName,   L"EFI"            )) RetVal =  L" System Partition";
-    else if (MyStriCmp  (VolumeName,   L"ESP"            )) RetVal =  L""                 ;
-    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       )) RetVal =  L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal =  L" Partition"       ;
-    else if (FindSubStr (VolumeName,   L"Volume"         )) RetVal =  L""                 ;
-    else if (FindSubStr (VolumeName,   L"Partition"      )) RetVal =  L""                 ;
-    else                                                    RetVal =  L" Volume"          ;
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""                 ;
+    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L" System Partition";
+    else if (MyStriCmp  (VolumeName,   L"ESP"            ))   RetVal = L""                 ;
+    else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L" Partition"       ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" Partition"       ;
+    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L" Partition"       ;
+    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""                 ;
+    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
+    else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L""                 ;
+    else                                                      RetVal = L" Volume"          ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1868,7 +1902,8 @@ BOOLEAN DuplicatesFallback (
     MY_FREE_POOL(FallbackInfo);
 
     AreIdentical = FALSE;
-    if (FallbackSize == FileSize) { // Do full check as could be identical
+    if (FallbackSize == FileSize) {
+        // Do full check as could be identical
         FileContents = AllocatePool (FileSize);
         FallbackContents = AllocatePool (FallbackSize);
         if (FileContents && FallbackContents) {
@@ -1895,8 +1930,9 @@ BOOLEAN DuplicatesFallback (
         MY_FREE_POOL(FallbackContents);
     }
 
-    // BUG ALERT: Some systems (e.g., DUET, some Macs with large displays) crash if the
-    // following two calls are reversed.
+    // DA-TAG: Investigate This
+    //         Some systems (e.g., DUET, some Macs with large displays)
+    //         may apparently crash if the following calls are reversed.
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FallbackHandle);
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
@@ -2285,7 +2321,7 @@ BOOLEAN ScanMacOsLoader (
         if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
-            AddLoaderEntry (FullFileName, L"RefindPlus Instance", Volume, TRUE);
+            AddLoaderEntry (FullFileName, L"Instance: RefindPlus", Volume, TRUE);
         }
         else {
             AddThisEntry = HasMacOS = TRUE;
@@ -2299,7 +2335,7 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                AddLoaderEntry (FullFileName, L"MacOS Instance", Volume, TRUE);
+                AddLoaderEntry (FullFileName, L"Instance: MacOS", Volume, TRUE);
             }
         }
 
@@ -2558,7 +2594,7 @@ VOID ScanEfiFiles (
             !FilenameIn (Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
         ) {
             //BREAD_CRUMB(L"%s:  6a 7a 1", FuncTag);
-            AddLoaderEntry (FileName, L"Windows XP (XoM) Instance", Volume, TRUE);
+            AddLoaderEntry (FileName, L"Instance: Windows XP (XoM)", Volume, TRUE);
 
             //BREAD_CRUMB(L"%s:  6a 7a 2", FuncTag);
             if (DuplicatesFallback (Volume, FileName)) {
@@ -2591,7 +2627,7 @@ VOID ScanEfiFiles (
         ) {
             //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
             // Boot Repair Backup
-            AddLoaderEntry (FileName, L"UEFI Windows (BRBackup) Instance", Volume, TRUE);
+            AddLoaderEntry (FileName, L"Instance: UEFI Windows (BRBackup)", Volume, TRUE);
 
             //BREAD_CRUMB(L"%s:  7a 2a 2", FuncTag);
             FoundBRBackup = TRUE;
@@ -2614,8 +2650,8 @@ VOID ScanEfiFiles (
             )
         ) {
             TmpMsg = (FoundBRBackup)
-                ? L"Assumed UEFI Windows Instance (Potentially GRUB)"
-                : L"Windows (UEFI) Instance";
+                ? L"Instance: Assumed UEFI Windows (Potentially GRUB)"
+                : L"Instance: Windows (UEFI)";
             AddLoaderEntry (FileName, TmpMsg, Volume, TRUE);
 
             if (DuplicatesFallback (Volume, FileName)) {

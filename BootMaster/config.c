@@ -2417,7 +2417,7 @@ VOID AddSubmenu (
         BREAD_CRUMB(L"%s:  7a 1", FuncTag);
 
         SubEntry->me.Title = StrDuplicate (
-            (Title != NULL) ? Title : L"Unknown Instance"
+            (Title != NULL) ? Title : L"Instance: Unknown"
         );
     }
     else {
@@ -2425,11 +2425,12 @@ VOID AddSubmenu (
 
         TmpName = (Title != NULL)
             ? Title
-            : L"Unknown Instance";
+            : L"Instance: Unknown";
         SubEntry->me.Title = PoolPrint (
-            L"Load %s%s%s%s",
+            L"Load %s%s%s%s%s",
             TmpName,
             SetVolJoin (TmpName),
+            SetVolKind (TmpName, Volume->VolName),
             SetVolFlag (TmpName, Volume->VolName),
             SetVolType (TmpName, Volume->VolName)
         );
@@ -2705,9 +2706,10 @@ LOADER_ENTRY * AddStanzaEntries (
     // Set Screen Title
     if (!FirmwareBootNum && Entry->Volume->VolName) {
         Entry->me.Title = PoolPrint (
-            L"Load %s%s%s%s",
+            L"Load %s%s%s%s%s",
             Entry->Title,
             SetVolJoin (Entry->Title),
+            SetVolKind (Entry->Title, Volume->VolName),
             SetVolFlag (Entry->Title, Volume->VolName),
             SetVolType (Entry->Title, Volume->VolName)
         );
@@ -2826,10 +2828,11 @@ VOID ScanUserConfigured (
                         ? SelfVolume->VolName
                         : Entry->LoaderPath;
                     LOG_MSG(
-                        "%s  - Found %s%s%s%s",
+                        "%s  - Found %s%s%s%s%s",
                         OffsetNext,
                         Entry->Title,
                         SetVolJoin (Entry->Title),
+                        SetVolKind (Entry->Title, TmpName),
                         SetVolFlag (Entry->Title, TmpName),
                         SetVolType (Entry->Title, TmpName)
                     );

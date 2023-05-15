@@ -1282,6 +1282,7 @@ VOID egInitScreen (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
+    BOOLEAN  SelectedOnce;
     BOOLEAN  PrevFlag = FALSE;
 
     LOG_MSG("Check for Graphics:");
@@ -1384,6 +1385,9 @@ VOID egInitScreen (VOID) {
                     &GOPDrawProtocolGuid, (VOID*) &TmpGop
                 );
                 if (!EFI_ERROR(Status)) {
+                    #if REFIT_DEBUG > 0
+                    SelectedOnce = FALSE;
+                    #endif
                     MaxMode = TmpGop->Mode->MaxMode;
                     for (GopMode = 0; GopMode < MaxMode; GopMode++) {
                         Status = TmpGop->QueryMode (TmpGop, GopMode, &SizeOfInfo, &Info);
@@ -1408,12 +1412,14 @@ VOID egInitScreen (VOID) {
 
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
-                                "%s    *** Select GPU Handle[%02d][%02d] @ %5d x %-5d",
+                                "%s    *** Select GPU Handle[%02d][%02d] @ %5d x %-5d%s",
                                 OffsetNext,
                                 i, GopMode,
                                 GopWidth,
-                                GopHeight
+                                GopHeight,
+                                (SelectedOnce) ? L"  :  Discard Previous" : L""
                             );
+                            SelectedOnce = TRUE;
                             #endif
 
                             // Restart Loop

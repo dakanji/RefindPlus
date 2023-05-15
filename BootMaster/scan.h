@@ -67,6 +67,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME 
 VOID ScanForBootloaders(VOID);
 VOID ScanForTools(VOID);
 CHAR16 * SetVolJoin (IN CHAR16 *InstanceName);
+CHAR16 * SetVolKind (IN CHAR16 *InstanceName, IN CHAR16 *VolumeName);
 CHAR16 * SetVolFlag (IN CHAR16 *InstanceName, IN CHAR16 *VolumeName);
 CHAR16 * SetVolType (IN CHAR16 *InstanceName OPTIONAL, IN CHAR16 *VolumeName);
 CHAR16 * GetVolumeGroupName (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);

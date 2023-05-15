@@ -486,7 +486,7 @@
   * Restrictions limiting some features to setups with only one APFS instance per container are now removed
   * This is a port of the downstream implementation by GitHub user @Joevt
 - Amends Log Levels
-  * LogLevel 0  remains as a native summary format
+  * LogLevel 0 remains as a native summary format
   * The previous upstream based four (4) log levels have been compressed to two (2) levels
   * LogLevel 4, which was not exposed by default, is now LogLevel 2, which is also not exposed by default.
   * LogLevel 2 is exposed when the `REFIT_DEBUG` build flag is set to two (2) at compilation time.
@@ -789,7 +789,7 @@
 0.13.2.AC (12 Apr 2021):
 -----------------------
 - Fixes memory allocation bug
-  * Progam hangs when `fold_linux_kernels` is active and Linux instances with multiple kernels are present
+  * Program hangs when `fold_linux_kernels` is active and Linux instances with multiple kernels are present
   * This bug was introduced in v0.13.2.AA (Commit 68c7af0)
 - Fixes volume badge icon detection bug
   * `.VolumeIcon` files were not being detected as meant to be

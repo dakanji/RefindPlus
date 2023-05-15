@@ -168,37 +168,40 @@ VOID RecordgCsrStatus (
             );
     } // switch
 
-    if (DisplayMessage) {
-        MsgStr = (NormaliseCall)
-            ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
-            : PoolPrint (L"%s", gCsrStatus);
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG(
-            "%s    * %s%s",
-            (NormaliseCall) ? OffsetNext : L"",
-            MsgStr,
-            L"\n\n"
-            // DA-TAG: Investigate This
-            //         Disabled for the above ... Seems not needed
-            //(NormaliseCall) ? L"" : L"\n\n"
-        );
-        #endif
-
-        #if REFIT_DEBUG > 0
-        BOOLEAN CheckMute = FALSE;
-        MY_MUTELOGGER_SET;
-        #endif
-        egDisplayMessage (
-            MsgStr, &BGColor, CENTER,
-            2, L"PauseSeconds"
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
-
-        MY_FREE_POOL(MsgStr);
+    if (!DisplayMessage) {
+        // Early Exit if not displaying maessage
+        return;
     }
+
+    MsgStr = (NormaliseCall)
+        ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
+        : PoolPrint (L"%s", gCsrStatus);
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG(
+        "%s    * %s%s",
+        (NormaliseCall) ? OffsetNext : L"",
+        MsgStr,
+        L"\n\n"
+        // DA-TAG: Investigate This
+        //         Disabled for the above ... Seems not needed
+        //(NormaliseCall) ? L"" : L"\n\n"
+    );
+    #endif
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    MY_MUTELOGGER_SET;
+    #endif
+    egDisplayMessage (
+        MsgStr, &BGColor, CENTER,
+        2, L"PauseSeconds"
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    MY_FREE_POOL(MsgStr);
 } // VOID RecordgCsrStatus()
 
 EFI_STATUS FlagNoCSR (VOID) {

@@ -117,7 +117,8 @@ EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 
 // Variables
 EFI_HANDLE                  SelfImageHandle;
 
-CHAR16                     *SelfDirPath;
+CHAR16                     *StrSelfUUID         = NULL;
+CHAR16                     *SelfDirPath         = NULL;
 
 EFI_LOADED_IMAGE_PROTOCOL  *SelfLoadedImage;
 
@@ -1403,13 +1404,13 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"linux";
-        Volume->OSName       = L"Linux (Legacy) Instance";
+        Volume->OSName       = L"Instance: Linux (Legacy)";
     }
     else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
         // GRUB
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"grub,linux";
-        Volume->OSName       = L"Linux (Legacy) Instance";
+        Volume->OSName       = L"Instance: Linux (Legacy)";
     }
     else if (
         (
@@ -1422,7 +1423,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freebsd";
-        Volume->OSName       = L"FreeBSD (Legacy) Instance";
+        Volume->OSName       = L"Instance: FreeBSD (Legacy)";
     }
     else if (
         (*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
@@ -1433,7 +1434,7 @@ VOID ScanVolumeBootcode (
         // "Invalid Partition Table" &/or "Missing boot loader".
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freebsd";
-        Volume->OSName       = L"FreeBSD (Legacy) Instance";
+        Volume->OSName       = L"Instance: FreeBSD (Legacy)";
     }
     else if (
         FindMem (Buffer, 512,         "!Loading",            8) >= 0 ||
@@ -1441,7 +1442,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"openbsd";
-        Volume->OSName       = L"OpenBSD (Legacy) Instance";
+        Volume->OSName       = L"Instance: OpenBSD (Legacy)";
     }
     else if (
         FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
@@ -1449,19 +1450,19 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"netbsd";
-        Volume->OSName       = L"NetBSD (Legacy) Instance";
+        Volume->OSName       = L"Instance: NetBSD (Legacy)";
     }
     else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
         // Windows NT/200x/XP
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"win";
-        Volume->OSName       = L"Windows (NT/XP)";
+        Volume->OSName       = L"Instance: Windows (NT/XP)";
     }
     else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
         // Windows Vista/7/8/10
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"win8,win";
-        Volume->OSName       = L"Windows (Legacy) Instance";
+        Volume->OSName       = L"Instance: Windows (Legacy)";
     }
     else if (
         FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
@@ -1469,7 +1470,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"freedos";
-        Volume->OSName       = L"FreeDOS (Legacy) Instance";
+        Volume->OSName       = L"Instance: FreeDOS (Legacy)";
     }
     else if (
         FindMem (Buffer, 512, "OS2LDR",  6) >= 0 ||
@@ -1477,17 +1478,17 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"ecomstation";
-        Volume->OSName       = L"eComStation (Legacy) Instance";
+        Volume->OSName       = L"Instance: eComStation (Legacy)";
     }
     else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"beos";
-        Volume->OSName       = L"BeOS (Legacy) Instance";
+        Volume->OSName       = L"Instance: BeOS (Legacy)";
     }
     else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"zeta,beos";
-        Volume->OSName       = L"ZETA (Legacy) Instance";
+        Volume->OSName       = L"Instance: ZETA (Legacy)";
     }
     else if (
         FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
@@ -1495,7 +1496,7 @@ VOID ScanVolumeBootcode (
     ) {
         Volume->HasBootCode  = TRUE;
         Volume->OSIconName   = L"haiku,beos";
-        Volume->OSName       = L"Haiku (Legacy) Instance";
+        Volume->OSName       = L"Instance: Haiku (Legacy)";
     } // CompareMem
 
     /**
@@ -2481,6 +2482,7 @@ VOID ScanVolumes (VOID) {
     UINT8                  *SectorBuffer2;
     CHAR16                 *RoleStr;
     CHAR16                 *PartType;
+    CHAR16                 *TempUUID;
     BOOLEAN                 DupFlag;
     BOOLEAN                 CheckedAPFS;
     EFI_GUID                VolumeGuid;
@@ -2620,10 +2622,19 @@ VOID ScanVolumes (VOID) {
         for (i = 0; i < HandleIndex; i++) {
             if (GlobalConfig.ScanAllESP) {
                 DupFlag = (
-                    (!GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)) &&
+                    (!GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP))                      &&
                     (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                     (CompareMem (&(Volume->VolUuid), &GuidNull,      sizeof (EFI_GUID)) != 0)
                 );
+
+                if (!DupFlag                                       &&
+                    !GuidsAreEqual (&(Volume->VolUuid), &GuidNull) &&
+                    GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)
+                ) {
+                    TempUUID = GuidAsString (&Volume->VolUuid);
+                    DupFlag  = MyStriCmp (StrSelfUUID, TempUUID);
+                    MY_FREE_POOL(TempUUID);
+                }
             }
             else {
                 DupFlag = (
@@ -2664,7 +2675,7 @@ VOID ScanVolumes (VOID) {
             }
             else if (ScannedOnce) {
                 if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
-                    if (!SkipSpacing && (HandleIndex % 28) == 0 && (HandleCount - HandleIndex) > 14) {
+                    if ((HandleIndex % 40) == 0 && (HandleCount - HandleIndex) > (20 + 2)) {
                         DoneHeadings = FALSE;
                         BRK_MOD("\n\n                   ");
                     }
@@ -2731,9 +2742,9 @@ VOID ScanVolumes (VOID) {
             else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Mac BootCamp"  ;
             else if (MyStriCmp (Volume->VolName,  L"Basic Data Partition"   )) RoleStr = L" * Win BasicData" ;
             else if (MyStriCmp (Volume->VolName,  L"Boot OS X"              )) RoleStr = L" * Mac BootAssist";
-            else if (MyStriCmp (Volume->VolName,  L"EFI"                    )) RoleStr = L" * EFI Partition" ;
-            else if (MyStriCmp (Volume->VolName,  L"ESP"                    )) RoleStr = L" * EFI Partition" ;
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * EFI Partition" ;
+            else if (MyStriCmp (Volume->VolName,  L"EFI"                    )) RoleStr = L" * EFI SysPart"   ;
+            else if (MyStriCmp (Volume->VolName,  L"ESP"                    )) RoleStr = L" * EFI SysPart"   ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * EFI SysPart"   ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux     )) RoleStr = L" * Part LinuxFS"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT   )) RoleStr = L" * Part HomeGPT"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT )) RoleStr = L" * Part ServerGPT";
