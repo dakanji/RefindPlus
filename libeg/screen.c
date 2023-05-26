@@ -975,7 +975,6 @@ VOID egDetermineScreenSize (VOID) {
     UINT32     UgaRefreshRate;
 
     // Get screen size
-    egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
         egHasGraphics  = TRUE;
         egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
@@ -990,6 +989,7 @@ VOID egDetermineScreenSize (VOID) {
         if (EFI_ERROR(Status)) {
             // Graphics not Available
             UGADraw = NULL;
+            egHasGraphics = FALSE;
         }
         else {
             egScreenWidth  = ScreenW;
@@ -1263,6 +1263,10 @@ VOID egInitScreen (VOID) {
     UINTN                                  i;
     UINTN                                  HandleCount;
     UINTN                                  SizeOfInfo;
+    UINT32                                 Width;
+    UINT32                                 Height;
+    UINT32                                 Depth;
+    UINT32                                 RefreshRate;
     UINT32                                 MaxMode;
     UINT32                                 GopMode;
     UINT32                                 GopWidth;
@@ -1315,8 +1319,10 @@ VOID egInitScreen (VOID) {
     }
 
     // Get GOPDraw Protocol
-    XFlag = EFI_NOT_STARTED;
     HandleBuffer = NULL;
+    GotGoodGOP = FALSE;
+    thisValidGOP = FALSE;
+    XFlag = EFI_NOT_STARTED;
     if (FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
@@ -1445,7 +1451,6 @@ VOID egInitScreen (VOID) {
         } while (0); // This 'loop' only runs once
 
         XFlag = EFI_UNSUPPORTED;
-        thisValidGOP = FALSE;
         if (EFI_ERROR(Status)) {
             // Tag as "Not Found"
             XFlag = EFI_NOT_FOUND;
@@ -1477,34 +1482,40 @@ VOID egInitScreen (VOID) {
                 }
                 else {
                     thisValidGOP = SupplyConsoleGop (FALSE);
-                    if (thisValidGOP) {
-                        XFlag = EFI_SUCCESS;
-                    }
-                    else {
-                        XFlag = EFI_LOAD_ERROR;
-
-                        // Use valid 'OldGop' and force 'thisValidGOP' to true
-                        GOPDraw = OldGop;
-                        thisValidGOP = TRUE;
-                    }
+                    XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
                         MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", XFlag);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
                         LOG_MSG("INFO: %s", MsgStr);
                     }
+                    #endif
                     if (EFI_ERROR(XFlag)) {
+                        #if REFIT_DEBUG > 0
                         MY_FREE_POOL(MsgStr);
                         MsgStr = StrDuplicate (L"Leveraging GPU Handle GOP");
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                        LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                        if (GotGoodGOP) {
+                            LOG_MSG("INFO: ");
+                        }
+                        else {
+                            LOG_MSG("%s      ", OffsetNext);
+                        }
+                        LOG_MSG("%s", MsgStr);
+                        #endif
+
+                        // Set to Needed Value ... Previous, EFI_LOAD_ERROR, was only for logging
+                        XFlag = EFI_SUCCESS;
+
+                        // Use valid 'OldGop' and force 'thisValidGOP' to true
+                        GOPDraw = OldGop;
+                        thisValidGOP = TRUE;
                     }
+                    #if REFIT_DEBUG > 0
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-
-                XFlag = EFI_SUCCESS;
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -1519,22 +1530,13 @@ VOID egInitScreen (VOID) {
                     LOG_MSG("\n\n");
                     #endif
 
-                    thisValidGOP = TRUE;
-
                     // Disable GOP
+                    thisValidGOP = FALSE;
                     DisableGOP();
                 }
                 else {
                     thisValidGOP = SupplyConsoleGop (TRUE);
-                    if (thisValidGOP) {
-                        XFlag = EFI_SUCCESS;
-                    }
-                    else {
-                        XFlag = EFI_LOAD_ERROR;
-
-                        // Disable GOP
-                        DisableGOP();
-                    }
+                    XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
                         MsgStr = PoolPrint (L"Replace GOP on ConsoleOut Handle ... %r", XFlag);
@@ -1543,9 +1545,6 @@ VOID egInitScreen (VOID) {
                     }
                     #endif
                     if (EFI_ERROR(XFlag)) {
-                        // Set to Needed Value ... Previous, Load Error, was only for logging
-                        XFlag = EFI_UNSUPPORTED;
-
                         #if REFIT_DEBUG > 0
                         MY_FREE_POOL(MsgStr);
                         // DA-TAG: Actually already disabled
@@ -1553,6 +1552,13 @@ VOID egInitScreen (VOID) {
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s      %s", OffsetNext, MsgStr);
                         #endif
+
+                        // Set to Needed Value ... Previous, EFI_LOAD_ERROR, was only for logging
+                        XFlag = EFI_UNSUPPORTED;
+
+                        // Disable GOP
+                        // NB: 'thisValidGOP' already false
+                        DisableGOP();
                     }
                     #if REFIT_DEBUG > 0
                     LOG_MSG("\n\n");
@@ -1611,11 +1617,11 @@ VOID egInitScreen (VOID) {
     } // if/else FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)
 
     // Get Screen Size
-    egHasGraphics = FALSE;
-    if (GOPDraw != NULL) {
+    if (thisValidGOP && GOPDraw != NULL) {
         do {
             if (FoundHandleUGA && SetPreferUGA) {
                 // Disable GOP
+                thisValidGOP = FALSE;
                 DisableGOP();
 
                 // Break Loop
@@ -1633,37 +1639,45 @@ VOID egInitScreen (VOID) {
                 #endif
 
                 // Disable GOP
+                thisValidGOP = FALSE;
                 DisableGOP();
 
                 // Break Loop
                 break;
             }
 
-            // GOP Graphics Available ... Discard UGADraw
-            UGADraw       = NULL;
-            egHasGraphics = TRUE;
-
-            Status = egSetMaxResolution();
-            if (!EFI_ERROR(Status)) {
-                egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
-                egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
-            }
-            else {
-                egScreenWidth  = GlobalConfig.RequestedScreenWidth;
-                egScreenHeight = GlobalConfig.RequestedScreenHeight;
-            }
-
-            #if REFIT_DEBUG > 0
             Status = EFI_NOT_STARTED;
-            #endif
+            if (thisValidGOP) {
+                // GOP Graphics Available
+                egHasGraphics = TRUE;
 
-            // DA-TAG: Limit to TianoCore
-            #ifdef __MAKEWITH_TIANO
-            if (GlobalConfig.PassUgaThrough && thisValidGOP) {
-                // Run OcProvideUgaPassThrough from OpenCorePkg
-                Status = OcProvideUgaPassThrough();
+                Status = egSetMaxResolution();
+                if (!EFI_ERROR(Status)) {
+                    egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+                    egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
+                }
+                else {
+                    egScreenWidth  = GlobalConfig.RequestedScreenWidth;
+                    egScreenHeight = GlobalConfig.RequestedScreenHeight;
+                }
+
+                Status = EFI_NOT_STARTED;
+                if (FoundHandleUGA) {
+                    // DA-TAG: Limit to TianoCore
+                    #ifdef __MAKEWITH_TIANO
+                    if (GlobalConfig.PassUgaThrough) {
+                        // Run OcProvideUgaPassThrough from OpenCorePkg
+                        Status = OcProvideUgaPassThrough();
+                    }
+                    #endif
+
+                    if (EFI_ERROR(Status)) {
+                        // Prefer GOP ... Discard UGA
+                        UGADraw                  =  NULL;
+                        FoundHandleUGA = FlagUGA = FALSE;
+                    }
+                }
             }
-            #endif
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
@@ -1675,8 +1689,23 @@ VOID egInitScreen (VOID) {
         } while (0); // This 'loop' only runs once
     } // if GOPDraw != NULL
 
-    FlagUGA = FALSE;
-    if (GOPDraw == NULL && UGADraw == NULL) {
+    if (UGADraw != NULL) {
+        Status = REFIT_CALL_5_WRAPPER(
+            UGADraw->GetMode, UGADraw,
+            &Width, &Height,
+            &Depth, &RefreshRate
+        );
+        if (EFI_ERROR(Status)) {
+            UGADraw = NULL;
+        }
+    }
+
+    if (!thisValidGOP && UGADraw == NULL) {
+        // Graphics not Available
+        // Fall Back on Text Mode
+        egHasGraphics         = FlagUGA       = FALSE;
+        GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
+
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Graphics Not Available ... Falling Back on Text Mode");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1687,53 +1716,55 @@ VOID egInitScreen (VOID) {
         #endif
     }
     else if (UGADraw != NULL) {
-        UINT32 Width, Height, Depth, RefreshRate;
-        Status = REFIT_CALL_5_WRAPPER(
-            UGADraw->GetMode, UGADraw,
-            &Width, &Height,
-            &Depth, &RefreshRate
-        );
-        if (EFI_ERROR(Status)) {
-            // Graphics not available
-            UGADraw               = NULL;
-            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+        // UGA Graphics Available
+        egHasGraphics = FlagUGA = TRUE;
+
+        if (SetPreferUGA) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"Forcing Universal Graphics Adapter");
+            #endif
+
+            // Disable GOP and Force UGA
+            thisValidGOP = FALSE;
+            DisableGOP();
+        }
+        else if (!thisValidGOP) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"GOP Not Available ... Falling Back on UGA");
+            #endif
         }
         else {
-            egHasGraphics  = FlagUGA = TRUE;
+            // Prefer GOP ... Ignore UGA
+            FlagUGA = FALSE;
+        }
+
+        if (FlagUGA) {
             egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
             egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
-        }
 
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (
-            (FoundHandleUGA && SetPreferUGA)
-                ? L"Forcing Universal Graphics Adapter"
-                : (FoundHandleUGA && !ObtainHandleGOP)
-                    ? L"Leveraging Universal Graphics Adapter"
-                    : L"GOP Not Available ... Falling Back on UGA"
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        if (PrevFlag) {
-            LOG_MSG("%s      ", OffsetNext);
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            if (PrevFlag) {
+                LOG_MSG("%s      ", OffsetNext);
+            }
+            else {
+                LOG_MSG("INFO: ");
+                PrevFlag = TRUE;
+            }
+            LOG_MSG("%s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+            #endif
         }
-        else {
-            LOG_MSG("INFO: ");
-        }
-        LOG_MSG("%s", MsgStr);
-        MY_FREE_POOL(MsgStr);
-
-        PrevFlag = TRUE;
-        #endif
     } // if (GOPDraw == NULL && UGADraw == NULL)
 
     #if REFIT_DEBUG > 0
     Status = EFI_NOT_STARTED;
     #endif
 
+    NewAppleFramebuffers = FALSE;
+
 // DA-TAG: Limit to TianoCore
-NewAppleFramebuffers = FALSE;
 #ifdef __MAKEWITH_TIANO
-// DA-TAG: Limit to TianoCore
     do {
         if (UGADraw == NULL || GOPDraw != NULL) {
             // Break Loop
@@ -1790,15 +1821,24 @@ NewAppleFramebuffers = FALSE;
             break;
         }
     } while (0); // This 'loop' only runs once
-
-    if (UGADraw != NULL) {
-        // We have GOP from UGA
-        egHasGraphics  =            TRUE;
-        FoundHandleUGA = FlagUGA = FALSE;
-    }
+#endif
+// Limit to TianoCore ... END
 
     if (GOPDraw != NULL) {
+        // We have graphics from GOP
+        egHasGraphics = TRUE;
+
+        if (!GlobalConfig.PassUgaThrough) {
+            // No Pass Through ... Discard UGA
+            UGADraw                  =  NULL;
+            FoundHandleUGA = FlagUGA = FALSE;
+        }
+
+        // Prime Status for Text Renderer
         Status = EFI_NOT_STARTED;
+
+        #ifdef __MAKEWITH_TIANO
+        // DA-TAG: Limit to TianoCore
         if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
             // Implement Text Renderer
             Status = OcUseBuiltinTextOutput (
@@ -1807,6 +1847,8 @@ NewAppleFramebuffers = FALSE;
                     : EfiConsoleControlScreenText
             );
         }
+        #endif
+        // Limit to TianoCore ... END
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
@@ -1821,7 +1863,7 @@ NewAppleFramebuffers = FALSE;
         MY_FREE_POOL(MsgStr);
         #endif
     }
-#endif
+
 
     if (!egHasGraphics) {
         #if REFIT_DEBUG > 0
@@ -1847,9 +1889,9 @@ NewAppleFramebuffers = FALSE;
         // Force Text Mode ... AppleFramebuffers Missing on Mac with UGA
         // Disable GOP
         DisableGOP();
+        UGADraw                               =  NULL;
         egHasGraphics                         = FALSE;
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
-        UGADraw                               =  NULL;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Yes (Without Display ... Forcing Text Mode)");
