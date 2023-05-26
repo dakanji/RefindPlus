@@ -15,7 +15,7 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../include/refit_call_wrapper.h"
+#include "nvme_call_wrapper.h"
 
 /**
   Create PRP lists for data transfer which is larger than 2 memory pages.
@@ -151,7 +151,7 @@ EFI_STATUS AbortAsyncPassThruTasks (
     EFI_STATUS                         Status;
 
     PciIo  = Private->PciIo;
-    OldTpl = REFIT_CALL_1_WRAPPER(gBS->RaiseTPL, TPL_NOTIFY);
+    OldTpl = NVME_CALL_1_WRAPPER(gBS->RaiseTPL, TPL_NOTIFY);
 
     // Cancel the unsubmitted subtasks.
     for (Link = GetFirstNode (&Private->UnsubmittedSubtasks);
@@ -170,7 +170,7 @@ EFI_STATUS AbortAsyncPassThruTasks (
 
         RemoveEntryList (Link);
         InsertTailList (&BlkIo2Request->SubtasksQueue, Link);
-        REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Subtask->Event);
+        NVME_CALL_1_WRAPPER(gBS->SignalEvent, Subtask->Event);
     }
 
     // Cleanup the resources for the asynchronous PassThru requests.
@@ -203,7 +203,7 @@ EFI_STATUS AbortAsyncPassThruTasks (
         }
 
         RemoveEntryList (Link);
-        REFIT_CALL_1_WRAPPER(gBS->SignalEvent, AsyncRequest->CallerEvent);
+        NVME_CALL_1_WRAPPER(gBS->SignalEvent, AsyncRequest->CallerEvent);
         FREE_NVME_POOL(AsyncRequest);
     }
 
@@ -216,7 +216,7 @@ EFI_STATUS AbortAsyncPassThruTasks (
         Status = EFI_DEVICE_ERROR;
     }
 
-    REFIT_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
+    NVME_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
 
     return Status;
 }
@@ -556,14 +556,14 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
             AsyncRequest->PrpListNo     = PrpListNo;
             AsyncRequest->PrpListHost   = PrpListHost;
 
-            OldTpl = REFIT_CALL_1_WRAPPER(gBS->RaiseTPL, TPL_NOTIFY);
+            OldTpl = NVME_CALL_1_WRAPPER(gBS->RaiseTPL, TPL_NOTIFY);
             InsertTailList (&Private->AsyncPassThruQueue, &AsyncRequest->Link);
-            REFIT_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
+            NVME_CALL_1_WRAPPER(gBS->RestoreTPL, OldTpl);
 
             return EFI_SUCCESS;
         }
 
-        Status = REFIT_CALL_5_WRAPPER(
+        Status = NVME_CALL_5_WRAPPER(
             gBS->CreateEvent, EVT_TIMER,
             TPL_CALLBACK, NULL,
             NULL, &TimerEvent
@@ -572,7 +572,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
             break;
         }
 
-        Status = REFIT_CALL_3_WRAPPER(
+        Status = NVME_CALL_3_WRAPPER(
             gBS->SetTimer, TimerEvent,
             TimerRelative, Packet->CommandTimeout
         );
@@ -583,7 +583,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         // Wait for completion queue to get filled in.
         Status = EFI_TIMEOUT;
         while (EFI_ERROR(
-            REFIT_CALL_1_WRAPPER( gBS->CheckEvent, TimerEvent )
+            NVME_CALL_1_WRAPPER( gBS->CheckEvent, TimerEvent )
         )) {
             if (Cq->Pt != Private->Pt[QueueId]) {
                 Status = EFI_SUCCESS;
@@ -609,7 +609,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         }
         else {
             // Disable the timer to trigger the process of async transfers temporarily.
-            Status = REFIT_CALL_3_WRAPPER(
+            Status = NVME_CALL_3_WRAPPER(
                 gBS->SetTimer, Private->TimerEvent,
                 TimerCancel, 0
             );
@@ -623,7 +623,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
                 Status = AbortAsyncPassThruTasks (Private);
                 if (!EFI_ERROR (Status)) {
                     // Re-enable the timer to trigger the process of async transfers.
-                    Status = REFIT_CALL_3_WRAPPER(
+                    Status = NVME_CALL_3_WRAPPER(
                         gBS->SetTimer, Private->TimerEvent,
                         TimerPeriodic, NVME_HC_ASYNC_TIMER
                     );
@@ -665,7 +665,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         if (Event != NULL) {
             ASSERT (QueueId == 0);
 
-            REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Event);
+            NVME_CALL_1_WRAPPER(gBS->SignalEvent, Event);
         }
     } while (0); // This 'loop' only runs once
 
@@ -695,7 +695,7 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
     }
 
     if (TimerEvent != NULL) {
-        REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
+        NVME_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
     }
 
     return Status;

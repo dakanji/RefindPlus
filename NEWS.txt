@@ -27,6 +27,8 @@
 - Fixes `ReloadGOP` Feature
   * A regression had meant that the feature was not active
   * This bug was introduced in v0.13.3.AD (Commit dc642c6)
+- Improves `SupplyNVME` Feature
+  * Further Isolated from other code
 - Improves Internal Protocol Allocation
   * Misc deprecated protocols aligned with UEFI 2.x specs
   * Some are related to filesystem drivers; for which updated versions are created accordingly

@@ -14,7 +14,7 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../include/refit_call_wrapper.h"
+#include "nvme_call_wrapper.h"
 
 #define NVME_SHUTDOWN_PROCESS_TIMEOUT 45
 
@@ -326,7 +326,7 @@ EFI_STATUS NvmeDisableController (
     }
 
     for(Index = (Timeout * 500); Index != 0; --Index) {
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 1000);
+        NVME_CALL_1_WRAPPER(gBS->Stall, 1000);
 
         // Check if the controller is initialized
         Status = ReadNvmeControllerStatus (Private, &Csts);
@@ -391,7 +391,7 @@ EFI_STATUS NvmeEnableController (
     }
 
     for (Index = (Timeout * 500); Index != 0; --Index) {
-        REFIT_CALL_1_WRAPPER(gBS->Stall, 1000);
+        NVME_CALL_1_WRAPPER(gBS->Stall, 1000);
 
         //
         // Check if the controller is initialized
@@ -889,7 +889,7 @@ VOID EFIAPI NvmeShutdownAllControllers (
     UINTN                                Index;
     NVME_CONTROLLER_PRIVATE_DATA        *Private;
 
-    Status = REFIT_CALL_5_WRAPPER(
+    Status = NVME_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
         &gEfiPciIoProtocolGuid, NULL,
         &HandleCount, &Handles
@@ -899,7 +899,7 @@ VOID EFIAPI NvmeShutdownAllControllers (
     }
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
-        Status = REFIT_CALL_4_WRAPPER(
+        Status = NVME_CALL_4_WRAPPER(
             gBS->OpenProtocolInformation, Handles[HandleIndex],
             &gEfiPciIoProtocolGuid, &OpenInfos, &OpenInfoCount
         );
@@ -912,7 +912,7 @@ VOID EFIAPI NvmeShutdownAllControllers (
             // gImageHandle equals to DriverBinding handle for this driver.
             if (((OpenInfos[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) != 0) &&
             (OpenInfos[OpenInfoIndex].AgentHandle == gImageHandle)) {
-                Status = REFIT_CALL_6_WRAPPER(
+                Status = NVME_CALL_6_WRAPPER(
                     gBS->OpenProtocol, OpenInfos[OpenInfoIndex].ControllerHandle,
                     &gEfiNvmExpressPassThruProtocolGuid, (VOID **) &NvmePassThru,
                     NULL, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL
@@ -948,7 +948,7 @@ VOID EFIAPI NvmeShutdownAllControllers (
                     }
 
                     // Stall for ~10ms
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, 9999);
+                    NVME_CALL_1_WRAPPER(gBS->Stall, 9999);
                 }
             }
         }
@@ -966,7 +966,7 @@ VOID NvmeRegisterShutdownNotification (VOID) {
 
     mNvmeControllerNumber++;
     if (mNvmeControllerNumber == 1) {
-        Status = REFIT_CALL_3_WRAPPER(
+        Status = NVME_CALL_3_WRAPPER(
             gBS->LocateProtocol, &gEfiResetNotificationProtocolGuid,
             NULL, (VOID **) &ResetNotify
         );
@@ -987,7 +987,7 @@ VOID NvmeUnregisterShutdownNotification (VOID) {
 
     mNvmeControllerNumber--;
     if (mNvmeControllerNumber == 0) {
-        Status = REFIT_CALL_3_WRAPPER(
+        Status = NVME_CALL_3_WRAPPER(
             gBS->LocateProtocol, &gEfiResetNotificationProtocolGuid,
             NULL, (VOID **) &ResetNotify
         );
