@@ -2625,7 +2625,7 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("P R O V I D E   B A S E   S U P P O R T");
+    LOG_MSG("C O M M E N C E   B A S E   S U P P O R T");
     LOG_MSG("\n");
     LOG_MSG("INFO: Supply Support:- 'UEFI  :  %r'", Status);
 
@@ -2643,7 +2643,12 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s      Supply Support:- 'NVME  :  %r'", OffsetNext, Status);
+    #endif
 
+    // Load Drivers
+    LoadDrivers();
+
+    #if REFIT_DEBUG > 0
     // DA-TAG: Prime Status for SupplyAPFS
     //         Here to accomodate GNU-EFI
     Status = EFI_NOT_STARTED;
@@ -2657,11 +2662,11 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s      Supply Support:- 'APFS  :  %r'", OffsetNext, Status);
+    LOG_MSG("\n\n");
+    LOG_MSG("C O N C L U D E   B A S E   S U P P O R T");
+    LOG_MSG("\n");
+    LOG_MSG("INFO: Supply Support:- 'APFS  :  %r'", Status);
     #endif
-
-    // Load Drivers
-    LoadDrivers();
 
     // Second call to ScanVolumes() to enumerate volumes and
     //   register any new filesystem(s) accessed by drivers.
