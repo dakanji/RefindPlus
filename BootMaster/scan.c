@@ -765,6 +765,8 @@ VOID SetLoaderDefaults (
     PathOnly = FindPath (LoaderPath);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
+    ShortcutLetter = 0;
+    OSIconName     = NULL;
     if (!AllowGraphicsMode) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         #if REFIT_DEBUG > 0
@@ -874,14 +876,12 @@ VOID SetLoaderDefaults (
             Temp = FindLastDirName (LoaderPath);
 
             BREAD_CRUMB(L"%s:  3b 1b 5", FuncTag);
-            OSIconName = NULL;
             MergeStrings (&OSIconName, Temp, L',');
 
             BREAD_CRUMB(L"%s:  3b 1b 6", FuncTag);
             MY_FREE_POOL(Temp);
 
             BREAD_CRUMB(L"%s:  3b 1b 7", FuncTag);
-            ShortcutLetter = 0;
             if (OSIconName != NULL) {
                 BREAD_CRUMB(L"%s:  3b 1b 7a 1", FuncTag);
                 ShortcutLetter = OSIconName[0];
@@ -1614,17 +1614,8 @@ CHAR16 * SetVolKind (
 
     MY_MUTELOGGER_SET;
     #endif
-    if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""         ;
-    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L""         ;
-    else if (MyStriCmp  (VolumeName,   L"ESP"            ))   RetVal = L""         ;
-    else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L""         ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L""         ;
-    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L""         ;
-    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""         ;
-    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""         ;
-    else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L"Volume - ";
-    else                                                      RetVal = L""         ;
+    RetVal = L"";
+    if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume - ";
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1642,10 +1633,10 @@ CHAR16 * SetVolJoin (
 
     MY_MUTELOGGER_SET;
     #endif
+    RetVal = L" on ";
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""     ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" for ";
-    else                                                      RetVal = L" on " ;
+    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal = L""     ;
+    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal = L" for ";
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1664,9 +1655,8 @@ CHAR16 * SetVolFlag (
 
     MY_MUTELOGGER_SET;
     #endif
-    if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:"))   RetVal = L""       ;
-    else                                                     RetVal = VolumeName;
+    RetVal = VolumeName;
+    if (FindSubStr (InstanceName, L"Manual Stanza:")) RetVal = L"";
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1685,6 +1675,7 @@ CHAR16 * SetVolType (
 
     MY_MUTELOGGER_SET;
     #endif
+    RetVal = L" Volume";
     if (0);
     else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""                 ;
     else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L" System Partition";
@@ -1695,7 +1686,6 @@ CHAR16 * SetVolType (
     else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""                 ;
     else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
     else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L""                 ;
-    else                                                      RetVal = L" Volume"          ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -3526,7 +3516,7 @@ BOOLEAN IsValidTool (
     CHAR16  *DontFileName;
     CHAR16  *DontScanThis;
     CHAR16  *DontScanTools;
-    BOOLEAN  retval = TRUE;
+    BOOLEAN  retval;
 
     if (!FileExists (BaseVolume->RootDir, PathName)) {
         // Early return ... File does not exist
@@ -3543,6 +3533,9 @@ BOOLEAN IsValidTool (
     }
     else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
         DontScanTools = StrDuplicate (gHiddenTools);
+    }
+    else {
+        DontScanTools = NULL;
     }
 
     if (!MyStriCmp (gHiddenTools, L"NotSet")) {
@@ -3568,9 +3561,11 @@ BOOLEAN IsValidTool (
     SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
     MY_FREE_POOL(TestVolName);
 
-    i = 0;
+    retval       = TRUE;
     DontScanThis = NULL;
-    DontVolName = DontPathName = DontFileName = NULL;
+    DontVolName  = DontPathName = DontFileName = NULL;
+
+    i = 0;
     while (retval && (DontScanThis = FindCommaDelimited (DontScanTools, i++))) {
         SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
 
@@ -3617,8 +3612,8 @@ BOOLEAN FindTool (
     CHAR16 *ToolStr;
     #endif
 
+    DirName   =  NULL;
     FoundTool = FALSE;
-    PathName = FileName = DirName = NULL;
 
     j = 0;
     while ((DirName = FindCommaDelimited (Locations, j++)) != NULL) {

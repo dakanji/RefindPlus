@@ -536,7 +536,7 @@ INTN FindMenuShortcutEntry (
     CHAR16  *Shortcut;
     BOOLEAN  FoundMatch;
 
-    j = 0;
+    i = j = 0;
     FoundMatch = FALSE;
     while ((Shortcut = FindCommaDelimited (Defaults, j)) != NULL) {
         if (StrLen (Shortcut) > 1) {
@@ -873,17 +873,13 @@ UINTN RunGenericMenu (
     WaitForRelease = FALSE;
     if (Screen->TimeoutSeconds == -1) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-        if (EFI_ERROR(Status)) {
-            MenuExit = MENU_EXIT_TIMEOUT;
-        }
-        else {
+        if (!EFI_ERROR(Status)) {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
 
             ShortcutEntry = FindMenuShortcutEntry (Screen, KeyAsString);
             if (ShortcutEntry >= 0) {
                 State.CurrentSelection = ShortcutEntry;
-                MenuExit = MENU_EXIT_ENTER;
             }
             else {
                 WaitForRelease = TRUE;
@@ -907,8 +903,9 @@ UINTN RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
+    PreviousTime = -1;
+    MenuExit     = TimeSinceKeystroke = 0;
     UserKeyPress = UserKeyScan = Rotated = FALSE;
-    MenuExit = TimeSinceKeystroke = 0;
     while (MenuExit == 0) {
         // Update the screen
         pdClear();
@@ -960,8 +957,6 @@ UINTN RunGenericMenu (
         }
 
         if (HaveTimeout) {
-            // Negative PreviousTime to ensure first check does not match
-            PreviousTime = -1;
             CurrentTime = (TimeoutCountdown + 5) / 10;
             if (CurrentTime != PreviousTime) {
                TimeoutMessage = PoolPrint (

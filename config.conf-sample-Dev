@@ -49,7 +49,7 @@
 # Mac OS version which ensures that any changes made to APFS drivers for each specific
 # Mac OS version are accommodated, compared to using one driver no matter what specific
 # Mac OS version is being loaded. This default is deactivated whenever this token is set.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
 #
@@ -60,7 +60,7 @@
 # This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
 # This feature may impact other text output however, and should be disabled by activating
 # this option if such negative effects are observed. This setting only applies to MacOS.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Verbose APFS text is suppressed (if generated) when commented out
 #
@@ -89,39 +89,11 @@
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
 # This feature can be disabled by activating this token. It is only active when the UGA
 # protocol is available and is inactive when running a GPU with the GOP protocol.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
 #
 #decline_apple_fb
-
-# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
-# By default, RefindPlus will prevent writes of certain items by processes such as
-# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
-# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
-# results in an inability to boot. This token is only activated on Apple firmware.
-#
-# The "NvramProtect" feature is enabled when commented out
-#
-#decline_nvram_protect
-
-# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
-# UEFI 2.x requirements, they do not work on legacy devices as the specifications
-# mandate that on installation, compliant GOP drivers should confirm devices are
-# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
-# do not activate on classic MacPros for instance, as these are not actually
-# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
-# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
-# of the GPU's Option ROM whenever it detects that GOP is not available.
-# This permits running modern GPUs on some legacy units when they would
-# otherwise fail to work. The change is reverted automatically once it
-# is longer required to allow GPU activation except when the related
-# "supply_uefi" setting is activate, as this overrides this revert.
-#
-# GPU Option ROMs are reinstalled (if required) when commented out
-#
-#decline_reload_gop
 
 # The "HelpIcon" feature prefers loading default/generic loader icons which are used
 # in most cases. Searches for custom icons are only executed if a generic loader icon
@@ -160,6 +132,34 @@
 # The "HelpText" feature is enabled when commented out
 #
 #decline_help_text
+
+# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
+# By default, RefindPlus will prevent writes of certain items by processes such as
+# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
+# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
+# results in an inability to boot. This token is only activated on Apple firmware.
+#
+# The "NvramProtect" feature is enabled when commented out
+#
+#decline_nvram_protect
+
+# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
+# UEFI 2.x requirements, they do not work on legacy devices as the specifications
+# mandate that on installation, compliant GOP drivers should confirm devices are
+# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
+# do not activate on classic MacPros for instance, as these are not actually
+# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
+# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
+# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
+# of the GPU's Option ROM whenever it detects that GOP is not available.
+# This permits running modern GPUs on some legacy units when they would
+# otherwise fail to work. The change is reverted automatically once it
+# is longer required to allow GPU activation except when the related
+# "supply_uefi" setting is activate, as this overrides this revert.
+#
+# GPU Option ROMs are reinstalled (if required) when commented out
+#
+#decline_reload_gop
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -345,7 +345,7 @@
 
 # Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
 # display when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
@@ -371,23 +371,24 @@
 # GPUs with system firmware support. This option replaces GOP on the
 # Console Out Handle with one from a GPU Handle on such models when
 # running capable GPUs that are not supported by system firmware.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not provide GOP from GPU)
 #
 #provide_console_gop
 
-# Some types of firmware, typically on HP Notebooks, may lock some partitions as they
-# have DiskIo protocols opened "BY_DRIVER" (partition driver in the case of HP) but
+# Some types of firmware, typically supplied by HP, may effectively lock partitions
+# as their "DiskIo" protocols are opened "BY_DRIVER", or a "partition driver", but
 # no filesystem is generated from the DiskIo. This stops other filesystem drivers
 # from connecting to the handles to actually generate filesystems when attempts
-# are made to install such drivers which makes such partitions inaccessible or
-# to hang in RefindPlus; as the drivers provided by the firmware can often be
-# defective. This token disconnects such drivers and allows the installation
-# of alternative properly functioning drivers instead (otherwise blocked).
-# NB: This token is always disabled whenever Apple firmware is detected.
+# are made to install alternative drivers, making such partitions inaccessible
+# or hang in RefindPlus (as firmware supplied drivers may not be compatible).
+# When this token is active, RefindPlus disconnects such firmware supplied
+# drivers to accommodate otherwise disabled user supplied alternatives.
+# NB: This token is always disabled when Apple firmware is detected.
+#     This functionality is only available on TianoCore builds.
 #
-# Does not try to unlock such partitions when commented out
+# Inactive when commented out (Does not handle such partitions)
 #
 #ransom_drives
 
@@ -397,7 +398,7 @@
 # this should only be used when there is an obvious benefit as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response on booting into the operating system.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not use the built-in GOP)
 #
@@ -412,7 +413,7 @@
 # Note that this option is forced on whenever text output is required,
 # such as when running EFI Shell or, whenever RefindPlus is changed to
 # text mode as part of its operations (mainly to show error messages).
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not use a custom text renderer)
 #
@@ -457,7 +458,7 @@
 # Supply NVME driver. When this token is set, RefindPlus will
 # use its 'SupplyNVME' feature to load a built in NvmExpressDxe
 # driver to supply support when this is possible but unavailable.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not supply NVMe support)
 #
@@ -468,7 +469,7 @@
 # available. It additionally modifies the EFI Revision value to UEFI 2.3.
 # This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
 # as Legacy Macs as several such tools only require CreateEventEx to work.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # UEFI 2.x emulation is not provided when commented out
 #
@@ -491,7 +492,7 @@
 # it finds. This resulted in a lottery where such instances sometimes worked and sometimes
 # did not. The proper implementation process however is to first locate every instance
 # and select one that supports the English language. This has now been implemented.
-# NB: This functionality is only fully available on TianoCore Builds.
+# NB: This functionality is only fully available on TianoCore builds.
 #
 # Does not look for Unicode English support when commented out.
 #
@@ -851,7 +852,7 @@
 #
 # Set to LRS_ESP when commented out
 #
-#dont_scan_volumes "Recovery HD"
+#dont_scan_volumes "System Reserved"
 
 # Enable VMX bit and lock the CPU MSR if unlocked. On some
 # Intel Apple computers, the firmware does not lock the MSR 0x3A.

@@ -3810,11 +3810,11 @@ unsigned lodepng_compute_color_stats(LodePNGColorStats* stats,
           /* Color key cannot be used if an opaque pixel also has that RGB color. */
           stats->alpha = 1;
           stats->key = 0;
-          alpha_done = 1;
         }
       }
     }
-  } else /* < 16-bit */ {
+  } else {
+    /* < 16-bit */
     unsigned char r = 0, g = 0, b = 0, a = 0;
     for(i = 0; i != numpixels; ++i) {
       getPixelColorRGBA8(&r, &g, &b, &a, in, i, mode_in);
@@ -3880,7 +3880,6 @@ unsigned lodepng_compute_color_stats(LodePNGColorStats* stats,
           /* Color key cannot be used if an opaque pixel also has that RGB color. */
           stats->alpha = 1;
           stats->key = 0;
-          alpha_done = 1;
           if(stats->bits < 8) stats->bits = 8; /*PNG has no alphachannel modes with less than 8-bit per channel*/
         }
       }

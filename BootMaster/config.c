@@ -993,7 +993,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"ransom_drives")) {
-            GlobalConfig.RansomDrives = (AppleFirmware) ? FALSE : HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.RansomDrives = HandleBoolean (TokenList, TokenCount);
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
@@ -1174,7 +1174,7 @@ VOID ReadConfig (
 
             DoneTool = FALSE;
             InvalidEntries = 0;
-            i = 0;
+            i = j = 0;
             for (;;) {
                 // DA-TAG: Start Index is 1 Here ('i' for NUM_TOOLS/TokenList)
                 i = i + 1;
@@ -1894,9 +1894,7 @@ VOID ReadConfig (
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyAppleFB = (!AppleFirmware)
-                ? FALSE
-                : (DeclineSetting) ? FALSE : TRUE;
+            GlobalConfig.SupplyAppleFB = (DeclineSetting) ? FALSE : TRUE;
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
@@ -1912,9 +1910,7 @@ VOID ReadConfig (
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.NvramProtect = (!AppleFirmware)
-                ? FALSE
-                : (DeclineSetting) ? FALSE : TRUE;
+            GlobalConfig.NvramProtect = (DeclineSetting) ? FALSE : TRUE;
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
@@ -2115,9 +2111,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"nvram_protect_ex")) {
-            GlobalConfig.NvramProtectEx = (!AppleFirmware)
-                ? FALSE
-                : HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.NvramProtectEx = HandleBoolean (TokenList, TokenCount);
 
             #if REFIT_DEBUG > 0
             if (!AllowIncludes) {
@@ -3207,18 +3201,24 @@ REFIT_FILE * ReadLinuxOptionsFile (
     File = NULL;
     GoOn = TRUE;
     FileFound = FALSE;
+
+    i = 0;
     do {
         LOG_SEP(L"X");
         BREAD_CRUMB(L"%s:  2a 1 - DO LOOP:- START", FuncTag);
-        i = 0;
         OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
 
         BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         FullFilename = FindPath (LoaderPath);
-        MY_FREE_FILE(File);
+        if (OptionsFilename == NULL) {
+            BREAD_CRUMB(L"%s:  2a 2a 1 - DO LOOP:- CONTINUE - Missing Options File", FuncTag);
+            LOG_SEP(L"X");
+
+            break;
+        }
 
         BREAD_CRUMB(L"%s:  2a 3", FuncTag);
-        if ((OptionsFilename == NULL) || (FullFilename == NULL)) {
+        if (FullFilename == NULL) {
             BREAD_CRUMB(L"%s:  2a 3a 1 - DO LOOP:- BREAK - Missing Params", FuncTag);
             LOG_SEP(L"X");
 
@@ -3234,6 +3234,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
         BREAD_CRUMB(L"%s:  2a 5", FuncTag);
         if (FileExists (Volume->RootDir, FullFilename)) {
             BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
+            MY_FREE_FILE(File);
             File = AllocateZeroPool (sizeof (REFIT_FILE));
             if (File == NULL) {
                 MY_FREE_POOL(OptionsFilename);

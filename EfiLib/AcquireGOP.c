@@ -128,6 +128,7 @@ EFI_STATUS ReloadOptionROM (
                 ImageBuffer             = (VOID *) (UINTN) (RomBarOffset + ImageOffset);
                 ImageLength             = InitializationSize - ImageOffset;
                 DecompressedImageBuffer = NULL;
+                DestinationSize         = 0; // DA-TAG: Redundant for Infer
 
                 if (EfiRomHeader->CompressionType != EFI_PCI_EXPANSION_ROM_HEADER_COMPRESSED) {
                     // Uncompressed image ... Tag as Success to load 'as is'

@@ -205,8 +205,8 @@ CHAR16 * FindInitrd (
         }
         else {
             BREAD_CRUMB(L"%s:  9b 1", FuncTag);
+            MaxSharedChars  = 0;
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
-            SharedChars = MaxSharedChars = 0;
 
             BREAD_CRUMB(L"%s:  9b 2", FuncTag);
             while (CurrentInitrdName != NULL) {

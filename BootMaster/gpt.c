@@ -135,8 +135,11 @@ BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
 // rEFInd uses the data only to provide access to partition names. This is
 // non-critical data, so it is OK to return nothing, but having the program
 // hang on reading garbage or return nonsense could be very bad.
-EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
-    EFI_STATUS  Status = EFI_SUCCESS;
+EFI_STATUS ReadGptData (
+    REFIT_VOLUME  *Volume,
+    GPT_DATA     **Data
+) {
+    EFI_STATUS  Status;
     UINT64      BufferSize;
     UINTN       i;
     GPT_DATA   *GptData = NULL; // Temporary holding storage; transferred to *Data later
@@ -146,7 +149,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
     }
 
     // Get block i/o
-    if (!EFI_ERROR(Status) && Volume->BlockIO == NULL) {
+    if (Volume->BlockIO == NULL) {
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol, Volume->DeviceHandle,
             &BlockIoProtocol, (VOID **) &(Volume->BlockIO)
@@ -154,97 +157,87 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
         if (EFI_ERROR(Status)) {
             Volume->BlockIO = NULL;
             Print (L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
-            Status = EFI_NOT_READY;
+            return EFI_NOT_READY;
         }
     }
 
-    if (!EFI_ERROR(Status) &&
-        (
-            !Volume->BlockIO->Media->MediaPresent ||
-            Volume->BlockIO->Media->LogicalPartition
-        )
-     ) {
-        Status = EFI_NO_MEDIA;
+    if (!Volume->BlockIO->Media->MediaPresent ||
+        Volume->BlockIO->Media->LogicalPartition
+    ) {
+        return EFI_NO_MEDIA;
     }
 
-    if (!EFI_ERROR(Status)) {
-        GptData = AllocateGptData(); // Note: All but GptData->Entries
-        if (GptData == NULL) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
+    GptData = AllocateGptData(); // DA-TAG: All but GptData->Entries
+    if (GptData == NULL) {
+        return EFI_OUT_OF_RESOURCES;
     }
 
     // Read the MBR and store it in GptData->ProtectiveMBR.
-    if (!EFI_ERROR(Status)) {
-        Status = REFIT_CALL_5_WRAPPER(
-            Volume->BlockIO->ReadBlocks, Volume->BlockIO,
-            Volume->BlockIO->Media->MediaId, 0,
-            sizeof (MBR_RECORD), (VOID*) GptData->ProtectiveMBR
-        );
+    Status = REFIT_CALL_5_WRAPPER(
+        Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+        Volume->BlockIO->Media->MediaId, 0,
+        sizeof (MBR_RECORD), (VOID*) GptData->ProtectiveMBR
+    );
+    if (EFI_ERROR(Status)) {
+        ClearGptData (GptData);
+        return Status;
     }
 
     // Read the GPT header and store it in GptData->Header.
-    if (!EFI_ERROR(Status)) {
-        Status = REFIT_CALL_5_WRAPPER(
-            Volume->BlockIO->ReadBlocks, Volume->BlockIO,
-            Volume->BlockIO->Media->MediaId, 1,
-            sizeof (GPT_HEADER), GptData->Header
-        );
+    Status = REFIT_CALL_5_WRAPPER(
+        Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+        Volume->BlockIO->Media->MediaId, 1,
+        sizeof (GPT_HEADER), GptData->Header
+    );
+    if (EFI_ERROR(Status)) {
+        ClearGptData (GptData);
+        return Status;
     }
 
     // If it looks like a valid protective MBR & GPT header, try to do more with it.
-    if (!EFI_ERROR(Status)) {
-        if (GptHeaderValid (GptData)) {
-            // Load actual GPT table.
-            BufferSize       = (UINT64) (GptData->Header->entry_count) * 128;
-            GptData->Entries = AllocatePool (BufferSize);
-
-            if (GptData->Entries == NULL) {
-                Status = EFI_OUT_OF_RESOURCES;
-            }
-
-            if (!EFI_ERROR(Status))
-                Status = REFIT_CALL_5_WRAPPER(
-                    Volume->BlockIO->ReadBlocks, Volume->BlockIO,
-                    Volume->BlockIO->Media->MediaId, GptData->Header->entry_lba,
-                    BufferSize, GptData->Entries
-                );
-
-            // Check CRC status of table
-            if (!EFI_ERROR(Status) &&
-                (
-                    crc32refit (
-                        0x0,
-                        GptData->Entries,
-                        BufferSize
-                    ) != GptData->Header->entry_crc32
-                )
-            ) {
-                Status = EFI_CRC_ERROR;
-            }
-
-            // Now, ensure that every name is null-terminated.
-            if (!EFI_ERROR(Status)) {
-                for (i = 0; i < GptData->Header->entry_count; i++) {
-                    GptData->Entries[i].name[35] = '\0';
-                }
-            }
-        }
-        else {
-            Status = EFI_UNSUPPORTED;
-        } // if/else valid header
-    } // if header read OK
-
-    if (!EFI_ERROR(Status)) {
-        // Everything looks OK, so copy it over
-        ClearGptData (*Data);
-        *Data = GptData;
-    }
-    else {
+    if (!GptHeaderValid (GptData)) {
         ClearGptData (GptData);
+        return EFI_UNSUPPORTED;
     }
 
-    return Status;
+    // Load actual GPT table.
+    BufferSize       = (UINT64) (GptData->Header->entry_count) * 128;
+    GptData->Entries = AllocatePool (BufferSize);
+
+    if (GptData->Entries == NULL) {
+        ClearGptData (GptData);
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    Status = REFIT_CALL_5_WRAPPER(
+        Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+        Volume->BlockIO->Media->MediaId, GptData->Header->entry_lba,
+        BufferSize, GptData->Entries
+    );
+    if (EFI_ERROR(Status)) {
+        ClearGptData (GptData);
+        return Status;
+    }
+
+    // Check CRC status of table
+    if (crc32refit (
+            0x0, GptData->Entries, BufferSize
+        ) != GptData->Header->entry_crc32
+    ) {
+        ClearGptData (GptData);
+        return EFI_CRC_ERROR;
+    }
+
+    // Now, ensure that every name is null-terminated.
+    for (i = 0; i < GptData->Header->entry_count; i++) {
+        GptData->Entries[i].name[35] = '\0';
+    }
+
+    // Everything looks OK, so copy it over
+    ClearGptData (*Data);
+    *Data = GptData;
+
+    return EFI_SUCCESS;
 } // EFI_STATUS ReadGptData()
 
 // Look in gPartitions for a partition with the specified Guid. If found, return

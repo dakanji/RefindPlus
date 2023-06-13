@@ -256,7 +256,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *GopDevicePathStr;
-    CHAR16 *DevicePathStr;
+    CHAR16 *StrDevicePath;
     CHAR16 *DeviceData;
     CHAR16 *FillStr;
     CHAR16 *MsgStr;
@@ -309,8 +309,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     }
 
     #if REFIT_DEBUG > 0
+    GopDevicePathStr      = NULL;
     AllHandleCountTrigger = AllHandleCount - 1;
-    DevicePathStr = GopDevicePathStr = NULL;
     #endif
 
     HandleType = NULL;
@@ -497,19 +497,19 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (FoundGOP && GopDevicePathStr != NULL) {
-                    DevicePathStr = ConvertDevicePathToText (
+                    StrDevicePath = ConvertDevicePathToText (
                         DevicePathFromHandle (AllHandleBuffer[i]),
                         FALSE, FALSE
                     );
 
-                    if (StrStr (GopDevicePathStr, DevicePathStr)) {
+                    if (StrStr (GopDevicePathStr, StrDevicePath)) {
                         DeviceData = PoolPrint (
                             L"%s : Leverages GOP",
                             DeviceData
                         );
                     }
 
-                    MY_FREE_POOL(DevicePathStr);
+                    MY_FREE_POOL(StrDevicePath);
                 }
                 #endif
 

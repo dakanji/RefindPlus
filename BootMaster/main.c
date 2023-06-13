@@ -374,7 +374,10 @@ EFI_STATUS SetHardwareNvramVariable (
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
 
-    Status = EFI_LOAD_ERROR;
+    OldSize = 0;
+    OldBuf  = NULL;
+    Status  = EFI_LOAD_ERROR;
+
     if (VariableData && VariableSize != 0) {
         Status = GetHardwareNvramVariable (
             VariableName, VendorGuid,
@@ -892,6 +895,12 @@ VOID SetBootArgs (VOID) {
         return;
     }
 
+    #if REFIT_DEBUG > 0
+    LogDisableAMFI          = FALSE;
+    LogDisableCompatCheck   = FALSE;
+    LogDisableNvramPanicLog = FALSE;
+    #endif
+
     if (MyStrStr (GlobalConfig.SetBootArgs, L"nvram_paniclog")) {
         #if REFIT_DEBUG > 0
         if (GlobalConfig.DisableNvramPanicLog) {
@@ -903,12 +912,6 @@ VOID SetBootArgs (VOID) {
         // Do not duplicate 'nvram_paniclog=0'
         GlobalConfig.DisableNvramPanicLog = FALSE;
     }
-    else {
-        #if REFIT_DEBUG > 0
-        LogDisableNvramPanicLog = FALSE;
-        #endif
-    }
-
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way")) {
         #if REFIT_DEBUG > 0
@@ -921,11 +924,6 @@ VOID SetBootArgs (VOID) {
         // Do not duplicate 'amfi_get_out_of_my_way=1'
         GlobalConfig.DisableAMFI = FALSE;
     }
-    else {
-        #if REFIT_DEBUG > 0
-        LogDisableAMFI = FALSE;
-        #endif
-    }
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check")) {
         #if REFIT_DEBUG > 0
@@ -937,11 +935,6 @@ VOID SetBootArgs (VOID) {
 
         // Do not duplicate '-no_compat_check'
         GlobalConfig.DisableCompatCheck = FALSE;
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        LogDisableCompatCheck = FALSE;
-        #endif
     }
 
     if (GlobalConfig.DisableAMFI &&

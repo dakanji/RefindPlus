@@ -138,15 +138,15 @@ VOID WarnSecureBootError(
         PrintUglyText (MsgStrE, NEXTLINE);
         PrintUglyText (L"See http://www.rodsbooks.com/refind/secureboot.html for more information", NEXTLINE);
 
+        MY_FREE_POOL(MsgStrE);
+        MY_FREE_POOL(MsgStrD);
+        MY_FREE_POOL(MsgStrC);
+        MY_FREE_POOL(MsgStrB);
     } // if
     PauseForKey();
     SwitchToGraphics();
 
     MY_FREE_POOL(MsgStrA);
-    MY_FREE_POOL(MsgStrB);
-    MY_FREE_POOL(MsgStrC);
-    MY_FREE_POOL(MsgStrD);
-    MY_FREE_POOL(MsgStrE);
 } // static VOID WarnSecureBootError()
 
 static
@@ -860,6 +860,8 @@ EFI_STATUS StartEFIImage (
 
             // Control returns here if the child image calls 'Exit()'
             ReturnStatus = Status;
+
+            // DA-TAG: Used in 'ScanDriverDir()'
             NewImageHandle = ChildImageHandle;
 
             #if REFIT_DEBUG > 0

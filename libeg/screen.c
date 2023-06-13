@@ -1134,8 +1134,6 @@ BOOLEAN egInitUGADraw (
     UINT32                         Width;
     UINT32                         Depth;
     UINT32                         Height;
-    UINT32                         UGAWidth;
-    UINT32                         UGAHeight;
     UINT32                         RefreshRate;
     BOOLEAN                        UGAonGPU;
     EFI_HANDLE                    *HandleBuffer;
@@ -1187,8 +1185,6 @@ BOOLEAN egInitUGADraw (
 
     UGAonGPU = FALSE;
     if (!EFI_ERROR(Status)) {
-        UGAWidth  = 0;
-        UGAHeight = 0;
         for (i = 0; i < HandleCount; i++) {
             if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                 #if REFIT_DEBUG > 0
@@ -1218,13 +1214,11 @@ BOOLEAN egInitUGADraw (
                 &Depth, &RefreshRate
             );
             if (!EFI_ERROR(Status)) {
-                if (UGAWidth  <  Width ||
-                    UGAHeight < Height
+                if (Width  > 0 &&
+                    Height > 0
                 ) {
                     UGAonGPU  =   TRUE;
                     UGADraw   = TmpUGA;
-                    UGAWidth  =  Width;
-                    UGAHeight = Height;
 
                     #if REFIT_DEBUG > 0
                     LOG_MSG("%s    *** Select Handle[%02d] @ %5d x %-5d",
@@ -1296,7 +1290,7 @@ VOID egInitScreen (VOID) {
     egInitConsoleControl();
 
     // Get UGADraw Protocol
-    FoundHandleUGA = egInitUGADraw (TRUE);
+    FoundHandleUGA = FlagUGA = egInitUGADraw (TRUE);
 
     // Align PreferUGA
     if (GlobalConfig.PreferUGA && FoundHandleUGA && !SetPreferUGA) {
@@ -1319,10 +1313,9 @@ VOID egInitScreen (VOID) {
     }
 
     // Get GOPDraw Protocol
-    HandleBuffer = NULL;
-    GotGoodGOP = FALSE;
+    GotGoodGOP   = FALSE;
     thisValidGOP = FALSE;
-    XFlag = EFI_NOT_STARTED;
+    HandleBuffer =  NULL;
     if (FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
@@ -1583,11 +1576,11 @@ VOID egInitScreen (VOID) {
                     Status = EFI_UNSUPPORTED;
                 }
                 else {
-                    Status = EFI_NOT_STARTED;
-
-                    #ifdef __MAKEWITH_TIANO
                     // DA-TAG: Limit to TianoCore
+                    #ifdef __MAKEWITH_TIANO
                     Status = OcUseDirectGop (-1);
+                    #else
+                    Status = EFI_NOT_STARTED;
                     #endif
                 }
                 if (!EFI_ERROR(Status)) {
@@ -1689,6 +1682,7 @@ VOID egInitScreen (VOID) {
         } while (0); // This 'loop' only runs once
     } // if GOPDraw != NULL
 
+    Height = Width = 0; // DA-TAG: Redundant for Infer
     if (UGADraw != NULL) {
         Status = REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
@@ -1724,8 +1718,8 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (L"Forcing Universal Graphics Adapter");
             #endif
 
-            // Disable GOP and Force UGA
-            thisValidGOP = FALSE;
+            // Disable GOP
+            // NB: No need to 'thisValidGOP' as no longer used
             DisableGOP();
         }
         else if (!thisValidGOP) {
@@ -1756,10 +1750,6 @@ VOID egInitScreen (VOID) {
             #endif
         }
     } // if (GOPDraw == NULL && UGADraw == NULL)
-
-    #if REFIT_DEBUG > 0
-    Status = EFI_NOT_STARTED;
-    #endif
 
     NewAppleFramebuffers = FALSE;
 
@@ -1830,8 +1820,8 @@ VOID egInitScreen (VOID) {
 
         if (!GlobalConfig.PassUgaThrough) {
             // No Pass Through ... Discard UGA
-            UGADraw                  =  NULL;
-            FoundHandleUGA = FlagUGA = FALSE;
+            UGADraw  =  NULL;
+            FlagUGA  = FALSE;
         }
 
         // Prime Status for Text Renderer
@@ -1862,8 +1852,7 @@ VOID egInitScreen (VOID) {
         LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
-    }
-
+    } // if GOPDraw != NULL
 
     if (!egHasGraphics) {
         #if REFIT_DEBUG > 0
@@ -2030,8 +2019,8 @@ BOOLEAN egSetScreenSize (
         else {
             // Do a loop through the modes to see if the specified one is available.
             // Switch to it if so.
-            do {
-                ModeNum = 0;
+            ModeNum = 0;
+            while (!ModeSet && (ModeNum < GOPDraw->Mode->MaxMode)) {
                 Status = REFIT_CALL_4_WRAPPER(
                     GOPDraw->QueryMode, GOPDraw,
                     ModeNum, &Size, &Info
@@ -2069,7 +2058,9 @@ BOOLEAN egSetScreenSize (
                 }
 
                 MY_FREE_POOL(Info);
-            } while ((++ModeNum < GOPDraw->Mode->MaxMode) && !ModeSet);
+
+                ModeNum++;
+            } // while
         } // if/else *ScreenHeight == 0
 
         if (ModeSet) {
@@ -2091,8 +2082,7 @@ BOOLEAN egSetScreenSize (
             MY_FREE_POOL(MsgStr);
 
             ModeNum = 0;
-            do {
-
+            while (ModeNum < GOPDraw->Mode->MaxMode) {
                 #if REFIT_DEBUG > 0
                 LOG_MSG("\n");
                 #endif
@@ -2130,7 +2120,9 @@ BOOLEAN egSetScreenSize (
                     PrintUglyText (MsgStr, NEXTLINE);
                     MY_FREE_POOL(MsgStr);
                 }
-            } while (++ModeNum < GOPDraw->Mode->MaxMode);
+
+                ModeNum++;
+            } // while
 
             #if REFIT_DEBUG > 0
             LOG_MSG("\n\n");
