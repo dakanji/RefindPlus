@@ -138,6 +138,7 @@
 # UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
 # result in an overrun that will damage the BootROM (also stored on the NVRAM) and
 # results in an inability to boot. This token is only activated on Apple firmware.
+# NB: This feature is always disabled when RefindPlus is loaded via OpenCore.
 #
 # The "NvramProtect" feature is enabled when commented out
 #
@@ -324,6 +325,7 @@
 # When this option is activate, the RefindPlus "NvramProtect" feature will be
 # extended, if set, to cover booting into Mac OS and "unknown" UEFI files.
 # NB: This setting is only active, if set, on Apple firmware.
+#     This feature is always disabled when RefindPlus is loaded via OpenCore.
 #
 # Inactive when commented out (Does not extend NvramProtect)
 #

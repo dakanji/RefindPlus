@@ -278,6 +278,26 @@ extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 // Misc functions
 //
 
+#ifdef __MAKEWITH_TIANO
+static
+EFI_STATUS CheckStatusOC (VOID){
+  EFI_STATUS   Status;
+  VOID        *Bootstrap;
+  EFI_GUID     GuidBootstrapOC = OC_BOOTSTRAP_GUID_VALUE;
+
+  Bootstrap = NULL;
+  Status = REFIT_CALL_3_WRAPPER(
+      gBS->LocateProtocol, &GuidBootstrapOC,
+      NULL, &Bootstrap
+  );
+  if (!EFI_ERROR (Status)) {
+    return EFI_ALREADY_STARTED;
+  }
+
+  return EFI_NOT_STARTED;
+} // static EFI_STATUS CheckStatusOC()
+#endif
+
 #if REFIT_DEBUG > 0
 static
 VOID UnexpectedReturn (
@@ -2344,6 +2364,7 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16            *SelectionName;
     CHAR16            *VarNVRAM;
     CHAR16             KeyAsString[2];
+    BOOLEAN            RunningOC;
     BOOLEAN            FoundTool;
     BOOLEAN            RunOurTool;
     BOOLEAN            MokProtocol;
@@ -2562,9 +2583,20 @@ EFI_STATUS EFIAPI efi_main (
     /* Load config tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
 
-    /* Unlock partitions if required */
-    #ifdef __MAKEWITH_TIANO
+    RunningOC = FALSE;
     // DA-TAG: Limit to TianoCore
+    #ifdef __MAKEWITH_TIANO
+    /* Disable 'NvramProtect' and 'NvramProtectEx' if loaded via OpenCore */
+    if (GlobalConfig.NvramProtect || GlobalConfig.NvramProtectEx) {
+        Status = CheckStatusOC();
+        if (Status == EFI_ALREADY_STARTED) {
+            RunningOC                   =  TRUE;
+            GlobalConfig.NvramProtect   = FALSE;
+            GlobalConfig.NvramProtectEx = FALSE;
+        }
+    }
+
+    /* Unlock partitions if required */
     if (GlobalConfig.RansomDrives) {
         UninitRefitLib();
         OcUnblockUnmountedPartitions();
@@ -2626,7 +2658,7 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
     );
     LOG_MSG("%s      ProtectNvram:- ",     OffsetNext                               );
-    if (!AppleFirmware) {
+    if (!AppleFirmware || RunningOC) {
         LOG_MSG("'Disabled'"                                                        );
     }
     else {
@@ -2657,7 +2689,7 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
     LOG_MSG("%s      NvramProtectEx:- ",    OffsetNext                              );
-    if (!AppleFirmware) {
+    if (!AppleFirmware || RunningOC) {
         LOG_MSG("'Disabled'"                                                        );
     }
     else {
@@ -3517,21 +3549,34 @@ EFI_STATUS EFIAPI efi_main (
                         SubScreenBoot && FindSubStr (SelectionName, L"OpenCore")
                     )
                     || FindSubStr (ourLoaderEntry->Title, L"OpenCore")
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC_")
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
-                    if (!ourLoaderEntry->UseGraphicsMode) {
-                        ourLoaderEntry->UseGraphicsMode = (
-                            (
-                                GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
-                            ) == GRAPHICS_FOR_OPENCORE
+                    if (RunningOC) {
+                        #if REFIT_DEBUG > 0
+                        MY_MUTELOGGER_SET;
+                        #endif
+                        egDisplayMessage (
+                            L"Invalid OpenCore Load Attempt ... Already Started",
+                            &BGColor, CENTER,
+                            3, L"PauseSeconds"
                         );
+                        #if REFIT_DEBUG > 0
+                        MY_MUTELOGGER_OFF;
+                        #endif
                     }
 
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
-                    LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Instance: OpenCore");
+                    LOG_MSG(
+                        "Received %sUser Input:",
+                        (RunningOC) ? L"*Invalid* " : L""
+                    );
+                    MsgStr = PoolPrint (
+                        L"Load %sInstance: OpenCore",
+                        (RunningOC) ? L"*Invalid* " : L""
+                    );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
@@ -3541,6 +3586,18 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    if (RunningOC) {
+                        break;
+                    }
+
+                    if (!ourLoaderEntry->UseGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = (
+                            (
+                                GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
+                            ) == GRAPHICS_FOR_OPENCORE
+                        );
+                    }
                 }
                 else if (
                     (

@@ -46,6 +46,8 @@
   * A screen message about `NormalisedCSR` was additionally suppressed
 - Improves Generic Menu Handling
   * Now provides a `Return to Main Menu` option on all such menus
+- Improves `NvramProtect` and `NvramProtectEx` Features
+  * Now disabled when RefindPlus is loaded via OpenCore
 - Exposes `MitigatePrimedBuffer` Feature for User Configuration
   * Previously activated by default on all types of firmware
   * A limited base implementation is always active on Non-Apple firmware
