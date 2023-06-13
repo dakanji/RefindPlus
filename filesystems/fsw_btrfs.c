@@ -210,6 +210,8 @@ struct btrfs_chunk_item
 #define GRUB_BTRFS_CHUNK_TYPE_RAID10        0x40
 #define GRUB_BTRFS_CHUNK_TYPE_RAID5         0x80
 #define GRUB_BTRFS_CHUNK_TYPE_RAID6         0x100
+#define GRUB_BTRFS_CHUNK_TYPE_RAID1C3       0x200
+#define GRUB_BTRFS_CHUNK_TYPE_RAID1C4       0x400
     uint8_t dummy2[0xc];
     uint16_t nstripes;
     uint16_t nsubstripes;
@@ -992,14 +994,23 @@ chunk_found:
                         DPRINT(L"read_logical %d chunk_found single csize=%d\n", __LINE__, csize);
                         break;
                     }
+                case GRUB_BTRFS_CHUNK_TYPE_RAID1C4:
+                    redundancy++;
+                    /* fall through */
+                case GRUB_BTRFS_CHUNK_TYPE_RAID1C3:
+                    redundancy++;
+                    /* fall through */
                 case GRUB_BTRFS_CHUNK_TYPE_DUPLICATED:
                 case GRUB_BTRFS_CHUNK_TYPE_RAID1:
                     {
                         stripen = 0;
                         stripe_offset = off;
                         csize = fsw_u64_le_swap (chunk->size) - off;
-                        redundancy = 2;
-                        DPRINT(L"read_logical %d chunk_found dup/raid1 off=%lx csize=%d\n", __LINE__, stripe_offset, csize);
+                        redundancy++;
+                        DPRINT(
+                            L"read_logical %d chunk_found dup/raid1 off=%lx csize=%d redundancy=%d\n",
+                            __LINE__, stripe_offset, csize, redundancy
+                        );
                         break;
                     }
                 case GRUB_BTRFS_CHUNK_TYPE_RAID0:

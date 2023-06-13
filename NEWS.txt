@@ -51,6 +51,10 @@
   * A limited base implementation is always active on Non-Apple firmware
   * Can now be extended on by activating a new `mitigate_primed_buffer` token
   * The feature does not operate on Apple firwmare regardless of the token setting
+- Amends Filesystem Drivers
+  * BTRFS: Adds support for RAID1C34 profiles
+    - Ported from Grub2 via https://sourceforge.net/p/refind/code/merge-requests/48/
+  * MISC: Tweaks driver name strings and other minor items
 - Amends `Big Selection Image` Size Filtering
   * The maximum Big Selection image size is increased to 512px from 320px
   * The Small Selection image maximum is maintained at 256px
