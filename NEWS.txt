@@ -39,7 +39,10 @@
   * The '@root/boot' path was added to the default 'also_scan_dirs' list
 - Improves `DynamicCSR` Feature
   * Now also enables the `RotateCSR` tool if configured to be displayed
-  * The tool was previously always disabled when DynamicCSR was active
+    - The tool was previously always disabled when DynamicCSR was active
+  * Now attempts up to three (3) rotations
+    - Some users have more than two (2) CSR settings
+    - Stops at the first match of the target setting or after the third attempt
   * A screen message about `NormalisedCSR` was additionally suppressed
 - Improves Generic Menu Handling
   * Now provides a `Return to Main Menu` option on all such menus

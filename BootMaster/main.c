@@ -728,16 +728,47 @@ EFI_STATUS FilterCSR (VOID) {
 } // static EFI_STATUS FilterCSR()
 
 static
+BOOLEAN CheckEnabledCSR (VOID) {
+    return (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
+} // static BOOLEAN CheckEnabledCSR()
+
+static
+BOOLEAN CheckToggle (
+    BOOLEAN CsrEnabled
+) {
+    BOOLEAN Retval;
+
+    Retval = FALSE;
+    if (GlobalConfig.DynamicCSR == -1) {
+        // Configured to Always Disable SIP/SSV
+        if (CsrEnabled) {
+            // Disable SIP/SSV as currently enabled
+            Retval = TRUE;
+        }
+    }
+    else if (GlobalConfig.DynamicCSR == 1) {
+        // Configured to Always Enable SIP/SSV
+        if (!CsrEnabled) {
+            // Enable SIP/SSV as currently disbled
+            Retval = TRUE;
+        }
+    }
+
+    return Retval;
+} // static BOOLEAN CheckToggle()
+
+static
 VOID AlignCSR (VOID) {
     EFI_STATUS Status;
     UINT32     CsrStatus;
     BOOLEAN    CsrEnabled;
-    BOOLEAN    RotateCsr;
+    BOOLEAN    FlipCSR;
 
     #if REFIT_DEBUG > 0
     CHAR16    *TmpStr;
     CHAR16    *MsgStr;
-    BOOLEAN    HandleCsr;
+    BOOLEAN    HandledCSR;
+    BOOLEAN    RotatedCSR;
     #endif
 
     if (!GlobalConfig.CsrValues) {
@@ -752,7 +783,9 @@ VOID AlignCSR (VOID) {
 
     do {
         #if REFIT_DEBUG > 0
-        HandleCsr = FALSE;
+        // For accurate logging
+        HandledCSR = FALSE;
+        RotatedCSR =  TRUE;
         #endif
 
         if (!HasMacOS) {
@@ -781,43 +814,63 @@ VOID AlignCSR (VOID) {
         }
 
         #if REFIT_DEBUG > 0
-        HandleCsr = TRUE;
+        HandledCSR =  TRUE;
+        RotatedCSR = FALSE;
         #endif
 
         // Record CSR status in the 'gCsrStatus' variable
         RecordgCsrStatus (CsrStatus, FALSE);
+        // Check 'gCsrStatus' variable for 'Enabled' string
+        CsrEnabled = CheckEnabledCSR();
+        // Check whether CSR should be rotated
+        FlipCSR = CheckToggle (CsrEnabled);
+        if (!FlipCSR) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_ALREADY_STARTED;
+            RotatedCSR = TRUE;
+            #endif
 
-        // Check 'gCsrStatus' variable for 'Enabled' term
-        CsrEnabled = (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
-
-        RotateCsr = FALSE;
-        if (GlobalConfig.DynamicCSR == -1) {
-            // Configured to Always Disable SIP/SSV
-            if (CsrEnabled) {
-                // Disable SIP/SSV as currently enabled
-                RotateCsr = TRUE;
-            }
-        }
-        else {
-            // Configured to Always Enable SIP/SSV
-            if (!CsrEnabled) {
-                // Enable SIP/SSV as currently disbled
-                RotateCsr = TRUE;
-            }
-        }
-
-        if (RotateCsr) {
-            // Rotate SIP/SSV from current setting
-            // Do not Unset DynamicCSR
-            RotateCsrValue (FALSE);
-
-            // Break Early
+            // Break Early ...No Need to Rotate
             break;
         }
 
+        // Rotate SIP/SSV from current setting
+        // Do not Unset DynamicCSR
+        RotateCsrValue (FALSE);
+        CsrEnabled = CheckEnabledCSR();
+        FlipCSR    = CheckToggle (CsrEnabled);
+        if (!FlipCSR) {
+            #if REFIT_DEBUG > 0
+            RotatedCSR = TRUE;
+            #endif
+
+            // Break Early ... Sucessfully Rotated
+            break;
+        }
+
+        // Try again if not set
+        // Some may have more than one value
+        RotateCsrValue (FALSE);
+        CsrEnabled = CheckEnabledCSR();
+        FlipCSR    = CheckToggle (CsrEnabled);
+        if (!FlipCSR) {
+            #if REFIT_DEBUG > 0
+            RotatedCSR = TRUE;
+            #endif
+
+            // Break Early ... Sucessfully Rotated
+            break;
+        }
+
+        // Try a third and final time
+        RotateCsrValue (FALSE);
+        // Only check outcome in DBG
         #if REFIT_DEBUG > 0
-        // Set Status to 'Already Started' if we get here
-        Status = EFI_ALREADY_STARTED;
+        CsrEnabled = CheckEnabledCSR();
+        FlipCSR    = CheckToggle (CsrEnabled);
+        if (!FlipCSR) {
+            RotatedCSR = TRUE;
+        }
         #endif
     } while (0); // This 'loop' only runs once
 
@@ -827,7 +880,14 @@ VOID AlignCSR (VOID) {
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
-    if (!HandleCsr) {
+    if (!RotatedCSR) {
+        // Failed to Definitively Rotate CSR
+        Status = EFI_NOT_READY;
+        GlobalConfig.DynamicCSR = 0;
+
+        TmpStr = L"WARN: Could Not Definitively Rotate";
+    }
+    else if (!HandledCSR) {
         TmpStr = L"WARN: Did Not Update";
     }
     else {
