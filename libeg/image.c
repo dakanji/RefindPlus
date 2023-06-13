@@ -619,7 +619,7 @@ EG_IMAGE * egLoadIcon (
         }
         else {
             MsgStr = PoolPrint (
-                L"Could Not Scale Icon in '%s' from %d x %d to %d x %d!!",
+                L"Could Not Scale Icon in '%s' From %d x %d to %d x %d!!",
                 Path, Image->Width, Image->Height, IconSize, IconSize
             );
 

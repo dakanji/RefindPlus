@@ -173,7 +173,7 @@ CHAR16 * MyStrStr (
         return Src;
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring not Found)", FuncTag);
+    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring Not Found)", FuncTag);
     LOG_DECREMENT();
     if (!NestedStrStr) LOG_SEP(L"X");
 

@@ -285,9 +285,8 @@ VOID UnexpectedReturn (
 ) {
     CHAR16 *MsgStr;
 
-    MsgStr = PoolPrint (L"WARN: Unexpected Return from %s", ItemType);
+    MsgStr = PoolPrint (L"WARN: Unexpected Return From %s", ItemType);
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("\n\n");
     LOG_MSG("*** %s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
@@ -1532,7 +1531,7 @@ BOOLEAN ShowCleanNvramInfo (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     LOG_MSG("Received User Input:");
@@ -1627,7 +1626,10 @@ VOID AboutRefindPlus (VOID) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        if (GlobalConfig.DynamicCSR == 1 || GlobalConfig.DynamicCSR == -1) {
+        if (GlobalConfig.DynamicCSR == 0) {
+            Status = GetCsrStatus (&CsrStatus);
+        }
+        else {
             Status = EFI_SUCCESS;
             MY_FREE_POOL(gCsrStatus);
             gCsrStatus = StrDuplicate (
@@ -1635,9 +1637,6 @@ VOID AboutRefindPlus (VOID) {
                     ? L"Dynamic SIP/SSV Enable"
                     : L"Dynamic SIP/SSV Disable"
             );
-        }
-        else {
-            Status = GetCsrStatus (&CsrStatus);
         }
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
@@ -1909,7 +1908,7 @@ VOID SetConfigFilename (
         SubString = MyStrStr (Options, L" -c ");
         if (SubString) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("Set Config Filename from Command Line Option:");
+            LOG_MSG("Set Config Filename From Command Line Option:");
             LOG_MSG("\n");
             #endif
 
@@ -2292,6 +2291,7 @@ EFI_STATUS EFIAPI efi_main (
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
     LEGACY_ENTRY      *ourLegacyEntry;
+    REFIT_VOLUME      *EntryVol;
     EFI_INPUT_KEY      key;
     REFIT_MENU_ENTRY  *ChosenEntry;
 
@@ -2525,84 +2525,85 @@ EFI_STATUS EFIAPI efi_main (
 
     LOG_MSG("L I S T   M I S C   S E T T I N G S");
     LOG_MSG("\n");
-    LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                             );
-    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel       ));
-    LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay      ));
-    LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA      ));
-    LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP      ));
-    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE      ));
-    LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS       ));
-    LOG_MSG("%s      HelpTags:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpTags       ));
-    LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon       ));
-    LOG_MSG("%s      AlignCSR:- ",         OffsetNext                              );
+    LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                              );
+    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel        ));
+    LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay       ));
+    LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA       ));
+    LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
+    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
+    LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
+    LOG_MSG("%s      HelpTags:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpTags        ));
+    LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon        ));
+    LOG_MSG("%s      AlignCSR:- ",         OffsetNext                               );
     if (GlobalConfig.DynamicCSR == 1) {
-        LOG_MSG("'Active ... CSR Enable'"                                          );
+        LOG_MSG("'Active ... CSR Enable'"                                           );
     }
     else if (GlobalConfig.DynamicCSR == 0) {
-        LOG_MSG("'Inactive'"                                                       );
+        LOG_MSG("'Inactive'"                                                        );
     }
     else if (GlobalConfig.DynamicCSR == -1) {
-        LOG_MSG("'Active ... CSR Disable'"                                         );
+        LOG_MSG("'Active ... CSR Disable'"                                          );
     }
     else {
-        LOG_MSG("'Error ... Invalid'"                                              );
+        LOG_MSG("'Error ... Invalid'"                                               );
     }
 
-    LOG_MSG("%s      TextOnly:- ",         OffsetNext                              );
+    LOG_MSG("%s      TextOnly:- ",         OffsetNext                               );
     if (ForceTextOnly) {
-        LOG_MSG("'Forced'"                                                         );
+        LOG_MSG("'Forced'"                                                          );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.TextOnly ? L"Active" : L"Inactive"            );
+        LOG_MSG("'%s'", GlobalConfig.TextOnly ? L"Active" : L"Inactive"             );
     }
 
-    LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop   ));
-    LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot     ));
-    LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP     ));
+    LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
+    LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot      ));
+    LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP      ));
 
     LOG_MSG(
         "%s      TextRenderer:- '%s'",
         OffsetNext,
         GlobalConfig.UseTextRenderer ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      ProtectNvram:- ",     OffsetNext                              );
+    LOG_MSG("%s      ProtectNvram:- ",     OffsetNext                               );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                       );
+        LOG_MSG("'Disabled'"                                                        );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.NvramProtect ? L"Active" : L"Inactive"        );
+        LOG_MSG("'%s'", GlobalConfig.NvramProtect ? L"Active" : L"Inactive"         );
     }
     LOG_MSG(
         "%s      NormaliseCSR:- '%s'",
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                              );
+    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                               );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                       );
+        LOG_MSG("'Disabled'"                                                        );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"       );
+        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"        );
     }
-    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                              );
+    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                       );
+        LOG_MSG("'Disabled'"                                                        );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"        );
+        LOG_MSG("'%s'", GlobalConfig.RansomDrives ? L"Active" : L"Inactive"         );
     }
     LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      NvramProtectEx:- ",    OffsetNext                             );
+    LOG_MSG("%s      NvramProtectEx:- ",    OffsetNext                              );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                       );
+        LOG_MSG("'Disabled'"                                                        );
     }
     else {
-        LOG_MSG("'%s'", GlobalConfig.NvramProtectEx ? L"Active" : L"Inactive"      );
+        LOG_MSG("'%s'", GlobalConfig.NvramProtectEx ? L"Active" : L"Inactive"       );
     }
+    LOG_MSG("%s      FollowSymlinks:- '%s'", TAG_ITEM_C(GlobalConfig.FollowSymlinks));
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI
@@ -3385,6 +3386,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+                EntryVol       = ourLoaderEntry->Volume;
 
                 // Fix undetected MacOS
                 if (!FindSubStr (ourLoaderEntry->Title, L"MacOS")                          &&
@@ -3392,7 +3394,7 @@ EFI_STATUS EFIAPI efi_main (
                     !FindSubStr (ourLoaderEntry->Title, L"Install")                        &&
                     FindSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
-                    ourLoaderEntry->Title = (FindSubStr (ourLoaderEntry->Volume->VolName, L"PreBoot"))
+                    ourLoaderEntry->Title = (FindSubStr (EntryVol->VolName, L"PreBoot"))
                         ? L"MacOS" : L"RefindPlus";
                 }
 
@@ -3421,14 +3423,14 @@ EFI_STATUS EFIAPI efi_main (
                     ) || (
                         FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.install")
                     ) || (
-                        ourLoaderEntry->Volume->VolName &&
-                        FindSubStr (ourLoaderEntry->Volume->VolName, L"OS X Install")
+                        EntryVol->VolName &&
+                        FindSubStr (EntryVol->VolName, L"OS X Install")
                     ) || (
-                        ourLoaderEntry->Volume->VolName &&
-                        FindSubStr (ourLoaderEntry->Volume->VolName, L"Mac OS Install")
+                        EntryVol->VolName &&
+                        FindSubStr (EntryVol->VolName, L"Mac OS Install")
                     ) || (
-                        ourLoaderEntry->Volume->VolName &&
-                        FindSubStr (ourLoaderEntry->Volume->VolName, L"com.apple.install")
+                        EntryVol->VolName &&
+                        FindSubStr (EntryVol->VolName, L"com.apple.install")
                     )
                 ) {
                     #if REFIT_DEBUG > 0
@@ -3440,10 +3442,10 @@ EFI_STATUS EFIAPI efi_main (
                         "%s  - %s%s '%s'",
                         OffsetNext,
                         MsgStr,
-                        (ourLoaderEntry->Volume->VolName)
+                        (EntryVol->VolName)
                             ? L" on" : L":-",
-                        (ourLoaderEntry->Volume->VolName)
-                            ? ourLoaderEntry->Volume->VolName : ourLoaderEntry->LoaderPath
+                        (EntryVol->VolName)
+                            ? EntryVol->VolName : ourLoaderEntry->LoaderPath
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -3460,7 +3462,9 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = (
-                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE) == GRAPHICS_FOR_OPENCORE
+                            (
+                                GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
+                            ) == GRAPHICS_FOR_OPENCORE
                         );
                     }
 
@@ -3520,11 +3524,13 @@ EFI_STATUS EFIAPI efi_main (
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
 
                     DisplayName = NULL;
-                    if (!ourLoaderEntry->Volume->VolName) {
+                    if (!EntryVol->VolName) {
                         LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
-                        if (ourLoaderEntry->Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
+                        if (GlobalConfig.SyncAPFS &&
+                            EntryVol->FSType == FS_TYPE_APFS
+                        ) {
                             APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
                             // DA-TAG: Limit to TianoCore
@@ -3532,7 +3538,7 @@ EFI_STATUS EFIAPI efi_main (
                             Status = EFI_NOT_STARTED;
                             #else
                             Status = RP_GetApfsVolumeInfo (
-                                ourLoaderEntry->Volume->DeviceHandle,
+                                EntryVol->DeviceHandle,
                                 NULL, NULL,
                                 &VolumeRole
                             );
@@ -3542,7 +3548,7 @@ EFI_STATUS EFIAPI efi_main (
                                 if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                                     DisplayName = GetVolumeGroupName (
                                         ourLoaderEntry->LoaderPath,
-                                        ourLoaderEntry->Volume
+                                        EntryVol
                                     );
                                 }
                             }
@@ -3552,7 +3558,7 @@ EFI_STATUS EFIAPI efi_main (
                             " on '%s'",
                             (DisplayName)
                                 ? DisplayName
-                                : ourLoaderEntry->Volume->VolName
+                                : EntryVol->VolName
                         );
                     }
                     MY_FREE_POOL(MsgStr);
@@ -3584,10 +3590,10 @@ EFI_STATUS EFIAPI efi_main (
                         "%s  - %s%s '%s'",
                         OffsetNext,
                         MsgStr,
-                        (ourLoaderEntry->Volume->VolName)
+                        (EntryVol->VolName)
                             ? L" on" : L":-",
-                        (ourLoaderEntry->Volume->VolName)
-                            ? ourLoaderEntry->Volume->VolName : ourLoaderEntry->LoaderPath
+                        (EntryVol->VolName)
+                            ? EntryVol->VolName : ourLoaderEntry->LoaderPath
                     );
                     MY_FREE_POOL(MsgStr);
 
@@ -3683,8 +3689,8 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: Linux");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                    if (ourLoaderEntry->Volume->VolName) {
-                        LOG_MSG(" on '%s'", ourLoaderEntry->Volume->VolName);
+                    if (EntryVol->VolName) {
+                        LOG_MSG(" on '%s'", EntryVol->VolName);
                     }
                     else {
                         LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
@@ -3745,20 +3751,21 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_LEGACY:   // Boot legacy OS
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
+                EntryVol       = ourLegacyEntry->Volume;
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
                 #endif
 
-                if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
+                if (MyStrStr (EntryVol->OSName, L"Windows")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
                         L"Load %s%s%s%s%s",
-                        ourLegacyEntry->Volume->OSName,
-                        SetVolJoin (ourLegacyEntry->Volume->OSName),
-                        SetVolKind (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName),
-                        SetVolFlag (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName),
-                        SetVolType (ourLegacyEntry->Volume->OSName, ourLegacyEntry->Volume->VolName)
+                        EntryVol->OSName,
+                        SetVolJoin (EntryVol->OSName                      ),
+                        SetVolKind (EntryVol->OSName, EntryVol->VolName, 0),
+                        SetVolFlag (EntryVol->OSName, EntryVol->VolName   ),
+                        SetVolType (EntryVol->OSName, EntryVol->VolName, 0)
                     );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -3772,8 +3779,8 @@ EFI_STATUS EFIAPI efi_main (
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
-                        (ourLegacyEntry->Volume)
-                            ? ourLegacyEntry->Volume->OSName
+                        (EntryVol)
+                            ? EntryVol->OSName
                             : L"NULL Volume Label"
                     );
                     MY_FREE_POOL(MsgStr);
@@ -3790,6 +3797,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
+                EntryVol       = ourLegacyEntry->Volume;
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Load 'UEFI-Style' Legacy Bootcode");
@@ -3798,8 +3806,8 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG(
                     "%s  - %s:- '%s'",
                     OffsetNext, MsgStr,
-                    (ourLegacyEntry->Volume)
-                        ? ourLegacyEntry->Volume->OSName
+                    (EntryVol)
+                        ? EntryVol->OSName
                         : L"NULL Volume Label"
                 );
                 MY_FREE_POOL(MsgStr);

@@ -11,7 +11,7 @@
   * Stub implementation of upstream ARM Linux focused feature
 - Adds Misc Upstream Changes/Fixes
   * Adoption of the RefindPlus `FollowSymlinks` Feature
-  * 'also_scan_dirs' Volume Specification Bugfix
+  * `also_scan_dirs` Volume Specification Bugfix
     - https://sf.net/p/refind/code/ci/fde8116021e1c6ea7edaf3fae15fced47bbb38cf/
     - https://sf.net/p/refind/discussion/general/thread/b411f33f37/
   * Malformed `refind_linux.conf` Freeze Bugfix
@@ -28,13 +28,10 @@
   * A regression had meant that the feature was not active
   * This bug was introduced in v0.13.3.AD (Commit dc642c6)
 - Improves `SupplyNVME` Feature
-  * Further Isolated from other code
+  * Further isolated from other code
 - Improves `SupplyAPFS` Feature
   * Now run after device connection to ensure APFS availability
   * This should also resolve availability with some third party flashed GPUs
-- Improves Internal Protocol Allocation
-  * Misc deprecated protocols aligned with UEFI 2.x specs
-  * Some are related to filesystem drivers; for which updated versions are created accordingly
 - Improves `AcquireGOP` Feature
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible
@@ -55,11 +52,11 @@
   * The maximum Big Selection image size is increased to 512px from 320px
   * The Small Selection image maximum is maintained at 256px
 - Amends EFI File Validity Checks
-  * Apple `Fat` Binaries are now assumed to be valid on Apple firmware
+  * Apple `Fat` Binaries are now assumed to be always valid on Apple firmware
   * This similarly applies to binaries with missing PE32+ headers
 
 
-0.13.3.AD (07 Mar 23):
+0.13.3.AD (07 Mar 2023):
 -----------------------
 - Fixes Manual Stanza SubMenuEntries
   * A memory conflict meant that including such entries resulted in RefindPlus hanging
@@ -98,14 +95,15 @@
   * No longer disables certain features on detecting inconsistent versions
   * No longer displays a warning messages and the discrepancy is only logged
   * Fixes Memory Conflict in 'Invalid EFI Versions' Debug Logging
-    - The DBG build had an invalid memory allocation instance that results in a hang when logging detection
+    - The DBG build had an invalid memory allocation instance
+    * This resulted in RefindPlus hanging when logging detection of such
 - Amends and Refactors Misc Items
   * General optimisation
   * Memory management improvements and fixes
   * Log file handling tweaks
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
-  * Hence, the "Opt-Out" `decline_esp_filter` token has been replaced by an "Opt-In `enable_esp_filter` token
+  * Hence, the "Opt-Out" `decline_esp_filter` token is replaced by the "Opt-In `enable_esp_filter`
   * A previous issue where the token operated the wrong way round has been fixed
 
 

@@ -202,7 +202,7 @@ EG_IMAGE * LoadOSIcon (
         BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -214,7 +214,7 @@ EG_IMAGE * LoadOSIcon (
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);

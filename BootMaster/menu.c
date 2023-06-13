@@ -478,7 +478,7 @@ VOID AddSubMenuEntry (
         L"Set SubMenu Entry in %s - %s%s",
         SubScreen->Title,
         SubEntry->Title,
-        SetVolType (NULL, SubEntry->Title)
+        SetVolType (NULL, SubEntry->Title, 0)
     );
     #endif
 
@@ -503,7 +503,7 @@ VOID AddMenuEntry (
         L"Adding Menu Entry to %s - %s",
         Screen->Title,
         Entry->Title,
-        SetVolType (NULL, Entry->Title)
+        SetVolType (NULL, Entry->Title, 0)
     );
     // DA-TAG: Doubled Delibrately in SetVolType
     //         Find a better way
@@ -2751,7 +2751,7 @@ VOID DisplaySimpleMessage (
     TypeMenuExit = (MenuExit < 0) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
 
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call in 'DisplaySimpleMessage'",
+        L"Returned '%d' (%s) From RunGenericMenu Call in 'DisplaySimpleMessage'",
         MenuExit, TypeMenuExit
     );
     #endif
@@ -2938,7 +2938,7 @@ VOID ManageHiddenTags (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
+            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -3121,7 +3121,7 @@ BOOLEAN HideEfiTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideEfiTag'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideEfiTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3176,7 +3176,7 @@ BOOLEAN HideFirmwareTag(
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3229,7 +3229,7 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideLegacyTag'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideLegacyTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3291,14 +3291,14 @@ VOID HideTag (
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
-                MsgStr = PoolPrint (L"HideTag not Available on \"%s\" Synced APFS Loader", ChosenEntry->Title);
+                MsgStr = PoolPrint (L"HideTag Not Available on Synced APFS Loader: \"%s\"", ChosenEntry->Title);
                 Clarify = (SingleAPFS)
                     ? L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token"
                     : L"APFS Container with Multiple Mac OS Instances Found";
                 DisplaySimpleMessage (Clarify, MsgStr);
             }
             else if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
-                MsgStr = PoolPrint (L"HideTag not Available on \"%s\" Manual Stanza", ChosenEntry->Title);
+                MsgStr = PoolPrint (L"HideTag Not Available on Manual Stanza: \"%s\"", ChosenEntry->Title);
                 DisplaySimpleMessage (L"Amend Config File Instead ... Disable Stanza", MsgStr);
             }
             else {
@@ -3406,7 +3406,7 @@ VOID HideTag (
         case TAG_BOOTORDER:
         case TAG_CSR_ROTATE:
         case TAG_INFO_NVRAMCLEAN:
-            MsgStr = PoolPrint (L"HideTag not Available on \"%s\" Internal Tool", ChosenEntry->Title);
+            MsgStr = PoolPrint (L"HideTag Not Available on Internal Tool: \"%s\"", ChosenEntry->Title);
             DisplaySimpleMessage (L"Amend Config File Instead ... Update \"showtools\" Token", MsgStr);
             MY_FREE_POOL(MsgStr);
 
@@ -3488,7 +3488,7 @@ BOOLEAN ConfirmRestart (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmRestart'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmRestart'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3544,7 +3544,7 @@ BOOLEAN ConfirmShutdown (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmShutdown'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmShutdown'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3568,7 +3568,7 @@ UINTN RunMenu (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMenu'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMenu'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
     #endif
@@ -3715,7 +3715,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMainMenu'",
+            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMainMenu'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
@@ -3746,7 +3746,7 @@ UINTN RunMainMenu (
                 BREAD_CRUMB(L"%s:  9a 3a 1b 2", FuncTag);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
+                    L"Returned '%d' (%s) From RunGenericMenu Call on SubScreen in 'RunMainMenu'",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif

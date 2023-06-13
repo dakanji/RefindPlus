@@ -2,12 +2,12 @@
 ## Building with Docker
 RefindPlus can be built on compatible environments by using Docker. A Docker image has been created by a third party developer and is available on [DockerHub](https://hub.docker.com/r/xaionaro2/edk2-builder). Please refer to https://github.com/xaionaro/edk2-builder-docker for details and support on this option.
 
-NB: RefindPlus instances built using this Docker image may not be consistent with builds done by following the recommended steps outlined under `Building on MacOS` below.
+NB: RefindPlus instances built using this Docker image may not be consistent with builds done by following the recommended steps outlined under `Building on Mac OS` below.
 
-## Building on MacOS
-These are step-by-step instructions for setting up a bespoke TianoCore EDK II build environment and building the RefindPlus boot manager on MacOS.
+## Building on Mac OS
+These are step-by-step instructions for setting up a bespoke TianoCore EDK II build environment and building the RefindPlus boot manager on Mac OS.
 
-### Activate MacOS Development Tools
+### Activate Mac OS Development Tools
 
 #### Xcode
 Download [Xcode](https://developer.apple.com/xcode) from the Mac App Store and install.
@@ -26,7 +26,7 @@ $ xcode-select --install
 
 While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for TianoCore EDK II development.
 
-This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink which, unlike HomeBrew, maintain support for older versions of MacOS. Just substitute in the equivalent commands as required.
+This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink which, unlike HomeBrew, maintain support for older versions of Mac OS. Just substitute in the equivalent commands as required.
 
 ##### Update the PATH Environment Variable for HomeBrew
 
@@ -36,12 +36,18 @@ Tools installed using HomeBrew are placed in `/usr/local/bin`. This non-standard
 $ export PATH=/usr/local/bin:$PATH
 ```
 
-#### Install the MTOC Utility with HomeBrew
+#### Install the MTOC or OCMTOC Utilities with HomeBrew
 
-The mtoc utility is required to convert the MacOS Mach-O image format to the PE/COFF format required by the UEFI specifications.
+The mtoc utility is required to convert the Mac OS Mach-O image format to the PE/COFF format required by the UEFI specifications.
 
 ```
 $ brew install mtoc && brew upgrade mtoc
+```
+
+or for Mac OS 11.x Big Sur and newer...
+
+```
+$ brew install ocmtoc && brew upgrade ocmtoc
 ```
 
 #### Install the Netwide Assembler (NASM) with HomeBrew

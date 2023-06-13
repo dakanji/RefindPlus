@@ -146,7 +146,7 @@ CHAR16 * FindInitrd (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Checking 'KernelVersion = %s' Against 'InitrdVersion = %s' from '%s'",
+            L"Checking 'KernelVersion = %s' Against 'InitrdVersion = %s' From '%s'",
             KernelVersion ? KernelVersion : L"NULL",
             InitrdVersion ? InitrdVersion : L"NULL",
             DirEntry->FileName

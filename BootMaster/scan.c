@@ -217,17 +217,26 @@ REFIT_MENU_ENTRY * CopyMenuEntry (
 ) {
     REFIT_MENU_ENTRY *NewEntry;
 
-    NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    if ((Entry != NULL) && (NewEntry != NULL)) {
-        NewEntry->Tag            =  Entry->Tag;
-        NewEntry->Row            =  Entry->Row;
-        NewEntry->ShortcutDigit  =  Entry->ShortcutDigit;
-        NewEntry->ShortcutLetter =  Entry->ShortcutLetter;
-        NewEntry->Title          = (Entry->Title      != NULL) ? StrDuplicate (Entry->Title)       : NULL;
-        NewEntry->Image          = (Entry->Image      != NULL) ? egCopyImage (Entry->Image)        : NULL;
-        NewEntry->BadgeImage     = (Entry->BadgeImage != NULL) ? egCopyImage (Entry->BadgeImage)   : NULL;
-        NewEntry->SubScreen      = (Entry->SubScreen  != NULL) ? CopyMenuScreen (Entry->SubScreen) : NULL;
+    if (Entry == NULL) {
+        // Early Return
+        return NULL;
     }
+
+    NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    if (NewEntry == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    NewEntry->Tag            =  Entry->Tag;
+    NewEntry->Row            =  Entry->Row;
+    NewEntry->ShortcutDigit  =  Entry->ShortcutDigit;
+    NewEntry->ShortcutLetter =  Entry->ShortcutLetter;
+    NewEntry->Title          = (Entry->Title      != NULL) ? StrDuplicate   (Entry->Title)      : NULL;
+    NewEntry->Image          = (Entry->Image      != NULL) ? egCopyImage    (Entry->Image)      : NULL;
+    NewEntry->BadgeImage     = (Entry->BadgeImage != NULL) ? egCopyImage    (Entry->BadgeImage) : NULL;
+    NewEntry->SubScreen      = (Entry->SubScreen  != NULL) ? CopyMenuScreen (Entry->SubScreen)  : NULL;
+
     return (NewEntry);
 } // REFIT_MENU_ENTRY * CopyMenuEntry()
 
@@ -242,23 +251,26 @@ LOADER_ENTRY * InitializeLoaderEntry (
     LOADER_ENTRY *NewEntry;
 
     NewEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-    if (NewEntry != NULL) {
-        NewEntry->Enabled         = TRUE;
-        NewEntry->UseGraphicsMode = FALSE;
-        NewEntry->EfiLoaderPath   = NULL;
-        NewEntry->me.Title        = NULL;
-        NewEntry->me.Tag          = TAG_LOADER;
-        NewEntry->OSType          = 0;
-        NewEntry->EfiBootNum      = 0;
-        if (Entry != NULL) {
-            NewEntry->EfiBootNum      =  Entry->EfiBootNum;
-            NewEntry->UseGraphicsMode =  Entry->UseGraphicsMode;
-            NewEntry->Volume          = (Entry->Volume)        ? CopyVolume (Entry->Volume)                 : NULL;
-            NewEntry->LoaderPath      = (Entry->LoaderPath)    ? StrDuplicate (Entry->LoaderPath)           : NULL;
-            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions)          : NULL;
-            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath)           : NULL;
-            NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
-        }
+    if (NewEntry == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    NewEntry->Enabled         = TRUE;
+    NewEntry->UseGraphicsMode = FALSE;
+    NewEntry->EfiLoaderPath   = NULL;
+    NewEntry->me.Title        = NULL;
+    NewEntry->me.Tag          = TAG_LOADER;
+    NewEntry->OSType          = 0;
+    NewEntry->EfiBootNum      = 0;
+    if (Entry != NULL) {
+        NewEntry->EfiBootNum      =  Entry->EfiBootNum;
+        NewEntry->UseGraphicsMode =  Entry->UseGraphicsMode;
+        NewEntry->Volume          = (Entry->Volume)        ? CopyVolume (Entry->Volume)                 : NULL;
+        NewEntry->LoaderPath      = (Entry->LoaderPath)    ? StrDuplicate (Entry->LoaderPath)           : NULL;
+        NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions)          : NULL;
+        NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath)           : NULL;
+        NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
     }
 
     return (NewEntry);
@@ -325,10 +337,10 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         TmpStr,
-        SetVolJoin (TmpStr),
-        SetVolKind (TmpStr, TmpName),
-        SetVolFlag (TmpStr, TmpName),
-        SetVolType (TmpStr, TmpName)
+        SetVolJoin (TmpStr                                ),
+        SetVolKind (TmpStr, TmpName, Entry->Volume->FSType),
+        SetVolFlag (TmpStr, TmpName                       ),
+        SetVolType (TmpStr, TmpName, Entry->Volume->FSType)
     );
 
     #if REFIT_DEBUG > 0
@@ -421,7 +433,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance with a 64-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS with a 64-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=x86_64");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -429,7 +441,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance with a 32-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS with a 32-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=i386");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -438,7 +450,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -447,14 +459,14 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode (64-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode (64-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Verbose Mode (32-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode (32-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -464,14 +476,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Safe Mode (Laconic)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Safe Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Safe Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Safe Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -481,14 +493,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Single User Mode (Laconic)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Single User Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load MacOS Instance in Single User Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Single User Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -634,7 +646,7 @@ VOID GenerateSubScreen (
             BREAD_CRUMB(L"%s:  A1 - OSType E:- START", FuncTag);
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Run ELILO in Interactive Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: ELILO in Interactive Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-p");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -642,7 +654,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a 17\" iMac or a 15\" MacBook Pro (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: Linux for a 17\" iMac or a 15\" MacBook Pro (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 i17");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -650,7 +662,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a 20\" iMac (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: Linux for a 20\" iMac (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 i20");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -658,7 +670,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Linux Instance for a Mac Mini (*)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: Linux for a Mac Mini (*)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-d 0 mini");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -677,7 +689,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Windows Instance on Hard Disk");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: Windows on Hard Disk");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -h");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -685,7 +697,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Windows Instance on Optical Disc");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: Windows on Optical Disc");
                 SubEntry->LoadOptions     = StrDuplicate (L"-s -c");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -693,7 +705,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load XOM Instance in Text Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: XOM in Text Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -727,9 +739,9 @@ VOID GenerateSubScreen (
 // code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
 VOID SetLoaderDefaults (
-    LOADER_ENTRY *Entry,
-    CHAR16       *LoaderPath,
-    REFIT_VOLUME *Volume
+    IN LOADER_ENTRY *Entry,
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
 ) {
     EFI_STATUS              Status;
     CHAR16                 *Temp;
@@ -866,7 +878,7 @@ VOID SetLoaderDefaults (
             #if REFIT_DEBUG > 0
             if (Entry->me.Image == NULL) {
                 ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Creating Icon Hint from Loader Path:- '%s'",
+                    L"Creating Icon Hint From Loader Path:- '%s'",
                     LoaderPath
                 );
             }
@@ -1454,10 +1466,10 @@ LOADER_ENTRY * AddLoaderEntry (
         ? PoolPrint (
             L"Load %s%s%s%s%s",
             Entry->Title,
-            SetVolJoin (Entry->Title),
-            SetVolKind (Entry->Title, TmpName),
-            SetVolFlag (Entry->Title, TmpName),
-            SetVolType (Entry->Title, TmpName)
+            SetVolJoin (Entry->Title                         ),
+            SetVolKind (Entry->Title, TmpName, Volume->FSType),
+            SetVolFlag (Entry->Title, TmpName                ),
+            SetVolType (Entry->Title, TmpName, Volume->FSType)
         )
         : PoolPrint (
             L"Load %s",
@@ -1489,10 +1501,10 @@ LOADER_ENTRY * AddLoaderEntry (
         "%s  - Found %s%s%s%s%s",
         OffsetNext,
         Entry->Title,
-        SetVolJoin (Entry->Title),
-        SetVolKind (Entry->Title, TmpName),
-        SetVolFlag (Entry->Title, TmpName),
-        SetVolType (Entry->Title, TmpName)
+        SetVolJoin (Entry->Title                         ),
+        SetVolKind (Entry->Title, TmpName, Volume->FSType),
+        SetVolFlag (Entry->Title, TmpName                ),
+        SetVolType (Entry->Title, TmpName, Volume->FSType)
     );
 
     ALT_LOG(1, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
@@ -1605,7 +1617,8 @@ VOID CleanUpLoaderList (
 
 CHAR16 * SetVolKind (
     IN CHAR16 *InstanceName,
-    IN CHAR16 *VolumeName
+    IN CHAR16 *VolumeName,
+    IN UINT32  VolumeFSType
 ) {
     CHAR16 *RetVal;
 
@@ -1615,7 +1628,11 @@ CHAR16 * SetVolKind (
     MY_MUTELOGGER_SET;
     #endif
     RetVal = L"";
-    if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume - ";
+    if (0);
+    else if (VolumeFSType == FS_TYPE_FAT32          ) RetVal = L""          ;
+    else if (VolumeFSType == FS_TYPE_FAT16          ) RetVal = L""          ;
+    else if (VolumeFSType == FS_TYPE_FAT12          ) RetVal = L""          ;
+    else if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume:- " ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1666,7 +1683,8 @@ CHAR16 * SetVolFlag (
 
 CHAR16 * SetVolType (
     IN CHAR16 *InstanceName OPTIONAL,
-    IN CHAR16 *VolumeName
+    IN CHAR16 *VolumeName,
+    IN UINT32  VolumeFSType
 ) {
     CHAR16 *RetVal;
 
@@ -1678,13 +1696,16 @@ CHAR16 * SetVolType (
     RetVal = L" Volume";
     if (0);
     else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""                 ;
-    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L" System Partition";
+    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
+    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""                 ;
     else if (MyStriCmp  (VolumeName,   L"ESP"            ))   RetVal = L""                 ;
+    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L" System Partition";
+    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L" Partition"       ;
     else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L" Partition"       ;
     else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L" Partition"       ;
-    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""                 ;
-    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
+    else if (VolumeFSType == FS_TYPE_FAT32                )   RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT16                )   RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT12                )   RetVal = L" Partition"       ;
     else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L""                 ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -1712,23 +1733,29 @@ BOOLEAN ShouldScan (
     CHAR16                 *TmpVolNameA;
     CHAR16                 *TmpVolNameB;
     BOOLEAN                 ScanIt;
+    EFI_GUID                GuidRecoveryHD = MAC_RECOVERY_HD_GUID_VALUE;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
 
-    // Skip 'UnReadable' volumes
+    // Skip 'NULL' Volumes
+    if (!Volume) {
+        return FALSE;
+    }
+
+    // Skip 'UnReadable' Volumes
     if (!Volume->IsReadable) {
         return FALSE;
     }
 
-    if (MyStriCmp (Path, SelfDirPath)
-        && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
+    if (MyStriCmp (Path, SelfDirPath) &&
+        Volume->DeviceHandle == SelfVolume->DeviceHandle
     ) {
         return FALSE;
     }
 
-    // DA-TAG: Do not scan HFS+ Recovery HD
+    // DA-TAG: Skip HFS+ Recovery HD
     if (Volume->FSType == FS_TYPE_HFSPLUS) {
-        if (FindSubStr (Volume->VolName, L"Recovery HD")) {
+        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
             return FALSE;
         }
     }
@@ -1810,15 +1837,15 @@ BOOLEAN ShouldScan (
     ) {
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
-        if (VolName != NULL) {
-            if (VolumeMatchesDescription (Volume, VolName)
-                && MyStriCmp (DontScanDir, Path)
-            ) {
+        if (VolName == NULL) {
+            if (MyStriCmp (DontScanDir, Path)) {
                 ScanIt = FALSE;
             }
         }
         else {
-            if (MyStriCmp (DontScanDir, Path)) {
+            if (VolumeMatchesDescription (Volume, VolName)
+                && MyStriCmp (DontScanDir, Path)
+            ) {
                 ScanIt = FALSE;
             }
         }
@@ -1988,10 +2015,9 @@ BOOLEAN ScanLoaderDir (
     struct LOADER_LIST      *LoaderList;
     LOADER_ENTRY            *FirstKernel;
     LOADER_ENTRY            *LatestEntry;
+    BOOLEAN                  RetVal;
     BOOLEAN                  IsLinux;
     BOOLEAN                  InSelfPath;
-    BOOLEAN                  SkipDir;
-    BOOLEAN                  RetVal;
     BOOLEAN                  FoundFallbackDuplicate;
 
     #if REFIT_DEBUG > 1
@@ -2003,8 +2029,6 @@ BOOLEAN ScanLoaderDir (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-
     ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, Path);
     #endif
 
@@ -2024,93 +2048,80 @@ BOOLEAN ScanLoaderDir (
 
         //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
-            //LOG_SEP(L"X");
-            //BREAD_CRUMB(L"%s:  2a 2a 1 - WHILE LOOP:- START", FuncTag);
-            Extension = FindExtension (DirEntry->FileName);
+            LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  2a 2a 1 - WHILE LOOP:- START", FuncTag);
+            do {
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 1", FuncTag);
+                Extension = FindExtension (DirEntry->FileName);
 
-            //BREAD_CRUMB(L"%s:  2a 2a 2", FuncTag);
-            FullName  = StrDuplicate (Path);
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 2", FuncTag);
+                FullName  = StrDuplicate (Path);
 
-            //BREAD_CRUMB(L"%s:  2a 2a 3", FuncTag);
-            MergeStrings (&FullName, DirEntry->FileName, L'\\');
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 3", FuncTag);
+                MergeStrings (&FullName, DirEntry->FileName, L'\\');
 
-            //BREAD_CRUMB(L"%s:  2a 2a 4", FuncTag);
-            CleanUpPathNameSlashes (FullName);
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 4", FuncTag);
+                CleanUpPathNameSlashes (FullName);
 
-            //BREAD_CRUMB(L"%s:  2a 2a 5", FuncTag);
-            if (!GlobalConfig.FollowSymlinks) {
-                //BREAD_CRUMB(L"%s:  2a 2a 5a 1", FuncTag);
-                if (IsSymbolicLink (Volume, FullName, DirEntry)) {
-                    //BREAD_CRUMB(L"%s:  2a 2a 5a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Symlink)", FuncTag);
-                    //LOG_SEP(L"X");
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 5", FuncTag);
+                if (!GlobalConfig.FollowSymlinks) {
+                    //BREAD_CRUMB(L"%s:  2a 2a 1a 5a 1", FuncTag);
+                    if (IsSymbolicLink (Volume, FullName, DirEntry)) {
+                        BREAD_CRUMB(L"%s:  2a 2a 1a 5a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Symlink)", FuncTag);
+                        // Skip This Entry
+                        break;
+                    }
+                }
+
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 6", FuncTag);
+                // HasSignedCounterpart (Volume, FullName) == file with same name plus ".efi.signed" is present
+                if (DirEntry->FileName[0] == '.'                                              ||
+                    MyStriCmp (Extension, L".log")                                            ||
+                    MyStriCmp (Extension, L".txt")                                            ||
+                    MyStriCmp (Extension, L".png")                                            ||
+                    MyStriCmp (Extension, L".bmp")                                            ||
+                    MyStriCmp (Extension, L".jpg")                                            ||
+                    MyStriCmp (Extension, L".jpeg")                                           ||
+                    MyStriCmp (Extension, L".icns")                                           ||
+                    (
+                        MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
+                        MyStriCmp (Path, L"EFI\\BOOT")
+                    )                                                                         ||
+                    FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES)                ||
+                    HasSignedCounterpart (Volume, FullName)                                   ||
+                    FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
+                    !IsValidLoader (Volume->RootDir, FullName)
+                ) {
+                    BREAD_CRUMB(L"%s:  2a 2a 1a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
+                        DirEntry->FileName
+                    );
                     // Skip This Entry
-                    continue;
+                    break;
                 }
-            }
 
-            //BREAD_CRUMB(L"%s:  2a 2a 6", FuncTag);
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
-            SkipDir = (
-                FindSubStr (DirEntry->FileName, L"_BAK") ||
-                MyStriCmp (DirEntry->FileName, L"APPLE")
-            );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 7", FuncTag);
+                NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
+                //BREAD_CRUMB(L"%s:  2a 2a 1a 8", FuncTag);
+                if (NewLoader != NULL) {
+                    //BREAD_CRUMB(L"%s:  2a 2a 1a 8a 1", FuncTag);
+                    NewLoader->FileName  = StrDuplicate (FullName);
+                    NewLoader->TimeStamp = DirEntry->ModificationTime;
+                    LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
 
-            // HasSignedCounterpart (Volume, FullName) = file with same name plus ".efi.signed" is present
-            if (SkipDir                                                                   ||
-                DirEntry->FileName[0] == '.'                                              ||
-                MyStriCmp (Extension, L".log")                                            ||
-                MyStriCmp (Extension, L".txt")                                            ||
-                MyStriCmp (Extension, L".png")                                            ||
-                MyStriCmp (Extension, L".bmp")                                            ||
-                MyStriCmp (Extension, L".jpg")                                            ||
-                MyStriCmp (Extension, L".jpeg")                                           ||
-                MyStriCmp (Extension, L".icns")                                           ||
-                (
-                    MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
-                    MyStriCmp (Path, L"EFI\\BOOT")
-                )                                                                         ||
-                FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES)                ||
-                HasSignedCounterpart (Volume, FullName)                                   ||
-                FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
-                !IsValidLoader (Volume->RootDir, FullName)
-            ) {
-                //BREAD_CRUMB(L"%s:  2a 2a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
-                //    DirEntry->FileName
-                //);
-                //LOG_SEP(L"X");
-                // Skip This Entry
-                MY_FREE_POOL(Extension);
-
-                continue;
-            }
-
-            //BREAD_CRUMB(L"%s:  2a 2a 7", FuncTag);
-            NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
-            //BREAD_CRUMB(L"%s:  2a 2a 8", FuncTag);
-            if (NewLoader != NULL) {
-                //BREAD_CRUMB(L"%s:  2a 2a 8a 1", FuncTag);
-                NewLoader->FileName  = StrDuplicate (FullName);
-                NewLoader->TimeStamp = DirEntry->ModificationTime;
-                LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
-
-                if (DuplicatesFallback (Volume, FullName)) {
-                    //BREAD_CRUMB(L"%s:  2a 2a 8a 1a 1", FuncTag);
-                    FoundFallbackDuplicate = TRUE;
+                    if (DuplicatesFallback (Volume, FullName)) {
+                        //BREAD_CRUMB(L"%s:  2a 2a 1a 8a 1a 1", FuncTag);
+                        FoundFallbackDuplicate = TRUE;
+                    }
                 }
-            }
+            } while (0); // This 'loop' only runs once
 
-            //BREAD_CRUMB(L"%s:  2a 2a 8", FuncTag);
+            //BREAD_CRUMB(L"%s:  2a 2a 1a 8", FuncTag);
             MY_FREE_POOL(Extension);
             MY_FREE_POOL(FullName);
             MY_FREE_POOL(DirEntry);
 
-            //BREAD_CRUMB(L"%s:  2a 2a 9 - WHILE LOOP:- END", FuncTag);
-            //LOG_SEP(L"X");
+            BREAD_CRUMB(L"%s:  2a 2a 2 - WHILE LOOP:- END", FuncTag);
+            LOG_SEP(L"X");
         } // while
 
         //BREAD_CRUMB(L"%s:  2a 3", FuncTag);
@@ -2358,7 +2369,6 @@ VOID ScanEfiFiles (
     CHAR16                 *MatchPatterns;
     BOOLEAN                 ScanFallbackLoader;
     BOOLEAN                 FoundBRBackup;
-    BOOLEAN                 SkipDir;
     EFI_FILE_INFO          *EfiDirEntry;
     REFIT_DIR_ITER          EfiDirIter;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
@@ -2366,7 +2376,6 @@ VOID ScanEfiFiles (
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
-    BOOLEAN  CheckMute = FALSE;
     #endif
 
     //#if REFIT_DEBUG > 1
@@ -2667,21 +2676,9 @@ VOID ScanEfiFiles (
     while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
         Extension = FindExtension (EfiDirEntry->FileName);
 
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-        SkipDir = (
-            FindSubStr (EfiDirEntry->FileName, L"_BAK") ||
-            MyStriCmp (EfiDirEntry->FileName, L"APPLE")
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
-
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  9a 1a 1 - WHILE LOOP:- START", FuncTag);
-        if (SkipDir                                  ||
-            EfiDirEntry->FileName[0] == '.'          ||
+        if (EfiDirEntry->FileName[0] == '.'          ||
             MyStriCmp (Extension, L".log")           ||
             MyStriCmp (Extension, L".txt")           ||
             MyStriCmp (Extension, L".png")           ||
@@ -2962,7 +2959,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell from Scan");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell From Scan");
         #endif
 
         MergeStrings(&DontScanFirmware, L"shell", L',');

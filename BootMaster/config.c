@@ -113,112 +113,11 @@ VOID SetLinuxMatchPatterns (
 
     MY_FREE_POOL(GlobalConfig.LinuxMatchPatterns);
     GlobalConfig.LinuxMatchPatterns = PatternSet;
-} // VOID SetLinuxMatchPatterns()
-
-EFI_STATUS RefitReadFile (
-    IN     EFI_FILE_HANDLE  BaseDir,
-    IN     CHAR16          *FileName,
-    IN OUT REFIT_FILE      *File,
-    OUT    UINTN           *size
-) {
-    EFI_STATUS       Status;
-    EFI_FILE_HANDLE  FileHandle;
-    EFI_FILE_INFO   *FileInfo;
-    CHAR16          *Message;
-    UINT64           ReadSize;
-
-    File->Buffer     = NULL;
-    File->BufferSize = 0;
-
-    // read the file, allocating a buffer on the way
-    Status = REFIT_CALL_5_WRAPPER(
-        BaseDir->Open, BaseDir,
-        &FileHandle, FileName,
-        EFI_FILE_MODE_READ, 0
-    );
-
-    Message = PoolPrint (L"While Loading File:- '%s'", FileName);
-    if (CheckError (Status, Message)) {
-        MY_FREE_POOL(Message);
-
-        // Early Return
-        return Status;
-    }
-
-    FileInfo = LibFileInfo (FileHandle);
-    if (FileInfo == NULL) {
-        // TODO: print and register the error
-        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-
-        // Early Return
-        return EFI_LOAD_ERROR;
-    }
-    ReadSize = FileInfo->FileSize;
-    MY_FREE_POOL(FileInfo);
-
-    File->BufferSize = (UINTN) ReadSize;
-    File->Buffer = AllocatePool (File->BufferSize);
-    if (File->Buffer == NULL) {
-       size = 0;
-
-       // Early Return
-       return EFI_OUT_OF_RESOURCES;
-    }
-
-    *size = File->BufferSize;
-
-    Status = REFIT_CALL_3_WRAPPER(
-        FileHandle->Read, FileHandle,
-        &File->BufferSize, File->Buffer
-    );
-    if (CheckError (Status, Message)) {
-        size = 0;
-        MY_FREE_POOL(Message);
-        MY_FREE_POOL(File->Buffer);
-        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-
-        // Early Return
-        return Status;
-    }
-    MY_FREE_POOL(Message);
-
-    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-
-    // Setup for reading
-    File->Current8Ptr  = (CHAR8 *)File->Buffer;
-    File->End8Ptr      = File->Current8Ptr + File->BufferSize;
-    File->Current16Ptr = (CHAR16 *)File->Buffer;
-    File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
-
-    // DA_TAG: Investigate This
-    //        Detect other encodings
-    //        Some are also implemented
-    //
-    // Detect Encoding
-    File->Encoding = ENCODING_ISO8859_1;   // default: 1:1 translation of CHAR8 to CHAR16
-    if (File->BufferSize >= 4) {
-        if (File->Buffer[0] == 0xFF && File->Buffer[1] == 0xFE) {
-            // BOM in UTF-16 little endian (or UTF-32 little endian)
-            File->Encoding = ENCODING_UTF16_LE;   // use CHAR16 as is
-            File->Current16Ptr++;
-        }
-        else if (File->Buffer[0] == 0xEF && File->Buffer[1] == 0xBB && File->Buffer[2] == 0xBF) {
-            // BOM in UTF-8
-            File->Encoding = ENCODING_UTF8;       // translate from UTF-8 to UTF-16
-            File->Current8Ptr += 3;
-        }
-        else if (File->Buffer[1] == 0 && File->Buffer[3] == 0) {
-            File->Encoding = ENCODING_UTF16_LE;   // use CHAR16 as is
-        }
-    }
-
-    return EFI_SUCCESS;
-}
+} // static VOID SetLinuxMatchPatterns()
 
 //
 // Get a single line of text from a file
 //
-
 static
 CHAR16 * ReadLine (
     REFIT_FILE *File
@@ -331,7 +230,7 @@ CHAR16 * ReadLine (
     *qChar16 = 0;
 
     return Line;
-}
+} // static CHAR16 * ReadLine
 
 // Returns FALSE if *p points to the end of a token, TRUE otherwise.
 // Also modifies *p **IF** the first and second characters are both
@@ -379,91 +278,7 @@ BOOLEAN KeepReading (
     } // if first character is a quote
 
     return MoreToRead;
-} // BOOLEAN KeepReading()
-
-//
-// Get a line of tokens from a file
-//
-UINTN ReadTokenLine (
-    IN  REFIT_FILE   *File,
-    OUT CHAR16     ***TokenList
-) {
-    BOOLEAN  LineFinished;
-    BOOLEAN  IsQuoted;
-    CHAR16  *Line, *Token, *p;
-    UINTN    TokenCount;
-
-    *TokenList = NULL;
-
-    IsQuoted = FALSE;
-    TokenCount = 0;
-    while (TokenCount == 0) {
-        Line = ReadLine (File);
-        if (Line == NULL) {
-            return 0;
-        }
-
-        p = Line;
-        LineFinished = FALSE;
-        while (!LineFinished) {
-            // Skip whitespace and find start of token
-            while (!IsQuoted &&
-                (
-                    *p == ' '  ||
-                    *p == '\t' ||
-                    *p == '='  ||
-                    *p == ','
-                )
-            ) {
-                p++;
-            } // while
-
-            if (*p == 0 || *p == '#') {
-                break;
-            }
-
-            if (*p == '"') {
-               IsQuoted = !IsQuoted;
-               p++;
-            }
-
-            Token = p;
-
-            // Find end of token
-            while (KeepReading (p, &IsQuoted)) {
-               if ((*p == L'/') && !IsQuoted) {
-                   // Switch Unix style to DOS style directory separators
-                   *p = L'\\';
-               }
-               p++;
-            } // while
-
-            if (*p == L'\0' || *p == L'#') {
-                LineFinished = TRUE;
-            }
-            *p++ = 0;
-
-            AddListElement (
-                (VOID ***) TokenList,
-                &TokenCount,
-                (VOID *) StrDuplicate (Token)
-            );
-        } // while !LineFinished
-
-        MY_FREE_POOL(Line);
-    } // while TokenCount == 0
-
-    return TokenCount;
-} // UINTN ReadTokenLine()
-
-VOID FreeTokenLine (
-    IN OUT CHAR16 ***TokenList,
-    IN OUT UINTN    *TokenCount
-) {
-    // DA-TAG: Investigate this
-    //         Also free the items
-    FreeList ((VOID ***) TokenList, TokenCount);
-} // VOID FreeTokenLine()
+} // static BOOLEAN KeepReading()
 
 // Handle a parameter with a single integer argument (signed)
 static
@@ -626,7 +441,7 @@ UINTN HandleTime (
     } // while
 
     return (Hour * 60 + Minute);
-} // BOOLEAN HandleTime()
+} // static BOOLEAN HandleTime()
 
 static
 BOOLEAN HandleBoolean (
@@ -647,7 +462,7 @@ BOOLEAN HandleBoolean (
     }
 
     return TruthValue;
-} // BOOLEAN HandleBoolean()
+} // static BOOLEAN HandleBoolean()
 
 // Sets the default boot loader IF the current time is within the bounds
 // defined by the third and fourth tokens in the TokenList.
@@ -712,7 +527,7 @@ VOID SetDefaultByTime (
             *Default = StrDuplicate (TokenList[1]);
         }
     } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
-} // VOID SetDefaultByTime()
+} // static VOID SetDefaultByTime()
 
 static
 LOADER_ENTRY * AddPreparedLoaderEntry (
@@ -721,9 +536,1250 @@ LOADER_ENTRY * AddPreparedLoaderEntry (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
-} // LOADER_ENTRY * AddPreparedLoaderEntry()
+} // static LOADER_ENTRY * AddPreparedLoaderEntry()
 
-// read config file
+static
+VOID AddSubmenu (
+    LOADER_ENTRY *Entry,
+    REFIT_FILE   *File,
+    REFIT_VOLUME *Volume,
+    CHAR16       *Title
+) {
+    REFIT_MENU_SCREEN   *SubScreen;
+    LOADER_ENTRY        *SubEntry;
+    UINTN                TokenCount;
+    CHAR16              *TmpName;
+    CHAR16             **TokenList;
+    BOOLEAN              TitleVolume;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"AddSubmenu";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+    SubScreen = InitializeSubScreen (Entry);
+    BREAD_CRUMB(L"%s:  2", FuncTag);
+    if (SubScreen == NULL) {
+        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        return;
+    }
+
+    // Set defaults for the new entry
+    // Will be modified based on lines read from the config file
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    SubEntry = InitializeLoaderEntry (Entry);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
+    if (SubEntry == NULL) {
+        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        FreeMenuScreen (&SubScreen);
+
+        BREAD_CRUMB(L"%s:  4a 2 - END:- VOID", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        return;
+    }
+
+    BREAD_CRUMB(L"%s:  5", FuncTag);
+    SubEntry->Enabled = TRUE;
+    TitleVolume = FALSE;
+
+    while ((SubEntry->Enabled)
+        && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
+        && (StrCmp (TokenList[0], L"}") != 0)
+    ) {
+        LOG_SEP(L"X");
+        BREAD_CRUMB(L"%s:  5a 1 - WHILE LOOP:- START", FuncTag);
+        if (MyStriCmp (TokenList[0], L"disabled")) {
+            BREAD_CRUMB(L"%s:  5a 1a", FuncTag);
+            SubEntry->Enabled = FALSE;
+        }
+        else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
+            BREAD_CRUMB(L"%s:  5a 1b", FuncTag);
+
+            // Set the boot loader filename
+            FreeVolume (&SubEntry->Volume);
+            MY_FREE_POOL(SubEntry->LoaderPath);
+            SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
+            SubEntry->Volume     = CopyVolume (Volume);
+        }
+        else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
+            BREAD_CRUMB(L"%s:  5a 1c", FuncTag);
+
+            if (FindVolume (&Volume, TokenList[1])) {
+                if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
+                    TitleVolume = TRUE;
+                    FreeVolume (&SubEntry->Volume);
+                    MY_FREE_IMAGE(SubEntry->me.BadgeImage);
+                    SubEntry->Volume        = CopyVolume (Volume);
+                    SubEntry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
+                }
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"initrd")) {
+            BREAD_CRUMB(L"%s:  5a 1d", FuncTag);
+
+            if (TokenCount > 1) {
+                MY_FREE_POOL(SubEntry->InitrdPath);
+                SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"options")) {
+            BREAD_CRUMB(L"%s:  5a 1e", FuncTag);
+
+            if (TokenCount > 1) {
+                MY_FREE_POOL(SubEntry->LoadOptions);
+                SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"add_options") && (TokenCount > 1)) {
+            BREAD_CRUMB(L"%s:  5a 1f", FuncTag);
+
+            MergeStrings (&SubEntry->LoadOptions, TokenList[1], L' ');
+        }
+        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
+            BREAD_CRUMB(L"%s:  5a 1g", FuncTag);
+
+            SubEntry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
+        }
+        else {
+            BREAD_CRUMB(L"%s:  5a 1h - WARN ... ''%s' Token is Invalid!!", FuncTag, TokenList[0]);
+        }
+
+        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        FreeTokenLine (&TokenList, &TokenCount);
+
+        BREAD_CRUMB(L"%s:  5a 3 - WHILE LOOP:- END", FuncTag);
+        LOG_SEP(L"X");
+    } // while
+
+    BREAD_CRUMB(L"%s:  6", FuncTag);
+    if (!SubEntry->Enabled) {
+        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) SubEntry);
+
+        BREAD_CRUMB(L"%s:  6a 2 - END:- VOID", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"SubEntry is Disabled!!");
+        #endif
+
+        return;
+    }
+
+    BREAD_CRUMB(L"%s:  7", FuncTag);
+    MY_FREE_POOL(SubEntry->me.Title);
+    if (!TitleVolume) {
+        BREAD_CRUMB(L"%s:  7a 1", FuncTag);
+
+        SubEntry->me.Title = StrDuplicate (
+            (Title != NULL) ? Title : L"Instance: Unknown"
+        );
+    }
+    else {
+        BREAD_CRUMB(L"%s:  7b 1", FuncTag);
+
+        TmpName = (Title != NULL)
+            ? Title
+            : L"Instance: Unknown";
+        SubEntry->me.Title = PoolPrint (
+            L"Load %s%s%s%s%s",
+            TmpName,
+            SetVolJoin (TmpName                                 ),
+            SetVolKind (TmpName, Volume->VolName, Volume->FSType),
+            SetVolFlag (TmpName, Volume->VolName                ),
+            SetVolType (TmpName, Volume->VolName, Volume->FSType)
+        );
+    }
+
+    BREAD_CRUMB(L"%s:  8", FuncTag);
+    if (SubEntry->InitrdPath != NULL) {
+        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
+        MergeStrings (&SubEntry->LoadOptions, L"initrd=", L' ');
+        MergeStrings (&SubEntry->LoadOptions, SubEntry->InitrdPath, 0);
+        MY_FREE_POOL(SubEntry->InitrdPath);
+        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
+    }
+
+    BREAD_CRUMB(L"%s:  9", FuncTag);
+    AddSubMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+
+    // DA-TAG: Investigate This
+    //         Freeing the SubScreen below causes a hang
+    //BREAD_CRUMB(L"%s:  10", FuncTag);
+    //FreeMenuScreen (&Entry->me.SubScreen);
+
+    BREAD_CRUMB(L"%s:  10", FuncTag);
+    Entry->me.SubScreen = SubScreen;
+
+    BREAD_CRUMB(L"%s:  11 - END:- VOID", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+} // static VOID AddSubmenu()
+
+// Adds the options from a single config.conf stanza to a new loader entry and returns
+// that entry. The calling function is then responsible for adding the entry to the
+// list of entries.
+static
+LOADER_ENTRY * AddStanzaEntries (
+    REFIT_FILE   *File,
+    REFIT_VOLUME *Volume,
+    CHAR16       *Title
+) {
+    UINTN           TokenCount;
+    CHAR16        **TokenList;
+    CHAR16         *OurEfiBootNumber;
+    CHAR16         *LoadOptions;
+    BOOLEAN         RetVal;
+    BOOLEAN         HasPath;
+    BOOLEAN         DefaultsSet;
+    BOOLEAN         AddedSubmenu;
+    BOOLEAN         FirmwareBootNum;
+    REFIT_VOLUME   *CurrentVolume;
+    REFIT_VOLUME   *PreviousVolume;
+    LOADER_ENTRY   *Entry;
+
+    #if REFIT_DEBUG > 0
+    CHAR16         *MsgStr;
+    static BOOLEAN  OtherCall = FALSE;
+    #endif
+
+    // Prepare the menu entry
+    Entry = InitializeLoaderEntry (NULL);
+    if (Entry == NULL) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Could Not Initialise Loader Entry for User Configured Stanza");
+        #endif
+
+        return NULL;
+    }
+
+    Entry->Title = (Title != NULL)
+        ? PoolPrint (L"Manual Stanza: %s", Title)
+        : StrDuplicate (L"Manual Stanza: Title Not Found");
+    Entry->me.Row          = 0;
+    Entry->Enabled         = TRUE;
+    Entry->Volume          = CopyVolume (Volume);
+    Entry->me.BadgeImage   = egCopyImage (Volume->VolBadgeImage);
+    Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
+
+    // Parse the config file to add options for a single stanza, terminating when the token
+    // is "}" or when the end of file is reached.
+    #if REFIT_DEBUG > 0
+    /* Exception for LOG_THREE_STAR_SEP */
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"%s",
+        (!OtherCall) ? L"FIRST STANZA" : L"NEXT STANZA"
+    );
+    OtherCall = TRUE;
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Stanza:- '%s'", Entry->Title);
+    #endif
+
+    CurrentVolume = Volume;
+    LoadOptions = OurEfiBootNumber = NULL;
+    FirmwareBootNum = AddedSubmenu = DefaultsSet = HasPath = FALSE;
+
+    while (Entry->Enabled
+        && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
+        && (StrCmp (TokenList[0], L"}") != 0)
+    ) {
+        if (MyStriCmp (TokenList[0], L"disabled")) {
+            Entry->Enabled = FALSE;
+        }
+        else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
+            // Set the boot loader filename
+            // DA-TAG: Avoid Memory Leak
+            MY_FREE_POOL(Entry->LoaderPath);
+            Entry->LoaderPath = StrDuplicate (TokenList[1]);
+
+            HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
+            if (HasPath) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                #endif
+
+                SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
+
+                // Discard default options, if any
+                MY_FREE_POOL(Entry->LoadOptions);
+                DefaultsSet = TRUE;
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
+            PreviousVolume = CurrentVolume;
+            if (!FindVolume (&CurrentVolume, TokenList[1])) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"Could Not Find Volume:- '%s'",
+                    TokenList[1]
+                );
+                #endif
+            }
+            else {
+                if ((CurrentVolume != NULL) &&
+                    (CurrentVolume->RootDir) &&
+                    (CurrentVolume->IsReadable)
+                ) {
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
+                    #endif
+
+                    // DA-TAG: Avoid Memory Leak
+                    FreeVolume (&Entry->Volume);
+                    Entry->Volume = CopyVolume (CurrentVolume);
+
+                    // DA-TAG: Avoid Memory Leak
+                    MY_FREE_IMAGE(Entry->me.BadgeImage);
+                    Entry->me.BadgeImage = egCopyImage (CurrentVolume->VolBadgeImage);
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_THREE_STAR_MID,
+                        L"Could Not Add Volume ... Reverting to Previous:- '%s'",
+                        PreviousVolume->VolName
+                    );
+                    #endif
+
+                    // Invalid ... Reset to previous working volume
+                    CurrentVolume = PreviousVolume;
+                }
+            } // if/else !FindVolume
+        }
+        else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
+            if (!AllowGraphicsMode) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"In AddStanzaEntries ... Skipped Loading Icon in %s Mode",
+                    (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"Text Screen"
+                );
+                #endif
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
+
+                // DA-TAG: Avoid Memory Leak
+                MY_FREE_IMAGE(Entry->me.Image);
+                Entry->me.Image = egLoadIcon (
+                    CurrentVolume->RootDir,
+                    TokenList[1],
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
+
+                if (Entry->me.Image == NULL) {
+                    // Set dummy image if icon was not found
+                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+                }
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
+            #endif
+
+            // DA-TAG: Avoid Memory Leak
+            MY_FREE_POOL(Entry->InitrdPath);
+            Entry->InitrdPath = StrDuplicate (TokenList[1]);
+        }
+        else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
+            #endif
+
+            // DA-TAG: Avoid Memory Leak
+            MY_FREE_POOL(LoadOptions);
+            LoadOptions = StrDuplicate (TokenList[1]);
+        }
+        else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
+            if (TokenCount > 1) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
+                #endif
+
+                Entry->OSType = TokenList[1][0];
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Adding Graphics Mode for '%s'",
+                (HasPath) ? Entry->LoaderPath : Entry->Title
+            );
+            #endif
+
+            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
+        }
+        else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
+            #endif
+
+            Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+            Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
+
+            if (Entry->me.BadgeImage == NULL) {
+                // Set dummy image if badge was not found
+                Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
+            }
+
+            DefaultsSet      = TRUE;
+            FirmwareBootNum  = TRUE;
+            MY_FREE_POOL(OurEfiBootNumber);
+            OurEfiBootNumber = StrDuplicate (TokenList[1]);
+        }
+        else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Add SubMenu Items to %s",
+                (HasPath) ? Entry->LoaderPath : Entry->Title
+            );
+            #endif
+
+            AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
+            AddedSubmenu = TRUE;
+        } // Set options to pass to the loader program
+
+        FreeTokenLine (&TokenList, &TokenCount);
+    } // while Entry->Enabled
+
+    if (!Entry->Enabled) {
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+        MY_FREE_POOL(OurEfiBootNumber);
+        MY_FREE_POOL(LoadOptions);
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Entry is Disabled!!");
+        #endif
+
+        return NULL;
+    }
+
+    // Set Screen Title
+    if (!FirmwareBootNum && Entry->Volume->VolName) {
+        Entry->me.Title = PoolPrint (
+            L"Load %s%s%s%s%s",
+            Entry->Title,
+            SetVolJoin (Entry->Title                                 ),
+            SetVolKind (Entry->Title, Volume->VolName, Volume->FSType),
+            SetVolFlag (Entry->Title, Volume->VolName                ),
+            SetVolType (Entry->Title, Volume->VolName, Volume->FSType)
+        );
+    }
+    else {
+        if (FirmwareBootNum) {
+            // Clear potentially wrongly set items
+            MY_FREE_POOL(Entry->LoaderPath);
+            MY_FREE_POOL(Entry->EfiLoaderPath);
+            MY_FREE_POOL(Entry->LoadOptions);
+            MY_FREE_POOL(Entry->InitrdPath);
+
+            Entry->me.Title = PoolPrint (
+                L"Load %s ... [Firmware Boot Number]",
+                Entry->Title
+            );
+
+            Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
+        }
+        else {
+            Entry->me.Title = PoolPrint (
+                L"Load %s",
+                Entry->Title
+            );
+        }
+    }
+
+    // Set load options, if any
+    if (LoadOptions && StrLen (LoadOptions) > 0) {
+        MY_FREE_POOL(Entry->LoadOptions);
+        Entry->LoadOptions = StrDuplicate (LoadOptions);
+    }
+
+    if (AddedSubmenu) {
+        RetVal = GetReturnMenuEntry (&Entry->me.SubScreen);
+        if (!RetVal) {
+            FreeMenuScreen (&Entry->me.SubScreen);
+        }
+    }
+
+    if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {
+        if (Entry->LoadOptions && StrLen (Entry->LoadOptions) > 0) {
+            MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
+            MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+        }
+        else {
+            Entry->LoadOptions = PoolPrint (
+                L"initrd=%s",
+                Entry->InitrdPath
+            );
+        }
+        MY_FREE_POOL(Entry->InitrdPath);
+    }
+
+    if (!DefaultsSet) {
+        // No "loader" line ... use bogus one
+        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+    }
+
+    if (AllowGraphicsMode && Entry->me.Image == NULL) {
+        // Still no icon ... set dummy image
+        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+    }
+
+    MY_FREE_POOL(OurEfiBootNumber);
+    MY_FREE_POOL(LoadOptions);
+
+    return Entry;
+} // static VOID AddStanzaEntries()
+
+// Create an options file based on /etc/fstab. The resulting file has two options
+// lines, one of which boots the system with "ro root={rootfs}" and the other of
+// which boots the system with "ro root={rootfs} single", where "{rootfs}" is the
+// filesystem identifier associated with the "/" line in /etc/fstab.
+static
+REFIT_FILE * GenerateOptionsFromEtcFstab (
+    REFIT_VOLUME *Volume
+) {
+    EFI_STATUS    Status;
+    UINTN         TokenCount, i;
+    CHAR16      **TokenList;
+    CHAR16       *Line;
+    CHAR16       *Root;
+    REFIT_FILE   *Fstab;
+    REFIT_FILE   *Options;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GenerateOptionsFromEtcFstab";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+    if (!FileExists (Volume->RootDir, L"\\etc\\fstab")) {
+        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' Does Not Exist", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return NULL;
+    }
+
+    BREAD_CRUMB(L"%s:  2", FuncTag);
+    Options = AllocateZeroPool (sizeof (REFIT_FILE));
+    if (Options == NULL) {
+        BREAD_CRUMB(L"%s:  2a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return NULL;
+    }
+
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    Fstab = AllocateZeroPool (sizeof (REFIT_FILE));
+    if (Fstab == NULL) {
+        BREAD_CRUMB(L"%s:  3a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        MY_FREE_POOL(Options);
+
+        // Early Return
+        return NULL;
+    }
+
+    BREAD_CRUMB(L"%s:  4", FuncTag);
+    Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
+
+    BREAD_CRUMB(L"%s:  5", FuncTag);
+    if (CheckError (Status, L"while reading /etc/fstab")) {
+        BREAD_CRUMB(L"%s:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        MY_FREE_POOL(Options);
+        MY_FREE_POOL(Fstab);
+
+        // Early Return
+        return NULL;
+    }
+
+    BREAD_CRUMB(L"%s:  6", FuncTag);
+    // File read; locate root fs and create entries
+    Options->Encoding = ENCODING_UTF16_LE;
+
+    BREAD_CRUMB(L"%s:  7", FuncTag);
+    while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"Read Line Holding %d Token%s From '/etc/fstab'",
+            TokenCount,
+            (TokenCount == 1) ? L"" : L"s"
+        );
+        #endif
+
+        LOG_SEP(L"X");
+        BREAD_CRUMB(L"%s:  7a 1 - WHILE LOOP:- START", FuncTag);
+        if (TokenCount > 2) {
+            BREAD_CRUMB(L"%s:  7a 1a 1", FuncTag);
+            if (StrCmp (TokenList[1], L"\\") == 0) {
+                BREAD_CRUMB(L"%s:  7a 1a 1a 1", FuncTag);
+                Root = PoolPrint (L"%s", TokenList[0]);
+            }
+            else if (StrCmp (TokenList[2], L"\\") == 0) {
+                BREAD_CRUMB(L"%s:  7a 1a 1b 1", FuncTag);
+                Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
+            }
+            else {
+                BREAD_CRUMB(L"%s:  7a 1a 1c 1", FuncTag);
+                Root = NULL;
+            }
+
+            BREAD_CRUMB(L"%s:  7a 1a 2", FuncTag);
+            if (Root && (Root[0] != L'\0')) {
+                BREAD_CRUMB(L"%s:  7a 1a 2a 1", FuncTag);
+                for (i = 0; i < StrLen (Root); i++) {
+                    LOG_SEP(L"X");
+                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1 - FOR LOOP:- START", FuncTag);
+                    if (Root[i] == '\\') {
+                        BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1a 1 - Flip Slash", FuncTag);
+                        Root[i] = '/';
+                    }
+                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 2 - FOR LOOP:- END", FuncTag);
+                    LOG_SEP(L"X");
+                }
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 2", FuncTag);
+                Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 3", FuncTag);
+                MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 4", FuncTag);
+                MY_FREE_POOL(Line);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 5", FuncTag);
+                Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 6", FuncTag);
+                MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 7", FuncTag);
+                MY_FREE_POOL(Line);
+
+                BREAD_CRUMB(L"%s:  7a 1a 2a 8", FuncTag);
+                Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
+            } // if
+
+            BREAD_CRUMB(L"%s:  7a 1a 3", FuncTag);
+            MY_FREE_POOL(Root);
+        } // if
+
+        BREAD_CRUMB(L"%s:  7a 2", FuncTag);
+        FreeTokenLine (&TokenList, &TokenCount);
+
+        BREAD_CRUMB(L"%s:  7a 3 - WHILE LOOP:- END", FuncTag);
+        LOG_SEP(L"X");
+    } // while
+
+    BREAD_CRUMB(L"%s:  8", FuncTag);
+    if (Options->Buffer) {
+        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
+        Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+        Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
+        Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+        Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+
+        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
+    }
+    else {
+        BREAD_CRUMB(L"%s:  8b 1", FuncTag);
+        MY_FREE_POOL(Options);
+    }
+
+    BREAD_CRUMB(L"%s:  9", FuncTag);
+    MY_FREE_POOL(Fstab->Buffer);
+    MY_FREE_POOL(Fstab);
+
+    BREAD_CRUMB(L"%s:  10 - END:- return REFIT_FILE *Options", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+
+    return Options;
+} // static GenerateOptionsFromEtcFstab()
+
+// Create options from partition type codes. Specifically, if the earlier
+// partition scan found a partition with a type code corresponding to a root
+// filesystem according to the Freedesktop.org Discoverable Partitions Spec
+// (http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/),
+// this function returns an appropriate file with two lines, one with
+// "ro root=/dev/disk/by-partuuid/{GUID}" and the other with that plus "single".
+// Note that this function returns the LAST partition found with the
+// appropriate type code, so this will work poorly on dual-boot systems or
+// if the type code is set incorrectly.
+static
+REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
+    REFIT_FILE   *Options;
+    CHAR16       *Line, *GuidString, *WriteStatus;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GenerateOptionsFromPartTypes";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    Options = NULL;
+    if (GlobalConfig.DiscoveredRoot) {
+        BREAD_CRUMB(L"%s:  1a 1", FuncTag);
+        Options = AllocateZeroPool (sizeof (REFIT_FILE));
+
+        BREAD_CRUMB(L"%s:  1a 2", FuncTag);
+        if (Options) {
+            BREAD_CRUMB(L"%s:  1a 2a 1", FuncTag);
+            Options->Encoding = ENCODING_UTF16_LE;
+
+            BREAD_CRUMB(L"%s:  1a 2a 2", FuncTag);
+            GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
+
+            BREAD_CRUMB(L"%s:  1a 2a 3", FuncTag);
+            WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
+
+            BREAD_CRUMB(L"%s:  1a 2a 4", FuncTag);
+            ToLower (GuidString);
+
+            BREAD_CRUMB(L"%s:  1a 2a 5", FuncTag);
+            if (GuidString) {
+                BREAD_CRUMB(L"%s:  1a 2a 5a 1", FuncTag);
+                Line = PoolPrint (
+                    L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
+                    WriteStatus, GuidString
+                );
+
+                BREAD_CRUMB(L"%s:  1a 2a 5a 2", FuncTag);
+                MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
+
+                BREAD_CRUMB(L"%s:  1a 2a 5a 3", FuncTag);
+                MY_FREE_POOL(Line);
+
+                BREAD_CRUMB(L"%s:  1a 2a 5a 4", FuncTag);
+                Line = PoolPrint (
+                    L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
+                    WriteStatus, GuidString
+                );
+
+                BREAD_CRUMB(L"%s:  1a 2a 5a 5", FuncTag);
+                MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
+
+                BREAD_CRUMB(L"%s:  1a 2a 5a 6", FuncTag);
+                MY_FREE_POOL(Line);
+                MY_FREE_POOL(GuidString);
+            } // if (GuidString)
+
+            BREAD_CRUMB(L"%s:  1a 2a 6", FuncTag);
+            Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
+            Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
+            Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
+            Options->Current16Ptr = (CHAR16 *) Options->Buffer;
+            Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+        } // if (Options allocated OK)
+        BREAD_CRUMB(L"%s:  1a 3", FuncTag);
+    } // if (partition has root GUID)
+
+    BREAD_CRUMB(L"%s:  2 - END:- return REFIT_FILE *Options", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+
+    return Options;
+} // static REFIT_FILE * GenerateOptionsFromPartTypes()
+
+EFI_STATUS RefitReadFile (
+    IN     EFI_FILE_HANDLE  BaseDir,
+    IN     CHAR16          *FileName,
+    IN OUT REFIT_FILE      *File,
+    OUT    UINTN           *size
+) {
+    EFI_STATUS       Status;
+    EFI_FILE_HANDLE  FileHandle;
+    EFI_FILE_INFO   *FileInfo;
+    CHAR16          *Message;
+    UINT64           ReadSize;
+
+    File->Buffer     = NULL;
+    File->BufferSize = 0;
+
+    // read the file, allocating a buffer on the way
+    Status = REFIT_CALL_5_WRAPPER(
+        BaseDir->Open, BaseDir,
+        &FileHandle, FileName,
+        EFI_FILE_MODE_READ, 0
+    );
+
+    Message = PoolPrint (L"While Loading File:- '%s'", FileName);
+    if (CheckError (Status, Message)) {
+        MY_FREE_POOL(Message);
+
+        // Early Return
+        return Status;
+    }
+
+    FileInfo = LibFileInfo (FileHandle);
+    if (FileInfo == NULL) {
+        // TODO: print and register the error
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+
+        // Early Return
+        return EFI_LOAD_ERROR;
+    }
+    ReadSize = FileInfo->FileSize;
+    MY_FREE_POOL(FileInfo);
+
+    File->BufferSize = (UINTN) ReadSize;
+    File->Buffer = AllocatePool (File->BufferSize);
+    if (File->Buffer == NULL) {
+       size = 0;
+
+       // Early Return
+       return EFI_OUT_OF_RESOURCES;
+    }
+
+    *size = File->BufferSize;
+
+    Status = REFIT_CALL_3_WRAPPER(
+        FileHandle->Read, FileHandle,
+        &File->BufferSize, File->Buffer
+    );
+    if (CheckError (Status, Message)) {
+        size = 0;
+        MY_FREE_POOL(Message);
+        MY_FREE_POOL(File->Buffer);
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+
+        // Early Return
+        return Status;
+    }
+    MY_FREE_POOL(Message);
+
+    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+
+    // Setup for reading
+    File->Current8Ptr  = (CHAR8 *)File->Buffer;
+    File->End8Ptr      = File->Current8Ptr + File->BufferSize;
+    File->Current16Ptr = (CHAR16 *)File->Buffer;
+    File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
+
+    // DA_TAG: Investigate This
+    //        Detect other encodings
+    //        Some are also implemented
+    //
+    // Detect Encoding
+    File->Encoding = ENCODING_ISO8859_1;   // default: 1:1 translation of CHAR8 to CHAR16
+    if (File->BufferSize >= 4) {
+        if (File->Buffer[0] == 0xFF && File->Buffer[1] == 0xFE) {
+            // BOM in UTF-16 little endian (or UTF-32 little endian)
+            File->Encoding = ENCODING_UTF16_LE;   // use CHAR16 as is
+            File->Current16Ptr++;
+        }
+        else if (File->Buffer[0] == 0xEF && File->Buffer[1] == 0xBB && File->Buffer[2] == 0xBF) {
+            // BOM in UTF-8
+            File->Encoding = ENCODING_UTF8;       // translate from UTF-8 to UTF-16
+            File->Current8Ptr += 3;
+        }
+        else if (File->Buffer[1] == 0 && File->Buffer[3] == 0) {
+            File->Encoding = ENCODING_UTF16_LE;   // use CHAR16 as is
+        }
+    }
+
+    return EFI_SUCCESS;
+} // EFI_STATUS RefitReadFile()
+
+//
+// Get a line of tokens from a file
+//
+UINTN ReadTokenLine (
+    IN  REFIT_FILE   *File,
+    OUT CHAR16     ***TokenList
+) {
+    BOOLEAN  LineFinished;
+    BOOLEAN  IsQuoted;
+    CHAR16  *Line, *Token, *p;
+    UINTN    TokenCount;
+
+    *TokenList = NULL;
+
+    IsQuoted = FALSE;
+    TokenCount = 0;
+    while (TokenCount == 0) {
+        Line = ReadLine (File);
+        if (Line == NULL) {
+            return 0;
+        }
+
+        p = Line;
+        LineFinished = FALSE;
+        while (!LineFinished) {
+            // Skip whitespace and find start of token
+            while (!IsQuoted &&
+                (
+                    *p == ' '  ||
+                    *p == '\t' ||
+                    *p == '='  ||
+                    *p == ','
+                )
+            ) {
+                p++;
+            } // while
+
+            if (*p == 0 || *p == '#') {
+                break;
+            }
+
+            if (*p == '"') {
+               IsQuoted = !IsQuoted;
+               p++;
+            }
+
+            Token = p;
+
+            // Find end of token
+            while (KeepReading (p, &IsQuoted)) {
+               if ((*p == L'/') && !IsQuoted) {
+                   // Switch Unix style to DOS style directory separators
+                   *p = L'\\';
+               }
+               p++;
+            } // while
+
+            if (*p == L'\0' || *p == L'#') {
+                LineFinished = TRUE;
+            }
+            *p++ = 0;
+
+            AddListElement (
+                (VOID ***) TokenList,
+                &TokenCount,
+                (VOID *) StrDuplicate (Token)
+            );
+        } // while !LineFinished
+
+        MY_FREE_POOL(Line);
+    } // while TokenCount == 0
+
+    return TokenCount;
+} // UINTN ReadTokenLine()
+
+VOID FreeTokenLine (
+    IN OUT CHAR16 ***TokenList,
+    IN OUT UINTN    *TokenCount
+) {
+    // DA-TAG: Investigate this
+    //         Also free the items
+    FreeList ((VOID ***) TokenList, TokenCount);
+} // VOID FreeTokenLine()
+
+// Read the user-configured menu entries from config.conf and add or delete
+// entries based on the contents of that file.
+VOID ScanUserConfigured (
+    CHAR16 *FileName
+) {
+    EFI_STATUS         Status;
+    REFIT_FILE         File;
+    CHAR16           **TokenList;
+    UINTN              size;
+    UINTN              TokenCount;
+    LOADER_ENTRY      *Entry;
+
+    #if REFIT_DEBUG > 0
+    CHAR16             *TmpName;
+    CHAR16             *CountStr;
+    UINTN               LogLineType;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ScanUserConfigured";
+    #endif
+    #endif
+
+    if (!ManualInclude) {
+        LOG_SEP(L"X");
+        LOG_INCREMENT();
+        BREAD_CRUMB(L"%s:  A - START", FuncTag);
+
+        TotalEntryCount = ValidEntryCount = 0;
+    }
+
+    if (FileExists (SelfDir, FileName)) {
+        Status = RefitReadFile (SelfDir, FileName, &File, &size);
+        if (!EFI_ERROR(Status)) {
+            while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
+                if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
+                    TotalEntryCount = TotalEntryCount + 1;
+                    Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
+                    if (Entry == NULL) {
+                        FreeTokenLine (&TokenList, &TokenCount);
+                        continue;
+                    }
+
+                    ValidEntryCount = ValidEntryCount + 1;
+                    #if REFIT_DEBUG > 0
+                    TmpName = (SelfVolume->VolName)
+                        ? SelfVolume->VolName
+                        : Entry->LoaderPath;
+                    LOG_MSG(
+                        "%s  - Found %s%s%s%s%s",
+                        OffsetNext,
+                        Entry->Title,
+                        SetVolJoin (Entry->Title            ),
+                        SetVolKind (Entry->Title, TmpName, 0),
+                        SetVolFlag (Entry->Title, TmpName   ),
+                        SetVolType (Entry->Title, TmpName, 0)
+                    );
+                    #endif
+
+                    if (Entry->me.SubScreen == NULL) {
+                        GenerateSubScreen (Entry, SelfVolume, TRUE);
+                    }
+                    AddPreparedLoaderEntry (Entry);
+                }
+                else if (
+                    TokenCount == 2 &&
+                    ManualInclude == FALSE &&
+                    MyStriCmp (TokenList[0], L"include") &&
+                    MyStriCmp (FileName, GlobalConfig.ConfigFilename)
+                ) {
+                    if (!MyStriCmp (TokenList[1], FileName)) {
+                        // Scan manual stanza include file
+                        #if REFIT_DEBUG > 0
+                        #if REFIT_DEBUG < 2
+                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Process Include File for Manual Stanzas");
+                        #else
+                        LOG_SEP(L"X");
+                        BREAD_CRUMB(L"%s:  A1 - INCLUDE FILE (%s): START", FuncTag, TokenList[1]);
+                        #endif
+                        #endif
+
+                        ManualInclude = TRUE;
+                        ScanUserConfigured (TokenList[1]);
+                        ManualInclude = FALSE;
+
+                        #if REFIT_DEBUG > 0
+                        #if REFIT_DEBUG < 2
+                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Scanned Include File for Manual Stanzas");
+                        #else
+                        BREAD_CRUMB(L"%s:  A2 - INCLUDE FILE (%s): END", FuncTag, TokenList[1]);
+                        LOG_SEP(L"X");
+                        #endif
+                        #endif
+                    }
+                }
+
+                FreeTokenLine (&TokenList, &TokenCount);
+            } // while
+
+            FreeTokenLine (&TokenList, &TokenCount);
+        }
+    } // if FileExists
+
+    #if REFIT_DEBUG > 0
+    CountStr = (ValidEntryCount > 0) ? PoolPrint (L"%d", ValidEntryCount) : NULL;
+    LogLineType = (ManualInclude) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
+    ALT_LOG(1, LogLineType,
+        L"Processed %d Manual Stanzas in '%s'%s%s%s%s",
+        TotalEntryCount, FileName,
+        (TotalEntryCount == 0) ? L""      : L" ... Found ",
+        (ValidEntryCount  > 0) ? CountStr : (TotalEntryCount == 0) ? L"" : L"0",
+        (TotalEntryCount == 0) ? L""      : L" Valid/Active Stanza",
+        (ValidEntryCount  < 1) ? L""      : L"s"
+    );
+    MY_FREE_POOL(CountStr);
+    #endif
+
+    if (ManualInclude) {
+        ManualInclude = FALSE;
+    }
+    else {
+        BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+    }
+} // VOID ScanUserConfigured()
+
+// Read a Linux kernel options file for a Linux boot loader into memory. The LoaderPath
+// and Volume variables identify the location of the options file, but not its name --
+// you pass this function the filename of the Linux kernel, initial RAM disk, or other
+// file in the target directory, and this function finds the file with a name in the
+// comma-delimited list of names specified by LINUX_OPTIONS_FILENAMES within that
+// directory and loads it. If a RefindPlus options file can't be found, try to generate
+// minimal options from /etc/fstab on the same volume as the kernel. This typically
+// works only if the kernel is being read from the Linux root filesystem.
+//
+// The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
+// it was not found.
+REFIT_FILE * ReadLinuxOptionsFile (
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
+    EFI_STATUS   Status;
+    CHAR16      *OptionsFilename;
+    CHAR16      *FullFilename;
+    UINTN        size;
+    UINTN        i;
+    BOOLEAN      GoOn;
+    BOOLEAN      FileFound;
+    REFIT_FILE  *File;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ReadLinuxOptionsFile";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+
+    BREAD_CRUMB(L"%s:  2", FuncTag);
+    File = NULL;
+    GoOn = TRUE;
+    FileFound = FALSE;
+
+    i = 0;
+    while (
+        GoOn &&
+        (
+            OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++)
+        ) != NULL
+    ) {
+        LOG_SEP(L"X");
+        BREAD_CRUMB(L"%s:  2a 1 - DO LOOP:- START", FuncTag);
+        FullFilename = FindPath (LoaderPath);
+        if (FullFilename == NULL) {
+            BREAD_CRUMB(L"%s:  2a 1a 1 - DO LOOP:- BREAK - Missing Params", FuncTag);
+            LOG_SEP(L"X");
+
+            MY_FREE_POOL(OptionsFilename);
+
+            break;
+        }
+
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        MergeStrings (&FullFilename, OptionsFilename, '\\');
+
+        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+        if (FileExists (Volume->RootDir, FullFilename)) {
+            BREAD_CRUMB(L"%s:  2a 3a 1", FuncTag);
+            MY_FREE_FILE(File);
+            File = AllocateZeroPool (sizeof (REFIT_FILE));
+            if (File == NULL) {
+                MY_FREE_POOL(OptionsFilename);
+                MY_FREE_POOL(FullFilename);
+
+                BREAD_CRUMB(L"%s:  2a 3a 1a 1 - DO LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
+                LOG_DECREMENT();
+                LOG_SEP(L"X");
+
+                return NULL;
+            }
+
+            BREAD_CRUMB(L"%s:  2a 3a 2", FuncTag);
+            Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
+            if (!CheckError (Status, L"While Loading the Linux Options File")) {
+                BREAD_CRUMB(L"%s:  2a 3a 2a 1", FuncTag);
+                GoOn      = FALSE;
+                FileFound = TRUE;
+            }
+            BREAD_CRUMB(L"%s:  2a 3a 3", FuncTag);
+        }
+        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
+
+        MY_FREE_POOL(OptionsFilename);
+        MY_FREE_POOL(FullFilename);
+
+        BREAD_CRUMB(L"%s:  2a 5 - DO LOOP:- END", FuncTag);
+        LOG_SEP(L"X");
+    } // while
+
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    if (!FileFound) {
+        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        // No refindplus_linux.conf or refind_linux.conf file
+        // Look for /etc/fstab and try to pull values from there
+        MY_FREE_FILE(File);
+        File = GenerateOptionsFromEtcFstab (Volume);
+
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
+        if (!File) {
+            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
+            File = GenerateOptionsFromPartTypes();
+        }
+        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
+    } // if
+
+    BREAD_CRUMB(L"%s:  4 - END:- return REFIT_FILE *File", FuncTag);
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+    return File;
+} // REFIT_FILE * ReadLinuxOptionsFile()
+
+// Retrieve a single line of options from a Linux kernel options file
+CHAR16 * GetFirstOptionsFromFile (
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
+    UINTN         TokenCount;
+    CHAR16       *Options;
+    CHAR16      **TokenList;
+    REFIT_FILE   *File;
+
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GetFirstOptionsFromFile";
+    #endif
+
+    LOG_SEP(L"X");
+    LOG_INCREMENT();
+    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    File = ReadLinuxOptionsFile (LoaderPath, Volume);
+
+    BREAD_CRUMB(L"%s:  2", FuncTag);
+    Options = NULL;
+    if (File != NULL) {
+        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        TokenCount = ReadTokenLine(File, &TokenList);
+
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        if (TokenCount > 1) {
+            Options = StrDuplicate(TokenList[1]);
+        }
+
+        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+        FreeTokenLine (&TokenList, &TokenCount);
+
+        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
+        MY_FREE_FILE(File);
+    }
+
+    BREAD_CRUMB(L"%s:  3 - END:- return CHAR16 *Options = '%s'", FuncTag,
+        Options ? Options : L"NULL"
+    );
+    LOG_DECREMENT();
+    LOG_SEP(L"X");
+
+    return Options;
+} // CHAR16 * GetOptionsFile()
+
+// Read Config File
 VOID ReadConfig (
     CHAR16 *FileName
 ) {
@@ -795,7 +1851,7 @@ VOID ReadConfig (
         GlobalConfig.DefaultSelection = StrDuplicate (L"+");
 
         MY_FREE_POOL(GlobalConfig.LinuxPrefixes);
-        GlobalConfig.LinuxPrefixes = StrDuplicate (L"+");
+        GlobalConfig.LinuxPrefixes = StrDuplicate(LINUX_PREFIXES);
     } // if
 
     if (!FileExists (SelfDir, FileName)) {
@@ -1057,6 +2113,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
+            MY_FREE_POOL(GlobalConfig.AlsoScan);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
 
             #if REFIT_DEBUG > 0
@@ -1071,6 +2128,7 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_dirs") ||
             MyStriCmp (TokenList[0], L"don't_scan_dirs")
         ) {
+            MY_FREE_POOL(GlobalConfig.DontScanDirs);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanDirs));
 
             #if REFIT_DEBUG > 0
@@ -1085,6 +2143,7 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_files") ||
             MyStriCmp (TokenList[0], L"don't_scan_files")
         ) {
+            MY_FREE_POOL(GlobalConfig.DontScanFiles);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
 
             #if REFIT_DEBUG > 0
@@ -1113,6 +2172,7 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_firmware") ||
             MyStriCmp (TokenList[0], L"don't_scan_firmware")
         ) {
+            MY_FREE_POOL(GlobalConfig.DontScanFirmware);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
 
             #if REFIT_DEBUG > 0
@@ -1143,6 +2203,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"windows_recovery_files")) {
+            MY_FREE_POOL(GlobalConfig.WindowsRecoveryFiles);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.WindowsRecoveryFiles));
 
             #if REFIT_DEBUG > 0
@@ -1190,26 +2251,26 @@ VOID ReadConfig (
 
                 Flag = TokenList[i];
                 if (0);
-                else if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[j] = TAG_EXIT;
-                else if (MyStriCmp (Flag, L"shell")           ) GlobalConfig.ShowTools[j] = TAG_SHELL;
-                else if (MyStriCmp (Flag, L"gdisk")           ) GlobalConfig.ShowTools[j] = TAG_GDISK;
-                else if (MyStriCmp (Flag, L"about")           ) GlobalConfig.ShowTools[j] = TAG_ABOUT;
-                else if (MyStriCmp (Flag, L"reboot")          ) GlobalConfig.ShowTools[j] = TAG_REBOOT;
-                else if (MyStriCmp (Flag, L"gptsync")         ) GlobalConfig.ShowTools[j] = TAG_GPTSYNC;
-                else if (MyStriCmp (Flag, L"install")         ) GlobalConfig.ShowTools[j] = TAG_INSTALL;
-                else if (MyStriCmp (Flag, L"netboot")         ) GlobalConfig.ShowTools[j] = TAG_NETBOOT;
-                else if (MyStriCmp (Flag, L"memtest")         ) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
-                else if (MyStriCmp (Flag, L"memtest86")       ) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
-                else if (MyStriCmp (Flag, L"shutdown")        ) GlobalConfig.ShowTools[j] = TAG_SHUTDOWN;
-                else if (MyStriCmp (Flag, L"mok_tool")        ) GlobalConfig.ShowTools[j] = TAG_MOK_TOOL;
-                else if (MyStriCmp (Flag, L"firmware")        ) GlobalConfig.ShowTools[j] = TAG_FIRMWARE;
-                else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[j] = TAG_BOOTORDER;
-                else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[j] = TAG_CSR_ROTATE;
-                else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[j] = TAG_FWUPDATE_TOOL;
-                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[j] = TAG_INFO_NVRAMCLEAN;
+                else if (MyStriCmp (Flag, L"exit"            )) GlobalConfig.ShowTools[j] = TAG_EXIT;
+                else if (MyStriCmp (Flag, L"shell"           )) GlobalConfig.ShowTools[j] = TAG_SHELL;
+                else if (MyStriCmp (Flag, L"gdisk"           )) GlobalConfig.ShowTools[j] = TAG_GDISK;
+                else if (MyStriCmp (Flag, L"about"           )) GlobalConfig.ShowTools[j] = TAG_ABOUT;
+                else if (MyStriCmp (Flag, L"reboot"          )) GlobalConfig.ShowTools[j] = TAG_REBOOT;
+                else if (MyStriCmp (Flag, L"gptsync"         )) GlobalConfig.ShowTools[j] = TAG_GPTSYNC;
+                else if (MyStriCmp (Flag, L"install"         )) GlobalConfig.ShowTools[j] = TAG_INSTALL;
+                else if (MyStriCmp (Flag, L"netboot"         )) GlobalConfig.ShowTools[j] = TAG_NETBOOT;
+                else if (MyStriCmp (Flag, L"memtest"         )) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"memtest86"       )) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"shutdown"        )) GlobalConfig.ShowTools[j] = TAG_SHUTDOWN;
+                else if (MyStriCmp (Flag, L"mok_tool"        )) GlobalConfig.ShowTools[j] = TAG_MOK_TOOL;
+                else if (MyStriCmp (Flag, L"firmware"        )) GlobalConfig.ShowTools[j] = TAG_FIRMWARE;
+                else if (MyStriCmp (Flag, L"bootorder"       )) GlobalConfig.ShowTools[j] = TAG_BOOTORDER;
+                else if (MyStriCmp (Flag, L"csr_rotate"      )) GlobalConfig.ShowTools[j] = TAG_CSR_ROTATE;
+                else if (MyStriCmp (Flag, L"fwupdate"        )) GlobalConfig.ShowTools[j] = TAG_FWUPDATE_TOOL;
+                else if (MyStriCmp (Flag, L"clean_nvram"     )) GlobalConfig.ShowTools[j] = TAG_INFO_NVRAMCLEAN;
                 else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[j] = TAG_RECOVERY_WINDOWS;
-                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[j] = TAG_RECOVERY_APPLE;
-                else if (MyStriCmp (Flag, L"hidden_tags")) {
+                else if (MyStriCmp (Flag, L"apple_recovery"  )) GlobalConfig.ShowTools[j] = TAG_RECOVERY_APPLE;
+                else if (MyStriCmp (Flag, L"hidden_tags"     )) {
                     GlobalConfig.ShowTools[j] = TAG_HIDDEN;
                     GlobalConfig.HiddenTags = TRUE;
                 }
@@ -1375,6 +2436,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"default_selection")) {
+            MY_FREE_POOL(GlobalConfig.DefaultSelection);
             if (TokenCount == 4) {
                 SetDefaultByTime (TokenList, &(GlobalConfig.DefaultSelection));
             }
@@ -1508,6 +2570,7 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"linux_prefixes")) {
+            MY_FREE_POOL(GlobalConfig.LinuxPrefixes);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.LinuxPrefixes));
 
             #if REFIT_DEBUG > 0
@@ -2254,7 +3317,7 @@ VOID ReadConfig (
 
         if (!FoundFontImage) {
             LOG_MSG(
-                "%s  - WARN: Font image file is invalid ... Using default font",
+                "%s  - WARN: Font Image File is Invalid ... Using Default Font",
                 OffsetNext
             );
             FoundFontImage = TRUE;
@@ -2267,1072 +3330,3 @@ VOID ReadConfig (
     }
     #endif
 } // VOID ReadConfig()
-
-static
-VOID AddSubmenu (
-    LOADER_ENTRY *Entry,
-    REFIT_FILE   *File,
-    REFIT_VOLUME *Volume,
-    CHAR16       *Title
-) {
-    REFIT_MENU_SCREEN   *SubScreen;
-    LOADER_ENTRY        *SubEntry;
-    UINTN                TokenCount;
-    CHAR16              *TmpName;
-    CHAR16             **TokenList;
-    BOOLEAN              TitleVolume;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddSubmenu";
-    #endif
-
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-
-    SubScreen = InitializeSubScreen (Entry);
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    if (SubScreen == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        return;
-    }
-
-    // Set defaults for the new entry
-    // Will be modified based on lines read from the config file
-    BREAD_CRUMB(L"%s:  3", FuncTag);
-    SubEntry = InitializeLoaderEntry (Entry);
-    BREAD_CRUMB(L"%s:  4", FuncTag);
-    if (SubEntry == NULL) {
-        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
-        FreeMenuScreen (&SubScreen);
-
-        BREAD_CRUMB(L"%s:  4a 2 - END:- VOID", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        return;
-    }
-
-    BREAD_CRUMB(L"%s:  5", FuncTag);
-    SubEntry->Enabled = TRUE;
-    TitleVolume = FALSE;
-
-    while ((SubEntry->Enabled)
-        && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
-        && (StrCmp (TokenList[0], L"}") != 0)
-    ) {
-        LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  5a 1 - WHILE LOOP:- START", FuncTag);
-        if (MyStriCmp (TokenList[0], L"disabled")) {
-            BREAD_CRUMB(L"%s:  5a 1a", FuncTag);
-            SubEntry->Enabled = FALSE;
-        }
-        else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
-            BREAD_CRUMB(L"%s:  5a 1b", FuncTag);
-
-            // Set the boot loader filename
-            FreeVolume (&SubEntry->Volume);
-            MY_FREE_POOL(SubEntry->LoaderPath);
-            SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
-            SubEntry->Volume     = CopyVolume (Volume);
-        }
-        else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
-            BREAD_CRUMB(L"%s:  5a 1c", FuncTag);
-
-            if (FindVolume (&Volume, TokenList[1])) {
-                if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
-                    TitleVolume = TRUE;
-                    FreeVolume (&SubEntry->Volume);
-                    MY_FREE_IMAGE(SubEntry->me.BadgeImage);
-                    SubEntry->Volume        = CopyVolume (Volume);
-                    SubEntry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
-                }
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"initrd")) {
-            BREAD_CRUMB(L"%s:  5a 1d", FuncTag);
-
-            if (TokenCount > 1) {
-                MY_FREE_POOL(SubEntry->InitrdPath);
-                SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"options")) {
-            BREAD_CRUMB(L"%s:  5a 1e", FuncTag);
-
-            if (TokenCount > 1) {
-                MY_FREE_POOL(SubEntry->LoadOptions);
-                SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"add_options") && (TokenCount > 1)) {
-            BREAD_CRUMB(L"%s:  5a 1f", FuncTag);
-
-            MergeStrings (&SubEntry->LoadOptions, TokenList[1], L' ');
-        }
-        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
-            BREAD_CRUMB(L"%s:  5a 1g", FuncTag);
-
-            SubEntry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
-        }
-        else {
-            BREAD_CRUMB(L"%s:  5a 1h - WARN ... ''%s' Token is Invalid!!", FuncTag, TokenList[0]);
-        }
-
-        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
-        FreeTokenLine (&TokenList, &TokenCount);
-
-        BREAD_CRUMB(L"%s:  5a 3 - WHILE LOOP:- END", FuncTag);
-        LOG_SEP(L"X");
-    } // while
-
-    BREAD_CRUMB(L"%s:  6", FuncTag);
-    if (!SubEntry->Enabled) {
-        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) SubEntry);
-
-        BREAD_CRUMB(L"%s:  6a 2 - END:- VOID", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"SubEntry is Disabled!!");
-        #endif
-
-        return;
-    }
-
-    BREAD_CRUMB(L"%s:  7", FuncTag);
-    MY_FREE_POOL(SubEntry->me.Title);
-    if (!TitleVolume) {
-        BREAD_CRUMB(L"%s:  7a 1", FuncTag);
-
-        SubEntry->me.Title = StrDuplicate (
-            (Title != NULL) ? Title : L"Instance: Unknown"
-        );
-    }
-    else {
-        BREAD_CRUMB(L"%s:  7b 1", FuncTag);
-
-        TmpName = (Title != NULL)
-            ? Title
-            : L"Instance: Unknown";
-        SubEntry->me.Title = PoolPrint (
-            L"Load %s%s%s%s%s",
-            TmpName,
-            SetVolJoin (TmpName),
-            SetVolKind (TmpName, Volume->VolName),
-            SetVolFlag (TmpName, Volume->VolName),
-            SetVolType (TmpName, Volume->VolName)
-        );
-    }
-
-    BREAD_CRUMB(L"%s:  8", FuncTag);
-    if (SubEntry->InitrdPath != NULL) {
-        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
-        MergeStrings (&SubEntry->LoadOptions, L"initrd=", L' ');
-        MergeStrings (&SubEntry->LoadOptions, SubEntry->InitrdPath, 0);
-        MY_FREE_POOL(SubEntry->InitrdPath);
-        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
-    }
-
-    BREAD_CRUMB(L"%s:  9", FuncTag);
-    AddSubMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-
-    // DA-TAG: Investigate This
-    //         Freeing the SubScreen below causes a hang
-    //BREAD_CRUMB(L"%s:  10", FuncTag);
-    //FreeMenuScreen (&Entry->me.SubScreen);
-
-    BREAD_CRUMB(L"%s:  10", FuncTag);
-    Entry->me.SubScreen = SubScreen;
-
-    BREAD_CRUMB(L"%s:  11 - END:- VOID", FuncTag);
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
-} // VOID AddSubmenu()
-
-// Adds the options from a single config.conf stanza to a new loader entry and returns
-// that entry. The calling function is then responsible for adding the entry to the
-// list of entries.
-static
-LOADER_ENTRY * AddStanzaEntries (
-    REFIT_FILE   *File,
-    REFIT_VOLUME *Volume,
-    CHAR16       *Title
-) {
-    UINTN           TokenCount;
-    CHAR16        **TokenList;
-    CHAR16         *OurEfiBootNumber;
-    CHAR16         *LoadOptions;
-    BOOLEAN         RetVal;
-    BOOLEAN         HasPath;
-    BOOLEAN         DefaultsSet;
-    BOOLEAN         AddedSubmenu;
-    BOOLEAN         FirmwareBootNum;
-    REFIT_VOLUME   *CurrentVolume;
-    REFIT_VOLUME   *PreviousVolume;
-    LOADER_ENTRY   *Entry;
-
-    #if REFIT_DEBUG > 0
-    CHAR16         *MsgStr;
-    static BOOLEAN  OtherCall = FALSE;
-    #endif
-
-    // Prepare the menu entry
-    Entry = InitializeLoaderEntry (NULL);
-    if (Entry == NULL) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Could Not Initialise Loader Entry for User Configured Stanza");
-        #endif
-
-        return NULL;
-    }
-
-    Entry->Title = (Title != NULL)
-        ? PoolPrint (L"Manual Stanza: %s", Title)
-        : StrDuplicate (L"Manual Stanza: Title Not Found");
-    Entry->me.Row          = 0;
-    Entry->Enabled         = TRUE;
-    Entry->Volume          = CopyVolume (Volume);
-    Entry->me.BadgeImage   = egCopyImage (Volume->VolBadgeImage);
-    Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
-
-    // Parse the config file to add options for a single stanza, terminating when the token
-    // is "}" or when the end of file is reached.
-    #if REFIT_DEBUG > 0
-    /* Exception for LOG_THREE_STAR_SEP */
-    ALT_LOG(1, LOG_THREE_STAR_SEP,
-        L"%s",
-        (!OtherCall) ? L"FIRST STANZA" : L"NEXT STANZA"
-    );
-    OtherCall = TRUE;
-
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Stanza:- '%s'", Entry->Title);
-    #endif
-
-    CurrentVolume = Volume;
-    LoadOptions = OurEfiBootNumber = NULL;
-    FirmwareBootNum = AddedSubmenu = DefaultsSet = HasPath = FALSE;
-
-    while (Entry->Enabled
-        && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
-        && (StrCmp (TokenList[0], L"}") != 0)
-    ) {
-        if (MyStriCmp (TokenList[0], L"disabled")) {
-            Entry->Enabled = FALSE;
-        }
-        else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
-            // Set the boot loader filename
-            // DA-TAG: Avoid Memory Leak
-            MY_FREE_POOL(Entry->LoaderPath);
-            Entry->LoaderPath = StrDuplicate (TokenList[1]);
-
-            HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
-            if (HasPath) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
-                #endif
-
-                SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
-
-                // Discard default options, if any
-                MY_FREE_POOL(Entry->LoadOptions);
-                DefaultsSet = TRUE;
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
-            PreviousVolume = CurrentVolume;
-            if (!FindVolume (&CurrentVolume, TokenList[1])) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Could Not Find Volume:- '%s'",
-                    TokenList[1]
-                );
-                #endif
-            }
-            else {
-                if ((CurrentVolume != NULL) &&
-                    (CurrentVolume->RootDir) &&
-                    (CurrentVolume->IsReadable)
-                ) {
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
-                    #endif
-
-                    // DA-TAG: Avoid Memory Leak
-                    FreeVolume (&Entry->Volume);
-                    Entry->Volume = CopyVolume (CurrentVolume);
-
-                    // DA-TAG: Avoid Memory Leak
-                    MY_FREE_IMAGE(Entry->me.BadgeImage);
-                    Entry->me.BadgeImage = egCopyImage (CurrentVolume->VolBadgeImage);
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Could Not Add Volume ... Reverting to Previous:- '%s'",
-                        PreviousVolume->VolName
-                    );
-                    #endif
-
-                    // Invalid ... Reset to previous working volume
-                    CurrentVolume = PreviousVolume;
-                }
-            } // if/else !FindVolume
-        }
-        else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
-            if (!AllowGraphicsMode) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"In AddStanzaEntries ... Skipped Loading Icon in %s Mode",
-                    (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"Text Screen"
-                );
-                #endif
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-
-                // DA-TAG: Avoid Memory Leak
-                MY_FREE_IMAGE(Entry->me.Image);
-                Entry->me.Image = egLoadIcon (
-                    CurrentVolume->RootDir,
-                    TokenList[1],
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
-
-                if (Entry->me.Image == NULL) {
-                    // Set dummy image if icon was not found
-                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-                }
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
-            #endif
-
-            // DA-TAG: Avoid Memory Leak
-            MY_FREE_POOL(Entry->InitrdPath);
-            Entry->InitrdPath = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
-            #endif
-
-            // DA-TAG: Avoid Memory Leak
-            MY_FREE_POOL(LoadOptions);
-            LoadOptions = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
-            if (TokenCount > 1) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
-                #endif
-
-                Entry->OSType = TokenList[1][0];
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Adding Graphics Mode for '%s'",
-                (HasPath) ? Entry->LoaderPath : Entry->Title
-            );
-            #endif
-
-            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
-        }
-        else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
-            #endif
-
-            Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-            Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
-
-            if (Entry->me.BadgeImage == NULL) {
-                // Set dummy image if badge was not found
-                Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
-            }
-
-            DefaultsSet      = TRUE;
-            FirmwareBootNum  = TRUE;
-            MY_FREE_POOL(OurEfiBootNumber);
-            OurEfiBootNumber = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Add SubMenu Items to %s",
-                (HasPath) ? Entry->LoaderPath : Entry->Title
-            );
-            #endif
-
-            AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
-            AddedSubmenu = TRUE;
-        } // Set options to pass to the loader program
-
-        FreeTokenLine (&TokenList, &TokenCount);
-    } // while Entry->Enabled
-
-    if (!Entry->Enabled) {
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
-        MY_FREE_POOL(OurEfiBootNumber);
-        MY_FREE_POOL(LoadOptions);
-
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Entry is Disabled!!");
-        #endif
-
-        return NULL;
-    }
-
-    // Set Screen Title
-    if (!FirmwareBootNum && Entry->Volume->VolName) {
-        Entry->me.Title = PoolPrint (
-            L"Load %s%s%s%s%s",
-            Entry->Title,
-            SetVolJoin (Entry->Title),
-            SetVolKind (Entry->Title, Volume->VolName),
-            SetVolFlag (Entry->Title, Volume->VolName),
-            SetVolType (Entry->Title, Volume->VolName)
-        );
-    }
-    else {
-        if (FirmwareBootNum) {
-            // Clear potentially wrongly set items
-            MY_FREE_POOL(Entry->LoaderPath);
-            MY_FREE_POOL(Entry->EfiLoaderPath);
-            MY_FREE_POOL(Entry->LoadOptions);
-            MY_FREE_POOL(Entry->InitrdPath);
-
-            Entry->me.Title = PoolPrint (
-                L"Load %s ... [Firmware Boot Number]",
-                Entry->Title
-            );
-
-            Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
-        }
-        else {
-            Entry->me.Title = PoolPrint (
-                L"Load %s",
-                Entry->Title
-            );
-        }
-    }
-
-    // Set load options, if any
-    if (LoadOptions && StrLen (LoadOptions) > 0) {
-        MY_FREE_POOL(Entry->LoadOptions);
-        Entry->LoadOptions = StrDuplicate (LoadOptions);
-    }
-
-    if (AddedSubmenu) {
-        RetVal = GetReturnMenuEntry (&Entry->me.SubScreen);
-        if (!RetVal) {
-            FreeMenuScreen (&Entry->me.SubScreen);
-        }
-    }
-
-    if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {
-        if (Entry->LoadOptions && StrLen (Entry->LoadOptions) > 0) {
-            MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
-            MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
-        }
-        else {
-            Entry->LoadOptions = PoolPrint (
-                L"initrd=%s",
-                Entry->InitrdPath
-            );
-        }
-        MY_FREE_POOL(Entry->InitrdPath);
-    }
-
-    if (!DefaultsSet) {
-        // No "loader" line ... use bogus one
-        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
-    }
-
-    if (AllowGraphicsMode && Entry->me.Image == NULL) {
-        // Still no icon ... set dummy image
-        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-    }
-
-    MY_FREE_POOL(OurEfiBootNumber);
-    MY_FREE_POOL(LoadOptions);
-
-    return Entry;
-} // static VOID AddStanzaEntries()
-
-// Read the user-configured menu entries from config.conf and add or delete
-// entries based on the contents of that file.
-VOID ScanUserConfigured (
-    CHAR16 *FileName
-) {
-    EFI_STATUS         Status;
-    REFIT_FILE         File;
-    CHAR16           **TokenList;
-    UINTN              size;
-    UINTN              TokenCount;
-    LOADER_ENTRY      *Entry;
-
-    #if REFIT_DEBUG > 0
-    CHAR16             *TmpName;
-    CHAR16             *CountStr;
-    UINTN               LogLineType;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanUserConfigured";
-    #endif
-    #endif
-
-    if (!ManualInclude) {
-        LOG_SEP(L"X");
-        LOG_INCREMENT();
-        BREAD_CRUMB(L"%s:  A - START", FuncTag);
-
-        TotalEntryCount = ValidEntryCount = 0;
-    }
-
-    if (FileExists (SelfDir, FileName)) {
-        Status = RefitReadFile (SelfDir, FileName, &File, &size);
-        if (!EFI_ERROR(Status)) {
-            while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
-                if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
-                    TotalEntryCount = TotalEntryCount + 1;
-                    Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
-                    if (Entry == NULL) {
-                        FreeTokenLine (&TokenList, &TokenCount);
-                        continue;
-                    }
-
-                    ValidEntryCount = ValidEntryCount + 1;
-                    #if REFIT_DEBUG > 0
-                    TmpName = (SelfVolume->VolName)
-                        ? SelfVolume->VolName
-                        : Entry->LoaderPath;
-                    LOG_MSG(
-                        "%s  - Found %s%s%s%s%s",
-                        OffsetNext,
-                        Entry->Title,
-                        SetVolJoin (Entry->Title),
-                        SetVolKind (Entry->Title, TmpName),
-                        SetVolFlag (Entry->Title, TmpName),
-                        SetVolType (Entry->Title, TmpName)
-                    );
-                    #endif
-
-                    if (Entry->me.SubScreen == NULL) {
-                        GenerateSubScreen (Entry, SelfVolume, TRUE);
-                    }
-                    AddPreparedLoaderEntry (Entry);
-                }
-                else if (
-                    TokenCount == 2 &&
-                    ManualInclude == FALSE &&
-                    MyStriCmp (TokenList[0], L"include") &&
-                    MyStriCmp (FileName, GlobalConfig.ConfigFilename)
-                ) {
-                    if (!MyStriCmp (TokenList[1], FileName)) {
-                        // Scan manual stanza include file
-                        #if REFIT_DEBUG > 0
-                        #if REFIT_DEBUG < 2
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Process Include File for Manual Stanzas");
-                        #else
-                        LOG_SEP(L"X");
-                        BREAD_CRUMB(L"%s:  A1 - INCLUDE FILE (%s): START", FuncTag, TokenList[1]);
-                        #endif
-                        #endif
-
-                        ManualInclude = TRUE;
-                        ScanUserConfigured (TokenList[1]);
-                        ManualInclude = FALSE;
-
-                        #if REFIT_DEBUG > 0
-                        #if REFIT_DEBUG < 2
-                        ALT_LOG(1, LOG_THREE_STAR_MID, L"Scanned Include File for Manual Stanzas");
-                        #else
-                        BREAD_CRUMB(L"%s:  A2 - INCLUDE FILE (%s): END", FuncTag, TokenList[1]);
-                        LOG_SEP(L"X");
-                        #endif
-                        #endif
-                    }
-                }
-
-                FreeTokenLine (&TokenList, &TokenCount);
-            } // while
-
-            FreeTokenLine (&TokenList, &TokenCount);
-        }
-    } // if FileExists
-
-    #if REFIT_DEBUG > 0
-    CountStr = (ValidEntryCount > 0) ? PoolPrint (L"%d", ValidEntryCount) : NULL;
-    LogLineType = (ManualInclude) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
-    ALT_LOG(1, LogLineType,
-        L"Processed %d Manual Stanzas in '%s'%s%s%s%s",
-        TotalEntryCount, FileName,
-        (TotalEntryCount == 0) ? L"" : L" ... Found ",
-        (ValidEntryCount < 1)  ? L"" : CountStr,
-        (TotalEntryCount == 0) ? L"" : L" Valid/Active Stanza",
-        (ValidEntryCount < 1)  ? L"" : L"s"
-    );
-    MY_FREE_POOL(CountStr);
-    #endif
-
-    if (ManualInclude) {
-        ManualInclude = FALSE;
-    }
-    else {
-        BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-    }
-} // VOID ScanUserConfigured()
-
-// Create an options file based on /etc/fstab. The resulting file has two options
-// lines, one of which boots the system with "ro root={rootfs}" and the other of
-// which boots the system with "ro root={rootfs} single", where "{rootfs}" is the
-// filesystem identifier associated with the "/" line in /etc/fstab.
-static
-REFIT_FILE * GenerateOptionsFromEtcFstab (
-    REFIT_VOLUME *Volume
-) {
-    EFI_STATUS    Status;
-    UINTN         TokenCount, i;
-    CHAR16      **TokenList;
-    CHAR16       *Line;
-    CHAR16       *Root;
-    REFIT_FILE   *Fstab;
-    REFIT_FILE   *Options;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GenerateOptionsFromEtcFstab";
-    #endif
-
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-
-    if (!FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' Does Not Exist", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        // Early Return
-        return NULL;
-    }
-
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    Options = AllocateZeroPool (sizeof (REFIT_FILE));
-    if (Options == NULL) {
-        BREAD_CRUMB(L"%s:  2a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        // Early Return
-        return NULL;
-    }
-
-    BREAD_CRUMB(L"%s:  3", FuncTag);
-    Fstab = AllocateZeroPool (sizeof (REFIT_FILE));
-    if (Fstab == NULL) {
-        BREAD_CRUMB(L"%s:  3a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        MY_FREE_POOL(Options);
-
-        // Early Return
-        return NULL;
-    }
-
-    BREAD_CRUMB(L"%s:  4", FuncTag);
-    Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
-
-    BREAD_CRUMB(L"%s:  5", FuncTag);
-    if (CheckError (Status, L"while reading /etc/fstab")) {
-        BREAD_CRUMB(L"%s:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        MY_FREE_POOL(Options);
-        MY_FREE_POOL(Fstab);
-
-        // Early Return
-        return NULL;
-    }
-
-    BREAD_CRUMB(L"%s:  6", FuncTag);
-    // File read; locate root fs and create entries
-    Options->Encoding = ENCODING_UTF16_LE;
-
-    BREAD_CRUMB(L"%s:  7", FuncTag);
-    while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Read Line Holding %d Token%s From '/etc/fstab'",
-            TokenCount,
-            (TokenCount == 1) ? L"" : L"s"
-        );
-        #endif
-
-        LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  7a 1 - WHILE LOOP:- START", FuncTag);
-        if (TokenCount > 2) {
-            BREAD_CRUMB(L"%s:  7a 1a 1", FuncTag);
-            if (StrCmp (TokenList[1], L"\\") == 0) {
-                BREAD_CRUMB(L"%s:  7a 1a 1a 1", FuncTag);
-                Root = PoolPrint (L"%s", TokenList[0]);
-            }
-            else if (StrCmp (TokenList[2], L"\\") == 0) {
-                BREAD_CRUMB(L"%s:  7a 1a 1b 1", FuncTag);
-                Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
-            }
-            else {
-                BREAD_CRUMB(L"%s:  7a 1a 1c 1", FuncTag);
-                Root = NULL;
-            }
-
-            BREAD_CRUMB(L"%s:  7a 1a 2", FuncTag);
-            if (Root && (Root[0] != L'\0')) {
-                BREAD_CRUMB(L"%s:  7a 1a 2a 1", FuncTag);
-                for (i = 0; i < StrLen (Root); i++) {
-                    LOG_SEP(L"X");
-                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1 - FOR LOOP:- START", FuncTag);
-                    if (Root[i] == '\\') {
-                        BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1a 1 - Flip Slash", FuncTag);
-                        Root[i] = '/';
-                    }
-                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 2 - FOR LOOP:- END", FuncTag);
-                    LOG_SEP(L"X");
-                }
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 2", FuncTag);
-                Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 3", FuncTag);
-                MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 4", FuncTag);
-                MY_FREE_POOL(Line);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 5", FuncTag);
-                Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 6", FuncTag);
-                MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 7", FuncTag);
-                MY_FREE_POOL(Line);
-
-                BREAD_CRUMB(L"%s:  7a 1a 2a 8", FuncTag);
-                Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
-            } // if
-
-            BREAD_CRUMB(L"%s:  7a 1a 3", FuncTag);
-            MY_FREE_POOL(Root);
-        } // if
-
-        BREAD_CRUMB(L"%s:  7a 2", FuncTag);
-        FreeTokenLine (&TokenList, &TokenCount);
-
-        BREAD_CRUMB(L"%s:  7a 3 - WHILE LOOP:- END", FuncTag);
-        LOG_SEP(L"X");
-    } // while
-
-    BREAD_CRUMB(L"%s:  8", FuncTag);
-    if (Options->Buffer) {
-        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
-        Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
-        Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-        Options->Current16Ptr = (CHAR16 *)Options->Buffer;
-        Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-
-        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
-    }
-    else {
-        BREAD_CRUMB(L"%s:  8b 1", FuncTag);
-        MY_FREE_POOL(Options);
-    }
-
-    BREAD_CRUMB(L"%s:  9", FuncTag);
-    MY_FREE_POOL(Fstab->Buffer);
-    MY_FREE_POOL(Fstab);
-
-    BREAD_CRUMB(L"%s:  10 - END:- return REFIT_FILE *Options", FuncTag);
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
-
-    return Options;
-} // GenerateOptionsFromEtcFstab()
-
-
-// Create options from partition type codes. Specifically, if the earlier
-// partition scan found a partition with a type code corresponding to a root
-// filesystem according to the Freedesktop.org Discoverable Partitions Spec
-// (http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/),
-// this function returns an appropriate file with two lines, one with
-// "ro root=/dev/disk/by-partuuid/{GUID}" and the other with that plus "single".
-// Note that this function returns the LAST partition found with the
-// appropriate type code, so this will work poorly on dual-boot systems or
-// if the type code is set incorrectly.
-static
-REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
-    REFIT_FILE   *Options;
-    CHAR16       *Line, *GuidString, *WriteStatus;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GenerateOptionsFromPartTypes";
-    #endif
-
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-    Options = NULL;
-    if (GlobalConfig.DiscoveredRoot) {
-        BREAD_CRUMB(L"%s:  1a 1", FuncTag);
-        Options = AllocateZeroPool (sizeof (REFIT_FILE));
-
-        BREAD_CRUMB(L"%s:  1a 2", FuncTag);
-        if (Options) {
-            BREAD_CRUMB(L"%s:  1a 2a 1", FuncTag);
-            Options->Encoding = ENCODING_UTF16_LE;
-
-            BREAD_CRUMB(L"%s:  1a 2a 2", FuncTag);
-            GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
-
-            BREAD_CRUMB(L"%s:  1a 2a 3", FuncTag);
-            WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
-
-            BREAD_CRUMB(L"%s:  1a 2a 4", FuncTag);
-            ToLower (GuidString);
-
-            BREAD_CRUMB(L"%s:  1a 2a 5", FuncTag);
-            if (GuidString) {
-                BREAD_CRUMB(L"%s:  1a 2a 5a 1", FuncTag);
-                Line = PoolPrint (
-                    L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
-                    WriteStatus, GuidString
-                );
-
-                BREAD_CRUMB(L"%s:  1a 2a 5a 2", FuncTag);
-                MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
-
-                BREAD_CRUMB(L"%s:  1a 2a 5a 3", FuncTag);
-                MY_FREE_POOL(Line);
-
-                BREAD_CRUMB(L"%s:  1a 2a 5a 4", FuncTag);
-                Line = PoolPrint (
-                    L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
-                    WriteStatus, GuidString
-                );
-
-                BREAD_CRUMB(L"%s:  1a 2a 5a 5", FuncTag);
-                MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
-
-                BREAD_CRUMB(L"%s:  1a 2a 5a 6", FuncTag);
-                MY_FREE_POOL(Line);
-                MY_FREE_POOL(GuidString);
-            } // if (GuidString)
-
-            BREAD_CRUMB(L"%s:  1a 2a 6", FuncTag);
-            Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
-            Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
-            Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-            Options->Current16Ptr = (CHAR16 *) Options->Buffer;
-            Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-        } // if (Options allocated OK)
-        BREAD_CRUMB(L"%s:  1a 3", FuncTag);
-    } // if (partition has root GUID)
-
-    BREAD_CRUMB(L"%s:  2 - END:- return REFIT_FILE *Options", FuncTag);
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
-
-    return Options;
-} // REFIT_FILE * GenerateOptionsFromPartTypes()
-
-
-// Read a Linux kernel options file for a Linux boot loader into memory. The LoaderPath
-// and Volume variables identify the location of the options file, but not its name --
-// you pass this function the filename of the Linux kernel, initial RAM disk, or other
-// file in the target directory, and this function finds the file with a name in the
-// comma-delimited list of names specified by LINUX_OPTIONS_FILENAMES within that
-// directory and loads it. If a RefindPlus options file can't be found, try to generate
-// minimal options from /etc/fstab on the same volume as the kernel. This typically
-// works only if the kernel is being read from the Linux root filesystem.
-//
-// The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
-// it was not found.
-REFIT_FILE * ReadLinuxOptionsFile (
-    IN CHAR16       *LoaderPath,
-    IN REFIT_VOLUME *Volume
-) {
-    EFI_STATUS   Status;
-    CHAR16      *OptionsFilename;
-    CHAR16      *FullFilename;
-    UINTN        size;
-    UINTN        i;
-    BOOLEAN      GoOn;
-    BOOLEAN      FileFound;
-    REFIT_FILE  *File;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ReadLinuxOptionsFile";
-    #endif
-
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    File = NULL;
-    GoOn = TRUE;
-    FileFound = FALSE;
-
-    i = 0;
-    do {
-        LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  2a 1 - DO LOOP:- START", FuncTag);
-        OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
-
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        FullFilename = FindPath (LoaderPath);
-        if (OptionsFilename == NULL) {
-            BREAD_CRUMB(L"%s:  2a 2a 1 - DO LOOP:- CONTINUE - Missing Options File", FuncTag);
-            LOG_SEP(L"X");
-
-            break;
-        }
-
-        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
-        if (FullFilename == NULL) {
-            BREAD_CRUMB(L"%s:  2a 3a 1 - DO LOOP:- BREAK - Missing Params", FuncTag);
-            LOG_SEP(L"X");
-
-            MY_FREE_POOL(OptionsFilename);
-            MY_FREE_POOL(FullFilename);
-
-            break;
-        }
-
-        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
-        MergeStrings (&FullFilename, OptionsFilename, '\\');
-
-        BREAD_CRUMB(L"%s:  2a 5", FuncTag);
-        if (FileExists (Volume->RootDir, FullFilename)) {
-            BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
-            MY_FREE_FILE(File);
-            File = AllocateZeroPool (sizeof (REFIT_FILE));
-            if (File == NULL) {
-                MY_FREE_POOL(OptionsFilename);
-                MY_FREE_POOL(FullFilename);
-
-                BREAD_CRUMB(L"%s:  2a 5a 1a 1 - DO LOOP:- BREAK - OUT OF MEMORY", FuncTag);
-                BREAD_CRUMB(L"%s:  2a 5a 1a 2 - END:- return NULL", FuncTag);
-                LOG_DECREMENT();
-                LOG_SEP(L"X");
-
-                return NULL;
-            }
-
-            BREAD_CRUMB(L"%s:  2a 5a 2", FuncTag);
-            Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
-
-            BREAD_CRUMB(L"%s:  2a 5a 3", FuncTag);
-            if (!CheckError (Status, L"While Loading the Linux Options File")) {
-                BREAD_CRUMB(L"%s:  2a 5a 3a 1", FuncTag);
-                GoOn      = FALSE;
-                FileFound = TRUE;
-            }
-            BREAD_CRUMB(L"%s:  2a 5a 4", FuncTag);
-        }
-        BREAD_CRUMB(L"%s:  2a 6", FuncTag);
-
-        MY_FREE_POOL(OptionsFilename);
-        MY_FREE_POOL(FullFilename);
-
-        BREAD_CRUMB(L"%s:  2a 7 - DO LOOP:- END", FuncTag);
-        LOG_SEP(L"X");
-    } while (GoOn);
-
-    BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (!FileFound) {
-        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
-        // No refindplus_linux.conf or refind_linux.conf file
-        // Look for /etc/fstab and try to pull values from there
-        MY_FREE_FILE(File);
-        File = GenerateOptionsFromEtcFstab (Volume);
-
-        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
-        // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
-        if (!File) {
-            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
-            File = GenerateOptionsFromPartTypes();
-        }
-        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
-    } // if
-
-    BREAD_CRUMB(L"%s:  4 - END:- return REFIT_FILE *File", FuncTag);
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
-    return File;
-} // static REFIT_FILE * ReadLinuxOptionsFile()
-
-// Retrieve a single line of options from a Linux kernel options file
-CHAR16 * GetFirstOptionsFromFile (
-    IN CHAR16       *LoaderPath,
-    IN REFIT_VOLUME *Volume
-) {
-    UINTN         TokenCount;
-    CHAR16       *Options;
-    CHAR16      **TokenList;
-    REFIT_FILE   *File;
-
-    #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GetFirstOptionsFromFile";
-    #endif
-
-    LOG_SEP(L"X");
-    LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-    File = ReadLinuxOptionsFile (LoaderPath, Volume);
-
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    Options = NULL;
-    if (File != NULL) {
-        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-        TokenCount = ReadTokenLine(File, &TokenList);
-
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        if (TokenCount > 1) {
-            Options = StrDuplicate(TokenList[1]);
-        }
-
-        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
-        FreeTokenLine (&TokenList, &TokenCount);
-
-        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
-        MY_FREE_FILE(File);
-    }
-
-    BREAD_CRUMB(L"%s:  3 - END:- return CHAR16 *Options = '%s'", FuncTag,
-        Options ? Options : L"NULL"
-    );
-    LOG_DECREMENT();
-    LOG_SEP(L"X");
-
-    return Options;
-} // static CHAR16 * GetOptionsFile()

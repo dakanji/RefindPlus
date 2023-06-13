@@ -146,7 +146,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_KEXT:
         case SSV_DISABLED_ANY_EX:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Custom Setting)",
+                L"SIP/SSV Disabled (0x%04x - Known Custom Setting)",
                 CsrStatus
             );
 
@@ -155,7 +155,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Removed (0x%04x - Caution!)",
+                L"SIP/SSV Disabled (0x%04x - Inactive)",
                 CsrStatus
             );
 
@@ -163,7 +163,7 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled: 0x%04x - Caution: Unknown Custom Setting",
+                L"SIP/SSV Disabled (0x%04x - Unknown Custom Setting)",
                 CsrStatus
             );
     } // switch
@@ -276,19 +276,19 @@ VOID RotateCsrValue (
     if (TargetCsr == 0) {
         // Set target CSR value to NULL
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Clearing SIP to 'NULL' from '0x%04x'",
+            L"Clearing SIP to 'NULL' From '0x%04x'",
             CurrentValue
         );
     }
     else if (CurrentValue == 0) {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' from 'NULL'",
+            L"Setting SIP to '0x%04x' From 'NULL'",
             TargetCsr
         );
     }
     else {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' from '0x%04x'",
+            L"Setting SIP to '0x%04x' From '0x%04x'",
             CurrentValue, TargetCsr
         );
     }

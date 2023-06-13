@@ -604,7 +604,7 @@ VOID StartLegacy (
             SwitchToText (FALSE);
 
             BREAD_CRUMB(L"%s:  10a 1a 2", FuncTag);
-            MsgStrA = L"Please make sure you have the latest firmware update installed";
+            MsgStrA = L"Ensure You Have the Latest Firmware Updates Installed";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -625,31 +625,35 @@ VOID StartLegacy (
             SwitchToText (FALSE);
 
             BREAD_CRUMB(L"%s:  10a 1b 2", FuncTag);
-            MsgStrA = L"The firmware refused to boot from the selected volume";
+            MsgStrA = L"The Firmware Refused to Boot From the Selected Volume";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             LOG_MSG("** WARN: %s", MsgStrA);
-            LOG_MSG("\n");
             #endif
 
-            BREAD_CRUMB(L"%s:  10a 1b 3", FuncTag);
-            MsgStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting";
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (MsgStrB, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            if (AppleFirmware) {
+                #if REFIT_DEBUG > 0
+                LOG_MSG("\n");
+                #endif
+                BREAD_CRUMB(L"%s:  10a 1b 2a 1", FuncTag);
+                MsgStrB = L"Legacy External Drive Boot Is Not Well Supported by Apple Firmware";
+                PrintUglyText (MsgStrB, NEXTLINE);
+                #if REFIT_DEBUG > 0
+                LOG_MSG("         %s", MsgStrB);
+                #endif
+            }
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("         %s", MsgStrB);
             LOG_MSG("\n\n");
             #endif
 
-            BREAD_CRUMB(L"%s:  10a 1b 4", FuncTag);
+            BREAD_CRUMB(L"%s:  10a 1b 3", FuncTag);
             PauseForKey();
 
-            BREAD_CRUMB(L"%s:  10a 1b 5", FuncTag);
+            BREAD_CRUMB(L"%s:  10a 1b 4", FuncTag);
             SwitchToGraphics();
         } // if/else ErrorInStep
     } // if Status == EFI_NOT_FOUND
@@ -758,10 +762,10 @@ VOID AddLegacyEntry (
     LegacyTitle = PoolPrint (
         L"Load %s%s%s%s%s",
         LoaderTitle,
-        SetVolJoin (LoaderTitle),
-        SetVolKind (LoaderTitle, VolDesc),
-        SetVolFlag (LoaderTitle, VolDesc),
-        SetVolType (LoaderTitle, VolDesc)
+        SetVolJoin (LoaderTitle                         ),
+        SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
+        SetVolFlag (LoaderTitle, VolDesc                ),
+        SetVolType (LoaderTitle, VolDesc, Volume->FSType)
     );
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
@@ -811,10 +815,10 @@ VOID AddLegacyEntry (
         "%s  - Found %s%s%s%s%s",
         OffsetNext,
         LoaderTitle,
-        SetVolJoin (LoaderTitle),
-        SetVolKind (LoaderTitle, VolDesc),
-        SetVolFlag (LoaderTitle, VolDesc),
-        SetVolType (LoaderTitle, VolDesc)
+        SetVolJoin (LoaderTitle                         ),
+        SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
+        SetVolFlag (LoaderTitle, VolDesc                ),
+        SetVolType (LoaderTitle, VolDesc, Volume->FSType)
     );
     #endif
 
@@ -831,10 +835,10 @@ VOID AddLegacyEntry (
     SubScreen->Title  = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         LoaderTitle,
-        SetVolJoin (LoaderTitle),
-        SetVolKind (LoaderTitle, VolDesc),
-        SetVolFlag (LoaderTitle, VolDesc),
-        SetVolType (LoaderTitle, VolDesc)
+        SetVolJoin (LoaderTitle                         ),
+        SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
+        SetVolFlag (LoaderTitle, VolDesc                ),
+        SetVolType (LoaderTitle, VolDesc, Volume->FSType)
     );
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -899,10 +903,10 @@ VOID AddLegacyEntryUEFI (
 
     Entry->me.Title = PoolPrint (
         L"Load Legacy Bootcode%s%s%s%s",
-        SetVolJoin (L"Legacy Bootcode"),
-        SetVolKind (L"Legacy Bootcode", BdsOption->Description),
-        SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
-        SetVolType (L"Legacy Bootcode", BdsOption->Description)
+        SetVolJoin (L"Legacy Bootcode"                           ),
+        SetVolKind (L"Legacy Bootcode", BdsOption->Description, 0),
+        SetVolFlag (L"Legacy Bootcode", BdsOption->Description   ),
+        SetVolType (L"Legacy Bootcode", BdsOption->Description, 0)
     );
 
     #if REFIT_DEBUG > 0
@@ -942,10 +946,10 @@ VOID AddLegacyEntryUEFI (
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title = PoolPrint (
         L"Boot Options for Legacy Bootcode%s%s%s%s",
-        SetVolJoin (L"Legacy Bootcode"),
-        SetVolKind (L"Legacy Bootcode", BdsOption->Description),
-        SetVolFlag (L"Legacy Bootcode", BdsOption->Description),
-        SetVolType (L"Legacy Bootcode", BdsOption->Description)
+        SetVolJoin (L"Legacy Bootcode"                           ),
+        SetVolKind (L"Legacy Bootcode", BdsOption->Description, 0),
+        SetVolFlag (L"Legacy Bootcode", BdsOption->Description   ),
+        SetVolType (L"Legacy Bootcode", BdsOption->Description, 0)
     );
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
     SubScreen->Hint2 = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)

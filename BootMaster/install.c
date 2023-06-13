@@ -78,7 +78,8 @@ ESP_LIST * FindAllESPs (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL
             && (
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT ||
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT12 ||
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT16 ||
                 Volumes[VolumeIndex]->FSType == FS_TYPE_FAT32
             )
             && GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid)
@@ -223,7 +224,7 @@ REFIT_VOLUME * PickOneESP (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
+            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'PickOneESP'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -565,7 +566,8 @@ EFI_STATUS CopyDrivers (
 
     DriverCopied[FS_TYPE_UNKNOWN]   = FALSE;
     DriverCopied[FS_TYPE_WHOLEDISK] = FALSE;
-    DriverCopied[FS_TYPE_FAT]       = FALSE;
+    DriverCopied[FS_TYPE_FAT12]     = FALSE;
+    DriverCopied[FS_TYPE_FAT16]     = FALSE;
     DriverCopied[FS_TYPE_FAT32]     = FALSE;
     DriverCopied[FS_TYPE_EXFAT]     = FALSE;
     DriverCopied[FS_TYPE_NTFS]      = FALSE;
@@ -1224,9 +1226,9 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
         return NULL;
     }
 
-    Contents = NULL;
-    ListStart = ListEnd= NULL;
-    ListSize = VarSize / sizeof (UINT16);
+    Contents  = NULL;
+    ListStart = ListEnd = NULL;
+    ListSize  = VarSize / sizeof (UINT16);
 
     for (i = 0; i < ListSize; i++) {
         VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
@@ -1349,7 +1351,7 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmBootOptionOperation'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmBootOptionOperation'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1390,7 +1392,7 @@ UINTN PickOneBootOption (
     REFIT_MENU_ENTRY  *ChosenOption;
 
     if (!Entries) {
-        DisplaySimpleMessage (L"Firmware BootOrder List is Unavailable!!", NULL);
+        DisplaySimpleMessage (L"Firmware BootOrder List is Not Available", NULL);
 
         // Early Return
         return EFI_BOOT_OPTION_DO_NOTHING;
@@ -1470,7 +1472,7 @@ UINTN PickOneBootOption (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
+            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'PickOneBootOption'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1508,7 +1510,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
     CHAR16     *VarName;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries from Internal BootOrder List");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries From Internal BootOrder List");
     #endif
 
     Status = EfivarGetRaw (

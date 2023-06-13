@@ -94,49 +94,56 @@ VOID WarnSecureBootError(
     CHAR16  *Name,
     BOOLEAN  Verbose
 ) {
+    CHAR16 *LoaderName;
     CHAR16 *MsgStrA;
     CHAR16 *MsgStrB;
     CHAR16 *MsgStrC;
     CHAR16 *MsgStrD;
     CHAR16 *MsgStrE;
 
-    if (Name == NULL) {
-        Name = L"the Loader";
+    if (Name) {
+        LoaderName = PoolPrint (L"'%s'", Name);
+    }
+    else {
+        LoaderName = StrDuplicate (L"the Loader");
     }
 
     SwitchToText (FALSE);
 
-    MsgStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!!", Name);
-
+    MsgStrA = PoolPrint (L"Secure Boot Validation Failure While Starting %s", LoaderName);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-    PrintUglyText (MsgStrA, NEXTLINE);
+    PrintUglyText (MsgStrA,                                        NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     if (Verbose && secure_mode()) {
         MsgStrB = PoolPrint (
-            L"This computer is configured with Secure Boot active but '%s' has failed validation.",
-            Name
+            L"This computer is configured with Secure Boot active but %s has failed validation",
+            LoaderName
         );
-        PrintUglyText (MsgStrB, NEXTLINE);
-        PrintUglyText (L"You can:", NEXTLINE);
-        PrintUglyText (L" * Launch another boot loader", NEXTLINE);
-        PrintUglyText (L" * Disable Secure Boot in your firmware", NEXTLINE);
         MsgStrC = PoolPrint (
-            L" * Sign %s with a machine owner key (MOK)",
-            Name
+            L" * Sign %s with a Machine Owner Key (MOK)",
+            LoaderName
         );
-        PrintUglyText (MsgStrC, NEXTLINE);
         MsgStrD = PoolPrint (
-            L" * Use a MOK utility to add a MOK with which '%s' has already been signed.",
-            Name
+            L" * Use a MOK utility to add a MOK with which %s has already been signed",
+            LoaderName
         );
-        PrintUglyText (MsgStrD, NEXTLINE);
         MsgStrE = PoolPrint (
-            L" * Use a MOK utility to register '%s' ('Enroll its Hash') without signing it",
-            Name
+            L" * Use a MOK utility to register %s ('Enroll its Hash') without signing it",
+            LoaderName
         );
-        PrintUglyText (MsgStrE, NEXTLINE);
-        PrintUglyText (L"See http://www.rodsbooks.com/refind/secureboot.html for more information", NEXTLINE);
+
+        PrintUglyText (MsgStrB,                                        NEXTLINE);
+        PrintUglyText (L"You can:",                                    NEXTLINE);
+        PrintUglyText (L" * Launch another boot loader",               NEXTLINE);
+        PrintUglyText (L" * Disable Secure Boot in your firmware",     NEXTLINE);
+        PrintUglyText (MsgStrC,                                        NEXTLINE);
+        PrintUglyText (MsgStrD,                                        NEXTLINE);
+        PrintUglyText (MsgStrE,                                        NEXTLINE);
+        PrintUglyText (
+            L"See http://www.rodsbooks.com/refind/secureboot.html for more information",
+            NEXTLINE
+        );
 
         MY_FREE_POOL(MsgStrE);
         MY_FREE_POOL(MsgStrD);
@@ -147,6 +154,7 @@ VOID WarnSecureBootError(
     SwitchToGraphics();
 
     MY_FREE_POOL(MsgStrA);
+    MY_FREE_POOL(LoaderName);
 } // static VOID WarnSecureBootError()
 
 static
@@ -192,7 +200,7 @@ BOOLEAN ConfirmReboot (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmReboot'",
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmReboot'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -875,7 +883,10 @@ EFI_STATUS StartEFIImage (
             #endif
 
             if (EFI_ERROR(ReturnStatus)) {
-                MsgStrTmp = L"Returned from Child Image";
+                // Reset IsBoot if required
+                IsBoot = FALSE;
+
+                MsgStrTmp = L"Returned From Child Image";
                 if (!IsDriver) {
                     MsgStrEx = StrDuplicate (MsgStrTmp);
                 }
@@ -955,8 +966,8 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications not Found");
-        LOG_MSG("%s    ** Aborted ... OsIndications not Found", OffsetNext);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications Not Found");
+        LOG_MSG("%s    ** Aborted ... OsIndications Not Found", OffsetNext);
         LOG_MSG("\n\n");
         #endif
 

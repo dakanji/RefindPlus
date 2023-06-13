@@ -99,7 +99,7 @@ EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 
 #endif
 
 // Macros
-#define SET_BADGE_IMMAGE(x) Volume->VolBadgeImage = BuiltinIcon (x)
+#define SET_BADGE_IMAGE(x) Volume->VolBadgeImage = BuiltinIcon (x)
 #define UNINIT_VOLUMES(x, y)              \
     do {                                  \
         for (UINTN i = 0; i < y; i++) {   \
@@ -736,7 +736,7 @@ EFI_STATUS EfivarGetRaw (
         Status = EFI_LOAD_ERROR;
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable from NVRAM!!");
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable From NVRAM!!");
         #endif
     }
 
@@ -1109,7 +1109,8 @@ CHAR16 * FSTypeName (
         case FS_TYPE_EXT3:      retval = L"Ext3"      ;       break;
         case FS_TYPE_EXT2:      retval = L"Ext2"      ;       break;
         case FS_TYPE_FAT32:     retval = L"FAT-32"    ;       break;
-        case FS_TYPE_FAT:       retval = L"FAT-12/16" ;       break;
+        case FS_TYPE_FAT16:     retval = L"FAT-16"    ;       break;
+        case FS_TYPE_FAT12:     retval = L"FAT-12"    ;       break;
         case FS_TYPE_XFS:       retval = L"XFS"       ;       break;
         case FS_TYPE_JFS:       retval = L"JFS"       ;       break;
         case FS_TYPE_BTRFS:     retval = L"BtrFS"     ;       break;
@@ -1276,16 +1277,17 @@ VOID SetFilesystemData (
                     Volume->FSType = FS_TYPE_NTFS;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                 }
-                else if (
-                    (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
-                    (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)
-                ) {
-                    Volume->FSType = FS_TYPE_FAT;
-                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
-                }
                 else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
                     Volume->FSType = FS_TYPE_FAT32;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
+                }
+                else if (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0) {
+                    Volume->FSType = FS_TYPE_FAT16;
+                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+                }
+                else if (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) {
+                    Volume->FSType = FS_TYPE_FAT12;
+                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
                 }
                 else if (!Volume->BlockIO->Media->LogicalPartition) {
                     Volume->FSType = FS_TYPE_WHOLEDISK;
@@ -1602,6 +1604,21 @@ VOID SetVolumeBadgeIcon (
         return;
     }
 
+    if (GlobalConfig.HelpIcon && Volume->VolBadgeImage == NULL) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Try Default Icon ... Config Setting is *NOT* Active:- 'decline_help_icon'"
+        );
+        #endif
+
+        switch (Volume->DiskKind) {
+            case DISK_KIND_INTERNAL: SET_BADGE_IMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
+            case DISK_KIND_EXTERNAL: SET_BADGE_IMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
+            case DISK_KIND_OPTICAL:  SET_BADGE_IMAGE(BUILTIN_ICON_VOL_OPTICAL ); break;
+            case DISK_KIND_NET:      SET_BADGE_IMAGE(BUILTIN_ICON_VOL_NET     ); break;
+        } // switch
+    }
+
     if (Volume->VolBadgeImage == NULL) {
         Volume->VolBadgeImage = egLoadIconAnyType (
             Volume->RootDir, L"", L".VolumeBadge",
@@ -1609,16 +1626,16 @@ VOID SetVolumeBadgeIcon (
         );
     }
 
-    if (Volume->VolBadgeImage == NULL) {
+    if (!GlobalConfig.HelpIcon && Volume->VolBadgeImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Try Default Icon");
         #endif
 
         switch (Volume->DiskKind) {
-            case DISK_KIND_INTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
-            case DISK_KIND_EXTERNAL: SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
-            case DISK_KIND_OPTICAL:  SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_OPTICAL ); break;
-            case DISK_KIND_NET:      SET_BADGE_IMMAGE(BUILTIN_ICON_VOL_NET     ); break;
+            case DISK_KIND_INTERNAL: SET_BADGE_IMAGE(BUILTIN_ICON_VOL_INTERNAL); break;
+            case DISK_KIND_EXTERNAL: SET_BADGE_IMAGE(BUILTIN_ICON_VOL_EXTERNAL); break;
+            case DISK_KIND_OPTICAL:  SET_BADGE_IMAGE(BUILTIN_ICON_VOL_OPTICAL ); break;
+            case DISK_KIND_NET:      SET_BADGE_IMAGE(BUILTIN_ICON_VOL_NET     ); break;
         } // switch
     }
 } // VOID SetVolumeBadgeIcon()
@@ -1658,6 +1675,57 @@ CHAR16 * SizeInIEEEUnits (
 
     return TheValue;
 } // static CHAR16 * SizeInIEEEUnits()
+
+// Determine the unique GUID, type code GUID, and name of the volume and store them.
+static
+VOID SetPartGuidAndName (
+    IN OUT REFIT_VOLUME             *Volume,
+    IN OUT EFI_DEVICE_PATH_PROTOCOL *DevicePath
+) {
+    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
+    GPT_ENTRY                *PartInfo;
+    EFI_GUID                  GuidMBR = MBR_GUID_VALUE;
+
+    if ((Volume == NULL) || (DevicePath == NULL)) {
+        return;
+    }
+
+    if ((DevicePath->Type != MEDIA_DEVICE_PATH) ||
+        (DevicePath->SubType != MEDIA_HARDDRIVE_DP)
+    ) {
+        return;
+    }
+
+    HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
+    if (HdDevicePath->SignatureType != SIGNATURE_TYPE_GUID) {
+        // DA-TAG: Investigate This
+        //         Better to assign a random GUID to MBR partitions
+        //         The GUID below was just generated in Linux for use in rEFInd.
+        //         92a6c61f-7130-49b9-b05c-8d7e7b039127
+        Volume->PartGuid = GuidMBR;
+
+        return;
+    }
+
+    Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
+    PartInfo = FindPartWithGuid (&(Volume->PartGuid));
+    if (!PartInfo) {
+        return;
+    }
+
+    Volume->PartName = StrDuplicate (PartInfo->name);
+    CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
+
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
+        ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)
+    ) {
+        GlobalConfig.DiscoveredRoot = Volume;
+    }
+
+    Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
+
+    MY_FREE_POOL(PartInfo);
+} // static VOID SetPartGuidAndName()
 
 // Return a name for the volume. Ideally this should be the label for the
 // filesystem or partition, but this function falls back to describing the
@@ -1797,51 +1865,6 @@ CHAR16 * GetVolumeName (
 
     return FoundName;
 } // CHAR16 * GetVolumeName()
-
-// Determine the unique GUID, type code GUID, and name of the volume and store them.
-static
-VOID SetPartGuidAndName (
-    IN OUT REFIT_VOLUME             *Volume,
-    IN OUT EFI_DEVICE_PATH_PROTOCOL *DevicePath
-) {
-    HARDDRIVE_DEVICE_PATH    *HdDevicePath;
-    GPT_ENTRY                *PartInfo;
-
-    if ((Volume == NULL) || (DevicePath == NULL)) {
-        return;
-    }
-
-    if ((DevicePath->Type == MEDIA_DEVICE_PATH) &&
-        (DevicePath->SubType == MEDIA_HARDDRIVE_DP)
-    ) {
-        HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
-        if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
-            Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
-            PartInfo = FindPartWithGuid (&(Volume->PartGuid));
-
-            if (PartInfo) {
-                Volume->PartName = StrDuplicate (PartInfo->name);
-                CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
-
-                if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
-                    ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)
-                ) {
-                    GlobalConfig.DiscoveredRoot = Volume;
-                }
-
-                Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
-
-                MY_FREE_POOL(PartInfo);
-            }
-        }
-        else {
-            // TODO: Better to assign a random GUID to MBR partitions, could not
-            // find an EFI function to do this. The GUID below is just one that I
-            // generated in Linux.
-            Volume->PartGuid = StringAsGuid (L"92a6c61f-7130-49b9-b05c-8d7e7b039127");
-        }
-    } // if DevicePath->Type
-} // VOID SetPartGuid()
 
 // Return TRUE if NTFS boot files are found or if Volume is unreadable,
 // FALSE otherwise. The idea is to weed out non-boot NTFS volumes from
@@ -2130,7 +2153,7 @@ VOID ScanExtendedPartition (
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks From Disk", Status);
             #endif
 
             break;
@@ -2735,15 +2758,12 @@ VOID ScanVolumes (VOID) {
             else if (FindSubStr (Volume->VolName, L"APFS/FileVault"         )) RoleStr = L"0xCC - Container" ;
             else if (FindSubStr (Volume->VolName, L"System Reserved"        )) RoleStr = L" * Win Reserved"  ;
             else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"     )) RoleStr = L" * Drive Optical" ;
-            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved"     )) RoleStr = L" * MS Reserved"   ;
+            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved"     )) RoleStr = L" * Win Reserved"  ;
             else if (FindSubStr (PartType,        L"Mac Raid"               )) RoleStr = L" * Part MacRaid"  ;
             else if (MyStriCmp (Volume->VolName,  L"Whole Disk Volume"      )) RoleStr = L" * Physical Disk" ;
-            else if (MyStriCmp (Volume->VolName,  L"Recovery HD"            )) RoleStr = L" * HFS Recovery"  ;
+            else if (MyStriCmp (Volume->VolName,  L"Unknown Volume"         )) RoleStr = L"?? Not Known"     ;
             else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Mac BootCamp"  ;
-            else if (MyStriCmp (Volume->VolName,  L"Basic Data Partition"   )) RoleStr = L" * Win BasicData" ;
             else if (MyStriCmp (Volume->VolName,  L"Boot OS X"              )) RoleStr = L" * Mac BootAssist";
-            else if (MyStriCmp (Volume->VolName,  L"EFI"                    )) RoleStr = L" * EFI SysPart"   ;
-            else if (MyStriCmp (Volume->VolName,  L"ESP"                    )) RoleStr = L" * EFI SysPart"   ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * EFI SysPart"   ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux     )) RoleStr = L" * Part LinuxFS"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT   )) RoleStr = L" * Part HomeGPT"  ;
@@ -2867,13 +2887,12 @@ VOID ScanVolumes (VOID) {
                 } // if !EFI_ERROR(Status)
             } // if MyStriCmp Volume->VolName
 
-            #if REFIT_DEBUG > 0
             if (!RoleStr) {
                 if (Volume->FSType == FS_TYPE_HFSPLUS) {
-                    if (!GuidsAreEqual (&GuidHFS, &(Volume->PartTypeGuid)) &&
-                        !GuidsAreEqual (&GuidRecoveryHD, &(Volume->PartTypeGuid))
-                    ) {
+                    if (!GuidsAreEqual (&GuidHFS, &(Volume->PartTypeGuid))) {
+                        #if REFIT_DEBUG > 0
                         PartType        = L"Unknown";
+                        #endif
                         Volume->FSType  = FS_TYPE_UNKNOWN;
                     }
                     else {
@@ -2883,23 +2902,25 @@ VOID ScanVolumes (VOID) {
                     }
                 }
                 else if (Volume->FSType == FS_TYPE_NTFS) {
-                    RoleStr = L" * Win Volume";
                     if (MyStriCmp (Volume->VolName, L"NTFS Volume")) {
+                        RoleStr = L" * Win Volume";
+                    }
+                    else {
                         RoleStr = L" * Win Other";
                     }
                 }
             }
-            #endif
 
-            if (RoleStr) {
-                if (FindSubStr (RoleStr, L"HFS Recovery")) {
-                    // Create or add to a list of bootable HFS+ volumes
-                    AddListElement (
-                        (VOID ***) &HfsRecovery,
-                        &HfsRecoveryCount,
-                        CopyVolume (Volume)
-                    );
-                }
+            if (!RoleStr) {
+                RoleStr = L"** Not Defined";
+            }
+            else if (FindSubStr (RoleStr, L"HFS Recovery")) {
+                // Create or add to a list of bootable HFS+ volumes
+                AddListElement (
+                    (VOID ***) &HfsRecovery,
+                    &HfsRecoveryCount,
+                    CopyVolume (Volume)
+                );
             }
 
             #if REFIT_DEBUG > 0
@@ -2911,10 +2932,6 @@ VOID ScanVolumes (VOID) {
 
             // Control PartName Length
             LimitStringLength (PartName, 18);
-
-            if (!RoleStr) {
-                RoleStr = L"";
-            }
 
             MsgStr = PoolPrint (
                 L"%-36s : %-36s : %-18s : %-36s : %-17s : %s",
@@ -3091,7 +3108,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     CHAR16  *MsgStr;
     BOOLEAN  LoopOnce;
 
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Check for Volume Badges for Internal Volumes");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Seek Volume Badges for Internal Volumes");
     #endif
 
     #if REFIT_DEBUG > 1
@@ -3105,7 +3122,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'"
+            L"Skipped Volume Badge Check ... Config Setting is Active:- 'HideUI Badges'"
         );
         #endif
 
@@ -3122,7 +3139,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         MsgStr = (GlobalConfig.DirectBoot)
             ? StrDuplicate (L"'DirectBoot' is Active")
             : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... %s", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Volume Badge Check ... %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -3211,7 +3228,7 @@ VOID SetVolumeIcons (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Check for '.VolumeIcon' Icons for %s Volumes",
+        L"Seek '.VolumeIcon' Icons for %s Volumes",
         (GlobalConfig.HiddenIconsExternal) ? L"Internal/External" : L"Internal"
     );
     #endif
@@ -3227,7 +3244,7 @@ VOID SetVolumeIcons (VOID) {
     if (GlobalConfig.HelpIcon || GlobalConfig.HiddenIconsIgnore) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is %sActive:- '%s'",
+            L"Skipped '.VolumeIcon' Check ... Config Setting is %sActive:- '%s'",
             (GlobalConfig.HelpIcon) ? L"*NOT* " : L"",
             (GlobalConfig.HelpIcon) ? L"decline_help_icon" : L"hidden_icons_ignore"
         );
@@ -3246,7 +3263,7 @@ VOID SetVolumeIcons (VOID) {
         MsgStr = (GlobalConfig.DirectBoot)
             ? StrDuplicate (L"'DirectBoot' is Active")
             : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for '.VolumeIcon' Icons ... %s", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped '.VolumeIcon' Check ... %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -3476,7 +3493,7 @@ EFI_STATUS DirNextEntry (
                 //BREAD_CRUMB(L"%s:  2a 3a 3a 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Bad FS Driver Buffer Size Request %d (was %d) ... Using %d Instead",
+                    L"Bad Filesystem Driver Buffer Size Request %d (was %d) ... Using %d Instead",
                     BufferSize,
                     LastBufferSize,
                     LastBufferSize * 2
@@ -3492,7 +3509,7 @@ EFI_STATUS DirNextEntry (
                 //BREAD_CRUMB(L"%s:  2a 3a 3b 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Resizing DirEntry Buffer from %d to %d bytes",
+                    L"Resizing DirEntry Buffer From %d to %d Bytes",
                     LastBufferSize, BufferSize
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

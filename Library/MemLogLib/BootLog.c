@@ -286,6 +286,7 @@ VOID SaveMessageToDebugLogFile (
 VOID WayPointer (
     IN CHAR16 *Msg
 ) {
+    UINTN LogLineType;
     UINTN TmpLogLevelStore;
 
     if (gKernelStarted) {
@@ -305,7 +306,9 @@ VOID WayPointer (
 
     // Call DeepLogger
     gLogTemp = StrDuplicate (Msg);
-    DeepLoggger (1, LOG_LINE_EXIT, &gLogTemp);
+    LogLineType = (TmpLogLevelStore == 0) ? LOG_LINE_EXIT : LOG_LINE_BASE;
+    DeepLoggger (1, LogLineType, &gLogTemp);
+    if (TmpLogLevelStore != 0) ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
 
     // Restore LogLevel if changed
     GlobalConfig.LogLevel = TmpLogLevelStore;
@@ -379,7 +382,8 @@ VOID DeepLoggger (
         case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---%s%s\n",                  OurPad, *Msg); break;
         case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                            *Msg); break;
         case LOG_LINE_SAME:      Tmp = PoolPrint (L"%s",                                                 *Msg); break;
-        case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n %s\n\n",                                          *Msg); break;
+        case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n%s\n\n",                                           *Msg); break;
+        case LOG_LINE_BASE:      Tmp = PoolPrint (L"%s\n",                                               *Msg); break;
         default:                 Tmp = PoolPrint (L"%s\n",                                               *Msg);
             // Should be 'LOG_LINE_NORMAL' ... Using 'default' to catch coding errors
             // Enable Timestamp for this

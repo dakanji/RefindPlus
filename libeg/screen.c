@@ -987,7 +987,7 @@ VOID egDetermineScreenSize (VOID) {
             &UgaDepth, &UgaRefreshRate
         );
         if (EFI_ERROR(Status)) {
-            // Graphics not Available
+            // Graphics Not Available
             UGADraw = NULL;
             egHasGraphics = FALSE;
         }
@@ -1695,7 +1695,7 @@ VOID egInitScreen (VOID) {
     }
 
     if (!thisValidGOP && UGADraw == NULL) {
-        // Graphics not Available
+        // Graphics Not Available
         // Fall Back on Text Mode
         egHasGraphics         = FlagUGA       = FALSE;
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;

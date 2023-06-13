@@ -841,7 +841,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
-                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM from Volatile Storage", Status);
+                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM From Volatile Storage", Status);
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);

@@ -49,7 +49,7 @@
 # Mac OS version which ensures that any changes made to APFS drivers for each specific
 # Mac OS version are accommodated, compared to using one driver no matter what specific
 # Mac OS version is being loaded. This default is deactivated whenever this token is set.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
 #
@@ -60,7 +60,7 @@
 # This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
 # This feature may impact other text output however, and should be disabled by activating
 # this option if such negative effects are observed. This setting only applies to MacOS.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Verbose APFS text is suppressed (if generated) when commented out
 #
@@ -89,7 +89,7 @@
 # is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
 # This feature can be disabled by activating this token. It is only active when the UGA
 # protocol is available and is inactive when running a GPU with the GOP protocol.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
 #
@@ -136,7 +136,7 @@
 
 # RefindPlus defaults to using complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
-# coulr of first pixel in the pixel array (top left pixel). This may not always embody
+# colour of first pixel in the pixel array (top left pixel). This may not always embody
 # all pixels in banners with multiple colours. Thus, the selected complementary colour
 # for the text may not be suitable for all portions of the title banner in such cases.
 # In such cases, users may wish to disable the "HelpText" feature by activating this
@@ -215,14 +215,6 @@
 # Scans of other ESPs are prevented when commented out
 #
 #enable_esp_filter
-
-# When this option is activated, RefindPlus will process symlinked loaders.
-# Symlinks are ignored by default as they may result in undesirable outcomes.
-# This token may however be useful on Linux setups that use symlinked loaders.
-#
-# Inactive when commented out (Does not process symlinked loaders)
-#
-#follow_symlinks
 
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
 # is inactive by default for non-Apple SSDs in MacOS. When this option
@@ -321,7 +313,7 @@
 
 # Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
 # display when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
@@ -347,7 +339,7 @@
 # GPUs with system firmware support. This option replaces GOP on the
 # Console Out Handle with one from a GPU Handle on such models when
 # running capable GPUs that are not supported by system firmware.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not provide GOP from GPU)
 #
@@ -373,7 +365,7 @@
 # this should only be used when there is an obvious benefit as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response on booting into the operating system.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not use the built-in GOP)
 #
@@ -388,7 +380,7 @@
 # Note that this option is forced on whenever text output is required,
 # such as when running EFI Shell or, whenever RefindPlus is changed to
 # text mode as part of its operations (mainly to show error messages).
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not use a custom text renderer)
 #
@@ -433,7 +425,7 @@
 # Supply NVME driver. When this token is set, RefindPlus will
 # use its 'SupplyNVME' feature to load a built in NvmExpressDxe
 # driver to supply support when this is possible but unavailable.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # Inactive when commented out (Does not supply NVMe support)
 #
@@ -444,7 +436,7 @@
 # available. It additionally modifies the EFI Revision value to UEFI 2.3.
 # This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
 # as Legacy Macs as several such tools only require CreateEventEx to work.
-# NB: This functionality is only available on TianoCore Builds.
+# NB: This functionality is only available on TianoCore builds.
 #
 # UEFI 2.x emulation is not provided when commented out
 #
@@ -467,7 +459,7 @@
 # it finds. This resulted in a lottery where such instances sometimes worked and sometimes
 # did not. The proper implementation process however is to first locate every instance
 # and select one that supports the English language. This has now been implemented.
-# NB: This functionality is only fully available on TianoCore Builds.
+# NB: This functionality is only fully available on TianoCore builds.
 #
 # Does not look for Unicode English support when commented out.
 #
@@ -882,6 +874,14 @@
 # Active when commented out (Combines Linux kernel entries)
 #
 #fold_linux_kernels 0
+
+# When this option is activated, RefindPlus will process symlinked loaders.
+# Symlinks are ignored by default as they may result in undesirable outcomes.
+# This token may however be useful on Linux setups that use symlinked loaders.
+#
+# Inactive when commented out (Does not process symlinked loaders)
+#
+#follow_symlinks
 
 # Set the font to be used for all textual displays in graphics mode.
 # For the best results, fonts used should be in PNG format with alpha

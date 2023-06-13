@@ -531,7 +531,6 @@ VOID SwitchToText (
     BOOLEAN TextModeOnEntry;
 
     #if REFIT_DEBUG > 1
-    BOOLEAN TextModeOnEntry
     CHAR16 *FuncTag = L"SwitchToText";
     #endif
     #endif
@@ -1275,6 +1274,7 @@ BOOLEAN CheckError (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("** WARN: '%s' %s", ErrorName, where);
+    LOG_MSG("\n\n");
     #endif
 
     Temp = PoolPrint (L"Error: '%s' %s", ErrorName, where);
@@ -1283,6 +1283,7 @@ BOOLEAN CheckError (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("** WARN: '%r' %s", Status, where);
+    LOG_MSG("\n\n");
     #endif
 #endif
     #if REFIT_DEBUG > 0

@@ -58,19 +58,46 @@
 #ifndef __SCAN_H_
 #define __SCAN_H_
 
-LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
-REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
-REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry);
+LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
+
 REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry);
-VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
-VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
-VOID ScanForBootloaders(VOID);
-VOID ScanForTools(VOID);
+
+REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry);
+REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry);
+
+VOID ScanForTools (VOID);
+VOID ScanForBootloaders (VOID);
+VOID SetLoaderDefaults (
+    IN LOADER_ENTRY *Entry,
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
+);
+VOID GenerateSubScreen (
+    IN OUT LOADER_ENTRY *Entry,
+    IN     REFIT_VOLUME *Volume,
+    IN     BOOLEAN       GenerateReturn
+);
+
 CHAR16 * SetVolJoin (IN CHAR16 *InstanceName);
-CHAR16 * SetVolKind (IN CHAR16 *InstanceName, IN CHAR16 *VolumeName);
-CHAR16 * SetVolFlag (IN CHAR16 *InstanceName, IN CHAR16 *VolumeName);
-CHAR16 * SetVolType (IN CHAR16 *InstanceName OPTIONAL, IN CHAR16 *VolumeName);
-CHAR16 * GetVolumeGroupName (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
+CHAR16 * SetVolKind (
+    IN CHAR16 *InstanceName,
+    IN CHAR16 *VolumeName,
+    IN UINT32  VolumeFSType
+);
+CHAR16 * SetVolFlag (
+    IN CHAR16 *InstanceName,
+    IN CHAR16 *VolumeName
+);
+CHAR16 * SetVolType (
+    IN CHAR16 *InstanceName OPTIONAL,
+    IN CHAR16 *VolumeName,
+    IN UINT32  VolumeFSType
+);
+CHAR16 * GetVolumeGroupName (
+    IN CHAR16 *LoaderPath,
+    IN REFIT_VOLUME *Volume
+);
+
 BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path);
 
 #endif
