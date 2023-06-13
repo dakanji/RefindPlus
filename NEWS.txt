@@ -1,4 +1,4 @@
-0.14.0.AA (PRE_RELEASE):
+0.14.0.AA (13 Jun 2023):
 -----------------------
 - Synced with Upstream v0.14.0
 - Updates Deprecated EFI 1.x Protocols

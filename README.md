@@ -47,7 +47,7 @@ Users may also want to replace upstream filesystem drivers with those packaged w
 
 RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additional options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
 
-Note that if you run RefindPlus without activating the additional options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.13.3. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the base upstream release version plus any such updates and typically include updates for subsequent upstream release versions since the base version.
+Note that if you run RefindPlus without activating the additional options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.0. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the base upstream release version plus any such updates and typically include updates for subsequent upstream release versions since the base version.
 
 ## Additional Functionality
 RefindPlus-Specific funtionality can be configured by adding the tokens below to the upstream configuration file. Additional information is provided in the sample RefindPlus configuration file.
@@ -61,6 +61,7 @@ decline_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 decline_apfs_mute     |Disables suppression of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
+decline_help_icon     |Disables feature that may enhance loading speed by preferring default icons
 decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
 decline_help_text     |Disables complementary text colours if not required
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
@@ -78,6 +79,7 @@ hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not re
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
 icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Fine tunes the resulting `icon_row_move` outcome
+mitigate_primed_buffer|Allows enhanced intervention to handle apparent primed keystroke buffers
 nvram_protect_ex      |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
 nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
@@ -118,7 +120,7 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 
 ## Divergence
-Implementation differences with the upstream base version v0.13.3 are:
+Implementation differences with the upstream v0.14.0 base are:
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_help_tags` configuration token to switch it off.
@@ -132,6 +134,7 @@ Implementation differences with the upstream base version v0.13.3 are:
 - **Included Manual Stanza Files:** The upstream implementation has an undocumented feature whereby files containing manual configuration stanzas could be `included` similar to a secondary configuration file. This is documented in the RefindPlus config file along with the documentation for including secondary configuration files. While the RefindPlus implementation also allows multiple `include` lines for such, it differs from the undocumented upstream implementation in that included manual configuration stanza files cannot include other such files in turn, similar to the implementation for secondary configuration files.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted, and the `Entry` object immediately discarded, once a `Disabled` setting is encountered. The outcome is the same as upstream, which always continues to create and return a fully built object in such cases to be discarded later. The approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/27ad097947f67fbf372ac1a302ad813a029b927f/config.conf-sample#L1224-L1249) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
 - **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
+- **GZipped Loaders:** RefindPlus only provides a stub support for handling GZipped loaders as this is largely relevant to ARM Linux. The stub support can be activated using the same `support_gzipped_loaders` configuration token as upstream.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x86_64 Only).

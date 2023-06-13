@@ -95,33 +95,17 @@
 #
 #decline_apple_fb
 
-# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
-# By default, RefindPlus will prevent writes of certain items by processes such as
-# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
-# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
-# results in an inability to boot. This token is only activated on Apple firmware.
+# The "HelpIcon" feature prefers loading default/generic loader icons which are used
+# in most cases. Searches for custom icons are only executed if a generic loader icon
+# is not found. This is a change from the original rEFInd implementation; which is the
+# other way round (Custom icons are searched for first). This implementation can result
+# in significantly faster loading speeds in the best case and should make no difference
+# to loading speed in the worst case. The default/generic loader icons searched for will
+# be those for the current active theme. That is, the current active theme default icons.
 #
-# The "NvramProtect" feature is enabled when commented out
+# The "HelpIcon" feature is enabled when commented out
 #
-#decline_nvram_protect
-
-# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
-# UEFI 2.x requirements, they do not work on legacy devices as the specifications
-# mandate that on installation, compliant GOP drivers should confirm devices are
-# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
-# do not activate on classic MacPros for instance, as these are not actually
-# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. RefindPlus is configred by default to
-# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
-# of the GPU's Option ROM whenever it detects that GOP is not available.
-# This permits running modern GPUs on some legacy units when they would
-# otherwise fail to work. The change is reverted automatically once it
-# is longer required to allow GPU activation except when the related
-# "supply_uefi" setting is activate, as this overrides this revert.
-#
-# GPU Option ROMs are reinstalled (if required) when commented out
-#
-#decline_reload_gop
+#decline_help_icon
 
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
@@ -148,6 +132,34 @@
 # The "HelpText" feature is enabled when commented out
 #
 #decline_help_text
+
+# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
+# By default, RefindPlus will prevent writes of certain items by processes such as
+# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
+# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
+# results in an inability to boot. This token is only activated on Apple firmware.
+#
+# The "NvramProtect" feature is enabled when commented out
+#
+#decline_nvram_protect
+
+# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
+# UEFI 2.x requirements, they do not work on legacy devices as the specifications
+# mandate that on installation, compliant GOP drivers should confirm devices are
+# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
+# do not activate on classic MacPros for instance, as these are not actually
+# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
+# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
+# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
+# of the GPU's Option ROM whenever it detects that GOP is not available.
+# This permits running modern GPUs on some legacy units when they would
+# otherwise fail to work. The change is reverted automatically once it
+# is longer required to allow GPU activation except when the related
+# "supply_uefi" setting is activate, as this overrides this revert.
+#
+# GPU Option ROMs are reinstalled (if required) when commented out
+#
+#decline_reload_gop
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -245,10 +257,12 @@
 # RefindPlus boot process down. When active, this speeds booting
 # RefindPlus up by skipping scanning volumes for these files.
 #
-# NB: This token overrides the "hidden_icons_external" and
-# the "hidden_icons_prefer" tokens when it is active.
+# NOTES:
+# 1. This token overrides the "hidden_icons_external" and
+#    the "hidden_icons_prefer" tokens when it is active.
+# 2. This token is overridden by "decline_help_icon"
 #
-# Always scans for ".VolumeIcon" image icons when commented out
+# Scans for ".VolumeIcon" icons when commented out
 #
 #hidden_icons_ignore
 
@@ -288,6 +302,24 @@
 # Defaults to zero when commented out (Does not adjust the icon rows)
 #
 #icon_row_tune 5
+
+# When this option is activate, RefindPlus will prevent attempts to run loaders
+# that are detected below a time interval after loading the screen to counteract
+# spontaneous booting apparently resulting from keystroke buffers that appear to
+# have been primed before RefindPlus is loaded. This appears to primarily affect
+# UEFI-PC when RefindPlus is loaded done after first accessing the BIOS via keys
+# such as "F12". The issue appears to be worse when external drives are present.
+# A level of intervention is always active but this is typically not noticeable.
+# The base threshold is increased on RefindPlus DBG build files as well as when
+# external drives, including USB sticks, are detected on starting RefindPlus up.
+# This token increases this derived base time threshold to a new time threshold
+# below which attempts to run loaders will not be permitted in order to avoid
+# RefindPlus spontaneously starting up default selections when it is loaded.
+# NB: This feature does not operate on Apple firmware even when set here.
+#
+# Inactive when commented out (Does not increase base threshold interval)
+#
+#mitigate_primed_buffer
 
 # When this option is activate, the RefindPlus "NvramProtect" feature will be
 # extended, if set, to cover booting into Mac OS and "unknown" UEFI files.
@@ -345,17 +377,18 @@
 #
 #provide_console_gop
 
-# Some types of firmware, typically on HP Notebooks, may lock some partitions as they
-# have DiskIo protocols opened "BY_DRIVER" (partition driver in the case of HP) but
+# Some types of firmware, typically supplied by HP, may effectively lock partitions
+# as their "DiskIo" protocols are opened "BY_DRIVER", or a "partition driver", but
 # no filesystem is generated from the DiskIo. This stops other filesystem drivers
 # from connecting to the handles to actually generate filesystems when attempts
-# are made to install such drivers which makes such partitions inaccessible or
-# to hang in RefindPlus; as the drivers provided by the firmware can often be
-# defective. This token disconnects such drivers and allows the installation
-# of alternative properly functioning drivers instead (otherwise blocked).
-# NB: This token is always disabled whenever Apple firmware is detected.
+# are made to install alternative drivers, making such partitions inaccessible
+# or hang in RefindPlus (as firmware supplied drivers may not be compatible).
+# When this token is active, RefindPlus disconnects such firmware supplied
+# drivers to accommodate otherwise disabled user supplied alternatives.
+# NB: This token is always disabled when Apple firmware is detected.
+#     This functionality is only available on TianoCore builds.
 #
-# Does not try to unlock such partitions when commented out
+# Inactive when commented out (Does not handle such partitions)
 #
 #ransom_drives
 
@@ -473,6 +506,26 @@
 ##--------------------------------------------------------------##
 #
 #
+# When scanning volumes for EFI bootloaders, RefindPlus always looks for
+# the MacOS and Microsoft Windows bootloaders in their normal locations
+# and scans the root directory as well as sub folders under the "EFI"
+# folder for more bootloaders (Does not recurse into sub folders).
+#
+# The "also_scan_dirs" option adds more directories to the scan list and
+# directories are specified relative to the volume's root directory. This
+# option applies to ALL the volumes that RefindPlus scans UNLESS a volume
+# name and a colon are included before the directory name (myvol:/somedir)
+# to scan the "somedir" directory only on the filesystem named "myvol". If
+# a specified directory does not exist, it is ignored (no error message).
+# The "+" symbol denotes appending to the list of scanned directories
+# as opposed to overwriting this list.
+#
+# Scans "boot", "@/boot" and "@root/boot" when commented out
+#
+#also_scan_dirs boot,ESP2:EFI/linux/kernels
+#also_scan_dirs boot,@/boot,@root/boot
+#also_scan_dirs +,@/kernels
+
 # Set the CSR values for Apple's System Integrity Protection (SIP) and
 # Sealed System Volume (SSV) features that define access levels on MacOS.
 # Values are hexadecimal numbers that define which specific security features
@@ -592,6 +645,18 @@
 #
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
+# Stub support for gzipped loaders. Linux kernels are self-decompressing on x86
+# and on x86-64 platforms while on ARM64, Linux kernel files, including the EFI
+# stub loader are typically compressed with gzip. This prevents them from being
+# loaded by tools such as RefindPlus unless the tool uncompresses them itself.
+# This option was added upstream to do this but as it cannot be fully compiled
+# into RefindPlus and is unnecessary on x86 and on x86-64 systems, only a stub
+# implementation that logs the situation is currently provided by RefindPlus.
+#
+# Inactive when commented out (The "GZippedLoaders" Feature is not active)
+#
+#support_gzipped_loaders
+
 # Timeout in seconds for the main menu screen. Setting the timeout to "0"
 # disables automatic booting (i.e., no timeout). Setting "-1" results in
 # an immediate boot to the default OS (DirectBoot Feature) unless there
@@ -651,22 +716,6 @@
 ##--------------------------------------------------------------##
 #
 #
-# When scanning volumes for EFI bootloaders, RefindPlus always looks for
-# the MacOS and Microsoft Windows bootloaders in their normal locations
-# and scans the root directory as well as sub folders under the "EFI"
-# folder for more bootloaders (Does not recurse into sub folders).
-#
-# The "also_scan_dirs" option adds more directories to the scan list and
-# directories are specified relative to the volume's root directory. This
-# option applies to ALL the volumes that RefindPlus scans UNLESS a volume
-# name and a colon are included before the directory name (myvol:/somedir)
-# to scan the "somedir" directory only on the filesystem named "myvol". If
-# a specified directory does not exist, it is ignored (no error message).
-#
-# Scans hardcoded and the "boot" directories when commented out
-#
-#also_scan_dirs boot,ESP2:EFI/linux/kernels
-
 # Use a custom title banner and not the default (embedded) banner. The
 # file path is relative to the directory where the RefindPlus binary is
 # located. The colour of the top left corner of the image is used for the
@@ -803,7 +852,7 @@
 #
 # Set to LRS_ESP when commented out
 #
-#dont_scan_volumes "Recovery HD"
+#dont_scan_volumes "System Reserved"
 
 # Enable VMX bit and lock the CPU MSR if unlocked. On some
 # Intel Apple computers, the firmware does not lock the MSR 0x3A.
@@ -929,6 +978,15 @@
 #icons_dir myicons
 #icons_dir icons/snowy
 
+# Filename prefixes that indicate a file is a Linux kernel. Files that
+# begin with any of these strings are treated as Linux kernels, if they
+# are also EFI boot loaders. To include the default string, use "+"
+# Default is "vmlinuz,bzImage,kernel", except on ARM64, where it is
+# "vmlinuz,Image,kernel".
+#
+#linux_prefixes vmlinuz,bzImage,kernel
+#linux_prefixes +,zImage
+
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, RefindPlus shows
 # a subset in a scrolling list. If this value is set too high for the screen
@@ -1044,7 +1102,7 @@
 #
 # NB: The file used for 'selection_small' must be no more
 # than 256px on the longest side while that used as the
-# 'selection_big' image must be no larger than 320px.
+# 'selection_big' image must be no larger than 512px.
 # Custom selection images larger these thresholds
 # will be replaced with default embedded images.
 #
