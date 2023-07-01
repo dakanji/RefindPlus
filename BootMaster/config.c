@@ -1325,6 +1325,7 @@ EFI_STATUS RefitReadFile (
 
     Message = PoolPrint (L"While Loading File:- '%s'", FileName);
     if (CheckError (Status, Message)) {
+        size = 0;
         MY_FREE_POOL(Message);
 
         // Early Return
@@ -1333,8 +1334,11 @@ EFI_STATUS RefitReadFile (
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
+        size = 0;
+
         // TODO: print and register the error
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+        MY_FREE_POOL(Message);
 
         // Early Return
         return EFI_LOAD_ERROR;
@@ -1346,6 +1350,10 @@ EFI_STATUS RefitReadFile (
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
        size = 0;
+
+       // TODO: print and register the error
+       REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+       MY_FREE_POOL(Message);
 
        // Early Return
        return EFI_OUT_OF_RESOURCES;
@@ -1359,21 +1367,23 @@ EFI_STATUS RefitReadFile (
     );
     if (CheckError (Status, Message)) {
         size = 0;
+
+        // TODO: print and register the error
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         MY_FREE_POOL(Message);
         MY_FREE_POOL(File->Buffer);
-        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
         // Early Return
         return Status;
     }
-    MY_FREE_POOL(Message);
 
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+    MY_FREE_POOL(Message);
 
     // Setup for reading
-    File->Current8Ptr  = (CHAR8 *)File->Buffer;
-    File->End8Ptr      = File->Current8Ptr + File->BufferSize;
-    File->Current16Ptr = (CHAR16 *)File->Buffer;
+    File->Current8Ptr  = (CHAR8  *) File->Buffer;
+    File->Current16Ptr = (CHAR16 *) File->Buffer;
+    File->End8Ptr      = File->Current8Ptr  + File->BufferSize;
     File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
 
     // DA_TAG: Investigate This
