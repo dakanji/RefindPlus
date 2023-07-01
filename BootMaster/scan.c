@@ -363,7 +363,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Instance: Windows (Legacy)";
         else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"))   NameOS = L"Instance: Windows (UEFI)"  ;
         else if (Entry->OSType == 'W')                                             NameOS = L"Instance: Windows"         ;
-        else if (Entry->OSType == 'M')                                             NameOS = L"Instance: MacOS"           ;
+        else if (Entry->OSType == 'M')                                             NameOS = L"Instance: macOS"           ;
         else if (Entry->OSType == 'L')                                             NameOS = L"Instance: Linux"           ;
         else if (Entry->OSType == 'G')                                             NameOS = L"Instance: Grub"            ;
         else if (Entry->OSType == 'X')                                             NameOS = L"Instance: XoM"             ;
@@ -433,7 +433,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS with a 64-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS with a 64-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=x86_64");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -441,7 +441,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS with a 32-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS with a 32-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=i386");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -450,7 +450,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Verbose Mode");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -459,14 +459,14 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode (64-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Verbose Mode (64-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Verbose Mode (32-bit)");
+                SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Verbose Mode (32-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
                 SubEntry->UseGraphicsMode = FALSE;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -476,14 +476,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Safe Mode (Laconic)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Safe Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Safe Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Safe Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -493,14 +493,14 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Single User Mode (Laconic)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Single User Mode (Laconic)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: MacOS in Single User Mode (Verbose)");
+                    SubEntry->me.Title        = StrDuplicate (L"Load Instance: macOS in Single User Mode (Verbose)");
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -761,7 +761,9 @@ VOID SetLoaderDefaults (
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"SetLoaderDefaults";
+    #endif
 
+    #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"Getting Default Setting for Loader:- '%s'",
         (Entry->me.Title) ? Entry->me.Title : Entry->Title
@@ -1693,7 +1695,7 @@ CHAR16 * SetVolType (
 
     MY_MUTELOGGER_SET;
     #endif
-    RetVal = L" Volume";
+    RetVal = L"";
     if (0);
     else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""                 ;
     else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
@@ -1706,7 +1708,6 @@ CHAR16 * SetVolType (
     else if (VolumeFSType == FS_TYPE_FAT32                )   RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT16                )   RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT12                )   RetVal = L" Partition"       ;
-    else if (FindSubStr (InstanceName, L"Instance:"      ))   RetVal = L""                 ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -2336,7 +2337,7 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                AddLoaderEntry (FullFileName, L"Instance: MacOS", Volume, TRUE);
+                AddLoaderEntry (FullFileName, L"Instance: macOS", Volume, TRUE);
             }
         }
 

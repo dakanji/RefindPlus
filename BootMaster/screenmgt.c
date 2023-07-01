@@ -89,6 +89,7 @@ extern BOOLEAN            IconScaleSet;
 extern BOOLEAN            egHasGraphics;
 extern BOOLEAN            ForceTextOnly;
 extern BOOLEAN            FlushFailedTag;
+extern BOOLEAN            GotConsoleControl;
 
 
 VOID FixIconScale (VOID) {
@@ -1348,7 +1349,7 @@ static
 VOID egFreeImageQEMU (
     EG_IMAGE *Image
 ) {
-    if (DetectedDevices) {
+    if (GotConsoleControl) {
         MY_FREE_IMAGE(Image);
     }
     else {

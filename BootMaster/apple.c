@@ -975,10 +975,9 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     };
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"Attempt AppleFramebuffer Install");
+    MsgStr = L"Attempt AppleFramebuffer Install";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s      %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
 
     DotGap = L" ... ";
     #endif
@@ -987,10 +986,9 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Uninstall Existing AppleFramebuffer");
+            MsgStr = L"Uninstall Existing AppleFramebuffer";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
             LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
-            MY_FREE_POOL(MsgStr);
             #endif
 
             if (Status != EFI_NOT_FOUND) {
@@ -1009,10 +1007,9 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
         );
         if (!EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Locate Existing AppleFramebuffer");
+            MsgStr = L"Locate Existing AppleFramebuffer";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
             LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
-            MY_FREE_POOL(MsgStr);
 
             LogInstallStatusFB (Status);
             #endif

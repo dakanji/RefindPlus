@@ -3588,6 +3588,10 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     if (RunningOC) {
+                        #if REFIT_DEBUG > 0
+                        LOG_MSG("\n\n");
+                        #endif
+
                         break;
                     }
 
@@ -3636,7 +3640,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load Instance: MacOS");
+                    MsgStr = StrDuplicate (L"Load Instance: macOS");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
 
@@ -3716,7 +3720,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     MsgStr = PoolPrint (
                         L"NVRAM Filter:- '%s'",
-                        (GlobalConfig.NvramProtect) ? L"Active" : L"Inactive"
+                        (GlobalConfig.NvramProtect)
+                            ? L"Active"
+                            : (AppleFirmware)
+                                ? L"Inactive"
+                                : L"Disabled"
                     );
                     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
                     MY_FREE_POOL(MsgStr);

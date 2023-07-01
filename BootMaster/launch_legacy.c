@@ -1385,19 +1385,16 @@ VOID WarnIfLegacyProblems (VOID) {
 
         if (found) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Legacy BIOS Support Enabled in RefindPlus but Unavailable in EFI");
+            MsgStr = L"Legacy BIOS Support Enabled in RefindPlus but Unavailable in EFI";
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
             LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
             LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
-            MsgStr = StrDuplicate (
-                L"Your 'scanfor' config line specifies scanning for one or more legacy     \n"
-                L"(BIOS) boot options; however, this is not possible because your computer \n"
-                L"lacks the necessary Compatibility Support Module (CSM) support or because\n"
-                L"CSM support has been disabled in your firmware.                           "
-            );
+            MsgStr = L"Your 'scanfor' config line specifies scanning for one or more legacy     \n"
+                     L"(BIOS) boot options; however, this is not possible because your computer \n"
+                     L"lacks the necessary Compatibility Support Module (CSM) support or because\n"
+                     L"CSM support has been disabled in your firmware.                           ";
 
             if (!GlobalConfig.DirectBoot) {
                 TmpMsgA = L"** WARN: Legacy BIOS Boot Issues                                          ";
@@ -1429,8 +1426,6 @@ VOID WarnIfLegacyProblems (VOID) {
             LOG_MSG("%s", MsgStr);
             LOG_MSG("\n\n");
             #endif
-
-            MY_FREE_POOL(MsgStr);
         }
     } // if GlobalConfig.LegacyType
 

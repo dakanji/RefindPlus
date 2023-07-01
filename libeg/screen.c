@@ -83,9 +83,10 @@ EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw        = NULL;
 EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 
-BOOLEAN egHasGraphics  = FALSE;
-BOOLEAN SetPreferUGA   = FALSE;
-BOOLEAN GotGoodGOP     = FALSE;
+BOOLEAN GotConsoleControl =  TRUE;
+BOOLEAN egHasGraphics     = FALSE;
+BOOLEAN SetPreferUGA      = FALSE;
+BOOLEAN GotGoodGOP        = FALSE;
 
 UINTN   SelectedGOP    = 0;
 UINTN   egScreenWidth  = 800;
@@ -613,6 +614,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     BOOLEAN    OurValidGOP;
 
     #if REFIT_DEBUG > 0
+    UINT32  ModeLog;
     CHAR16 *MsgStr;
     CHAR16 *PixelFormatDesc;
     #endif
@@ -660,8 +662,6 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
             }
 
             #if REFIT_DEBUG > 0
-            UINT32 ModeLog;
-
             // Limit logged value to 99
             ModeLog = (Mode > 99) ? 99 : Mode;
 
@@ -782,12 +782,11 @@ EFI_STATUS egSetGopMode (
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could Not Set GOP Mode");
+        MsgStr = L"Could Not Set GOP Mode";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** WARN: %s", MsgStr);
         LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -799,12 +798,11 @@ EFI_STATUS egSetGopMode (
 
     if (MaxMode < 1) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Incompatible GPU");
+        MsgStr = L"Incompatible GPU";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** WARN: %s", MsgStr);
         LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
         #endif
     }
     else {
@@ -1048,7 +1046,8 @@ VOID egInitConsoleControl (VOID) {
     EFI_HANDLE                    *HandleBuffer;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
+    EFI_STATUS  LogStatus;
+    CHAR16     *MsgStr;
 
     LOG_MSG("%s  - Locate Console Control", OffsetNext);
     #endif
@@ -1059,7 +1058,7 @@ VOID egInitConsoleControl (VOID) {
         &ConsoleControlProtocolGuid, (VOID **) &ConsoleControl
     );
     #if REFIT_DEBUG > 0
-    EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
+    LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
     LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
     #endif
     if (EFI_ERROR(Status)) {
@@ -1077,7 +1076,7 @@ VOID egInitConsoleControl (VOID) {
             for (i = 0; i < HandleCount; i++) {
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol, HandleBuffer[i],
-                    &ConsoleControlProtocolGuid, (VOID*) &ConsoleControl
+                    &ConsoleControlProtocolGuid, (VOID *) &ConsoleControl
                 );
                 if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                     #if REFIT_DEBUG > 0
@@ -1095,9 +1094,6 @@ VOID egInitConsoleControl (VOID) {
                 }
             } // for
         }
-        if (EFI_ERROR(Status)) {
-            DetectedDevices  = FALSE;
-        }
         MY_FREE_POOL(HandleBuffer);
     }
 
@@ -1107,8 +1103,11 @@ VOID egInitConsoleControl (VOID) {
         : L"Assess Console Control ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
     #endif
+
+    if (EFI_ERROR(Status)) {
+        GotConsoleControl = FALSE;
+    }
 } // static VOID egInitConsoleControl()
 
 static
@@ -1117,6 +1116,7 @@ VOID LogUGADrawExit (
 ) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
+
     MsgStr = (EFI_ERROR(Status))
         ? L"Assess Universal Graphics Adapter ... NOT OK!!"
         : L"Assess Universal Graphics Adapter ... ok";
@@ -1140,7 +1140,8 @@ BOOLEAN egInitUGADraw (
     EFI_UGA_DRAW_PROTOCOL         *TmpUGA;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
+    EFI_STATUS LogStatus;
+    BOOLEAN    CheckMute = FALSE;
 
     if (!LogOutput) {
         MY_MUTELOGGER_SET;
@@ -1157,7 +1158,7 @@ BOOLEAN egInitUGADraw (
         &UgaDrawProtocolGuid, (VOID *) &TmpUGA
     );
     #if REFIT_DEBUG > 0
-    EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
+    LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
     LOG_MSG("%s", OffsetNext);
     LOG_MSG("%s  - Locate Universal Graphics Adapter", OffsetNext);
     LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
@@ -1279,11 +1280,14 @@ VOID egInitScreen (VOID) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr;
-    BOOLEAN  SelectedOnce;
-    BOOLEAN  PrevFlag = FALSE;
+    EFI_STATUS  LogStatus;
+    CHAR16     *MsgStr;
+    BOOLEAN     PrevFlag;
+    BOOLEAN     SelectedOnce;
 
     LOG_MSG("Check for Graphics:");
+
+    PrevFlag = FALSE;
     #endif
 
     // Get ConsoleControl Protocol
@@ -1334,7 +1338,7 @@ VOID egInitScreen (VOID) {
                 &GOPDrawProtocolGuid, (VOID **) &OldGop
             );
             #if REFIT_DEBUG > 0
-            EFI_STATUS LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
+            LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
             LOG_MSG("%s", OffsetNext);
             LOG_MSG("%s  - Locate Graphics Output Protocol", OffsetNext);
             LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
@@ -2776,7 +2780,7 @@ VOID egScreenShot (VOID) {
 
     Image = egCopyScreen();
     if (Image == NULL) {
-        MsgStr = StrDuplicate (L"Unable to Take Screenshot ... Image is NULL");
+        MsgStr = L"Unable to Take Screenshot ... Image is NULL";
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2794,8 +2798,6 @@ VOID egScreenShot (VOID) {
         LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
-
-        MY_FREE_POOL(MsgStr);
 
         goto bailout_wait;
     }
@@ -2820,7 +2822,7 @@ VOID egScreenShot (VOID) {
 
     MY_FREE_IMAGE(Image);
     if (EFI_ERROR(Status)) {
-        MsgStr = StrDuplicate (L"Could Not Encode PNG");
+        MsgStr = L"Could Not Encode PNG";
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2839,14 +2841,13 @@ VOID egScreenShot (VOID) {
         LOG_MSG("\n\n");
         #endif
 
-        MY_FREE_POOL(MsgStr);
         MY_FREE_POOL(FileData);
 
         return;
     }
 
     if (!FileData) {
-        MsgStr = StrDuplicate (L"No FileData!");
+        MsgStr = L"No FileData!";
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2864,7 +2865,6 @@ VOID egScreenShot (VOID) {
         LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
-        MY_FREE_POOL(MsgStr);
 
         return;
     }
@@ -2875,7 +2875,7 @@ VOID egScreenShot (VOID) {
     ) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
-            MsgStr = StrDuplicate (L"Could Not Save Screenshot");
+            MsgStr = L"Could Not Save Screenshot";
 
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
@@ -2893,7 +2893,6 @@ VOID egScreenShot (VOID) {
             LOG_MSG("\n\n");
             #endif
 
-            MY_FREE_POOL(MsgStr);
             MY_FREE_POOL(FileData);
 
             return;
@@ -2908,7 +2907,7 @@ VOID egScreenShot (VOID) {
         // Try to save to first available ESP
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
-            MsgStr = StrDuplicate (L"Could Not Find ESP for Screenshot");
+            MsgStr = L"Could Not Find ESP for Screenshot";
 
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
@@ -2926,7 +2925,6 @@ VOID egScreenShot (VOID) {
             LOG_MSG("\n\n");
             #endif
 
-            MY_FREE_POOL(MsgStr);
             MY_FREE_POOL(FileData);
 
             return;
@@ -2943,7 +2941,7 @@ VOID egScreenShot (VOID) {
 
         // Exit if is ndex is greater than 999
         if (i > 999) {
-            MsgStr = StrDuplicate (L"Excessive Number of Saved Screenshot Files Found");
+            MsgStr = L"Excessive Number of Saved Screenshot Files Found";
 
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
@@ -2961,7 +2959,6 @@ VOID egScreenShot (VOID) {
             LOG_MSG("\n\n");
             #endif
 
-            MY_FREE_POOL(MsgStr);
             MY_FREE_POOL(FileData);
 
             return;
@@ -2977,7 +2974,7 @@ VOID egScreenShot (VOID) {
         goto bailout_wait;
     }
 
-    MsgStr = StrDuplicate (L"Saved Screenshot");
+    MsgStr = L"Saved Screenshot";
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);
@@ -2995,7 +2992,6 @@ VOID egScreenShot (VOID) {
     MY_MUTELOGGER_OFF;
     #endif
 
-    MY_FREE_POOL(MsgStr);
     MY_FREE_POOL(FileName);
     MY_FREE_POOL(FileData);
 

@@ -172,6 +172,7 @@ EFI_GUID                    GuidBasicData       =       BASIC_DATA_GUID_VALUE;
 EFI_GUID                    GuidApplTvRec       =      APPLE_TV_RECOVERY_GUID;
 EFI_GUID                    GuidMacRaidOn       =      MAC_RAID_ON_GUID_VALUE;
 EFI_GUID                    GuidMacRaidOff      =     MAC_RAID_OFF_GUID_VALUE;
+EFI_GUID                    GuidReservedMS      =    MSFT_RESERVED_GUID_VALUE;
 EFI_GUID                    GuidWindowsRE       = WIN_RECOVERY_ENV_GUID_VALUE;
 EFI_GUID                    GuidRecoveryHD      =  MAC_RECOVERY_HD_GUID_VALUE;
 EFI_GUID                    GuidContainerHFS    =    CONTAINER_HFS_GUID_VALUE;
@@ -1123,16 +1124,22 @@ CHAR16 * FSTypeName (
     MY_MUTELOGGER_SET;
     #endif
     if (0);
-    else if (FindSubStr      (Volume->VolName, L"Optical Disc Drive"          )) retval = L"ISO-9660 (Assumed)";
-    else if (FindSubStr      (Volume->VolName, L"APFS/FileVault Container"    )) retval = L"APFS (Assumed)"    ;
-    else if (FindSubStr      (Volume->VolName, L"Fusion/FileVault Container"  )) retval = L"HFS+ (Assumed)"    ;
-    else if (MyStriCmp       (Volume->VolName, L"Microsoft Reserved Partition")) retval = L"NTFS (Assumed)"    ;
-    else if (MyStriCmp       (Volume->VolName, L"Basic Data Partition"        )) retval = L"NTFS (Assumed)"    ;
-    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff          )) retval = L"Mac Raid (OFF)"    ;
-    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn           )) retval = L"Mac Raid (ON)"     ;
+    else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"        )) retval = L"ISO-9660 (Assumed)";
+    else if (FindSubStr (Volume->VolName, L"APFS/FileVault Container"  )) retval = L"APFS (Assumed)"    ;
+    else if (FindSubStr (Volume->VolName, L"Fusion/FileVault Container")) retval = L"HFS+ (Assumed)"    ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
+
+    if (!MyStriCmp (retval, L"Unknown")) {
+        return retval;
+    }
+
+    if (0);
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) retval = L"NTFS (Assumed)";
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) retval = L"NTFS (Assumed)";
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) retval = L"Mac Raid (OFF)";
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn )) retval = L"Mac Raid (ON)" ;
 
     return retval;
 } // CHAR16 *FSTypeName()
@@ -1337,11 +1344,10 @@ VOID ScanVolumeBootcode (
     if (Volume->BlockIO == NULL) {
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
-            MsgStr = StrDuplicate (L"Found Invalid Volume BlockIO on Item Below");
+            MsgStr = L"Found Invalid Volume BlockIO on Item Below";
             LOG_MSG("\n\n");
             LOG_MSG("** WARN:  %s", MsgStr);
             LOG_MSG("\n");
-            MY_FREE_POOL(MsgStr);
         }
         #endif
 
@@ -1351,10 +1357,9 @@ VOID ScanVolumeBootcode (
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
             // Buffer is too small
-            MsgStr = StrDuplicate (L"Found Invalid Boot Code Buffer Size on Item Below");
+            MsgStr = L"Found Invalid Boot Code Buffer Size on Item Below";
             LOG_MSG("\n\n");
             LOG_MSG("** WARN:  %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
         }
         #endif
 
@@ -1380,11 +1385,10 @@ VOID ScanVolumeBootcode (
                 MediaCheck = TRUE;
             }
             ScannedOnce = FALSE;
-            MsgStr = StrDuplicate (L"Could Not Read Boot Sector on Item Below");
+            MsgStr = L"Could Not Read Boot Sector on Item Below";
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: '%r' %s", Status, MsgStr);
             CheckError (Status, MsgStr);
-            MY_FREE_POOL(MsgStr);
         }
         #endif
 
@@ -1814,23 +1818,26 @@ CHAR16 * GetVolumeName (
             if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
                 FoundName = StrDuplicate (L"APFS/FileVault Container");
             }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux)) {
+                FoundName = StrDuplicate (L"Linux Volume");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) {
+                FoundName = StrDuplicate (L"Microsoft Reserved Partition");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
+                FoundName = StrDuplicate (L"Recovery HD");
+            }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT)) {
                 FoundName = StrDuplicate (L"GPT Home Partition");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT)) {
                 FoundName = StrDuplicate (L"GPT Server Partition");
             }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux)) {
-                FoundName = StrDuplicate (L"Linux Volume");
-            }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
                 FoundName = StrDuplicate (L"Apple Raid Partition (Online)");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
                 FoundName = StrDuplicate (L"Apple Raid Partition (Offline)");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
-                FoundName = StrDuplicate (L"Recovery HD");
             }
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) {
                 FoundName = StrDuplicate (L"Fusion/FileVault Container");
@@ -1874,22 +1881,17 @@ CHAR16 * GetVolumeName (
 BOOLEAN HasWindowsBiosBootFiles (
     IN REFIT_VOLUME *Volume
 ) {
-    BOOLEAN FilesFound;
-
-    if (Volume->RootDir == NULL) {
+    if (!Volume->RootDir) {
         // Assume Present
-        FilesFound = TRUE;
-    }
-    else {
-        // NTLDR   = Windows boot file: NT/200x/XP
-        // Bootmgr = Windows boot file: Vista/7/8/10
-        FilesFound = (
-            FileExists (Volume->RootDir, L"NTLDR") ||
-            FileExists (Volume->RootDir, L"bootmgr")
-        );
+        return TRUE;
     }
 
-    return FilesFound;
+    // NTLDR   = Windows boot file: NT/200x/XP
+    // Bootmgr = Windows boot file: Vista/7/8/10
+    return (
+        FileExists (Volume->RootDir, L"NTLDR") ||
+        FileExists (Volume->RootDir, L"bootmgr")
+    );
 } // static VOID HasWindowsBiosBootFiles()
 
 VOID ScanVolume (
@@ -1936,7 +1938,7 @@ VOID ScanVolume (
         Volume->DiskKind = DISK_KIND_OPTICAL;
     }
 
-    // Detect device type
+    // Detect Device Type
     DevicePath = Volume->DevicePath;
     while (DevicePath != NULL && !IsDevicePathEndType (DevicePath)) {
         NextDevicePath = NextDevicePathNode (DevicePath);
@@ -2038,7 +2040,13 @@ VOID ScanVolume (
                     gBS->HandleProtocol, WholeDiskHandle,
                     &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
                 );
-                if (EFI_ERROR(Status)) {
+                if (!EFI_ERROR(Status)) {
+                    // Check the media block size
+                    if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
+                        Volume->DiskKind = DISK_KIND_OPTICAL;
+                    }
+                }
+                else {
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
@@ -2056,13 +2064,7 @@ VOID ScanVolume (
                     }
                     #endif
                 }
-                else {
-                    // Check the media block size
-                    if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
-                        Volume->DiskKind = DISK_KIND_OPTICAL;
-                    }
-                }
-            } // if/else EFI_ERROR(Status)
+            } // if/else !EFI_ERROR(Status)
         } // if DevicePathType
         DevicePath = NextDevicePath;
     } // while
@@ -2143,7 +2145,7 @@ VOID ScanExtendedPartition (
 
     ExtBase = MbrEntry->StartLBA;
     for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
-        // read current EMBR
+        // Read Current EMBR
         Status = REFIT_CALL_5_WRAPPER(
             WholeDiskVolume->BlockIO->ReadBlocks, WholeDiskVolume->BlockIO,
             WholeDiskVolume->BlockIO->Media->MediaId, ExtCurrent,
@@ -2165,7 +2167,7 @@ VOID ScanExtendedPartition (
 
         EMbrTable = (MBR_PARTITION_INFO *) (SectorBuffer + 446);
 
-        // scan logical partitions in this EMBR
+        // Scan Logical Partitions in this EMBR
         NextExtCurrent = 0;
         LogicalPartitionIndex = 4;
         for (i = 0; i < 4; i++) {
@@ -2176,12 +2178,12 @@ VOID ScanExtendedPartition (
             }
 
             if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
-                // set next ExtCurrent
+                // Set Next ExtCurrent
                 NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
                 break;
             }
             else {
-                // Found a logical partition
+                // Found Logical Partition
                 Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
                 Volume->DiskKind          = WholeDiskVolume->DiskKind;
                 Volume->IsMbrPartition    = TRUE;
@@ -2508,7 +2510,7 @@ VOID ScanVolumes (VOID) {
     CHAR16                 *TempUUID;
     BOOLEAN                 DupFlag;
     BOOLEAN                 CheckedAPFS;
-    EFI_GUID                VolumeGuid;
+    EFI_GUID                VolumeGuid = NULL_GUID_VALUE;
     EFI_GUID               *UuidList;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
@@ -2756,21 +2758,20 @@ VOID ScanVolumes (VOID) {
             VolumeRole = 0;
             if (0);
             else if (FindSubStr (Volume->VolName, L"APFS/FileVault"         )) RoleStr = L"0xCC - Container" ;
-            else if (FindSubStr (Volume->VolName, L"System Reserved"        )) RoleStr = L" * Win Reserved"  ;
-            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"     )) RoleStr = L" * Drive Optical" ;
-            else if (FindSubStr (Volume->VolName, L"Microsoft Reserved"     )) RoleStr = L" * Win Reserved"  ;
+            else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"     )) RoleStr = L" * Type Optical"  ;
             else if (FindSubStr (PartType,        L"Mac Raid"               )) RoleStr = L" * Part MacRaid"  ;
-            else if (MyStriCmp (Volume->VolName,  L"Whole Disk Volume"      )) RoleStr = L" * Physical Disk" ;
-            else if (MyStriCmp (Volume->VolName,  L"Unknown Volume"         )) RoleStr = L"?? Not Known"     ;
+            else if (MyStriCmp (Volume->VolName,  L"Whole Disk Volume"      )) RoleStr = L" * Disk Physical" ;
+            else if (MyStriCmp (Volume->VolName,  L"Unknown Volume"         )) RoleStr = L"?? Role Unknown"  ;
             else if (MyStriCmp (Volume->VolName,  L"BOOTCAMP"               )) RoleStr = L" * Mac BootCamp"  ;
             else if (MyStriCmp (Volume->VolName,  L"Boot OS X"              )) RoleStr = L" * Mac BootAssist";
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * EFI SysPart"   ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP       )) RoleStr = L" * Part SystemEFI";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux     )) RoleStr = L" * Part LinuxFS"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT   )) RoleStr = L" * Part HomeGPT"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT )) RoleStr = L" * Part ServerGPT";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) RoleStr = L" * Part BasicData";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidWindowsRE )) RoleStr = L" * Win Recovery"  ;
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) RoleStr = L" * HFS Recovery"  ;
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) RoleStr = L" * Msft Reserved" ;
             else {
 // DA-TAG: Limit to TianoCore
 #ifndef __MAKEWITH_TIANO
@@ -2897,7 +2898,7 @@ VOID ScanVolumes (VOID) {
                     }
                     else {
                         RoleStr = (FileExists (Volume->RootDir, MACOSX_LOADER_PATH))
-                            ? L" * HFS MacOS Boot"
+                            ? L" * HFS Boot macOS"
                             : L" * HFS Data/Other";
                     }
                 }
@@ -2912,7 +2913,7 @@ VOID ScanVolumes (VOID) {
             }
 
             if (!RoleStr) {
-                RoleStr = L"** Not Defined";
+                RoleStr = L"** Role Undefined";
             }
             else if (FindSubStr (RoleStr, L"HFS Recovery")) {
                 // Create or add to a list of bootable HFS+ volumes
@@ -3088,7 +3089,21 @@ VOID ScanVolumes (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
+        // DA-TAG: if/else structure is important
+        if (!SelfVolRun) {
+            LOG_MSG("\n\n");
+        }
+        else {
+            MsgStr = StrDuplicate (
+                L"Skipped APFS Volume Group Sync ... Config Setting is Active:- 'disable_apfs_sync'"
+            );
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+        }
         #endif
     }
 
@@ -4126,17 +4141,17 @@ BOOLEAN FindVolume (
     UINTN     i;
     BOOLEAN   Found;
 
-    Found = FALSE;
     i = 0;
-    while ((i < VolumesCount) && (!Found)) {
-        if (VolumeMatchesDescription (Volumes[i], Identifier)) {
+    Found = FALSE;
+    while (!Found && (i < VolumesCount)) {
+        Found = VolumeMatchesDescription (Volumes[i], Identifier);
+        if (Found) {
             *Volume = Volumes[i];
-            Found   = TRUE;
         }
         i++;
     }
 
-    return (Found);
+    return Found;
 } // BOOLEAN FindVolume()
 
 // Returns TRUE if Description matches Volume's VolName, FsName, or (once
@@ -4145,22 +4160,22 @@ BOOLEAN VolumeMatchesDescription (
     IN REFIT_VOLUME *Volume,
     IN CHAR16       *Description
 ) {
-    EFI_GUID TargetVolGuid;
+    EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
 
     if ((Volume == NULL) || (Description == NULL)) {
         return FALSE;
     }
 
-    if (IsGuid (Description)) {
-        TargetVolGuid = StringAsGuid (Description);
-        return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
+    if (!IsGuid (Description)) {
+        return (
+            MyStriCmp (Description, Volume->FsName)   ||
+            MyStriCmp (Description, Volume->VolName)  ||
+            MyStriCmp (Description, Volume->PartName)
+        );
     }
 
-    return (
-        MyStriCmp (Description, Volume->VolName)  ||
-        MyStriCmp (Description, Volume->PartName) ||
-        MyStriCmp (Description, Volume->FsName)
-    );
+    TargetVolGuid = StringAsGuid (Description);
+    return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
 } // BOOLEAN VolumeMatchesDescription()
 
 // Returns TRUE if specified Volume, Directory, and Filename correspond to an

@@ -8,22 +8,22 @@
   * Improves loading speed by preferring the current theme's generic/default loader icons
   * Enabled by default but can be disabled using a new `decline_help_icon` configuration token
 - Adds `GZippedLoaders` Feature
-  * Stub implementation of upstream ARM Linux focused feature
+  * Stub implementation of upstream feature focused on the ARM architecture
 - Adds Misc Upstream Changes/Fixes
   * Adoption of the RefindPlus `FollowSymlinks` Feature
   * `also_scan_dirs` Volume Specification Bugfix
-    - https://sf.net/p/refind/code/ci/fde8116021e1c6ea7edaf3fae15fced47bbb38cf/
-    - https://sf.net/p/refind/discussion/general/thread/b411f33f37/
+    - https://sf.net/p/refind/code/ci/fde8116021e1c6ea7edaf3fae15fced47bbb38cf
+    - https://sf.net/p/refind/discussion/general/thread/b411f33f37
   * Malformed `refind_linux.conf` Freeze Bugfix
-    - https://sf.net/p/refind/code/ci/ebe510a5fcdc10fc04f90e0976c47de54b8c767e/
+    - https://sf.net/p/refind/code/ci/ebe510a5fcdc10fc04f90e0976c47de54b8c767e
   * Parallel FS Driver GNU-EFI Build Limitation
-    - https://sourceforge.net/p/refind/code/ci/dc211965727921bf8e9440fdab5e147795ce9584/
+    - https://sf.net/p/refind/code/ci/dc211965727921bf8e9440fdab5e147795ce9584
   * Memory leak and garbled JPEG when compiled on some Linux distributions
-    - https://sourceforge.net/p/refind/code/ci/8825e5e815b4be3708edd7b8d9fa3ea658094d3b/
+    - https://sf.net/p/refind/code/ci/8825e5e815b4be3708edd7b8d9fa3ea658094d3b
   * Apparent Memory Allocation Conflict
-    - https://sourceforge.net/p/refind/code/ci/5e2d0ac3fb76a8daab3a8199d0b0c52dc792b84f/
+    - https://sf.net/p/refind/code/ci/5e2d0ac3fb76a8daab3a8199d0b0c52dc792b84f
   * Upstream `LinuxPrefixes` Feature
-    - https://sourceforge.net/p/refind/code/ci/d5c0a48a01427ed7a3cb3eb324c59fb965358b1d/
+    - https://sf.net/p/refind/code/ci/d5c0a48a01427ed7a3cb3eb324c59fb965358b1d
 - Fixes `ReloadGOP` Feature
   * A regression had meant that the feature was not active
   * This bug was introduced in v0.13.3.AD (Commit dc642c6)
@@ -36,7 +36,7 @@
   * Now handles uncompressed OptionROMs
   * None encountered to date but theoretically possible
 - Improves `AlsoScan` Feature
-  * The '@root/boot' path was added to the default 'also_scan_dirs' list
+  * The `@root/boot` path was added to the default `also_scan_dirs` list
 - Improves `DynamicCSR` Feature
   * Now also enables the `RotateCSR` tool if configured to be displayed
     - The tool was previously always disabled when DynamicCSR was active
@@ -46,22 +46,25 @@
   * A screen message about `NormalisedCSR` was additionally suppressed
 - Improves Generic Menu Handling
   * Now provides a `Return to Main Menu` option on all such menus
+- Improves `OpenCore` Instance Handling
+  * Now prevents loading OpenCore when RefindPlus is loaded via OpenCore
+  * That is, prevents loading OpenCore when it is already active
 - Improves `NvramProtect` and `NvramProtectEx` Features
   * Now disabled when RefindPlus is loaded via OpenCore
 - Exposes `MitigatePrimedBuffer` Feature for User Configuration
   * Previously activated by default on all types of firmware
   * A limited base implementation is always active on Non-Apple firmware
   * Can now be extended on by activating a new `mitigate_primed_buffer` token
-  * The feature does not operate on Apple firwmare regardless of the token setting
+  * The feature does not operate on Apple firmware regardless of the token setting
 - Amends Filesystem Drivers
-  * BTRFS: Adds support for RAID1C34 profiles
-    - Ported from Grub2 via https://sourceforge.net/p/refind/code/merge-requests/48/
+  * BTRFS: Adds support for `RAID1C34` profiles
+    - Ported from Grub2 via https://sf.net/p/refind/code/merge-requests/48
   * MISC: Tweaks driver name strings and other minor items
 - Amends `Big Selection Image` Size Filtering
   * The maximum Big Selection image size is increased to 512px from 320px
   * The Small Selection image maximum is maintained at 256px
 - Amends EFI File Validity Checks
-  * Apple `Fat` Binaries are now assumed to be always valid on Apple firmware
+  * Apple `Fat` Binaries are now always assumed to be valid on Apple firmware
   * This similarly applies to binaries with missing PE32+ headers
 
 
