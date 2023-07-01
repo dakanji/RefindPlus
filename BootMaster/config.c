@@ -2893,6 +2893,7 @@ VOID ReadConfig (
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"disable_reload_gop") ||
             MyStriCmp (TokenList[0], L"decline_reload_gop") ||
             MyStriCmp (TokenList[0], L"decline_reloadgop")
         ) {
@@ -2903,12 +2904,13 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_reload_gop'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_reload_gop'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"disable_apfs_load") ||
             MyStriCmp (TokenList[0], L"decline_apfs_load") ||
             MyStriCmp (TokenList[0], L"decline_apfsload")
         ) {
@@ -2919,12 +2921,13 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_apfs_load'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_apfs_load'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"disable_apfs_mute") ||
             MyStriCmp (TokenList[0], L"decline_apfs_mute") ||
             MyStriCmp (TokenList[0], L"decline_apfsmute")
         ) {
@@ -2935,12 +2938,13 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_apfs_mute'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_apfs_mute'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"disable_apfs_sync") ||
             MyStriCmp (TokenList[0], L"decline_apfs_sync") ||
             MyStriCmp (TokenList[0], L"decline_apfssync")
         ) {
@@ -2951,13 +2955,14 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_apfs_sync'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_apfs_sync'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"decline_apple_fb") ||
+            MyStriCmp (TokenList[0], L"disable_provide_fb") ||
+            MyStriCmp (TokenList[0], L"decline_apple_fb")   ||
             MyStriCmp (TokenList[0], L"decline_applefb")
         ) {
             // DA_TAG: Accomodate Deprecation
@@ -2967,12 +2972,13 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_apple_fb'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_provide_fb'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"disable_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvramprotect")
         ) {
@@ -2983,7 +2989,7 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_nvram_protect'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_nvram_protect'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif

@@ -57,19 +57,19 @@ Token | Functionality
 continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
 csr_dynamic           |Actively enables or disables the SIP Policy on Macs
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
-decline_apfs_load     |Disables inbuilt provision of APFS filesystem capability
-decline_apfs_mute     |Disables suppression of verbose APFS text on boot
-decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
-decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
 decline_help_icon     |Disables feature that may enhance loading speed by preferring default icons
 decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
 decline_help_text     |Disables complementary text colours if not required
-decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
-decline_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 decouple_key_f10      |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
 disable_amfi          |Disables AMFI Checks on MacOS if required
+disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
+disable_apfs_mute     |Disables suppression of verbose APFS text on boot
+disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables MacOS kernel panic logging to NVRAM
+disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
+disable_provide_fb    |Disables provision under some circumstances of missing AppleFramebuffers
+disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
 follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)

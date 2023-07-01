@@ -1,6 +1,12 @@
 0.14.0.AB (PRE-RELEASE):
 -----------------------
-- PENDING
+- Renames Misc Configuration Tokens
+  * `decline_nvram_protect` to `disable_nvram_protect`
+  * `decline_reload_gop` to `disable_reload_gop`
+  * `decline_apfs_load` to `disable_apfs_load`
+  * `decline_apfs_mute` to `disable_apfs_mute`
+  * `decline_apfs_sync` to `disable_apfs_sync`
+  * `decline_apple_fb` to `disable_provide_fb`
 
 
 0.14.0.AA (13 Jun 2023):

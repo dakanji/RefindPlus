@@ -43,58 +43,6 @@
 #
 #csr_normalise
 
-# Supply APFS filesystem capability. By default, RefindPlus is set up to jump start
-# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
-# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# Mac OS version which ensures that any changes made to APFS drivers for each specific
-# Mac OS version are accommodated, compared to using one driver no matter what specific
-# Mac OS version is being loaded. This default is deactivated whenever this token is set.
-# NB: This functionality is only available on TianoCore builds.
-#
-# APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
-#
-#decline_apfs_load
-
-# Suppress verbose APFS loading text output. By default, RefindPlus is configured to always
-# suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
-# This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
-# This feature may impact other text output however, and should be disabled by activating
-# this option if such negative effects are observed. This setting only applies to MacOS.
-# NB: This functionality is only available on TianoCore builds.
-#
-# Verbose APFS text is suppressed (if generated) when commented out
-#
-#decline_apfs_mute
-
-# Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partition
-# of APFS volumes by requiring this to run the Mac Boot Loader, starting with MacOS v11.0, when
-# SIP is enabled. Attempts to run such MacOS Boot Loaders directly when SIP is enabled result
-# in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
-# respective "PreBoot" partitions, which will be used to boot such MacOS instances and the
-# associated "PreBoot" partitions will be hidden from view. This arrangement also permits
-# booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
-# When this option is enabled however, the RefindPlus "SyncAPFS" feature is disabled.
-#
-# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
-# to improve the reliability of "SyncAPFS" distinguishing between APFS volumes.
-# Also, avoid the use of special characters in MacOS volume names and limit
-# names to alphanumeric characters. Dashes, underscores and/or spaces can
-# be used in combination with alphanumeric characters without issue.
-#
-# APFS partition synchronisation is provided (if required) when commented out
-#
-#decline_apfs_sync
-
-# Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
-# is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
-# This feature can be disabled by activating this token. It is only active when the UGA
-# protocol is available and is inactive when running a GPU with the GOP protocol.
-# NB: This functionality is only available on TianoCore builds.
-#
-# Apple FramebufferInfo protocol is provided (if required) when commented out
-#
-#decline_apple_fb
-
 # The "HelpIcon" feature prefers loading default/generic loader icons which are used
 # in most cases. Searches for custom icons are only executed if a generic loader icon
 # is not found. This is a change from the original rEFInd implementation; which is the
@@ -133,35 +81,6 @@
 #
 #decline_help_text
 
-# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
-# By default, RefindPlus will prevent writes of certain items by processes such as
-# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
-# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
-# results in an inability to boot. This token is only activated on Apple firmware.
-# NB: This feature is always disabled when RefindPlus is loaded via OpenCore.
-#
-# The "NvramProtect" feature is enabled when commented out
-#
-#decline_nvram_protect
-
-# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
-# UEFI 2.x requirements, they do not work on legacy devices as the specifications
-# mandate that on installation, compliant GOP drivers should confirm devices are
-# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
-# do not activate on classic MacPros for instance, as these are not actually
-# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
-# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
-# of the GPU's Option ROM whenever it detects that GOP is not available.
-# This permits running modern GPUs on some legacy units when they would
-# otherwise fail to work. The change is reverted automatically once it
-# is longer required to allow GPU activation except when the related
-# "supply_uefi" setting is activate, as this overrides this revert.
-#
-# GPU Option ROMs are reinstalled (if required) when commented out
-#
-#decline_reload_gop
-
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
 # key is unlinked whilst the '\' key stays linked to screenshots. It
@@ -183,6 +102,48 @@
 # Inactive when commented out (Does not stop AMFI checks)
 #
 #disable_amfi
+
+# Supply APFS filesystem capability. By default, RefindPlus is set up to jump start
+# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
+# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# Mac OS version which ensures that any changes made to APFS drivers for each specific
+# Mac OS version are accommodated, compared to using one driver no matter what specific
+# Mac OS version is being loaded. This default is deactivated whenever this token is set.
+# NB: This functionality is only available on TianoCore builds.
+#
+# APFS filesystem capability is provided (if required) via "SupplyAPFS" when commented out
+#
+#disable_apfs_load
+
+# Suppress verbose APFS loading text output. By default, RefindPlus is configured to always
+# suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
+# This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
+# This feature may impact other text output however, and should be disabled by activating
+# this option if such negative effects are observed. This setting only applies to MacOS.
+# NB: This functionality is only available on TianoCore builds.
+#
+# Verbose APFS text is suppressed (if generated) when commented out
+#
+#disable_apfs_mute
+
+# Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partition
+# of APFS volumes by requiring this to run the Mac Boot Loader, starting with MacOS v11.0, when
+# SIP is enabled. Attempts to run such MacOS Boot Loaders directly when SIP is enabled result
+# in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
+# respective "PreBoot" partitions, which will be used to boot such MacOS instances and the
+# associated "PreBoot" partitions will be hidden from view. This arrangement also permits
+# booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
+# When this option is enabled however, the RefindPlus "SyncAPFS" feature is disabled.
+#
+# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
+# to improve the reliability of "SyncAPFS" distinguishing between APFS volumes.
+# Also, avoid the use of special characters in MacOS volume names and limit
+# names to alphanumeric characters. Dashes, underscores and/or spaces can
+# be used in combination with alphanumeric characters without issue.
+#
+# APFS partition synchronisation is provided (if required) when commented out
+#
+#disable_apfs_sync
 
 # Disable version compatibility checks when booting MacOS. Macs check whether
 # the current MacOS version is supported on the machine when booting, and halt
@@ -207,6 +168,45 @@
 # Inactive when commented out (Does not stop MacOS paniclog writes to NVRAM)
 #
 #disable_nvram_paniclog
+
+# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
+# By default, RefindPlus will prevent writes of certain items by processes such as
+# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
+# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
+# results in an inability to boot. This token is only activated on Apple firmware.
+# NB: This feature is always disabled when RefindPlus is loaded via OpenCore.
+#
+# The "NvramProtect" feature is enabled when commented out
+#
+#disable_nvram_protect
+
+# Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
+# is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
+# This feature can be disabled by activating this token. It is only active when the UGA
+# protocol is available and is inactive when running a GPU with the GOP protocol.
+# NB: This functionality is only available on TianoCore builds.
+#
+# Apple FramebufferInfo protocol is provided (if required) when commented out
+#
+#disable_provide_fb
+
+# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
+# UEFI 2.x requirements, they do not work on legacy devices as the specifications
+# mandate that on installation, compliant GOP drivers should confirm devices are
+# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
+# do not activate on classic MacPros for instance, as these are not actually
+# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
+# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
+# amend a device's EFI Revision to v2.x, and then try to reinstall a copy
+# of the GPU's Option ROM whenever it detects that GOP is not available.
+# This permits running modern GPUs on some legacy units when they would
+# otherwise fail to work. The change is reverted automatically once it
+# is longer required to allow GPU activation except when the related
+# "supply_uefi" setting is activate, as this overrides this revert.
+#
+# GPU Option ROMs are reinstalled (if required) when commented out
+#
+#disable_reload_gop
 
 # Disable dispatching revealed DXE drivers during handle connection.
 # The Controller/Handle connection exercise may sometimes reveal new
