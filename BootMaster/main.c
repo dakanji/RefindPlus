@@ -201,7 +201,7 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\
+#define NVRAMCLEAN_PATHS L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\
 \\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\BOOT\\tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools\\CleanNvram_x64.efi,\
 \\EFI\\BOOT\\tools\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
 \\EFI\\tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
@@ -226,7 +226,6 @@ BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                IconScaleSet         = FALSE;
 BOOLEAN                ForceTextOnly        = FALSE;
-BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
 BOOLEAN                FlushFailedTag       = FALSE;
 BOOLEAN                FlushFailReset       = FALSE;
@@ -271,6 +270,7 @@ extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
+extern BOOLEAN                       SkipForcedReboot;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -313,6 +313,80 @@ VOID UnexpectedReturn (
     MY_FREE_POOL(MsgStr);
 } // static VOID UnexpectedReturn()
 #endif
+
+static
+VOID RebootSystem (
+    BOOLEAN Confirmed
+) {
+    CHAR16            *TypeStr;
+    EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
+
+    #if REFIT_DEBUG > 0
+    CHAR16            *MsgStr;
+    BOOLEAN            CheckMute = FALSE;
+    #endif
+
+
+    TypeStr = L"Running System Restart";
+
+    // If 'RunOurTool' is TRUE, then we have dropped down from 'Clean Nvram' above
+    // Do not show confirmation menu in such cases
+    if (Confirmed == FALSE) {
+        // Now set 'RunOurTool' for this tool
+        Confirmed = ConfirmRestart();
+        if (Confirmed == FALSE) {
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"Aborted %s", TypeStr);
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
+
+            // Early Exit
+            return;
+        }
+    }
+
+    // If 'FoundTool' is TRUE, then we have dropped down from 'Clean Nvram' above
+    // Only display 'TypeStr' message in such cases
+    if (Confirmed == TRUE) {
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        egDisplayMessage (
+            TypeStr, &BGColor, CENTER,
+            3, L"PauseSeconds"
+        );
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    MY_FREE_POOL(MsgStr);
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
+    LOG_MSG("%s", TypeStr);
+    END_TAG();
+    #endif
+
+    // Terminate Screen
+    TerminateScreen();
+
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
+    );
+}
 
 static
 VOID InitMainMenu (VOID) {
@@ -1549,6 +1623,85 @@ VOID RunMacBootSupportFuncs (VOID) {
 } // static VOID RunMacBootSupportFuncs()
 
 static
+BOOLEAN ToolEntryInfo (
+    CHAR16 *ToolPurpose
+) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenEntry;
+    REFIT_MENU_SCREEN *ToolEntryInfoMenu;
+
+    ToolEntryInfoMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ToolEntryInfoMenu == NULL) {
+        // Early Return
+        return FALSE;
+    }
+
+    ToolEntryInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT              );
+    ToolEntryInfoMenu->Title      = PoolPrint (L"Confirm '%s' Entry", ToolPurpose);
+    ToolEntryInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT             );
+    ToolEntryInfoMenu->Hint2      = StrDuplicate (L""                                 );
+
+    if (MyStriCmp (ToolPurpose, LABEL_GPTSYNC)) {
+        AddMenuInfoLine (ToolEntryInfoMenu, L"Your system *MAY* be restarted on return from the tool",   FALSE);
+        AddMenuInfoLine (ToolEntryInfoMenu, L"This happens when changes are made by the tool",           FALSE);
+    }
+    else {
+        AddMenuInfoLine (ToolEntryInfoMenu, L"Your system will be restarted on return from the tool",    FALSE);
+        AddMenuInfoLine (ToolEntryInfoMenu, L"This will always happen whether actually used or not",     FALSE);
+    }
+    AddMenuInfoLine (ToolEntryInfoMenu, L"",                                                         FALSE);
+    AddMenuInfoLine (ToolEntryInfoMenu, L"Please confirm you wish to proceed with running the tool", FALSE);
+    AddMenuInfoLine (ToolEntryInfoMenu, L"",                                                         FALSE);
+
+    REFIT_MENU_ENTRY *MenuEntryToolEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    if (MenuEntryToolEntry == NULL) {
+        FreeMenuScreen (&ToolEntryInfoMenu);
+
+        // Early Return
+        return FALSE;
+    }
+
+    MenuEntryToolEntry->Title = PoolPrint (L"Run %s", ToolPurpose);
+    MenuEntryToolEntry->Tag   = TAG_GENERIC;
+    AddMenuEntry (ToolEntryInfoMenu, MenuEntryToolEntry);
+
+    RetVal = GetReturnMenuEntry (&ToolEntryInfoMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&ToolEntryInfoMenu);
+
+        // Early Return
+        return TRUE;
+    }
+
+    DefaultEntry = 1;
+    Style = GraphicsMenuStyle;
+    ChosenEntry = NULL;
+    MenuExit = RunGenericMenu (ToolEntryInfoMenu, Style, &DefaultEntry, &ChosenEntry);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ToolEntryInfo'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
+    );
+    LOG_MSG("\n");
+    LOG_MSG("%s  User Confirmation:", OffsetNext);
+    LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
+    #endif
+
+    RetVal = TRUE;
+    if (MenuExit != MENU_EXIT_ENTER || ChosenEntry->Tag != TAG_GENERIC) {
+        RetVal = FALSE;
+    }
+
+    FreeMenuScreen (&ToolEntryInfoMenu);
+
+    return RetVal;
+} // static BOOLEAN ToolEntryInfo()
+
+static
 BOOLEAN ShowCleanNvramInfo (
     CHAR16 *ToolPurpose
 ) {
@@ -1567,7 +1720,7 @@ BOOLEAN ShowCleanNvramInfo (
     }
 
     CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-    CleanNvramInfoMenu->Title      = StrDuplicate (L"Clean Nvram"             );
+    CleanNvramInfoMenu->Title      = StrDuplicate (LABEL_CLEAN_NVRAM          );
     CleanNvramInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
     CleanNvramInfoMenu->Hint2      = StrDuplicate (L""                        );
 
@@ -1579,7 +1732,7 @@ BOOLEAN ShowCleanNvramInfo (
     AddMenuInfoLine (CleanNvramInfoMenu, L"",                                                         FALSE);
 
     k = 0;
-    while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+    while ((FilePath = FindCommaDelimited (NVRAMCLEAN_PATHS, k++)) != NULL) {
         AddMenuInfoLine (CleanNvramInfoMenu, FilePath, TRUE);
     }
 
@@ -1833,8 +1986,12 @@ VOID RescanAll (
         #endif
     }
 
-    // Unset Icon Scaled Flag
+    // Default UI Scale
     IconScaleSet = FALSE;
+    GlobalConfig.IconSizes[ICON_SIZE_BIG]   = DEFAULT_BIG_ICON_SIZE    ;
+    GlobalConfig.IconSizes[ICON_SIZE_BADGE] = DEFAULT_BIG_ICON_SIZE / 4;
+    GlobalConfig.IconSizes[ICON_SIZE_SMALL] = DEFAULT_SMALL_ICON_SIZE  ;
+    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = DEFAULT_MOUSE_SIZE       ;
 
     // Read Config
     ReadConfig (GlobalConfig.ConfigFilename);
@@ -1935,8 +2092,7 @@ BOOLEAN SecureBootUninstall (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s", MsgStr);
-            OUT_TAG();
-
+            END_TAG();
             #endif
 
             #if REFIT_DEBUG > 0
@@ -2084,6 +2240,10 @@ VOID AdjustDefaultSelection (VOID) {
                 FormatLog = TRUE;
                 MY_FREE_POOL(Element);
 
+                #if REFIT_DEBUG > 0
+                BRK_MOD("\n");
+                #endif
+
                 Status = EfivarGetRaw (
                     &RefindPlusGuid, L"PreviousBoot",
                     (VOID **) &PreviousBoot, NULL
@@ -2099,7 +2259,7 @@ VOID AdjustDefaultSelection (VOID) {
             if (!LoggedOnce) {
                 LoggedOnce = TRUE;
                 if (FormatLog) {
-                    BRK_MIN("\n");
+                    BRK_MEG("\n");
                     MsgStr = StrDuplicate (L"Changed to Previous Selection");
                 }
                 else {
@@ -2909,6 +3069,7 @@ EFI_STATUS EFIAPI efi_main (
         PauseSeconds (9);
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
+        END_TAG();
         #endif
 
         REFIT_CALL_4_WRAPPER(
@@ -3219,7 +3380,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 k = 0;
-                while (!FoundTool && (FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+                while (!FoundTool && (FilePath = FindCommaDelimited (NVRAMCLEAN_PATHS, k++)) != NULL) {
                     for (i = 0; i < VolumesCount; i++) {
                         if (Volumes[i]->RootDir != NULL &&
                             FileExists (Volumes[i]->RootDir, FilePath)
@@ -3337,67 +3498,11 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-            // No Break
+                RebootSystem (TRUE);
+
+            break;
             case TAG_REBOOT:    // Reboot
-                TypeStr = L"Running System Restart";
-
-                // If 'RunOurTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-                // Do not show confirmation menu in such cases
-                if (RunOurTool == FALSE) {
-                    // Now set 'RunOurTool' for this tool
-                    RunOurTool = ConfirmRestart();
-                    if (RunOurTool == FALSE) {
-                        #if REFIT_DEBUG > 0
-                        MsgStr = PoolPrint (L"Aborted %s", TypeStr);
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        LOG_MSG("INFO: %s", MsgStr);
-                        LOG_MSG("\n\n");
-                        MY_FREE_POOL(MsgStr);
-                        #endif
-
-                        // Early Exit
-                        break;
-                    }
-                }
-
-                // If 'FoundTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-                // Only display 'TypeStr' message in such cases
-                if (FoundTool == TRUE) {
-                    #if REFIT_DEBUG > 0
-                    MY_MUTELOGGER_SET;
-                    #endif
-                    egDisplayMessage (
-                        TypeStr, &BGColor, CENTER,
-                        3, L"PauseSeconds"
-                    );
-                    #if REFIT_DEBUG > 0
-                    MY_MUTELOGGER_OFF;
-                    #endif
-                }
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n");
-                MY_FREE_POOL(MsgStr);
-
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
-                LOG_MSG("%s", TypeStr);
-                OUT_TAG();
-                #endif
-
-                // Terminate Screen
-                TerminateScreen();
-
-                REFIT_CALL_4_WRAPPER(
-                    gRT->ResetSystem, EfiResetCold,
-                    EFI_SUCCESS, 0, NULL
-                );
+                RebootSystem (FALSE);
 
                 // Just in case we get this far
                 MainLoopRunning = FALSE;
@@ -3440,7 +3545,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                OUT_TAG();
+                END_TAG();
                 #endif
 
                 // Terminate Screen
@@ -3964,18 +4069,50 @@ EFI_STATUS EFIAPI efi_main (
 
             break;
             case TAG_TOOL:     // Start a UEFI tool
-                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+                TypeStr = L"UEFI Tool";
 
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Start UEFI Tool");
+                MsgStr = PoolPrint (L"Start %s", TypeStr);
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                // No end dash line ... Expected to return
-                StartTool (ourLoaderEntry);
+                if (MyStriCmp (ourLoaderEntry->me.Title, LABEL_GDISK)) {
+                    TypeStr = LABEL_GDISK;
+                    FoundTool = TRUE;
+                }
+                else if (MyStriCmp (ourLoaderEntry->me.Title, LABEL_GPTSYNC)) {
+                    TypeStr = LABEL_GPTSYNC;
+                    FoundTool = TRUE;
+                }
+
+                if (!FoundTool) {
+                    RunOurTool = TRUE;
+                }
+                else {
+                    RunOurTool = ToolEntryInfo (TypeStr);
+                    if (RunOurTool == FALSE) {
+                        #if REFIT_DEBUG > 0
+                        LOG_MSG("%s    ** Not Running %s", OffsetNext, TypeStr);
+                        LOG_MSG("\n\n");
+                        #endif
+
+                        // Early Exit
+                        break;
+                    }
+                }
+
+                if (RunOurTool) {
+                    // No end dash line ... Expected to return
+                    StartTool (ourLoaderEntry);
+                }
+
+                if (FoundTool && !SkipForcedReboot) {
+                    RebootSystem (TRUE);
+                }
 
             break;
             case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the NVRAM
@@ -3998,7 +4135,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Restore Tags", OffsetNext);
+                LOG_MSG("%s  - Restore Entries", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -4007,7 +4144,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit 'Restore Tags'", OffsetNext);
+                LOG_MSG("%s  - Exit 'Restore Entries'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 

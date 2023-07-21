@@ -2902,7 +2902,7 @@ VOID ManageHiddenTags (VOID) {
     }
 
     if (!AllTags || StrLen (AllTags) < 1) {
-        DisplaySimpleMessage (L"No Hidden Tags Found", NULL);
+        DisplaySimpleMessage (L"No Hidden Entries Found", NULL);
 
         // Early Return
         return;
@@ -3279,15 +3279,22 @@ VOID HideTag (
     Loader       = (LOADER_ENTRY *) ChosenEntry;
     LegacyLoader = (LEGACY_ENTRY *) ChosenEntry;
 
-    // DA-TAG: Investigate This ... Most probably no longer applies to RefindPlus
-    //         (BUG) RescanAll calls should be conditional on successful calls to
-    //         HideEfiTag or HideLegacyTag. For the former however, this causes
-    //         crashes on a second hide a tag call if the user chose "No" to the first
-    //         call. This seems to be related to memory management of Volumes; the
-    //         crash occurs in FindVolumeAndFilename() and lib.c when calling
-    //         DevicePathToStr. Calling RescanAll() on all returns from HideEfiTag
-    //         seems to be an effective workaround, but there is likely a memory
-    //         management bug somewhere that is the root cause.
+    // DA-TAG: Investigate This ... Probably related to 'El Gordo'.
+    // Original: (BUG) RescanAll calls should be conditional on successful calls
+    //         to HideEfiTag or HideLegacyTag. For the former however, this
+    //         causes crashes on a second hide a tag call if the user chose "No"
+    //         to the first call. This seems to be related to memory management
+    //         of Volumes; the crash occurs in FindVolumeAndFilename() and lib.c
+    //         when calling DevicePathToStr. Calling RescanAll() on all returns
+    //         from HideEfiTag seems to be an effective workaround, but there is
+    //         likely a memory management bug somewhere that is the root cause.
+    // Update: An unknown memory conflict, 'El Gordo' (The Big One), is likely
+    //         what has been noted above upstream. Other apparent manifestations
+    //         of El Gordo have been seen over time:
+    //           - https://sf.net/p/refind/discussion/general/thread/4dfcdfdd16/?limit=25#0f24
+    //           - https://github.com/joevt/RefindPlus/commit/8c303d504d58bb235e9d2218df8bdb939de9ed77
+    //           - https://github.com/dakanji/RefindPlus/issues/163
+    //         El Gordo is most likely a buffer overrun of some sort
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
@@ -3304,8 +3311,9 @@ VOID HideTag (
             else {
                 HideTagMenu->Title = L"Hide UEFI Tag";
                 if (!HideEfiTag (Loader, HideTagMenu, L"HiddenTags")) {
-                    #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
+                    DisplaySimpleMessage (L"", MsgStr);
+                    #if REFIT_DEBUG > 0
                     LOG_MSG("INFO: %s", MsgStr);
                     LOG_MSG("\n\n");
                     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -3337,13 +3345,13 @@ VOID HideTag (
         case TAG_LEGACY_UEFI:
             HideTagMenu->Title = L"Hide Legacy BIOS Tag";
             if (!HideLegacyTag (LegacyLoader, HideTagMenu)) {
-                #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                LOG_MSG("INFO: %s", MsgStr);
+                DisplaySimpleMessage (L"", MsgStr);
+                #if REFIT_DEBUG > 0
                 LOG_MSG("\n\n");
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MY_FREE_POOL(MsgStr);
                 #endif
+                MY_FREE_POOL(MsgStr);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -3368,13 +3376,13 @@ VOID HideTag (
         case TAG_FIRMWARE_LOADER:
             HideTagMenu->Title = L"Hide Firmware Boot Option Tag";
             if (!HideFirmwareTag(Loader, HideTagMenu)) {
-                #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                LOG_MSG("INFO: %s", MsgStr);
+                DisplaySimpleMessage (L"", MsgStr);
+                #if REFIT_DEBUG > 0
                 LOG_MSG("\n\n");
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MY_FREE_POOL(MsgStr);
                 #endif
+                MY_FREE_POOL(MsgStr);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -3414,13 +3422,13 @@ VOID HideTag (
         case TAG_TOOL:
             HideTagMenu->Title = L"Hide Tool Tag";
             if (!HideEfiTag (Loader, HideTagMenu, L"HiddenTools")) {
+                MsgStr = PoolPrint (L"No Changes on HideTool Call:- '%s'", ChosenEntry->Title);
+                DisplaySimpleMessage (L"", MsgStr);
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                LOG_MSG("INFO: %s", MsgStr);
                 LOG_MSG("\n\n");
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MY_FREE_POOL(MsgStr);
                 #endif
+                MY_FREE_POOL(MsgStr);
             }
             else {
                 MY_FREE_POOL(gHiddenTools);

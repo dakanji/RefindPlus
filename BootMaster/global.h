@@ -196,11 +196,11 @@
 
 // Names of binaries that can update firmware
 #if defined (EFIX64)
-#   define FWUPDATE_NAMES     L"fwupx64.efi"
+#   define FWUPDATE_NAMES     L"fwupx64.efi,fwup.efi"
 #elif defined(EFI32)
-#   define FWUPDATE_NAMES     L"fwupia32.efi"
+#   define FWUPDATE_NAMES     L"fwupia32.efi,fwup.efi"
 #elif defined(EFIAARCH64)
-#   define FWUPDATE_NAMES     L"fwupaa64.efi"
+#   define FWUPDATE_NAMES     L"fwupaa64.efi,fwup.efi"
 #else
 #   define FWUPDATE_NAMES     L"fwup.efi"
 #endif
@@ -208,43 +208,66 @@
 // Directories to search for these MOK-managing programs.
 // Note that SelfDir is searched in addition to these locations.
 #define MOK_LOCATIONS \
-L"\\EFI\\tools,\\EFI\\fedora,\\EFI\\redhat,\\EFI\\ubuntu,\\EFI\\suse,\\EFI\\opensuse,\\EFI\\altlinux"
+L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 
 // Directories to search for memtest86
-#define MEMTEST_LOCATIONS \
-L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest,\
-\\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+#if defined (EFIX64)
+#   define MEMTEST_LOCATIONS \
+L"EFI\\tools_x64,EFI\\tools,\
+EFI\\tools_x64\\memtest86,EFI\\tools_x64\\memtest,EFI\\tools_x64\\memtest86p,\
+EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
+EFI\\BOOT\\tools_x64\\memtest86,EFI\\BOOT\\tools_x64\\memtest,EFI\\BOOT\\tools_x64\\memtest86p,\
+EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
+EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
+EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
+#elif defined(EFI32)
+#   define MEMTEST_LOCATIONS \
+L"EFI\\tools_ia32,EFI\\tools,\
+EFI\\tools_ia32\\memtest86,EFI\\tools_ia32\\memtest,EFI\\tools_ia32\\memtest86p,\
+EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
+EFI\\BOOT\\tools_ia32\\memtest86,EFI\\BOOT\\tools_ia32\\memtest,EFI\\BOOT\\tools_ia32\\memtest86p,\
+EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
+EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
+EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
+#elif defined(EFIAARCH64)
+#   define MEMTEST_LOCATIONS \
+L"EFI\\tools_aa64,EFI\\tools,\
+EFI\\tools_aa64\\memtest86,EFI\\tools_aa64\\memtest,EFI\\tools_aa64\\memtest86p,\
+EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
+EFI\\BOOT\\tools_aa64\\memtest86,EFI\\BOOT\\tools_aa64\\memtest,EFI\\BOOT\\tools_aa64\\memtest86p,\
+EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
+EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
+EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
+#else
+#   define MEMTEST_LOCATIONS \
+L"EFI\\tools,\
+EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
+EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
+EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
+EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
+#endif
 
 // Files that may be Windows recovery files
 #if defined (EFIX64)
 #   define WINDOWS_RECOVERY_FILES \
-L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\
-Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\
+Recovery:\\EFI\\BOOT\\boot.efi,EFI\\OEM\\Boot\\bootmgfw.efi"
 #elif defined(EFI32)
 #   define WINDOWS_RECOVERY_FILES \
-L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\
-Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\
+Recovery:\\EFI\\BOOT\\boot.efi,EFI\\OEM\\Boot\\bootmgfw.efi"
 #elif defined(EFIAARCH64)
 #   define WINDOWS_RECOVERY_FILES \
-L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootaa64.efi,\
-Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootaa64.efi,\
+Recovery:\\EFI\\BOOT\\boot.efi,EFI\\OEM\\Boot\\bootmgfw.efi"
 #else
 #   define WINDOWS_RECOVERY_FILES \
-L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
-\\EFI\\OEM\\Boot\\bootmgfw.efi"
+L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
+EFI\\OEM\\Boot\\bootmgfw.efi"
 #endif
 
-// Files that may be Ventoy files
+// Default Ventoy Partitions
 #define VENTOY_NAMES          L"VTOYEFI,Ventoy"
-#if defined (EFIX64)
-#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootx64.efi"
-#elif defined(EFI32)
-#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootia32.efi"
-#elif defined(EFIAARCH64)
-#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootaa64.efi"
-#else
-#   define VENTOY_PATH        L"\\EFI\\BOOT\\boot.efi"
-#endif
 
 // Misc MacOS Paths/Files
 #define MACOSX_LOADER_DIR     L"System\\Library\\CoreServices"
@@ -659,15 +682,27 @@ extern VOID EFIAPI DebugLog (
 #   define LOG_SEP(...)
 #   define BRK_MAX(...)
 #   define BRK_MOD(...)
+#   define BRK_MEG(...)
 #   define BRK_MIN(...)
 #elif REFIT_DEBUG < 2
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
-            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                     \
+            if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
-#   define BRK_MOD(...) DebugLog (__VA_ARGS__);
+#   define BRK_MEG(...)                                                     \
+        do {                                                                \
+            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
+                DebugLog (__VA_ARGS__);                                     \
+            }                                                               \
+        } while (0)
+#   define BRK_MOD(...)                                                     \
+        do {                                                                \
+            if (!gKernelStarted) {                                          \
+                DebugLog (__VA_ARGS__);                                     \
+            }                                                               \
+        } while (0)
 #   define BRK_MAX(...)
 #   define LOG_SEP(...)
 #   define BREAD_CRUMB(...)
@@ -692,19 +727,25 @@ extern VOID EFIAPI DebugLog (
         } while (0)
 #   define BRK_MAX(...)                                                     \
         do {                                                                \
-            if (GlobalConfig.LogLevel > MAXLOGLEVEL) {                      \
+            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
 #   define BRK_MOD(...)                                                     \
         do {                                                                \
-            if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {                     \
+            if (!gKernelStarted && GlobalConfig.LogLevel <= MAXLOGLEVEL) {  \
+                DebugLog (__VA_ARGS__);                                     \
+            }                                                               \
+        } while (0)
+#   define BRK_MEG(...)                                                     \
+        do {                                                                \
+            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
-            if (GlobalConfig.LogLevel == MINLOGLEVEL) {                     \
+            if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)

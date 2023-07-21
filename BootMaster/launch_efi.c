@@ -86,6 +86,8 @@
 CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
+BOOLEAN SkipForcedReboot = FALSE;
+
 extern BOOLEAN  IsBoot;
 extern EFI_GUID AppleVendorOsGuid;
 
@@ -620,6 +622,8 @@ EFI_STATUS StartEFIImage (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
+    SkipForcedReboot = FALSE;
+
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
 
@@ -886,15 +890,38 @@ EFI_STATUS StartEFIImage (
                 // Reset IsBoot if required
                 IsBoot = FALSE;
 
-                MsgStrTmp = L"Returned From Child Image";
-                if (!IsDriver) {
-                    MsgStrEx = StrDuplicate (MsgStrTmp);
+                if (!IsDriver                       &&
+                    ReturnStatus == EFI_NOT_FOUND   &&
+                    FindSubStr (ImageTitle, L"gptsync")
+                ) {
+                    SkipForcedReboot = TRUE;
+
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_SET;
+                    #endif
+                    SwitchToText (FALSE);
+                    PrintUglyText (L"                             ", NEXTLINE);
+                    PrintUglyText (L"                             ", NEXTLINE);
+                    PrintUglyText (L"  Completed Without Changes  ", NEXTLINE);
+                    PrintUglyText (L"    Skipping Forced Reboot   ", NEXTLINE);
+                    PrintUglyText (L"                             ", NEXTLINE);
+                    PrintUglyText (L"                             ", NEXTLINE);
+                    PauseSeconds (4);
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_OFF;
+                    #endif
                 }
                 else {
-                    MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
+                    MsgStrTmp = L"Returned From Child Image";
+                    if (!IsDriver) {
+                        MsgStrEx = StrDuplicate (MsgStrTmp);
+                    }
+                    else {
+                        MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
+                    }
+                    CheckError (ReturnStatus, MsgStrEx);
+                    MY_FREE_POOL(MsgStrEx);
                 }
-                CheckError (ReturnStatus, MsgStrEx);
-                MY_FREE_POOL(MsgStrEx);
             }
 
             // DA-TAG: Exclude TianoCore - START

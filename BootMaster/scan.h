@@ -58,6 +58,175 @@
 #ifndef __SCAN_H_
 #define __SCAN_H_
 
+#define LABEL_GDISK           L"GDisk Tool"
+#define LABEL_GPTSYNC         L"GPTsync Tool"
+#define LABEL_CLEAN_NVRAM     L"Clean NVRAM"
+#define LABEL_MEMTEST         L"MemTest Tool"
+
+#if defined (EFIX64)
+#   define SHELL_NAMES \
+L"EFI\\tools_x64\\shell_x64.efi,EFI\\tools_x64\\shell.efi,EFI\\tools_x64\\x64_shell.efi,\
+EFI\\tools\\shell_x64.efi,EFI\\tools\\shell.efi,EFI\\tools\\x64_shell.efi,\
+EFI\\x64_tools\\shell_x64.efi,EFI\\x64_tools\\shell.efi,EFI\\x64_tools\\x64_shell.efi,\
+EFI\\BOOT\\tools\\shell_x64.efi,EFI\\BOOT\\tools\\shell.efi,EFI\\BOOT\\tools\\x64_shell.efi,\
+EFI\\BOOT\\tools_x64\\shell_x64.efi,EFI\\BOOT\\tools_x64\\shell.efi,EFI\\BOOT\\tools_x64\\x64_shell.efi,\
+EFI\\BOOT\\x64_tools\\shell_x64.efi,EFI\\BOOT\\x64_tools\\shell.efi,EFI\\BOOT\\x64_tools\\x64_shell.efi,\
+EFI\\shell_x64.efi,EFI\\shell.efi,EFI\\x64_shell.efi,\
+\\shell_x64.efi,\\shell.efi,\\x64_shell.efi"
+#   define GPTSYNC_NAMES \
+L"EFI\\tools_x64\\gptsync_x64.efi,EFI\\tools_x64\\gptsync.efi,EFI\\tools_x64\\x64_gptsync.efi,\
+EFI\\tools\\gptsync_x64.efi,EFI\\tools\\gptsync.efi,EFI\\tools\\x64_gptsync.efi,\
+EFI\\x64_tools\\gptsync_x64.efi,EFI\\x64_tools\\gptsync.efi,EFI\\x64_tools\\x64_gptsync.efi,\
+EFI\\BOOT\\tools\\gptsync_x64.efi,EFI\\BOOT\\tools\\gptsync.efi,EFI\\BOOT\\tools\\x64_gptsync.efi,\
+EFI\\BOOT\\tools_x64\\gptsync_x64.efi,EFI\\BOOT\\tools_x64\\gptsync.efi,EFI\\BOOT\\tools_x64\\x64_gptsync.efi,\
+EFI\\BOOT\\x64_tools\\gptsync_x64.efi,EFI\\BOOT\\x64_tools\\gptsync.efi,EFI\\BOOT\\x64_tools\\x64_gptsync.efi,\
+EFI\\gptsync_x64.efi,EFI\\gptsync.efi,EFI\\x64_gptsync.efi,\
+\\gptsync_x64.efi,\\gptsync.efi,\\x64_gptsync.efi"
+#   define GDISK_NAMES \
+L"EFI\\tools_x64\\gdisk_x64.efi,EFI\\tools_x64\\gdisk.efi,EFI\\tools_x64\\x64_gdisk.efi,\
+EFI\\tools\\gdisk_x64.efi,EFI\\tools\\gdisk.efi,EFI\\tools\\x64_gdisk.efi,\
+EFI\\x64_tools\\gdisk_x64.efi,EFI\\x64_tools\\gdisk.efi,EFI\\x64_tools\\x64_gdisk.efi,\
+EFI\\BOOT\\tools\\gdisk_x64.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\BOOT\\tools\\x64_gdisk.efi,\
+EFI\\BOOT\\tools_x64\\gdisk_x64.efi,EFI\\BOOT\\tools_x64\\gdisk.efi,EFI\\BOOT\\tools_x64\\x64_gdisk.efi,\
+EFI\\BOOT\\x64_tools\\gdisk_x64.efi,EFI\\BOOT\\x64_tools\\gdisk.efi,EFI\\BOOT\\x64_tools\\x64_gdisk.efi,\
+EFI\\gdisk_x64.efi,EFI\\gdisk.efi,EFI\\x64_gdisk.efi,\
+\\gdisk_x64.efi,\\gdisk.efi,\\x64_gdisk.efi"
+#   define NETBOOT_NAMES \
+L"EFI\\tools_x64\\ipxe_x64.efi,EFI\\tools_x64\\ipxe.efi,EFI\\tools_x64\\x64_ipxe.efi,\
+EFI\\tools\\ipxe_x64.efi,EFI\\tools\\ipxe.efi,EFI\\tools\\x64_ipxe.efi,\
+EFI\\x64_tools\\ipxe_x64.efi,EFI\\x64_tools\\ipxe.efi,EFI\\x64_tools\\x64_ipxe.efi,\
+EFI\\BOOT\\tools\\ipxe_x64.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\BOOT\\tools\\x64_ipxe.efi,\
+EFI\\BOOT\\tools_x64\\ipxe_x64.efi,EFI\\BOOT\\tools_x64\\ipxe.efi,EFI\\BOOT\\tools_x64\\x64_ipxe.efi,\
+EFI\\BOOT\\x64_tools\\ipxe_x64.efi,EFI\\BOOT\\x64_tools\\ipxe.efi,EFI\\BOOT\\x64_tools\\x64_ipxe.efi,\
+EFI\\ipxe_x64.efi,EFI\\ipxe.efi,EFI\\x64_ipxe.efi,\
+\\ipxe_x64.efi,\\ipxe.efi,\\x64_ipxe.efi"
+#   define MEMTEST_NAMES \
+L"memtest_x64.efi,memtest.efi,x64_memtest.efi,\
+memtest86_x64.efi,memtest86.efi,x64_memtest86.efi,bootx64.efi"
+#   define FALLBACK_SKIPNAME       L"bootia32.efi,bootaa64.efi,bootmips.efi"
+#   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
+#   define FALLBACK_BASENAME       L"bootx64.efi"
+#   define NETBOOT_FILES           L"ipxe_x64.efi,ipxe.efi,x64_ipxe.efi"
+#   define GPTSYNC_FILES           L"gptsync_x64.efi,gptsync.efi,x64_gptsync.efi"
+#   define GDISK_FILES             L"gdisk_x64.efi,gdisk.efi,x64_gdisk.efi"
+#   define SHELL_FILES             L"shell_x64.efi,shell.efi,x64_shell.efi"
+#   define NVRAMCLEAN_FILES        L"CleanNvram_x64.efi,CleanNvram.efi,x64_CleanNvram.efi"
+#elif defined (EFI32)
+#   define SHELL_NAMES \
+L"EFI\\tools_ia32\\shell_ia32.efi,EFI\\tools_ia32\\shell.efi,EFI\\tools_ia32\\ia32_shell.efi,\
+EFI\\tools\\shell_ia32.efi,EFI\\tools\\shell.efi,EFI\\tools\\ia32_shell.efi,\
+EFI\\ia32_tools\\shell_ia32.efi,EFI\\ia32_tools\\shell.efi,EFI\\ia32_tools\\ia32_shell.efi,\
+EFI\\BOOT\\tools\\shell_ia32.efi,EFI\\BOOT\\tools\\shell.efi,EFI\\BOOT\\tools\\ia32_shell.efi,\
+EFI\\BOOT\\tools_ia32\\shell_ia32.efi,EFI\\BOOT\\tools_ia32\\shell.efi,EFI\\BOOT\\tools_ia32\\ia32_shell.efi,\
+EFI\\BOOT\\ia32_tools\\shell_ia32.efi,EFI\\BOOT\\ia32_tools\\shell.efi,EFI\\BOOT\\ia32_tools\\ia32_shell.efi,\
+EFI\\shell_ia32.efi,EFI\\shell.efi,EFI\\ia32_shell.efi,\
+\\shell_ia32.efi,\\shell.efi,\\ia32_shell.efi"
+#   define GPTSYNC_NAMES \
+L"EFI\\tools_ia32\\gptsync_ia32.efi,EFI\\tools_ia32\\gptsync.efi,EFI\\tools_ia32\\ia32_gptsync.efi,\
+EFI\\tools\\gptsync_ia32.efi,EFI\\tools\\gptsync.efi,EFI\\tools\\ia32_gptsync.efi,\
+EFI\\ia32_tools\\gptsync_ia32.efi,EFI\\ia32_tools\\gptsync.efi,EFI\\ia32_tools\\ia32_gptsync.efi,\
+EFI\\BOOT\\tools\\gptsync_ia32.efi,EFI\\BOOT\\tools\\gptsync.efi,EFI\\BOOT\\tools\\ia32_gptsync.efi,\
+EFI\\BOOT\\tools_ia32\\gptsync_ia32.efi,EFI\\BOOT\\tools_ia32\\gptsync.efi,EFI\\BOOT\\tools_ia32\\ia32_gptsync.efi,\
+EFI\\BOOT\\ia32_tools\\gptsync_ia32.efi,EFI\\BOOT\\ia32_tools\\gptsync.efi,EFI\\BOOT\\ia32_tools\\ia32_gptsync.efi,\
+EFI\\gptsync_ia32.efi,EFI\\gptsync.efi,EFI\\ia32_gptsync.efi,\
+\\gptsync_ia32.efi,\\gptsync.efi,\\ia32_gptsync.efi"
+#   define GDISK_NAMES \
+L"EFI\\tools_ia32\\gdisk_ia32.efi,EFI\\tools_ia32\\gdisk.efi,EFI\\tools_ia32\\ia32_gdisk.efi,\
+EFI\\tools\\gdisk_ia32.efi,EFI\\tools\\gdisk.efi,EFI\\tools\\ia32_gdisk.efi,\
+EFI\\ia32_tools\\gdisk_ia32.efi,EFI\\ia32_tools\\gdisk.efi,EFI\\ia32_tools\\ia32_gdisk.efi,\
+EFI\\BOOT\\tools\\gdisk_ia32.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\BOOT\\tools\\ia32_gdisk.efi,\
+EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,EFI\\BOOT\\tools_ia32\\gdisk.efi,EFI\\BOOT\\tools_ia32\\ia32_gdisk.efi,\
+EFI\\BOOT\\ia32_tools\\gdisk_ia32.efi,EFI\\BOOT\\ia32_tools\\gdisk.efi,EFI\\BOOT\\ia32_tools\\ia32_gdisk.efi,\
+EFI\\gdisk_ia32.efi,EFI\\gdisk.efi,EFI\\ia32_gdisk.efi,\
+\\gdisk_ia32.efi,\\gdisk.efi,\\ia32_gdisk.efi"
+#   define NETBOOT_NAMES \
+L"EFI\\tools_ia32\\ipxe_ia32.efi,EFI\\tools_ia32\\ipxe.efi,EFI\\tools_ia32\\ia32_ipxe.efi,\
+EFI\\tools\\ipxe_ia32.efi,EFI\\tools\\ipxe.efi,EFI\\tools\\ia32_ipxe.efi,\
+EFI\\ia32_tools\\ipxe_ia32.efi,EFI\\ia32_tools\\ipxe.efi,EFI\\ia32_tools\\ia32_ipxe.efi,\
+EFI\\BOOT\\tools\\ipxe_ia32.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ia32_ipxe.efi,\
+EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,EFI\\BOOT\\tools_ia32\\ipxe.efi,EFI\\BOOT\\tools_ia32\\ia32_ipxe.efi,\
+EFI\\BOOT\\ia32_tools\\ipxe_ia32.efi,EFI\\BOOT\\ia32_tools\\ipxe.efi,EFI\\BOOT\\ia32_tools\\ia32_ipxe.efi,\
+EFI\\ipxe_ia32.efi,EFI\\ipxe.efi,EFI\\ia32_ipxe.efi,\
+\\ipxe_ia32.efi,\\ipxe.efi,\\ia32_ipxe.efi"
+#   define MEMTEST_NAMES \
+L"memtest_ia32.efi,memtest.efi,ia32_memtest.efi,\
+memtest86_ia32.efi,memtest86.efi,ia32_memtest86.efi,bootia32.efi"
+#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootaa64.efi,bootmips.efi"
+#   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
+#   define FALLBACK_BASENAME       L"bootia32.efi"
+#   define NETBOOT_FILES           L"ipxe_ia32.efi,ipxe.efi,ia32_ipxe.efi"
+#   define GPTSYNC_FILES           L"gptsync_ia32.efi,gptsync.efi,ia32_gptsync.efi"
+#   define GDISK_FILES             L"gdisk_ia32.efi,gdisk.efi,ia32_gdisk.efi"
+#   define SHELL_FILES             L"shell_ia32.efi,shell.efi,ia32_shell.efi"
+#   define NVRAMCLEAN_FILES        L"CleanNvram_ia32.efi,CleanNvram.efi,ia32_CleanNvram.efi"
+#elif defined (EFIAARCH64)
+#   define SHELL_NAMES \
+L"EFI\\tools_aa64\\shell_aa64.efi,EFI\\tools_aa64\\shell.efi,EFI\\tools_aa64\\aa64_shell.efi,\
+EFI\\tools\\shell_aa64.efi,EFI\\tools\\shell.efi,EFI\\tools\\aa64_shell.efi,\
+EFI\\aa64_tools\\shell_aa64.efi,EFI\\aa64_tools\\shell.efi,EFI\\aa64_tools\\aa64_shell.efi,\
+EFI\\BOOT\\tools\\shell_aa64.efi,EFI\\BOOT\\tools\\shell.efi,EFI\\BOOT\\tools\\aa64_shell.efi,\
+EFI\\BOOT\\tools_aa64\\shell_aa64.efi,EFI\\BOOT\\tools_aa64\\shell.efi,EFI\\BOOT\\tools_aa64\\aa64_shell.efi,\
+EFI\\BOOT\\aa64_tools\\shell_aa64.efi,EFI\\BOOT\\aa64_tools\\shell.efi,EFI\\BOOT\\aa64_tools\\aa64_shell.efi,\
+EFI\\shell_aa64.efi,EFI\\shell.efi,EFI\\aa64_shell.efi,\
+\\shell_aa64.efi,\\shell.efi,\\aa64_shell.efi"
+#   define GPTSYNC_NAMES \
+L"EFI\\tools_aa64\\gptsync_aa64.efi,EFI\\tools_aa64\\gptsync.efi,EFI\\tools_aa64\\aa64_gptsync.efi,\
+EFI\\tools\\gptsync_aa64.efi,EFI\\tools\\gptsync.efi,EFI\\tools\\aa64_gptsync.efi,\
+EFI\\aa64_tools\\gptsync_aa64.efi,EFI\\aa64_tools\\gptsync.efi,EFI\\aa64_tools\\aa64_gptsync.efi,\
+EFI\\BOOT\\tools\\gptsync_aa64.efi,EFI\\BOOT\\tools\\gptsync.efi,EFI\\BOOT\\tools\\aa64_gptsync.efi,\
+EFI\\BOOT\\tools_aa64\\gptsync_aa64.efi,EFI\\BOOT\\tools_aa64\\gptsync.efi,EFI\\BOOT\\tools_aa64\\aa64_gptsync.efi,\
+EFI\\BOOT\\aa64_tools\\gptsync_aa64.efi,EFI\\BOOT\\aa64_tools\\gptsync.efi,EFI\\BOOT\\aa64_tools\\aa64_gptsync.efi,\
+EFI\\gptsync_aa64.efi,EFI\\gptsync.efi,EFI\\aa64_gptsync.efi,\
+\\gptsync_aa64.efi,\\gptsync.efi,\\aa64_gptsync.efi"
+#   define GDISK_NAMES \
+L"EFI\\tools_aa64\\gdisk_aa64.efi,EFI\\tools_aa64\\gdisk.efi,EFI\\tools_aa64\\aa64_gdisk.efi,\
+EFI\\tools\\gdisk_aa64.efi,EFI\\tools\\gdisk.efi,EFI\\tools\\aa64_gdisk.efi,\
+EFI\\aa64_tools\\gdisk_aa64.efi,EFI\\aa64_tools\\gdisk.efi,EFI\\aa64_tools\\aa64_gdisk.efi,\
+EFI\\BOOT\\tools\\gdisk_aa64.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\BOOT\\tools\\aa64_gdisk.efi,\
+EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,EFI\\BOOT\\tools_aa64\\gdisk.efi,EFI\\BOOT\\tools_aa64\\aa64_gdisk.efi,\
+EFI\\BOOT\\aa64_tools\\gdisk_aa64.efi,EFI\\BOOT\\aa64_tools\\gdisk.efi,EFI\\BOOT\\aa64_tools\\aa64_gdisk.efi,\
+EFI\\gdisk_aa64.efi,EFI\\gdisk.efi,EFI\\aa64_gdisk.efi,\
+\\gdisk_aa64.efi,\\gdisk.efi,\\aa64_gdisk.efi"
+#   define NETBOOT_NAMES \
+L"EFI\\tools_aa64\\ipxe_aa64.efi,EFI\\tools_aa64\\ipxe.efi,EFI\\tools_aa64\\aa64_ipxe.efi,\
+EFI\\tools\\ipxe_aa64.efi,EFI\\tools\\ipxe.efi,EFI\\tools\\aa64_ipxe.efi,\
+EFI\\aa64_tools\\ipxe_aa64.efi,EFI\\aa64_tools\\ipxe.efi,EFI\\aa64_tools\\aa64_ipxe.efi,\
+EFI\\BOOT\\tools\\ipxe_aa64.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\BOOT\\tools\\aa64_ipxe.efi,\
+EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,EFI\\BOOT\\tools_aa64\\ipxe.efi,EFI\\BOOT\\tools_aa64\\aa64_ipxe.efi,\
+EFI\\BOOT\\aa64_tools\\ipxe_aa64.efi,EFI\\BOOT\\aa64_tools\\ipxe.efi,EFI\\BOOT\\aa64_tools\\aa64_ipxe.efi,\
+EFI\\ipxe_aa64.efi,EFI\\ipxe.efi,EFI\\aa64_ipxe.efi,\
+\\ipxe_aa64.efi,\\ipxe.efi,\\aa64_ipxe.efi"
+#   define MEMTEST_NAMES \
+L"memtest_aa64.efi,memtest.efi,aa64_memtest.efi,\
+memtest86_aa64.efi,memtest86.efi,aa64_memtest86.efi,bootaa64.efi"
+#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootia32.efi,bootmips.efi"
+#   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
+#   define FALLBACK_BASENAME       L"bootaa64.efi"
+#   define NETBOOT_FILES           L"ipxe_aa64.efi,ipxe.efi,aa64_ipxe.efi"
+#   define GPTSYNC_FILES           L"gptsync_aa64.efi,gptsync.efi,aa64_gptsync.efi"
+#   define GDISK_FILES             L"gdisk_aa64.efi,gdisk.efi,aa64_gdisk.efi"
+#   define SHELL_FILES             L"shell_aa64.efi,shell.efi,aa64_shell.efi"
+#   define NVRAMCLEAN_FILES        L"CleanNvram_aa64.efi,CleanNvram.efi,aa64_CleanNvram.efi"
+#else
+#   define SHELL_NAMES \
+L"EFI\\tools\\shell.efi,EFI\\BOOT\\tools\\shell.efi,EFI\\shell.efi,\\shell.efi"
+#   define GPTSYNC_NAMES \
+L"EFI\\tools\\gptsync.efi,EFI\\BOOT\\tools\\gptsync.efi,EFI\\gptsync.efi,\\gptsync.efi"
+#   define GDISK_NAMES \
+L"EFI\\tools\\gdisk.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\gdisk.efi,\\gdisk.efi"
+#   define NETBOOT_NAMES \
+L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
+#   define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi"
+#   define FALLBACK_SKIPNAME       L"boot123abc.efi"      // Dummy
+#   define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" // Not really correct
+#   define FALLBACK_BASENAME       L"boot.efi"            // Not really correct
+#   define NETBOOT_FILES           L"ipxe.efi"
+#   define GPTSYNC_FILES           L"gptsync.efi"
+#   define GDISK_FILES             L"gdisk.efi"
+#   define SHELL_FILES             L"shell.efi"
+#   define NVRAMCLEAN_FILES        L"CleanNvram.efi"
+#endif
+
 LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
 
 REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry);

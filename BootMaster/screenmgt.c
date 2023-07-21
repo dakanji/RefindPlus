@@ -555,7 +555,8 @@ VOID SwitchToText (
             GlobalConfig.UseTextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: Config Setting Overriden:- 'renderer_text'");
+            LOG_MSG("\n");
+            LOG_MSG("    ** Config Setting Forced On:- 'renderer_text'");
             LOG_MSG("\n");
             #endif
         }

@@ -375,11 +375,29 @@ EFI_STATUS FinishInitRefitLib (VOID) {
         &SelfDir, SelfDirPath,
         EFI_FILE_MODE_READ, 0
     );
-    if (CheckFatalError (Status, L"While Opening Installation Directory")) {
+    if (!EFI_ERROR(Status)) {
+        return EFI_SUCCESS;
+    }
+
+    SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
+    if (SelfRootDir == NULL) {
+        CheckError (EFI_LOAD_ERROR, L"on Installation Volume (Re)Opening Attempt");
+
         return EFI_LOAD_ERROR;
     }
 
-    return EFI_SUCCESS;
+    Status = REFIT_CALL_5_WRAPPER(
+        SelfRootDir->Open, SelfRootDir,
+        &SelfDir, SelfDirPath,
+        EFI_FILE_MODE_READ, 0
+    );
+    if (!EFI_ERROR(Status)) {
+        return EFI_SUCCESS;
+    }
+
+    CheckError (EFI_LOAD_ERROR, L"While (Re)Opening Installation Directory");
+
+    return EFI_LOAD_ERROR;
 } // static EFI_STATUS FinishInitRefitLib()
 
 EFI_STATUS InitRefitLib (
@@ -443,59 +461,69 @@ VOID UninitVolumes (VOID) {
     UNINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
     UNINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     UNINIT_VOLUMES(Volumes,         VolumesCount);
+    UninitVolume (&SelfVolume);
 } // static VOID UninitVolumes()
 
 static
 VOID ReinitVolume (
     IN OUT REFIT_VOLUME  **Volume
 ) {
-    EFI_STATUS                 StatusA, StatusB;
-    EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
+    EFI_STATUS                 Status;
+    CHAR16                    *ErrStr;
     EFI_HANDLE                 DeviceHandle;
     EFI_HANDLE                 WholeDiskHandle;
+    EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
 
-    if (Volume && *Volume) {
-        if ((*Volume)->DevicePath != NULL) {
-            // Get the handle for that path
-            RemainingDevicePath = (*Volume)->DevicePath;
-            StatusA = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath, &BlockIoProtocol,
-                &RemainingDevicePath, &DeviceHandle
+    if (!Volume || !(*Volume)) {
+        return;
+    }
+
+    if ((*Volume)->DevicePath != NULL) {
+        RemainingDevicePath = (*Volume)->DevicePath;
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->LocateDevicePath, &BlockIoProtocol,
+            &RemainingDevicePath, &DeviceHandle
+        );
+        if (!EFI_ERROR(Status)) {
+            (*Volume)->DeviceHandle = DeviceHandle;
+            (*Volume)->RootDir = LibOpenRoot ((*Volume)->DeviceHandle);
+        }
+        else {
+            ErrStr = PoolPrint (
+                L"from LocateDevicePath for DeviceHandle in ReinitVolume:- '%s'",
+                ((*Volume)->VolName) ? (*Volume)->VolName : L"Unnamed"
             );
-            if (EFI_ERROR(StatusA)) {
-                CheckError (StatusA, L"from LocateDevicePath");
-            }
-            else {
-                (*Volume)->DeviceHandle = DeviceHandle;
+            CheckError (Status, ErrStr);
+            MY_FREE_POOL(ErrStr);
+        }
+    }
 
-                // Get the root directory
-                (*Volume)->RootDir = LibOpenRoot ((*Volume)->DeviceHandle);
+    if ((*Volume)->WholeDiskDevicePath != NULL) {
+        RemainingDevicePath = (*Volume)->WholeDiskDevicePath;
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->LocateDevicePath, &BlockIoProtocol,
+            &RemainingDevicePath, &WholeDiskHandle
+        );
+        if (!EFI_ERROR(Status)) {
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol, WholeDiskHandle,
+                &BlockIoProtocol, (VOID **) &(*Volume)->WholeDiskBlockIO
+            );
+            if (EFI_ERROR(Status)) {
+                (*Volume)->WholeDiskBlockIO = NULL;
             }
         }
+    }
 
-        if ((*Volume)->WholeDiskDevicePath != NULL) {
-            // Get the handle for that path
-            RemainingDevicePath = (*Volume)->WholeDiskDevicePath;
-            StatusB = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath, &BlockIoProtocol,
-                &RemainingDevicePath, &WholeDiskHandle
-            );
-            if (EFI_ERROR(StatusB)) {
-                CheckError (StatusB, L"from LocateDevicePath");
-            }
-            else {
-                // Get the BlockIO protocol
-                StatusB = REFIT_CALL_3_WRAPPER(
-                    gBS->HandleProtocol, WholeDiskHandle,
-                    &BlockIoProtocol, (VOID **) &(*Volume)->WholeDiskBlockIO
-                );
-                if (EFI_ERROR(StatusB)) {
-                    (*Volume)->WholeDiskBlockIO = NULL;
-                    CheckError (StatusB, L"from HandleProtocol");
-                }
-            }
+    if ((*Volume)->DeviceHandle != NULL) {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, (*Volume)->DeviceHandle,
+            &BlockIoProtocol, (VOID **) &((*Volume)->BlockIO)
+        );
+        if (EFI_ERROR(Status)) {
+            (*Volume)->BlockIO = NULL;
         }
-    } // if Volume
+    }
 } // static VOID ReinitVolume()
 
 VOID ReinitVolumes (VOID) {
@@ -506,6 +534,7 @@ VOID ReinitVolumes (VOID) {
     REINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
     REINIT_VOLUMES(DataVolumes,     DataVolumesCount);
     REINIT_VOLUMES(Volumes,         VolumesCount);
+    ReinitVolume (&SelfVolume);
 } // VOID ReinitVolumes()
 
 // Called before running external programs to close open file handles
@@ -1808,7 +1837,7 @@ CHAR16 * GetVolumeName (
                 FoundName = StrDuplicate (L"Optical ISO-9660 Image");
             }
             else {
-                FoundName = StrDuplicate (L"Optical Disc Drive (Inactive)");
+                FoundName = StrDuplicate (L"Optical Disc Drive");
             }
         }
         else if (MediaCheck) {
@@ -2230,7 +2259,7 @@ VOID VetMultiInstanceAPFS (VOID) {
     CHAR16 *MsgStrA;
     CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'"  ;
     CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'"    ;
-    CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'"       ;
+    CHAR16 *MsgStrD = L"Disabled:- 'Restore Entries for Synced AFPS Volumes'"   ;
     CHAR16 *MsgStrE = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'";
 
     // Check if configured to show Apple Recovery
