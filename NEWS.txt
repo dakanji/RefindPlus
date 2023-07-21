@@ -1,5 +1,9 @@
 0.14.0.AB (PRE-RELEASE):
 -----------------------
+- Adds `HandleVentoy` Feature
+  * Removes multiple redundant/invalid loader options that otherwise appear
+  * Enabled using a new `handle_ventoy` configuration token
+  * Uses an `os_ventoy` icon if present
 - Renames Misc Configuration Tokens
   * `decline_nvram_protect` to `disable_nvram_protect`
   * `decline_reload_gop` to `disable_reload_gop`

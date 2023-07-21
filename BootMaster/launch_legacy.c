@@ -1117,9 +1117,11 @@ VOID ScanLegacyVolume (
     REFIT_VOLUME *Volume,
     UINTN         VolumeIndex
 ) {
-    UINTN   VolumeIndex2;
-    BOOLEAN ShowVolume;
-    BOOLEAN HideIfOthersFound;
+    UINTN    i, VolumeIndex2;
+    CHAR16  *VentoyName;
+    BOOLEAN  FoundVentoy;
+    BOOLEAN  ShowVolume;
+    BOOLEAN  HideIfOthersFound;
 
     #if REFIT_DEBUG > 1
     CHAR16 *TheVolName;
@@ -1168,15 +1170,42 @@ VOID ScanLegacyVolume (
         // Check for other bootable entries on the same disk
         BREAD_CRUMB(L"%s:  3a 1 - Found ... Check for Other Bootable Entries on Same Disk", FuncTag);
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
+            LOG_SEP(L"X");
             BREAD_CRUMB(L"%s:  3a 1a 1 - FOR LOOP:- START", FuncTag);
-            if (VolumeIndex2 != VolumeIndex &&
-                Volumes[VolumeIndex2]->HasBootCode &&
-                Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
-            ) {
-                BREAD_CRUMB(L"%s:  3a 1a 1a 1 - Found Other Bootable Entry ... Hiding Whole Disk Entry", FuncTag);
-                ShowVolume = FALSE;
+            if (VolumeIndex2 != VolumeIndex) {
+                BREAD_CRUMB(L"%s:  3a 1a 1a 1", FuncTag);
+                if (Volumes[VolumeIndex2]->HasBootCode &&
+                    Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
+                ) {
+                    BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - Found Other Bootable Entry ... Hiding Whole Disk Entry", FuncTag);
+                    ShowVolume = FALSE;
+                }
+
+                BREAD_CRUMB(L"%s:  3a 1a 1a 2", FuncTag);
+                if (ShowVolume) {
+                    BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1", FuncTag);
+                    if (GlobalConfig.HandleVentoy) {
+                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1", FuncTag);
+                        i = 0;
+                        FoundVentoy = FALSE;
+                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1 - WHILE LOOP:- START ... Check for Ventoy", FuncTag);
+                            if (MyStriCmp (Volumes[VolumeIndex2]->VolName, VentoyName)) {
+                                BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1a 1 - Found Ventoy Partition ... Hiding Whole Disk Entry", FuncTag);
+                                ShowVolume  = FALSE;
+                                FoundVentoy =  TRUE;
+                            }
+                            MY_FREE_POOL(VentoyName);
+                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 2 - WHILE LOOP:- END", FuncTag);
+                        } // while
+                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 2", FuncTag);
+                    }
+                    BREAD_CRUMB(L"%s:  3a 1a 1a 2a 2", FuncTag);
+                }
+                BREAD_CRUMB(L"%s:  3a 1a 1a 3", FuncTag);
             }
             BREAD_CRUMB(L"%s:  3a 1a 2 - FOR LOOP:- END", FuncTag);
+            LOG_SEP(L"X");
             if (!ShowVolume) break;
         }
     }

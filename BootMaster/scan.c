@@ -744,6 +744,7 @@ VOID SetLoaderDefaults (
     IN REFIT_VOLUME *Volume
 ) {
     EFI_STATUS              Status;
+    UINTN                   i;
     CHAR16                 *Temp;
     CHAR16                 *PathOnly;
     CHAR16                 *NameClues;
@@ -752,11 +753,14 @@ VOID SetLoaderDefaults (
     CHAR16                 *TargetName;
     CHAR16                 *DisplayName;
     CHAR16                 *NoExtension;
+    CHAR16                 *VentoyName;
     CHAR16                  ShortcutLetter;
     BOOLEAN                 MacFlag;
     BOOLEAN                 GetImage;
     BOOLEAN                 MergeFsName;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
+
+    static BOOLEAN          FoundVentoy = FALSE;
 
 
     #if REFIT_DEBUG > 1
@@ -868,11 +872,11 @@ VOID SetLoaderDefaults (
 
                         BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 3", FuncTag);
                         MY_FREE_POOL(NoExtension);
-                    }
+                    }  // if NoExtension != NULL
                     BREAD_CRUMB(L"%s:  3b 1b 2a 3a 2", FuncTag);
-                }
+                } // if !GlobalConfig.SyncAPFS || !MacFlag
                 BREAD_CRUMB(L"%s:  3b 1b 2a 4", FuncTag);
-            }
+            } // if !Entry->me.Image
 
             BREAD_CRUMB(L"%s:  3b 1b 3", FuncTag);
             // Begin creating icon "hints" by using last part of directory path leading
@@ -917,17 +921,37 @@ VOID SetLoaderDefaults (
                 BREAD_CRUMB(L"%s:  3b 1b 8a 2", FuncTag);
                 if (MergeFsName) {
                     BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1", FuncTag);
-                    #if REFIT_DEBUG > 0
                     if (Entry->me.Image == NULL) {
+                        BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 1", FuncTag);
+                        TargetName = Volume->FsName;
+
+                        BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 2", FuncTag);
+                        if (!FoundVentoy && GlobalConfig.HandleVentoy) {
+                            BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 2a 1", FuncTag);
+                            i = 0;
+                            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                                BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy", FuncTag);
+                                if (MyStriCmp (TargetName, VentoyName)) {
+                                    BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 2a 1a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
+                                    TargetName  = L"ventoy";
+                                    FoundVentoy =      TRUE;
+                                }
+                                MY_FREE_POOL(VentoyName);
+                                BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                            } // while
+                        }
+
+                        BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 3", FuncTag);
+                        #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
                             L"Merge Hints Based on Filesystem Name:- '%s'",
-                            Volume->FsName
+                            TargetName
                         );
-                    }
-                    #endif
-
+                        #endif
+                        MergeUniqueWords (&OSIconName, TargetName, L',');
+                        BREAD_CRUMB(L"%s:  3b 1b 8a 2a 1a 4", FuncTag);
+                    } // if Entry->me.Image == NULL
                     BREAD_CRUMB(L"%s:  3b 1b 8a 2a 2", FuncTag);
-                    MergeUniqueWords (&OSIconName, Volume->FsName, L',');
                 }
                 else {
                     BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1", FuncTag);
@@ -961,32 +985,45 @@ VOID SetLoaderDefaults (
                             }
 
                             BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 1a 3", FuncTag);
-                        }
+                        } // if Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS
 
                         BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2", FuncTag);
-                        TargetName = (DisplayName)
-                            ? StrDuplicate (DisplayName)
-                            : StrDuplicate (Volume->VolName);
-
-                        #if REFIT_DEBUG > 0
-                        BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 3", FuncTag);
                         if (Entry->me.Image == NULL) {
-                            BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 3a 1", FuncTag);
+                            BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 1", FuncTag);
+                            TargetName = (DisplayName)
+                                ? DisplayName
+                                : Volume->VolName;
+
+                            BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2", FuncTag);
+                            if (!FoundVentoy && GlobalConfig.HandleVentoy) {
+                                BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2a 1", FuncTag);
+                                i = 0;
+                                while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                                    BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy", FuncTag);
+                                    if (MyStriCmp (TargetName, VentoyName)) {
+                                        BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2a 1a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
+                                        TargetName  = L"ventoy";
+                                        FoundVentoy =      TRUE;
+                                    }
+                                    MY_FREE_POOL(VentoyName);
+                                    BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                                } // while
+                                BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 2a 2", FuncTag);
+                            }
+
+                            BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 3", FuncTag);
+                            #if REFIT_DEBUG > 0
                             ALT_LOG(1, LOG_LINE_NORMAL,
                                 L"Merge Hints Based on Volume Name:- '%s'",
                                 TargetName
                             );
-                        }
-                        #endif
-
-                        BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 4", FuncTag);
-                        MergeUniqueWords (&OSIconName, TargetName, L',');
-
-                        BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 5", FuncTag);
+                            #endif
+                            MergeUniqueWords (&OSIconName, TargetName, L',');
+                            BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 2a 4", FuncTag);
+                        } // if Entry->me.Image == NULL
+                        BREAD_CRUMB(L"%s:  3b 1b 8a 2b 1a 3", FuncTag);
                         MY_FREE_POOL(DisplayName);
-                        MY_FREE_POOL(TargetName);
                     } // if Volume->VolName
-
                     BREAD_CRUMB(L"%s:  3b 1b 8a 2b 2", FuncTag);
                 } // if/else MergeFsName
 
@@ -997,17 +1034,38 @@ VOID SetLoaderDefaults (
             if (Volume->PartName &&
                 Volume->PartName[0] != L'\0'
             ) {
-                #if REFIT_DEBUG > 0
+                BREAD_CRUMB(L"%s:  3b 1b 7a 1", FuncTag);
                 if (Entry->me.Image == NULL) {
+                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 1", FuncTag);
+                    TargetName = Volume->PartName;
+
+                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2", FuncTag);
+                    if (!FoundVentoy && GlobalConfig.HandleVentoy) {
+                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1", FuncTag);
+                        i = 0;
+                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy", FuncTag);
+                            if (MyStriCmp (TargetName, VentoyName)) {
+                                BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
+                                TargetName  = L"ventoy";
+                                FoundVentoy =      TRUE;
+                            }
+                            MY_FREE_POOL(VentoyName);
+                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                        } // while
+                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 2", FuncTag);
+                    }
+                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 3", FuncTag);
+                    #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL,
                         L"Merge Hints Based on Partition Name:- '%s'",
                         Volume->PartName
                     );
+                    #endif
+                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4", FuncTag);
+                    MergeUniqueWords (&OSIconName, Volume->PartName, L',');
                 }
-                #endif
-
-                BREAD_CRUMB(L"%s:  3b 1b 9a 1", FuncTag);
-                MergeUniqueWords (&OSIconName, Volume->PartName, L',');
+                BREAD_CRUMB(L"%s:  3b 1b 7a 2", FuncTag);
             }
             BREAD_CRUMB(L"%s:  3b 1b 10", FuncTag);
         } // if/else Volume->DiskKind == DISK_KIND_NET
@@ -1733,9 +1791,12 @@ BOOLEAN ShouldScan (
     CHAR16                 *DontScanDir;
     CHAR16                 *TmpVolNameA;
     CHAR16                 *TmpVolNameB;
+    CHAR16                 *VentoyName;
     BOOLEAN                 ScanIt;
     EFI_GUID                GuidRecoveryHD = MAC_RECOVERY_HD_GUID_VALUE;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
+
+    static BOOLEAN FoundVentoy = FALSE;
 
 
     // Skip 'NULL' Volumes
@@ -1805,15 +1866,39 @@ BOOLEAN ShouldScan (
         }
     } // if Volume->FSType
 
-    VolGuid = GuidAsString (&(Volume->PartGuid));
-    if (IsIn (VolGuid,          GlobalConfig.DontScanVolumes) ||
-        IsIn (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
-        IsIn (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
-        IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
-    ) {
-        ScanIt = FALSE;
+    if (ScanIt) {
+        if (IsIn (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
+            IsIn (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
+            IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
+        ) {
+            ScanIt = FALSE;
+        }
     }
-    MY_FREE_POOL(VolGuid);
+    if (ScanIt) {
+        VolGuid = GuidAsString (&(Volume->PartGuid));
+        if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)) {
+            ScanIt = FALSE;
+        }
+        MY_FREE_POOL(VolGuid);
+    }
+    if (GlobalConfig.HandleVentoy && !FoundVentoy && !ScanIt) {
+        i = 0;
+        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+            if ((
+                    MyStriCmp (Volume->VolName,  VentoyName) ||
+                    MyStriCmp (Volume->FsName,   VentoyName) ||
+                    MyStriCmp (Volume->PartName, VentoyName)
+                ) && (
+                    FileExists (Volume->RootDir, FALLBACK_FULLNAME)
+                )
+            ) {
+                FoundVentoy = TRUE;
+                // DA-TAG: Add a one-time entry for Ventoy fallback loader
+                AddLoaderEntry (FALLBACK_FULLNAME, L"Instance: Ventoy", Volume, TRUE);
+            }
+            MY_FREE_POOL(VentoyName);
+        } // while
+    }
     if (!ScanIt) return FALSE;
 
     // See if Path includes an explicit volume declaration that is NOT Volume.

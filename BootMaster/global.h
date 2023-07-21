@@ -234,6 +234,18 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 \\EFI\\OEM\\Boot\\bootmgfw.efi"
 #endif
 
+// Files that may be Ventoy files
+#define VENTOY_NAMES          L"VTOYEFI,Ventoy"
+#if defined (EFIX64)
+#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootx64.efi"
+#elif defined(EFI32)
+#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootia32.efi"
+#elif defined(EFIAARCH64)
+#   define VENTOY_PATH        L"\\EFI\\BOOT\\bootaa64.efi"
+#else
+#   define VENTOY_PATH        L"\\EFI\\BOOT\\boot.efi"
+#endif
+
 // Misc MacOS Paths/Files
 #define MACOSX_LOADER_DIR     L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH    ( MACOSX_LOADER_DIR L"\\boot.efi" )
@@ -471,6 +483,7 @@ typedef struct {
     BOOLEAN                     WriteSystemdVars;
     BOOLEAN                     UnicodeCollation;
     BOOLEAN                     SupplyAppleFB;
+    BOOLEAN                     HandleVentoy;
     BOOLEAN                     MitigatePrimedBuffer;
     UINTN                       RequestedScreenWidth;
     UINTN                       RequestedScreenHeight;

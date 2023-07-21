@@ -1799,8 +1799,9 @@ VOID ReadConfig (
     BOOLEAN           HiddenTagsFlag;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
-    CHAR16           *Flag;
+    CHAR16           *VentoyName;
     CHAR16           *MsgStr;
+    CHAR16           *Flag;
     UINTN             i, j;
     UINTN             TokenCount;
     UINTN             InvalidEntries;
@@ -2978,6 +2979,18 @@ VOID ReadConfig (
             #endif
         }
         else if (
+            MyStriCmp (TokenList[0], L"handle_ventoy")) {
+            GlobalConfig.HandleVentoy = HandleBoolean (TokenList, TokenCount);
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'handle_ventoy'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
+        else if (
             MyStriCmp (TokenList[0], L"disable_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvramprotect")
@@ -3296,9 +3309,21 @@ VOID ReadConfig (
         } // for
     } // if GlobalConfig.HelpTags
 
-    if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles)) {
-        MergeStrings (&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
+    if (!GlobalConfig.DontScanFiles) {
+        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
     }
+    if (GlobalConfig.WindowsRecoveryFiles) {
+        MergeStrings (&GlobalConfig.DontScanFiles, GlobalConfig.WindowsRecoveryFiles, L',');
+    }
+    if (GlobalConfig.HandleVentoy) {
+        i = 0;
+        while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+            MergeUniqueStrings (&GlobalConfig.DontScanVolumes, VentoyName, L',');
+            MY_FREE_POOL(VentoyName);
+        } // while
+
+    }
+
     MY_FREE_POOL(File.Buffer);
 
     SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);

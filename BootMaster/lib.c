@@ -2497,7 +2497,8 @@ VOID ScanVolumes (VOID) {
     REFIT_VOLUME           *Volume;
     REFIT_VOLUME           *WholeDiskVolume;
     MBR_PARTITION_INFO     *MbrTable;
-    UINTN                   SectorSum, i;
+    UINTN                   i, j;
+    UINTN                   SectorSum;
     UINTN                   HandleIndex;
     UINTN                   VolumeIndex;
     UINTN                   VolumeIndex2;
@@ -2508,8 +2509,10 @@ VOID ScanVolumes (VOID) {
     CHAR16                 *RoleStr;
     CHAR16                 *PartType;
     CHAR16                 *TempUUID;
+    CHAR16                 *VentoyName;
     BOOLEAN                 DupFlag;
     BOOLEAN                 CheckedAPFS;
+    BOOLEAN                 FoundVentoy;
     EFI_GUID                VolumeGuid = NULL_GUID_VALUE;
     EFI_GUID               *UuidList;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
@@ -2913,7 +2916,21 @@ VOID ScanVolumes (VOID) {
             }
 
             if (!RoleStr) {
-                RoleStr = L"** Role Undefined";
+                if (GlobalConfig.HandleVentoy) {
+                    j = 0;
+                    FoundVentoy = FALSE;
+                    while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, j++)) != NULL) {
+                        if (MyStriCmp (Volume->VolName, VentoyName)) {
+                            FoundVentoy = TRUE;
+                            RoleStr = L" * Part Ventoy";
+                        }
+                        MY_FREE_POOL(VentoyName);
+                    } // while
+                }
+
+                if (!RoleStr) {
+                    RoleStr = L"** Role Undefined";
+                }
             }
             else if (FindSubStr (RoleStr, L"HFS Recovery")) {
                 // Create or add to a list of bootable HFS+ volumes

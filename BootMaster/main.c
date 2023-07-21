@@ -130,6 +130,7 @@ REFIT_CONFIG GlobalConfig = {
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
     /* SupplyAppleFB = */ TRUE,
+    /* HandleVentoy = */ FALSE,
     /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
@@ -2381,6 +2382,8 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16            *SelfGUID;
     CHAR16            *CurDateStr;
     CHAR16            *DisplayName;
+    CHAR16            *VentoyName;
+    BOOLEAN            FoundVentoy;
     BOOLEAN            ForceContinue;
 
     #if REFIT_DEBUG > 1
@@ -3815,7 +3818,7 @@ EFI_STATUS EFIAPI efi_main (
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     if (EntryVol->VolName) {
-                        LOG_MSG(" on '%s'", EntryVol->VolName);
+                        LOG_MSG(" on '%s' Partition", EntryVol->VolName);
                     }
                     else {
                         LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
@@ -3844,16 +3847,28 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Load EFI File");
+                    if (!GlobalConfig.HandleVentoy) {
+                        MsgStr = PoolPrint (L"Load EFI File:- '%s'", ourLoaderEntry->LoaderPath);
+                    }
+                    else {
+                        i = 0;
+                        FoundVentoy = FALSE;
+                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                            if (MyStriCmp (EntryVol->VolName, VentoyName)) {
+                                FoundVentoy = TRUE;
+                                MsgStr = PoolPrint (
+                                    L"Load Instance: Ventoy on %s Partition via '%s'",
+                                    VentoyName, ourLoaderEntry->LoaderPath
+                                );
+                            }
+                            MY_FREE_POOL(VentoyName);
+                        } // while
+                    }
+
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    LOG_MSG(
-                        "%s  - %s:- '%s'",
-                        OffsetNext, MsgStr,
-                        ourLoaderEntry->LoaderPath
-                    );
-
+                    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
 
@@ -3870,7 +3885,9 @@ EFI_STATUS EFIAPI efi_main (
                 StartLoader (ourLoaderEntry, SelectionName);
 
                 #if REFIT_DEBUG > 0
-                UnexpectedReturn (L"OS Loader");
+                if (!FoundVentoy) {
+                    UnexpectedReturn (L"OS Loader");
+                }
                 #endif
 
             break;
