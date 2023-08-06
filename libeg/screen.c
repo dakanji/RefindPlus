@@ -2967,7 +2967,9 @@ VOID egScreenShot (VOID) {
 
     // Save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
-    if (CheckError (Status, L"in egSaveFile")) {
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"in egSaveFile");
+
         MY_FREE_POOL(FileName);
         MY_FREE_POOL(FileData);
 

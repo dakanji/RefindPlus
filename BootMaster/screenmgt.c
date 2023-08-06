@@ -555,9 +555,7 @@ VOID SwitchToText (
             GlobalConfig.UseTextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("    ** Config Setting Forced On:- 'renderer_text'");
-            LOG_MSG("\n");
+            LOG_MSG("%s    ** Config Setting Forced On:- 'renderer_text'", OffsetNext);
             #endif
         }
     }
@@ -574,6 +572,7 @@ VOID SwitchToText (
     );
 
     if (TextModeOnEntry) {
+        LOG_MSG("\n");
         LOG_MSG("Determine Text Console Size:");
         LOG_MSG("\n");
     }
@@ -939,10 +938,12 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     return GotKeyStrokes;
 } // BOOLEAN ReadAllKeyStrokes()
 
-// Displays *Text without regard to appearances. Used mainly for debugging
-// and rare error messages.
-// Position code is used only in graphics mode.
-// TODO: Improve to handle multi-line text.
+// Displays 'Text' without regard to appearance.
+// Mainly for debugging and rare error messages.
+// 'PositionCode' is only used in graphics mode.
+//
+// DA-TAG: Investigate This
+//         Handle multi-line text.
 VOID PrintUglyText (
     IN CHAR16 *Text,
     IN UINTN    PositionCode
@@ -950,8 +951,8 @@ VOID PrintUglyText (
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
-        if (AllowGraphicsMode &&
-            AppleFirmware &&
+        if (AppleFirmware &&
+            AllowGraphicsMode &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (
@@ -961,7 +962,8 @@ VOID PrintUglyText (
             GraphicsScreenDirty = TRUE;
         }
         else {
-            // Non-Mac or in Text Mode ... Print statement will work
+            // Non-Mac or in Text Mode
+            // Print statement will work
             Print (Text);
             Print (L"\n");
         }
@@ -1344,7 +1346,11 @@ VOID SwitchToGraphicsAndClear (
 // DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
 //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-//         Temporary ... Eliminate when no longer required
+//         Temporary ... Eliminate when no longer required.
+//
+//         Probable 'El Gordo' manifestation.
+//         See notes in 'HideTag' for more.
+//
 // UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
 static
 VOID egFreeImageQEMU (

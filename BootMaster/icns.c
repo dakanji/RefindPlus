@@ -96,37 +96,41 @@ static
 EG_IMAGE * DummyImageEx (
     IN UINTN PixelSize
 ) {
-    static
-    EG_IMAGE        *Image = NULL;
     UINTN            x, y, LineOffset;
     CHAR8           *Ptr, *YPtr;
     EG_PIXEL         BasePixel = { 0x00, 0x00, 0x00, 0 };
 
-    if (Image == NULL) {
-        Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BasePixel);
-        if (Image) {
-            LineOffset = PixelSize * 4;
-            YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+    static EG_IMAGE        *Image = NULL;
 
-            for (y = 0; y < 32; y++) {
-                Ptr = YPtr;
-                for (x = 0; x < 32; x++) {
-                    if (((x + y) % 12) < 6) {
-                        *Ptr++ = 0;
-                        *Ptr++ = 0;
-                        *Ptr++ = 0;
-                    }
-                    else {
-                        *Ptr++ = 0;
-                        *Ptr++ = 255;
-                        *Ptr++ = 255;
-                    }
-                    *Ptr++ = 144;
-                } // for x =0
-                YPtr += LineOffset;
-            } // for y = 0
-        }
+    if (Image) {
+        return Image;
     }
+
+    Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BasePixel);
+    if (!Image) {
+        return NULL;
+    }
+
+    LineOffset = PixelSize * 4;
+    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+
+    for (y = 0; y < 32; y++) {
+        Ptr = YPtr;
+        for (x = 0; x < 32; x++) {
+            if (((x + y) % 12) < 6) {
+                *Ptr++ = 0;
+                *Ptr++ = 0;
+                *Ptr++ = 0;
+            }
+            else {
+                *Ptr++ = 0;
+                *Ptr++ = 255;
+                *Ptr++ = 255;
+            }
+            *Ptr++ = 144;
+        } // for x =0
+        YPtr += LineOffset;
+    } // for y = 0
 
     return Image;
 } // EG_IMAGE * DummyImageEx()
@@ -219,6 +223,30 @@ EG_IMAGE * LoadOSIcon (
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
         MY_FREE_POOL(BaseName);
+    }
+
+    // If that fails try again using the "unknown" icon.
+    if (Image == NULL && !MyStriCmp (FallbackIconName, L"unknown")) {
+        BaseName = PoolPrint (L"%s_unknown", BootLogo ? L"boot" : L"os");
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+        #endif
+
+        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        MY_FREE_POOL(BaseName);
+
+        // If that still fails try again using the "os_unknown" icon specifically.
+        if (Image == NULL) {
+            BaseName = StrDuplicate (L"os_unknown");
+
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+            #endif
+
+            Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+            MY_FREE_POOL(BaseName);
+        }
     }
 
     // If all of these fail, return the dummy image.

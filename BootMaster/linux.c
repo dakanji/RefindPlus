@@ -162,7 +162,7 @@ CHAR16 * FindInitrd (
             ((KernelVersion == NULL) && (InitrdVersion == NULL))
         ) {
             BREAD_CRUMB(L"%s:  8a 2a 1", FuncTag);
-            CurrentInitrdName = AllocateZeroPool (sizeof(STRING_LIST));
+            CurrentInitrdName = AllocateZeroPool (sizeof (STRING_LIST));
 
             BREAD_CRUMB(L"%s:  8a 2a 2", FuncTag);
             if (InitrdNames == NULL) {

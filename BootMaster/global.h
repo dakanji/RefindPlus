@@ -185,13 +185,21 @@
 
 // Names of binaries that can manage MOKs
 #if defined (EFIX64)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmx64.efi"
 #elif defined(EFI32)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmaa64.efi"
 #else
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi"
 #endif
 
 // Names of binaries that can update firmware
@@ -269,12 +277,12 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 // Default Ventoy Partitions
 #define VENTOY_NAMES          L"VTOYEFI,Ventoy"
 
-// Misc MacOS Paths/Files
+// Misc macOS Paths/Files
 #define MACOSX_LOADER_DIR     L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH    ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #define MACOSX_DIAGNOSTICS    ( MACOSX_LOADER_DIR L"\\.diagnostics\\diags.efi" )
 
-// Files that may be MacOS recovery files
+// Files that may be macOS recovery files
 #define MACOS_RECOVERY_FILES  L"com.apple.recovery.boot\\boot.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
@@ -682,18 +690,11 @@ extern VOID EFIAPI DebugLog (
 #   define LOG_SEP(...)
 #   define BRK_MAX(...)
 #   define BRK_MOD(...)
-#   define BRK_MEG(...)
 #   define BRK_MIN(...)
 #elif REFIT_DEBUG < 2
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
-                DebugLog (__VA_ARGS__);                                     \
-            }                                                               \
-        } while (0)
-#   define BRK_MEG(...)                                                     \
-        do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
@@ -709,8 +710,18 @@ extern VOID EFIAPI DebugLog (
 #   define LOG_DECREMENT(...)
 #   define LOG_INCREMENT(...)
 #else
-#   define LOG_INCREMENT(...) LogPadding (TRUE);
-#   define LOG_DECREMENT(...) LogPadding (FALSE);
+#   define LOG_INCREMENT(...)                                               \
+        do {                                                                \
+            if (!gKernelStarted) {                                          \
+                LogPadding (TRUE);                                          \
+            }                                                               \
+        } while (0)
+#   define LOG_DECREMENT(...)                                               \
+        do {                                                                \
+            if (!gKernelStarted) {                                          \
+                LogPadding (FALSE);                                         \
+            }                                                               \
+        } while (0)
 #   define BREAD_CRUMB(...)                                                 \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
@@ -734,12 +745,6 @@ extern VOID EFIAPI DebugLog (
 #   define BRK_MOD(...)                                                     \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel <= MAXLOGLEVEL) {  \
-                DebugLog (__VA_ARGS__);                                     \
-            }                                                               \
-        } while (0)
-#   define BRK_MEG(...)                                                     \
-        do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)

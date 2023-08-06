@@ -54,7 +54,9 @@ BOOLEAN TruncateString (CHAR16 *TheString, UINTN Limit);
 BOOLEAN LimitStringLength (CHAR16 *TheString, UINTN Limit);
 BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 *List);
 BOOLEAN IsIn (IN CHAR16 *SmallString, IN CHAR16 *List);
+BOOLEAN IsListItem (IN CHAR16 *SmallString, IN CHAR16 *List);
 BOOLEAN IsInSubstring (IN CHAR16 *BigString, IN CHAR16 *List);
+BOOLEAN IsListItemSubstringIn (IN CHAR16 *BigString, IN CHAR16 *List);
 BOOLEAN IsValidHex (CHAR16 *Input);
 BOOLEAN IsGuid (CHAR16 *UnknownString);
 BOOLEAN ReplaceSubstring (
@@ -85,6 +87,7 @@ VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
 VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
 VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MergeUniqueWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
+VOID MergeUniqueItems (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeFilterString (
     IN OUT CHAR16   *String,
     IN     BOOLEAN   SingleLine

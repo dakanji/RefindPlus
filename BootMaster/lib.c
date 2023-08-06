@@ -357,47 +357,42 @@ static
 EFI_STATUS FinishInitRefitLib (VOID) {
     EFI_STATUS  Status;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
+
     if (SelfVolume && SelfVolume->DeviceHandle != SelfLoadedImage->DeviceHandle) {
         SelfLoadedImage->DeviceHandle = SelfVolume->DeviceHandle;
     }
 
+    Status = EFI_SUCCESS;
     if (SelfRootDir == NULL) {
         SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
         if (SelfRootDir == NULL) {
-            CheckError (EFI_LOAD_ERROR, L"While (Re)Opening Installation Volume");
-
-            return EFI_LOAD_ERROR;
+            Status = EFI_NOT_FOUND;
+        }
+    }
+    if (!EFI_ERROR(Status)) {
+        Status = REFIT_CALL_5_WRAPPER(
+            SelfRootDir->Open, SelfRootDir,
+            &SelfDir, SelfDirPath,
+            EFI_FILE_MODE_READ, 0
+        );
+        if (!EFI_ERROR(Status)) {
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_SET;
+            #endif
+            Status = FindVarsDir();
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_OFF;
+            #endif
         }
     }
 
-    Status = REFIT_CALL_5_WRAPPER(
-        SelfRootDir->Open, SelfRootDir,
-        &SelfDir, SelfDirPath,
-        EFI_FILE_MODE_READ, 0
-    );
-    if (!EFI_ERROR(Status)) {
-        return EFI_SUCCESS;
-    }
+    CheckError (Status, L"While (Re)Opening Installation Volume/Directory");
 
-    SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
-    if (SelfRootDir == NULL) {
-        CheckError (EFI_LOAD_ERROR, L"on Installation Volume (Re)Opening Attempt");
-
-        return EFI_LOAD_ERROR;
-    }
-
-    Status = REFIT_CALL_5_WRAPPER(
-        SelfRootDir->Open, SelfRootDir,
-        &SelfDir, SelfDirPath,
-        EFI_FILE_MODE_READ, 0
-    );
-    if (!EFI_ERROR(Status)) {
-        return EFI_SUCCESS;
-    }
-
-    CheckError (EFI_LOAD_ERROR, L"While (Re)Opening Installation Directory");
-
-    return EFI_LOAD_ERROR;
+    return Status;
 } // static EFI_STATUS FinishInitRefitLib()
 
 EFI_STATUS InitRefitLib (
@@ -603,7 +598,7 @@ EFI_STATUS FindVarsDir (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+        L"Locate/Create Emulated Memory for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
         Status
     );
     #endif
@@ -621,13 +616,13 @@ EFI_STATUS FindVarsDir (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
+            L"Locate/Create Emulated Memory for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
             Status
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID,
-                L"Activate the 'use_nvram' Config Token to Use Hardware NVRAM Instead"
+                L"Activate The 'use_nvram' Config Token to Use Hardware Memory Instead"
             );
         }
         #endif
@@ -680,7 +675,7 @@ EFI_STATUS EfivarGetRaw (
             }
 
             MsgStr = PoolPrint (
-                L"In Emulated NVRAM ... Could Not Read UEFI Variable:- '%s'",
+                L"In Emulated Memory ... Could Not Read UEFI Variable:- '%s'",
                 VariableName
             );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
@@ -700,7 +695,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated NVRAM ... %r %s:- '%s'",
+            L"In Emulated Memory ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
         );
         #endif
@@ -747,7 +742,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware NVRAM ... %r %s:- '%s'",
+            L"In Hardware Memory ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
         );
         #endif
@@ -868,14 +863,14 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated NVRAM ... %r %s:- '%s'",
+            L"In Emulated Memory ... %r %s:- '%s'",
             Status, NVRAM_LOG_SET, VariableName
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
-            LOG_MSG("** WARN: Could Not Save to Emulated NVRAM:- '%s'", VariableName);
+            LOG_MSG("** WARN: Could Not Save to Emulated Memory:- '%s'", VariableName);
             LOG_MSG("\n");
             LOG_MSG("         %s", MsgStr);
             LOG_MSG("\n\n");
@@ -896,7 +891,7 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware NVRAM ... %r %s:- '%s'",
+            L"In Hardware Memory ... %r %s:- '%s'",
             Status, NVRAM_LOG_SET, VariableName
         );
         #endif
@@ -1046,6 +1041,7 @@ REFIT_VOLUME * CopyVolume (
     IN REFIT_VOLUME *VolumeToCopy
 ) {
     REFIT_VOLUME *Volume;
+    UINTN         SizeMBR;
 
     if (!VolumeToCopy) {
         // Early Exit
@@ -1073,7 +1069,7 @@ REFIT_VOLUME * CopyVolume (
         }
 
         if (VolumeToCopy->MbrPartitionTable) {
-            UINTN SizeMBR = 4 * 16;
+            SizeMBR = 4 * 16;
             Volume->MbrPartitionTable = AllocatePool (SizeMBR);
             if (Volume->MbrPartitionTable) {
                 CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, SizeMBR);
@@ -1223,129 +1219,131 @@ VOID SetFilesystemData (
     UINT16  *Magic16;
     char    *MagicString;
 
-    if ((Buffer != NULL) && (Volume != NULL)) {
-        SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
+    if (Buffer == NULL || Volume == NULL) {
+        return;
+    }
 
-        // Default to Unknown FS TYpe
-        Volume->FSType = FS_TYPE_UNKNOWN;
+    SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
 
-        if (BufferSize >= (1024 + 100)) {
-            Magic16 = (UINT16*) (Buffer + 1024 + 56);
-            if (*Magic16 == EXT2_SUPER_MAGIC) {
-                // ext2/3/4
-                Ext2Compat   = (UINT32*) (Buffer + 1024 + 92);
-                Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
+    // Default to Unknown FS TYpe
+    Volume->FSType = FS_TYPE_UNKNOWN;
 
-                if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) {
-                    // check for extents or flex_bg
-                    Volume->FSType = FS_TYPE_EXT4;
-                }
-                else if (*Ext2Compat & 0x0004) {
-                    // check for journal
-                    Volume->FSType = FS_TYPE_EXT3;
-                }
-                else {
-                    // none of these features. Assume it is ext2
-                    Volume->FSType = FS_TYPE_EXT2;
-                }
+    if (BufferSize >= (1024 + 100)) {
+        Magic16 = (UINT16*) (Buffer + 1024 + 56);
+        if (*Magic16 == EXT2_SUPER_MAGIC) {
+            // ext2/3/4
+            Ext2Compat   = (UINT32*) (Buffer + 1024 + 92);
+            Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
 
-                CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
-                return;
+            if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) {
+                // check for extents or flex_bg
+                Volume->FSType = FS_TYPE_EXT4;
             }
-        } // search for ext2/3/4 magic
-
-        if (BufferSize >= (65536 + 100)) {
-            MagicString = (char*) (Buffer + 65536 + 52);
-            if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING,     8) == 0) ||
-                (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING,    9) == 0) ||
-                (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
-            ) {
-                Volume->FSType = FS_TYPE_REISERFS;
-                CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
-                return;
+            else if (*Ext2Compat & 0x0004) {
+                // check for journal
+                Volume->FSType = FS_TYPE_EXT3;
             }
-        } // search for ReiserFS magic
-
-        if (BufferSize >= (65536 + 64 + 8)) {
-            MagicString = (char*) (Buffer + 65536 + 64);
-            if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
-                Volume->FSType = FS_TYPE_BTRFS;
-                return;
+            else {
+                // none of these features. Assume it is ext2
+                Volume->FSType = FS_TYPE_EXT2;
             }
-        } // search for Btrfs magic
 
-        if (BufferSize >= 512) {
+            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
+            return;
+        }
+    } // search for ext2/3/4 magic
+
+    if (BufferSize >= (65536 + 100)) {
+        MagicString = (char*) (Buffer + 65536 + 52);
+        if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING,     8) == 0) ||
+            (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING,    9) == 0) ||
+            (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
+        ) {
+            Volume->FSType = FS_TYPE_REISERFS;
+            CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
+            return;
+        }
+    } // search for ReiserFS magic
+
+    if (BufferSize >= (65536 + 64 + 8)) {
+        MagicString = (char*) (Buffer + 65536 + 64);
+        if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
+            Volume->FSType = FS_TYPE_BTRFS;
+            return;
+        }
+    } // search for Btrfs magic
+
+    if (BufferSize >= 512) {
+        MagicString = (char*) Buffer;
+        if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
+            Volume->FSType = FS_TYPE_XFS;
+
+            return;
+        }
+    } // search for XFS magic
+
+    if (BufferSize >= (32768 + 4)) {
+        MagicString = (char*) (Buffer + 32768);
+        if (CompareMem (MagicString, JFS_SIGNATURE, 4) == 0) {
+            Volume->FSType = FS_TYPE_JFS;
+            return;
+        }
+    } // search for JFS magic
+
+    if (BufferSize >= (1024 + 2)) {
+        Magic16 = (UINT16*) (Buffer + 1024);
+        if ((*Magic16 == HFSPLUS_MAGIC1) ||
+            (*Magic16 == HFSPLUS_MAGIC2)
+        ) {
+            Volume->FSType = FS_TYPE_HFSPLUS;
+            return;
+        }
+    } // search for HFS+ magic
+
+    if (BufferSize >= 512) {
+        // Search for NTFS, FAT, and MBR/EBR.
+        // These all have 0xAA55 at the end of the first sector, so we must
+        // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
+        // figure out where to look for the filesystem serial numbers.
+        Magic16 = (UINT16*) (Buffer + 510);
+        if (*Magic16 == FAT_MAGIC) {
             MagicString = (char*) Buffer;
-            if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
-                Volume->FSType = FS_TYPE_XFS;
-
-                return;
+            if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
+                Volume->FSType = FS_TYPE_NTFS;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
             }
-        } // search for XFS magic
-
-        if (BufferSize >= (32768 + 4)) {
-            MagicString = (char*) (Buffer + 32768);
-            if (CompareMem (MagicString, JFS_SIGNATURE, 4) == 0) {
-                Volume->FSType = FS_TYPE_JFS;
-                return;
+            else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+                Volume->FSType = FS_TYPE_FAT32;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
             }
-        } // search for JFS magic
-
-        if (BufferSize >= (1024 + 2)) {
-            Magic16 = (UINT16*) (Buffer + 1024);
-            if ((*Magic16 == HFSPLUS_MAGIC1) ||
-                (*Magic16 == HFSPLUS_MAGIC2)
-            ) {
-                Volume->FSType = FS_TYPE_HFSPLUS;
-                return;
+            else if (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0) {
+                Volume->FSType = FS_TYPE_FAT16;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
             }
-        } // search for HFS+ magic
-
-        if (BufferSize >= 512) {
-            // Search for NTFS, FAT, and MBR/EBR.
-            // These all have 0xAA55 at the end of the first sector, so we must
-            // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
-            // figure out where to look for the filesystem serial numbers.
-            Magic16 = (UINT16*) (Buffer + 510);
-            if (*Magic16 == FAT_MAGIC) {
-                MagicString = (char*) Buffer;
-                if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
-                    Volume->FSType = FS_TYPE_NTFS;
-                    CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
-                }
-                else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
-                    Volume->FSType = FS_TYPE_FAT32;
-                    CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
-                }
-                else if (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0) {
-                    Volume->FSType = FS_TYPE_FAT16;
-                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
-                }
-                else if (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) {
-                    Volume->FSType = FS_TYPE_FAT12;
-                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
-                }
-                else if (!Volume->BlockIO->Media->LogicalPartition) {
-                    Volume->FSType = FS_TYPE_WHOLEDISK;
-                }
-
-                return;
+            else if (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) {
+                Volume->FSType = FS_TYPE_FAT12;
+                CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
             }
-        } // search for FAT and NTFS magic
+            else if (!Volume->BlockIO->Media->LogicalPartition) {
+                Volume->FSType = FS_TYPE_WHOLEDISK;
+            }
 
-        // If no other filesystem is identified and block size is right, assume ISO-9660
-        if (Volume->BlockIO->Media->BlockSize == 2048) {
-            Volume->FSType = FS_TYPE_ISO9660;
             return;
         }
+    } // search for FAT and NTFS magic
 
-        // If no other filesystem is identified, assume APFS if on partition with APFS GUID
-        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-            Volume->FSType = FS_TYPE_APFS;
-            return;
-        }
-    } // if ((Buffer != NULL) && (Volume != NULL))
-} // UINT32 SetFilesystemData()
+    // If no other filesystem is identified and block size is right, assume ISO-9660
+    if (Volume->BlockIO->Media->BlockSize == 2048) {
+        Volume->FSType = FS_TYPE_ISO9660;
+        return;
+    }
+
+    // If no other filesystem is identified, assume APFS if on partition with APFS GUID
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+        Volume->FSType = FS_TYPE_APFS;
+        return;
+    }
+} // VOID SetFilesystemData()
 
 static
 VOID ScanVolumeBootcode (
@@ -1794,7 +1792,7 @@ CHAR16 * GetVolumeName (
     if ((FoundName == NULL) &&
         (Volume->PartName) &&
         (StrLen (Volume->PartName) > 0) &&
-        !IsIn (Volume->PartName, IGNORE_PARTITION_NAMES)
+        !IsListItem (Volume->PartName, IGNORE_PARTITION_NAMES)
     ) {
         FoundName = StrDuplicate (Volume->PartName);
 
@@ -1918,7 +1916,7 @@ BOOLEAN HasWindowsBiosBootFiles (
     // NTLDR   = Windows boot file: NT/200x/XP
     // Bootmgr = Windows boot file: Vista/7/8/10
     return (
-        FileExists (Volume->RootDir, L"NTLDR") ||
+        FileExists (Volume->RootDir, L"NTLDR"  ) ||
         FileExists (Volume->RootDir, L"bootmgr")
     );
 } // static VOID HasWindowsBiosBootFiles()
@@ -1989,7 +1987,7 @@ VOID ScanVolume (
             FoundExternalDisk = TRUE;
         }
 
-        if (DevicePathType (DevicePath) == MEDIA_DEVICE_PATH &&
+        if (DevicePathType    (DevicePath) == MEDIA_DEVICE_PATH &&
             DevicePathSubType (DevicePath) == MEDIA_CDROM_DP
         ) {
             // El Torito entry -> optical disk
@@ -2257,10 +2255,9 @@ VOID VetMultiInstanceAPFS (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN AppleRecovery;
     CHAR16 *MsgStrA;
-    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'"  ;
-    CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'"    ;
-    CHAR16 *MsgStrD = L"Disabled:- 'Restore Entries for Synced AFPS Volumes'"   ;
-    CHAR16 *MsgStrE = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'";
+    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for APFS macOS Instances'"     ;
+    CHAR16 *MsgStrC = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'" ;
+    CHAR16 *MsgStrD = L"Disabled:- 'Hide/Unhide Synced AFPS Volume Entries'"     ;
 
     // Check if configured to show Apple Recovery
     AppleRecovery = FALSE;
@@ -2336,11 +2333,11 @@ VOID VetMultiInstanceAPFS (VOID) {
             // DA-TAG: Multiple installations in a single APFS Container
             //         Misc features are disabled
             #if REFIT_DEBUG > 0
-            MsgStrA = L"APFS Container with Multiple Mac OS Instances Found";
+            MsgStrA = L"APFS Container with Multiple macOS Instances Found";
             LOG_MSG("INFO: %s", MsgStrA);
 
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrE);
-            LOG_MSG("%s      * %s", OffsetNext, MsgStrE);
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
 
             if (AppleRecovery) {
                 // Log relevant warning if configured to show Apple Recovery
@@ -2349,9 +2346,7 @@ VOID VetMultiInstanceAPFS (VOID) {
             }
 
             // Log other warnings
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
-            LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
             LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
             LOG_MSG("\n\n");
             #endif
@@ -2415,14 +2410,14 @@ VOID VetSyncAPFS (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"ReMap APFS Volume Groups");
+    MsgStr = StrDuplicate (L"ReMap Potential APFS Volume Groups");
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("%s:", MsgStr);
     MY_FREE_POOL(MsgStr);
 
     for (i = 0; i < SystemVolumesCount; i++) {
-        MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
+        MsgStr = PoolPrint (L"Potential System Volume:- '%s'", SystemVolumes[i]->VolName);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("%s  - %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -2468,7 +2463,7 @@ VOID VetSyncAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"ReMapped %d Volume Group%s",
+        L"Processed %d Potential APFS Volume Group%s",
         SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2930,7 +2925,7 @@ VOID ScanVolumes (VOID) {
                     }
                     else {
                         RoleStr = (FileExists (Volume->RootDir, MACOSX_LOADER_PATH))
-                            ? L" * HFS Boot macOS"
+                            ? L" * HFS macOS Boot"
                             : L" * HFS Data/Other";
                     }
                 }
@@ -3224,7 +3219,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         }
 
         // Skip volumes in 'DontScanVolumes' list
-        if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+        if (IsListItem (Volume->VolName, GlobalConfig.DontScanVolumes)) {
             continue;
         }
 
@@ -3348,7 +3343,7 @@ VOID SetVolumeIcons (VOID) {
         }
 
         // Skip volumes in 'DontScanVolumes' list
-        if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+        if (IsListItem (Volume->VolName, GlobalConfig.DontScanVolumes)) {
             continue;
         }
 
@@ -3975,7 +3970,7 @@ CHAR16 * FindExtension (
         ToLower (Extension);
     }
 
-    return (Extension);
+    return Extension;
 } // CHAR16 *FindExtension()
 
 // Takes an input pathname (*Path) and locates the final directory component
@@ -4023,7 +4018,7 @@ CHAR16 * FindLastDirName (
         }
     }
 
-    return (Found);
+    return Found;
 } // CHAR16 *FindLastDirName()
 
 // Returns the directory portion of a pathname. For instance,
@@ -4053,7 +4048,7 @@ CHAR16 * FindPath (
         PathOnly[LastBackslash] = 0;
     }
 
-    return (PathOnly);
+    return PathOnly;
 }
 
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
@@ -4288,7 +4283,7 @@ BOOLEAN EjectMedia (VOID) {
     );
     if (EFI_ERROR(Status) || HandleCount == 0) {
         // probably not an Apple system
-        return (FALSE);
+        return FALSE;
     }
 
     Ejected = 0;

@@ -41,7 +41,7 @@ EFI_GUID   AppleVendorOsGuid  = APPLE_VENDOR_OS_VARIABLE_GUID;
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
 // present and the firmware is Apple, fake it and claim it is enabled, since
-// that is how MacOS 10.11 treats a system with the variable absent.
+// that is how macOS 10.11 treats a system with the variable absent.
 EFI_STATUS GetCsrStatus (
     IN OUT UINT32 *CsrStatus
 ) {
@@ -227,7 +227,7 @@ VOID RotateCsrValue (
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
     #endif
 
-    if (!GlobalConfig.CsrValues) {
+    if (GlobalConfig.CsrValues != NULL) {
         FlagNoCSR();
 
         #if REFIT_DEBUG > 0
@@ -245,7 +245,7 @@ VOID RotateCsrValue (
     }
 
     Status = GetCsrStatus (&CurrentValue);
-    if (EFI_ERROR(Status) || !GlobalConfig.CsrValues) {
+    if (EFI_ERROR(Status) || GlobalConfig.CsrValues != NULL) {
         MY_FREE_POOL(gCsrStatus);
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
@@ -407,7 +407,7 @@ typedef struct EfiAppleSetOsInterface {
     EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
 } EfiAppleSetOsInterface;
 
-// Function to tell the firmware that MacOS is being launched. This is
+// Function to tell the firmware that macOS is being launched. This is
 // required to work around problems on some Macs that do not fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
@@ -430,7 +430,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     if (EFI_ERROR(Status) || SetOs == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Not a Mac ... Not Setting MacOS Information"
+            L"Not a Mac ... Not Setting macOS Information"
         );
         #endif
 
@@ -463,7 +463,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Set MacOS Information:- '%s'",
+        L"Set macOS Information:- '%s'",
         AppleVersionOS
     );
     #endif
@@ -829,18 +829,18 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         return EFI_NOT_FOUND;
     }
 
-    if (VolumeGuid) {
+    if (VolumeGuid != NULL) {
         CopyGuid (
             VolumeGuid,
             &ApfsVolumeInfo->Uuid
         );
     }
 
-    if (VolumeRole) {
+    if (VolumeRole != NULL) {
         *VolumeRole = ApfsVolumeInfo->Role;
     }
 
-    if (ContainerGuid) {
+    if (ContainerGuid != NULL) {
         CopyGuid (
             ContainerGuid,
             &ApfsContainerInfo->Uuid

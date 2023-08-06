@@ -328,21 +328,23 @@ VOID ExtractLegacyLoaderPaths (
     MaxPaths--;  // leave space for the terminating NULL pointer
 
     // Get all LoadedImage handles
-    HandleCount = 0;
+    PathCount = HandleCount = 0;
     Status = LibLocateHandle (
         ByProtocol,
         &LoadedImageProtocol, NULL,
         &HandleCount, &Handles
     );
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"while listing LoadedImage handles");
 
-    PathCount = 0;
-    if (CheckError (Status, L"while listing LoadedImage handles")) {
         if (HardcodedPathList) {
-            for (HardcodedIndex = 0; HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths; HardcodedIndex++) {
+            for (HardcodedIndex = 0;
+                HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths;
+                HardcodedIndex++
+            ) {
                 PathList[PathCount++] = HardcodedPathList[HardcodedIndex];
             }
         }
-
         PathList[PathCount] = NULL;
 
         return;
@@ -356,7 +358,7 @@ VOID ExtractLegacyLoaderPaths (
             &LoadedImageProtocol, (VOID **) &LoadedImage
         );
         if (EFI_ERROR(Status)) {
-            // This can only happen if the firmware scewed up ... ignore it.
+            // Ignore Error ... Can only happen via firmware defect.
             continue;
         }
 
@@ -365,7 +367,7 @@ VOID ExtractLegacyLoaderPaths (
             &DevicePathProtocol, (VOID **) &DevicePath
         );
         if (EFI_ERROR(Status)) {
-            // This happens ... ignore it.
+            // Ignore Error ... Not significant.
             continue;
         }
 
@@ -449,7 +451,8 @@ EFI_STATUS StartLegacyImageList (
         }
     } // for
 
-    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy Bootcode")) {
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"While Loading 'Mac-Style' Legacy Bootcode");
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
@@ -462,7 +465,8 @@ EFI_STATUS StartLegacyImageList (
         gBS->HandleProtocol, ChildImageHandle,
         &LoadedImageProtocol, (VOID **) &ChildLoadedImage
     );
-    if (CheckError (Status, L"While Fetching LoadedImageProtocol Handle!!")) {
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"While Fetching LoadedImageProtocol Handle");
         if (ErrorInStep != NULL) {
             *ErrorInStep = 2;
         }
@@ -491,12 +495,14 @@ EFI_STATUS StartLegacyImageList (
         gBS->StartImage, ChildImageHandle,
         NULL, NULL
     );
-    // Control returned after child image called 'Exit()'
-    if (CheckError (Status, L"Unexpected Return from Loader")) {
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"Unexpected Return from Loader");
         if (ErrorInStep != NULL) {
             *ErrorInStep = 3;
         }
     }
+
+    // Control returned after child image called 'Exit()'
     #if REFIT_DEBUG > 0
     RET_TAG();
     #endif
@@ -512,7 +518,7 @@ bailout:
     MY_FREE_POOL(FullLoadOptions);
 
     return Status;
-} // EFI_STATUS StartLegacyImageList()
+} // static EFI_STATUS StartLegacyImageList()
 
 VOID StartLegacy (
     IN LEGACY_ENTRY *Entry,
@@ -768,7 +774,7 @@ VOID AddLegacyEntry (
         SetVolType (LoaderTitle, VolDesc, Volume->FSType)
     );
 
-    if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
+    if (IsListItemSubstringIn (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MY_FREE_POOL(LegacyTitle);
 
        // Early Return
@@ -884,7 +890,7 @@ VOID AddLegacyEntryUEFI (
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
 
-    if (IsInSubstring (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
+    if (IsListItemSubstringIn (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
         // Early Return
         return;
     }

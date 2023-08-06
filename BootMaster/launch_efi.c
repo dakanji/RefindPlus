@@ -793,13 +793,13 @@ EFI_STATUS StartEFIImage (
 
         do {
             ChildLoadedImage = NULL;
-            Status = REFIT_CALL_3_WRAPPER(
+            ReturnStatus = Status = REFIT_CALL_3_WRAPPER(
                 gBS->HandleProtocol, ChildImageHandle,
                 &LoadedImageProtocol, (VOID **) &ChildLoadedImage
             );
-            ReturnStatus = Status;
+            if (EFI_ERROR(Status)) {
+                CheckError (Status, L"while Getting LoadedImageProtocol Handle");
 
-            if (CheckError (Status, L"while Getting LoadedImageProtocol Handle")) {
                 // Unload and Bail Out
                 break;
             }
@@ -899,13 +899,14 @@ EFI_STATUS StartEFIImage (
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_SET;
                     #endif
+                    PauseSeconds (4);
                     SwitchToText (FALSE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"  Completed Without Changes  ", NEXTLINE);
-                    PrintUglyText (L"    Skipping Forced Reboot   ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
+                    PrintUglyText (L"                                ", NEXTLINE);
+                    PrintUglyText (L"                                ", NEXTLINE);
+                    PrintUglyText (L"  Applicable Disks *NOT* Found  ", NEXTLINE);
+                    PrintUglyText (L"     Returning to Main Menu     ", NEXTLINE);
+                    PrintUglyText (L"                                ", NEXTLINE);
+                    PrintUglyText (L"                                ", NEXTLINE);
                     PauseSeconds (4);
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_OFF;

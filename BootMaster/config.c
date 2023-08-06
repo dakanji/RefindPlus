@@ -72,7 +72,6 @@
 
 #define LAST_MINUTE         (1439) /* Last minute of a day */
 
-UINTN   ReadLoops       = 0;
 UINTN   TotalEntryCount = 0;
 UINTN   ValidEntryCount = 0;
 
@@ -114,6 +113,124 @@ VOID SetLinuxMatchPatterns (
     MY_FREE_POOL(GlobalConfig.LinuxMatchPatterns);
     GlobalConfig.LinuxMatchPatterns = PatternSet;
 } // static VOID SetLinuxMatchPatterns()
+
+static
+VOID AlsoScanDirs (VOID) {
+    if (!GlobalConfig.AlsoScan) {
+        GlobalConfig.AlsoScan = StrDuplicate (
+            ALSO_SCAN_DIRS
+        );
+    }
+    else {
+        MergeUniqueItems (
+            &GlobalConfig.AlsoScan,
+            ALSO_SCAN_DIRS, L','
+        );
+    }
+} // static VOID AlsoScanDirs()
+
+static
+VOID SyncDontScanDirs (VOID) {
+    CHAR16 *GuidString;
+
+    if (!GlobalConfig.DontScanDirs) {
+        GlobalConfig.DontScanDirs = StrDuplicate (
+            MEMTEST_LOCATIONS
+        );
+    }
+    else {
+        MergeUniqueItems (
+            &GlobalConfig.DontScanDirs,
+            MEMTEST_LOCATIONS, L','
+        );
+    }
+
+    if (SelfVolume) {
+        GuidString = GuidAsString (
+            &(SelfVolume->PartGuid)
+        );
+        if (GuidString) {
+            MergeStrings (
+                &GlobalConfig.DontScanDirs,
+                GuidString, L','
+            );
+            MergeStrings (
+                &GlobalConfig.DontScanDirs,
+                SelfDirPath, L':'
+            );
+            MY_FREE_POOL(GuidString);
+        }
+    }
+} // static VOID SyncDontScanDirs()
+
+static
+VOID SyncDontScanFiles (VOID) {
+    if (!GlobalConfig.DontScanFiles) {
+        GlobalConfig.DontScanFiles = StrDuplicate (
+            MOK_NAMES
+        );
+    }
+    else {
+        MergeUniqueItems (
+            &GlobalConfig.DontScanFiles,
+            MOK_NAMES, L','
+        );
+    }
+
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        SHELL_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        GDISK_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        GPTSYNC_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        NETBOOT_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        FWUPDATE_NAMES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        DONT_SCAN_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        NVRAMCLEAN_FILES, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        FALLBACK_SKIPNAME, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        GlobalConfig.WindowsRecoveryFiles, L','
+    );
+} // static VOID SyncDontScanFiles()
+
+static
+VOID SyncLinuxPrefixes (VOID) {
+    if (!GlobalConfig.LinuxPrefixes) {
+        GlobalConfig.LinuxPrefixes = StrDuplicate (
+            LINUX_PREFIXES
+        );
+    }
+    else {
+        MergeUniqueItems (
+            &GlobalConfig.LinuxPrefixes,
+            LINUX_PREFIXES, L','
+        );
+    }
+
+    SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);
+} // static VOID SyncLinuxPrefixes()
 
 //
 // Get a single line of text from a file
@@ -1106,7 +1223,8 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
 
     BREAD_CRUMB(L"%s:  5", FuncTag);
-    if (CheckError (Status, L"while reading /etc/fstab")) {
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"while reading /etc/fstab");
         BREAD_CRUMB(L"%s:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1316,17 +1434,17 @@ EFI_STATUS RefitReadFile (
     File->Buffer     = NULL;
     File->BufferSize = 0;
 
-    // read the file, allocating a buffer on the way
+    // Read the file and allocating a buffer
     Status = REFIT_CALL_5_WRAPPER(
         BaseDir->Open, BaseDir,
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
     );
-
-    Message = PoolPrint (L"While Loading File:- '%s'", FileName);
-    if (CheckError (Status, Message)) {
-        size = 0;
+    if (EFI_ERROR(Status)) {
+        Message = PoolPrint (L"While Loading File:- '%s'", FileName);
+        CheckError (Status, Message);
         MY_FREE_POOL(Message);
+        size = 0;
 
         // Early Return
         return Status;
@@ -1336,9 +1454,9 @@ EFI_STATUS RefitReadFile (
     if (FileInfo == NULL) {
         size = 0;
 
-        // TODO: print and register the error
+        // DA-TAG: Invesigate This
+        //         Print and register the error
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-        MY_FREE_POOL(Message);
 
         // Early Return
         return EFI_LOAD_ERROR;
@@ -1351,9 +1469,9 @@ EFI_STATUS RefitReadFile (
     if (File->Buffer == NULL) {
        size = 0;
 
-       // TODO: print and register the error
+       // DA-TAG: Invesigate This
+       //         Print and register the error
        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-       MY_FREE_POOL(Message);
 
        // Early Return
        return EFI_OUT_OF_RESOURCES;
@@ -1365,12 +1483,16 @@ EFI_STATUS RefitReadFile (
         FileHandle->Read, FileHandle,
         &File->BufferSize, File->Buffer
     );
-    if (CheckError (Status, Message)) {
+    if (EFI_ERROR(Status)) {
+        Message = PoolPrint (L"While Loading File:- '%s'", FileName);
+        CheckError (Status, Message);
+        MY_FREE_POOL(Message);
         size = 0;
 
-        // TODO: print and register the error
+        // DA-TAG: Invesigate This
+        //         Print and register the error
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-        MY_FREE_POOL(Message);
+
         MY_FREE_POOL(File->Buffer);
 
         // Early Return
@@ -1378,7 +1500,6 @@ EFI_STATUS RefitReadFile (
     }
 
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-    MY_FREE_POOL(Message);
 
     // Setup for reading
     File->Current8Ptr  = (CHAR8  *) File->Buffer;
@@ -1799,7 +1920,6 @@ VOID ReadConfig (
     BOOLEAN           HiddenTagsFlag;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
-    CHAR16           *VentoyName;
     CHAR16           *MsgStr;
     CHAR16           *Flag;
     UINTN             i, j;
@@ -1807,16 +1927,24 @@ VOID ReadConfig (
     UINTN             InvalidEntries;
     INTN              MaxLogLevel;
 
+    static UINTN      ReadLoops = 0;
+
+
     #if REFIT_DEBUG > 0
     INTN             RealLogLevel;
     INTN             HighLogLevel;
     #endif
 
     // Control 'Include' Depth
-    ReadLoops = ReadLoops + 1;
-    if (ReadLoops > 2) {
+    if (ReadLoops > 1) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("%s  ** Ignoring Tertiary Config ... %s", OffsetNext, FileName);
+        #endif
+
+        ReadLoops = ReadLoops - 1;
         return;
     }
+    ReadLoops = ReadLoops + 1;
 
     #if REFIT_DEBUG > 0
     MuteLogger = TRUE;
@@ -1828,26 +1956,6 @@ VOID ReadConfig (
         LOG_MSG("R E A D   C O N F I G U R A T I O N   T O K E N S");
         MuteLogger = TRUE;
         #endif
-
-        // Set a few defaults if loading the default file.
-        if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
-            if (SelfVolume) {
-                GlobalConfig.DontScanDirs = GuidAsString (&(SelfVolume->PartGuid));
-                MergeStrings (&GlobalConfig.DontScanDirs, SelfDirPath, L':');
-            }
-            MergeStrings (&GlobalConfig.DontScanDirs, MEMTEST_LOCATIONS, L',');
-
-            GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-            MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
-            MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
-
-            GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
-            GlobalConfig.LinuxPrefixes = StrDuplicate (LINUX_PREFIXES);
-            GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
-            GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
-            GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
-            GlobalConfig.DefaultSelection = StrDuplicate (L"+");
-        } // if MyStriCmp
     } // if OuterLoop
 
     if (!FileExists (SelfDir, FileName)) {
@@ -1976,7 +2084,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"icons_dir")) {
-            MY_FREE_POOL(GlobalConfig.IconsDir);
             HandleString (TokenList, TokenCount, &(GlobalConfig.IconsDir));
 
             #if REFIT_DEBUG > 0
@@ -1988,7 +2095,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"set_boot_args")) {
-            MY_FREE_POOL(GlobalConfig.SetBootArgs);
             HandleString (TokenList, TokenCount, &(GlobalConfig.SetBootArgs));
 
             #if REFIT_DEBUG > 0
@@ -2111,7 +2217,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
-            MY_FREE_POOL(GlobalConfig.AlsoScan);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
 
             #if REFIT_DEBUG > 0
@@ -2126,10 +2231,8 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_dirs") ||
             MyStriCmp (TokenList[0], L"don't_scan_dirs")
         ) {
-            MY_FREE_POOL(GlobalConfig.DontScanDirs);
+            // DA-TAG: Synced With Defaults Later
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanDirs));
-            // Only show MemTest as tools
-            MergeStrings (&GlobalConfig.DontScanDirs, MEMTEST_LOCATIONS, L',');
 
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
@@ -2143,7 +2246,7 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_files") ||
             MyStriCmp (TokenList[0], L"don't_scan_files")
         ) {
-            MY_FREE_POOL(GlobalConfig.DontScanFiles);
+            // DA-TAG: Synced With Defaults Later
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
 
             #if REFIT_DEBUG > 0
@@ -2158,7 +2261,6 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_tools") ||
             MyStriCmp (TokenList[0], L"don't_scan_tools")
         ) {
-            MY_FREE_POOL(GlobalConfig.DontScanTools);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
 
             #if REFIT_DEBUG > 0
@@ -2173,7 +2275,6 @@ VOID ReadConfig (
             MyStriCmp (TokenList[0], L"dont_scan_firmware") ||
             MyStriCmp (TokenList[0], L"don't_scan_firmware")
         ) {
-            MY_FREE_POOL(GlobalConfig.DontScanFirmware);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
 
             #if REFIT_DEBUG > 0
@@ -2204,7 +2305,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"windows_recovery_files")) {
-            MY_FREE_POOL(GlobalConfig.WindowsRecoveryFiles);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.WindowsRecoveryFiles));
 
             #if REFIT_DEBUG > 0
@@ -2216,7 +2316,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"scan_driver_dirs")) {
-            MY_FREE_POOL(GlobalConfig.DriverDirs);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DriverDirs));
 
             #if REFIT_DEBUG > 0
@@ -2316,7 +2415,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"banner")) {
-            MY_FREE_POOL(GlobalConfig.BannerFileName);
             HandleString (TokenList, TokenCount, &(GlobalConfig.BannerFileName));
 
             #if REFIT_DEBUG > 0
@@ -2417,7 +2515,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"selection_small")) {
-            MY_FREE_POOL(GlobalConfig.SelectionSmallFileName);
             HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
 
             #if REFIT_DEBUG > 0
@@ -2429,7 +2526,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"selection_big")) {
-            MY_FREE_POOL(GlobalConfig.SelectionBigFileName);
             HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionBigFileName));
 
             #if REFIT_DEBUG > 0
@@ -2575,7 +2671,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"linux_prefixes")) {
-            MY_FREE_POOL(GlobalConfig.LinuxPrefixes);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.LinuxPrefixes));
 
             #if REFIT_DEBUG > 0
@@ -2587,7 +2682,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"extra_kernel_version_strings")) {
-            MY_FREE_POOL(GlobalConfig.ExtraKernelVersionStrings);
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
 
             #if REFIT_DEBUG > 0
@@ -2621,7 +2715,6 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"spoof_osx_version")) {
-            MY_FREE_POOL(GlobalConfig.SpoofOSXVersion);
             HandleString (TokenList, TokenCount, &(GlobalConfig.SpoofOSXVersion));
 
             #if REFIT_DEBUG > 0
@@ -3250,119 +3343,141 @@ VOID ReadConfig (
     } // for ;;
     FreeTokenLine (&TokenList, &TokenCount);
 
-    // Forced Default Settings
-    if (AppleFirmware)  GlobalConfig.RansomDrives   = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
-    if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
-
-    // Prioritise EnableTouch
-    if (GlobalConfig.EnableTouch) {
-        GlobalConfig.EnableMouse = FALSE;
-    }
-
-    if (GlobalConfig.HelpTags) {
-        // "TagHelp" feature is active ... Set "found" flag to false
-        HiddenTagsFlag = FALSE;
-        // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
-        for (i = 0; i < NUM_TOOLS; i++) {
-            switch (GlobalConfig.ShowTools[i]) {
-                case TAG_EXIT:
-                case TAG_ABOUT:
-                case TAG_SHELL:
-                case TAG_GDISK:
-                case TAG_REBOOT:
-                case TAG_MEMTEST:
-                case TAG_GPTSYNC:
-                case TAG_NETBOOT:
-                case TAG_INSTALL:
-                case TAG_MOK_TOOL:
-                case TAG_FIRMWARE:
-                case TAG_SHUTDOWN:
-                case TAG_BOOTORDER:
-                case TAG_CSR_ROTATE:
-                case TAG_FWUPDATE_TOOL:
-                case TAG_INFO_NVRAMCLEAN:
-                case TAG_RECOVERY_WINDOWS:
-                case TAG_RECOVERY_APPLE:
-                    // Continue checking
-
-                break;
-                case TAG_HIDDEN:
-                    // Tag to end search ... "hidden_tags" tool is already set
-                    HiddenTagsFlag = TRUE;
-
-                break;
-                default:
-                    // Setup help needed ... "hidden_tags" tool is not set
-                    GlobalConfig.ShowTools[i] = TAG_HIDDEN;
-                    GlobalConfig.HiddenTags   = TRUE;
-
-                    // Tag to end search ... "hidden_tags" tool is now set
-                    HiddenTagsFlag = TRUE;
-            } // switch
-
-            if (HiddenTagsFlag) {
-                // Halt search loop
-                break;
-            }
-        } // for
-    } // if GlobalConfig.HelpTags
-
-    if (!GlobalConfig.DontScanFiles) {
-        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-    }
-    if (GlobalConfig.WindowsRecoveryFiles) {
-        MergeStrings (&GlobalConfig.DontScanFiles, GlobalConfig.WindowsRecoveryFiles, L',');
-    }
-    if (GlobalConfig.HandleVentoy) {
-        i = 0;
-        while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
-            MergeUniqueStrings (&GlobalConfig.DontScanVolumes, VentoyName, L',');
-            MY_FREE_POOL(VentoyName);
-        } // while
-
-    }
-
     MY_FREE_POOL(File.Buffer);
-
-    SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);
-
-    if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
-        #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
-        LOG_MSG(
-            "%s  - WARN: Cannot Find Icons Directory ... Activating Text-Only Mode",
-            OffsetNext
-        );
-        MuteLogger = TRUE;
-        #endif
-
-        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-    }
-
-    SilenceAPFS = GlobalConfig.SilenceAPFS;
 
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE;
+    #endif
 
     // Skip this on inner loops
-    if (OuterLoop) {
-        // Disable further config loading on exiting the outer loop
-        ReadLoops = 1000;
-
-        if (!FoundFontImage) {
-            LOG_MSG(
-                "%s  - WARN: Font Image File is Invalid ... Using Default Font",
-                OffsetNext
+    if (!OuterLoop) {
+        ReadLoops = ReadLoops - 1;
+    }
+    else {
+        // Set a few defaults if required
+        SilenceAPFS = GlobalConfig.SilenceAPFS;
+        if (!GlobalConfig.DontScanVolumes) {
+            GlobalConfig.DontScanVolumes = StrDuplicate (
+                DONT_SCAN_VOLUMES
             );
-            FoundFontImage = TRUE;
+        }
+        if (!GlobalConfig.WindowsRecoveryFiles) {
+            GlobalConfig.WindowsRecoveryFiles = StrDuplicate (
+                WINDOWS_RECOVERY_FILES
+            );
+        }
+        if (!GlobalConfig.MacOSRecoveryFiles) {
+            GlobalConfig.MacOSRecoveryFiles = StrDuplicate (
+                MACOS_RECOVERY_FILES
+            );
+        }
+        if (!GlobalConfig.DefaultSelection) {
+            GlobalConfig.DefaultSelection = StrDuplicate (L"+");
         }
 
+        AlsoScanDirs();
+        SyncDontScanDirs();
+        SyncDontScanFiles();
+        SyncLinuxPrefixes();
+
+        if (GlobalConfig.HandleVentoy) {
+            MergeUniqueItems (
+                &GlobalConfig.DontScanVolumes,
+                VENTOY_NAMES, L','
+            );
+        }
+
+        // Forced Default Settings
+        if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
+        if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
+        if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
+        if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
+
+        // Prioritise EnableTouch
+        if (GlobalConfig.EnableTouch) {
+            GlobalConfig.EnableMouse = FALSE;
+        }
+
+        if (GlobalConfig.HelpTags) {
+            // "TagHelp" feature is active ... Set "found" flag to false
+            HiddenTagsFlag = FALSE;
+            // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
+            for (i = 0; i < NUM_TOOLS; i++) {
+                switch (GlobalConfig.ShowTools[i]) {
+                    case TAG_EXIT:
+                    case TAG_ABOUT:
+                    case TAG_SHELL:
+                    case TAG_GDISK:
+                    case TAG_REBOOT:
+                    case TAG_MEMTEST:
+                    case TAG_GPTSYNC:
+                    case TAG_NETBOOT:
+                    case TAG_INSTALL:
+                    case TAG_MOK_TOOL:
+                    case TAG_FIRMWARE:
+                    case TAG_SHUTDOWN:
+                    case TAG_BOOTORDER:
+                    case TAG_CSR_ROTATE:
+                    case TAG_FWUPDATE_TOOL:
+                    case TAG_INFO_NVRAMCLEAN:
+                    case TAG_RECOVERY_WINDOWS:
+                    case TAG_RECOVERY_APPLE:
+                        // Continue checking
+
+                    break;
+                    case TAG_HIDDEN:
+                        // Tag to end search ... "hidden_tags" tool is already set
+                        HiddenTagsFlag = TRUE;
+
+                    break;
+                    default:
+                        // Setup help needed ... "hidden_tags" tool is not set
+                        GlobalConfig.ShowTools[i] = TAG_HIDDEN;
+                        GlobalConfig.HiddenTags   = TRUE;
+
+                        // Tag to end search ... "hidden_tags" tool is now set
+                        HiddenTagsFlag = TRUE;
+                } // switch
+
+                if (HiddenTagsFlag) {
+                    // Halt search loop
+                    break;
+                }
+            } // for
+        } // if GlobalConfig.HelpTags
+
+        if (!FileExists (SelfDir, L"icons") &&
+            !FileExists (SelfDir, GlobalConfig.IconsDir)
+        ) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG(
+                "%s  - WARN: Cannot Find Icons Directory ... Activating Text-Only Mode",
+                OffsetNext
+            );
+            #endif
+
+            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+        }
+
+        if (!FoundFontImage) {
+            FoundFontImage = TRUE;
+
+            #if REFIT_DEBUG > 0
+            LOG_MSG(
+                "%s  - WARN: Defined Font File is *NOT* Valid ... Using Default Font",
+                OffsetNext
+            );
+            #endif
+        }
+
+        #if REFIT_DEBUG > 0
         // Log formating on exiting outer loop
         LOG_MSG("\n");
         LOG_MSG("Process Configuration Options ... Success");
         LOG_MSG("\n\n");
+        #endif
+
+        // Reset loop count
+        ReadLoops = 0;
     }
-    #endif
 } // VOID ReadConfig()

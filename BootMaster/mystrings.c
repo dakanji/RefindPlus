@@ -97,15 +97,15 @@ BOOLEAN MyStrBegins (
 
     StrBegins = FALSE;
     while (*FirstString != L'\0') {
-        if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
-            StrBegins = TRUE;
-            FirstString++;
-            SecondString++;
-        }
-        else {
+        if ((*FirstString & ~0x20) != (*SecondString & ~0x20)) {
             StrBegins = FALSE;
+
             break;
         }
+
+        FirstString++;
+        SecondString++;
+        StrBegins = TRUE;
     } // while
 
     return StrBegins;
@@ -684,6 +684,26 @@ VOID MergeUniqueWords (
     }
 } // VOID MergeUniqueWords()
 
+// As MergeUniqueWords, but Items are separated by ','
+VOID MergeUniqueItems (
+    CHAR16 **MergeTo,
+    CHAR16  *InString,
+    CHAR16   AddChar
+) {
+    UINTN   i;
+    CHAR16 *Item;
+
+    if (!InString) {
+        return;
+    }
+
+    i = 0;
+    while ((Item = FindCommaDelimited (InString, i++)) != NULL) {
+        MergeUniqueStrings (MergeTo, Item, AddChar);
+        MY_FREE_POOL(Item);
+    } // while
+} // VOID MergeUniqueItems()
+
 // Replaces special characters in the input string with a space.
 CHAR16 * SanitiseString (
     CHAR16  *InString
@@ -924,17 +944,24 @@ UINTN NumCharsInCommon (
     return Count;
 } // UINTN NumCharsInCommon()
 
-// Find the #Index element (numbered from 0) in a comma-delimited string
-// of elements.
+// Find the #Index element (numbered from 0) in a comma-delimited string.
 // Returns the found element, or NULL if Index is out of range or InString
 // is NULL. Note that the calling function is responsible for freeing the
 // memory associated with the returned string pointer.
+//
+// DA-TAG: Updated for 'ABC, 123, XYZ, 456'
+//         That is, ignores leading spaces
+//         'Internal' spaces not affected
+//         'A B C, XYZ' = 'A B C' & 'XYZ'
 CHAR16 * FindCommaDelimited (
     IN CHAR16 *InString,
     IN UINTN   Index
 ) {
-    UINTN     StartPos, CurPos, InLength;
+    UINTN     CurPos;
+    UINTN     StartPos;
+    UINTN     InLength;
     BOOLEAN   Found;
+    BOOLEAN   LeadingSpace;
     CHAR16   *FoundString;
 
     if (InString == NULL) {
@@ -943,6 +970,7 @@ CHAR16 * FindCommaDelimited (
 
     StartPos = CurPos = 0;
     InLength = StrLen (InString);
+
     // After while() loop, StartPos marks start of item #Index
     while (Index > 0 && CurPos < InLength) {
         if (InString[CurPos] == L',') {
@@ -953,14 +981,28 @@ CHAR16 * FindCommaDelimited (
         CurPos++;
     } // while
 
+    Found        = FALSE;
+    LeadingSpace =  TRUE;
+
     // After while() loop, CurPos is one past the end of the element
-    Found = FALSE;
     while (!Found && CurPos < InLength) {
         if (InString[CurPos] == L',') {
             Found = TRUE;
         }
         else {
+            // Move Current Position
             CurPos++;
+
+            if (LeadingSpace) {
+                if (InString[CurPos] == L' ') {
+                    // Ignore Leading Space ... Move Start Position
+                    ++StartPos;
+                }
+                else {
+                    // No Leading Space
+                    LeadingSpace = FALSE;
+                }
+            }
         }
     } // while
 
@@ -1016,9 +1058,35 @@ BOOLEAN DeleteItemFromCsvList (
     return FALSE;
 } // BOOLEAN DeleteItemFromCsvList()
 
+// Replaced by IsListItem.
+// Kept for upstream compatibility.
+BOOLEAN IsIn (
+    IN CHAR16 *SmallString,
+    IN CHAR16 *List
+) {
+    if (!SmallString || !List) {
+        return FALSE;
+    }
+
+    return IsListItem (SmallString, List);
+} // BOOLEAN IsIn()
+
+// Replaced by IsListItemSubstringIn.
+// Kept for upstream compatibility.
+BOOLEAN IsInSubstring (
+    IN CHAR16 *BigString,
+    IN CHAR16 *List
+) {
+    if (!BigString || !List) {
+        return FALSE;
+    }
+
+    return IsListItemSubstringIn (BigString, List);
+} // BOOLEAN IsInSubstring()
+
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.
-BOOLEAN IsIn (
+BOOLEAN IsListItem (
     IN CHAR16 *SmallString,
     IN CHAR16 *List
 ) {
@@ -1041,11 +1109,11 @@ BOOLEAN IsIn (
     } // while
 
    return Found;
-} // BOOLEAN IsIn()
+} // BOOLEAN IsListItem()
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
-BOOLEAN IsInSubstring (
+BOOLEAN IsListItemSubstringIn (
     IN CHAR16 *BigString,
     IN CHAR16 *List
 ) {
@@ -1080,7 +1148,7 @@ BOOLEAN IsInSubstring (
     } // while
 
     return Found;
-} // BOOLEAN IsSubstringIn()
+} // BOOLEAN IsListItemSubstringIn()
 
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString
 // is preceded by "%", instead remove that character.

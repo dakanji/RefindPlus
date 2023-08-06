@@ -62,6 +62,7 @@
 #define LABEL_GPTSYNC         L"GPTsync Tool"
 #define LABEL_CLEAN_NVRAM     L"Clean NVRAM"
 #define LABEL_MEMTEST         L"MemTest Tool"
+#define LABEL_HIDDEN          L"Restore Entries"
 
 #if defined (EFIX64)
 #   define SHELL_NAMES \
@@ -216,7 +217,7 @@ L"EFI\\tools\\gptsync.efi,EFI\\BOOT\\tools\\gptsync.efi,EFI\\gptsync.efi,\\gptsy
 L"EFI\\tools\\gdisk.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\gdisk.efi,\\gdisk.efi"
 #   define NETBOOT_NAMES \
 L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
-#   define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi"
+#   define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi,boot.efi"
 #   define FALLBACK_SKIPNAME       L"boot123abc.efi"      // Dummy
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" // Not really correct
 #   define FALLBACK_BASENAME       L"boot.efi"            // Not really correct
@@ -226,6 +227,11 @@ L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #   define SHELL_FILES             L"shell.efi"
 #   define NVRAMCLEAN_FILES        L"CleanNvram.efi"
 #endif
+
+#define BASE_LINUX_DISTROS \
+L"arch,artful,bionic,centos,chakra,crunchbang,debian,devuan,elementary,\
+fedora,frugalware,gentoo,gummiboot,kubuntu,linuxmint,mageia,mandriva,manjaro,\
+opensuse,redhat,slackware,suse,trusty,ubuntu,void,xenial,xubuntu,zesty"
 
 LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
 
@@ -263,7 +269,7 @@ CHAR16 * SetVolType (
     IN UINT32  VolumeFSType
 );
 CHAR16 * GetVolumeGroupName (
-    IN CHAR16 *LoaderPath,
+    IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 );
 

@@ -289,15 +289,11 @@ VOID WayPointer (
     UINTN LogLineType;
     UINTN TmpLogLevelStore;
 
-    if (gKernelStarted) {
-        // Early Return
-        return;
-    }
+    // Abort if Kernel has started
+    if (gKernelStarted) return;
 
-    if (!Msg) {
-        // Early Return
-        return;
-    }
+    // Abort if no Message
+    if (!Msg) return;
 
     // Stash and swap LogLevel
     // Needed to force DeepLogger on LogLevel 0
@@ -415,7 +411,7 @@ VOID EFIAPI DebugLog (
     ...
 ) {
     // Abort if Kernel has started
-    if(gKernelStarted) return;
+    if (gKernelStarted) return;
 
     // Make sure writing is allowed/possible
     if (MuteLogger
@@ -449,10 +445,11 @@ VOID LogPadding (
     CHAR16 *TmpPad;
     UINTN   PadPos;
 
-    if (MuteLogger) {
-        // Early Return
-        return;
-    }
+    // Abort if Kernel has started
+    if (gKernelStarted) return;
+
+    // Abort on MuteLogger
+    if (MuteLogger) return;
 
     if (!PadStr) {
         PadStr = StrDuplicate (L"[ ");

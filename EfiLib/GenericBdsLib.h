@@ -585,12 +585,12 @@ BdsRefreshBbsTableForBoot (
   );
 
 /**
-  Delete the Boot Option from UEFI Variable. The Boot Order Arrray
-  is also updated.
+  Delete the Boot Option from UEFI Variable.
+  The BootOrder Array is also updated.
 
   @param OptionNumber    The number of Boot options wanting to be deleted.
-  @param BootOrder       The Boot Order array.
-  @param BootOrderSize   The size of the Boot Order Array.
+  @param BootOrder       The BootOrder array.
+  @param BootOrderSize   The size of the BootOrder Array.
 
   @retval  EFI_SUCCESS           The Boot Option Variable was found and removed.
   @retval  EFI_UNSUPPORTED       The Boot Option Variable store was inaccessible.

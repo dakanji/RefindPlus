@@ -1214,7 +1214,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     BOOT_ENTRY_LIST  *ListStart;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Fetch Boot Order Variables:");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Fetch BootOrder Variables:");
     #endif
 
     BootOrder = NULL;
@@ -1405,7 +1405,7 @@ UINTN PickOneBootOption (
     }
 
     PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-    PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
+    PickBootOptionMenu->Title      = StrDuplicate (L"Manage BootOrder");
     PickBootOptionMenu->Hint1      = StrDuplicate (
         L"Select an option and press 'Enter' to make it the default. Press '-' or"
     );
@@ -1555,7 +1555,7 @@ VOID ManageBootorder (VOID) {
     BOOT_ENTRY_LIST *Entries;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage Boot Order' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage BootOrder' Screen");
     #endif
 
     BootNum   = 0;
@@ -1571,8 +1571,8 @@ VOID ManageBootorder (VOID) {
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
         DisplaySimpleMessage (Message, NULL);
-        MY_FREE_POOL(Name);
         MY_FREE_POOL(Message);
+        MY_FREE_POOL(Name);
     }
 
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
