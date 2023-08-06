@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -55,6 +55,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma pack(0)
 #include "global.h"
 #include "lib.h"
 #include "icns.h"
@@ -109,18 +110,18 @@ EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21
 
 // variables
 
-EFI_HANDLE       SelfImageHandle;
-EFI_LOADED_IMAGE *SelfLoadedImage;
-EFI_FILE         *SelfRootDir;
-EFI_FILE         *SelfDir;
-CHAR16           *SelfDirPath;
+EFI_HANDLE         SelfImageHandle;
+EFI_LOADED_IMAGE   *SelfLoadedImage;
+EFI_FILE_PROTOCOL  *SelfRootDir;
+EFI_FILE_PROTOCOL  *SelfDir;
+CHAR16             *SelfDirPath;
 
-REFIT_VOLUME     *SelfVolume = NULL;
-REFIT_VOLUME     **Volumes = NULL;
-UINTN            VolumesCount = 0;
-extern EFI_GUID  RefindGuid;
+REFIT_VOLUME       *SelfVolume = NULL;
+REFIT_VOLUME       **Volumes = NULL;
+UINTN              VolumesCount = 0;
+extern EFI_GUID    RefindGuid;
 
-EFI_FILE         *gVarsDir = NULL;
+EFI_FILE_PROTOCOL  *gVarsDir = NULL;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -322,7 +323,11 @@ VOID UninitRefitLib(VOID)
     // least one I own (with an ASRock FM2A88M Extreme 4+ motherboard)
     // produces 0-length log files if the file is not closed prior to
     // launching a follow-on program. Thus, take care of this here....
-    StopLogging();
+    // EXCEPT on Tow-Boot, where stopping logging can cause the system
+    // to crash!
+    if (StrCmp(ST->FirmwareVendor, L"Das U-Boot") != 0) {
+        StopLogging();
+    }
 
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
@@ -527,14 +532,18 @@ VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID 
 
     if ((*ElementCount & 15) == 0) {
         AllocateCount = *ElementCount + 16;
-        if (*ElementCount == 0)
+        if (*ElementCount == 0) {
             *ListPtr = AllocatePool(sizeof(VOID *) * AllocateCount);
-        else
+            LOG(2, LOG_LINE_NORMAL, L"Allocating memory in AddListElement()");
+        } else {
+            LOG(2, LOG_LINE_NORMAL, L"Reallocating memory in AddListElement(); *ElementCount is %ld", *ElementCount);
             *ListPtr = EfiReallocatePool(*ListPtr, sizeof(VOID *) * (*ElementCount), sizeof(VOID *) * AllocateCount);
+        }
     }
     (*ListPtr)[*ElementCount] = NewElement;
     (*ElementCount)++;
 } /* VOID AddListElement() */
+
 
 VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount)
 {
@@ -613,7 +622,7 @@ static VOID SetFilesystemName(REFIT_VOLUME *Volume) {
         FileSystemInfoPtr = LibFileSystemInfo(Volume->RootDir);
      }
 
-    if ((FileSystemInfoPtr != NULL) && (FileSystemInfoPtr->VolumeLabel != NULL) &&
+    if ((FileSystemInfoPtr != NULL) &&
         (StrLen(FileSystemInfoPtr->VolumeLabel) > 0)) {
         if (Volume->FsName) {
             MyFreePool(Volume->FsName);
@@ -640,6 +649,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
     UINT16       *Magic16;
     char         *MagicString;
 
+    LOG(2, LOG_LINE_NORMAL, L"Identifying filesystem types....");
     if ((Buffer != NULL) && (Volume != NULL)) {
         SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
         Volume->FSType = FS_TYPE_UNKNOWN;
@@ -650,10 +660,13 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
                 Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
                 Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
                 if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) { // check for extents or flex_bg
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext4fs");
                     Volume->FSType = FS_TYPE_EXT4;
                 } else if (*Ext2Compat & 0x0004) { // check for journal
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext3fs");
                     Volume->FSType = FS_TYPE_EXT3;
                 } else { // none of these features; presume it's ext2...
+                    LOG(4, LOG_LINE_NORMAL, L"Found ext2fs");
                     Volume->FSType = FS_TYPE_EXT2;
                 }
                 CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
@@ -666,6 +679,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
             if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
                 (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
                 (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
+                    LOG(4, LOG_LINE_NORMAL, L"Found ReiserFS");
                     Volume->FSType = FS_TYPE_REISERFS;
                     CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
                     return;
@@ -675,6 +689,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (65536 + 64 + 8)) {
             MagicString = (char*) (Buffer + 65536 + 64);
             if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found Btrfs");
                 Volume->FSType = FS_TYPE_BTRFS;
                 return;
             } // if
@@ -683,6 +698,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= 512) {
             MagicString = (char*) Buffer;
             if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found XFS");
                 Volume->FSType = FS_TYPE_XFS;
                 return;
             }
@@ -691,6 +707,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (32768 + 4)) {
             MagicString = (char*) (Buffer + 32768);
             if (CompareMem(MagicString, JFS_SIGNATURE, 4) == 0) {
+                LOG(4, LOG_LINE_NORMAL, L"Found JFS");
                 Volume->FSType = FS_TYPE_JFS;
                 return;
             }
@@ -699,6 +716,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         if (BufferSize >= (1024 + 2)) {
             Magic16 = (UINT16*) (Buffer + 1024);
             if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
+                LOG(4, LOG_LINE_NORMAL, L"Found HFS+");
                 Volume->FSType = FS_TYPE_HFSPLUS;
                 return;
             }
@@ -713,16 +731,20 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
            if (*Magic16 == FAT_MAGIC) {
                MagicString = (char*) Buffer;
                if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found NTFS");
                    Volume->FSType = FS_TYPE_NTFS;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                } else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
                           (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found FAT12 or FAT16");
                    Volume->FSType = FS_TYPE_FAT;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
                } else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found FAT32");
                    Volume->FSType = FS_TYPE_FAT;
                    CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
                } else if (!Volume->BlockIO->Media->LogicalPartition) {
+                   LOG(4, LOG_LINE_NORMAL, L"Found disk boot sector/MBR");
                    Volume->FSType = FS_TYPE_WHOLEDISK;
                } // if/else
                return;
@@ -732,20 +754,21 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
         // If no other filesystem is identified and block size is right, assume
         // it's ISO-9660....
         if (Volume->BlockIO->Media->BlockSize == 2048) {
+            LOG(4, LOG_LINE_NORMAL, L"Found ISO-9660");
             Volume->FSType = FS_TYPE_ISO9660;
             return;
         }
     } // if ((Buffer != NULL) && (Volume != NULL))
 } // UINT32 SetFilesystemData()
 
+// Try to identify the filesystem held on Volume, as well as whether it holds
+// any BIOS/CSM/legacy-mode boot code on Macs.
 static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 {
     EFI_STATUS              Status;
     UINT8                   Buffer[SAMPLE_SIZE];
-    UINTN                   i;
-    MBR_PARTITION_INFO      *MbrTable;
-    BOOLEAN                 MbrTableFound = FALSE;
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering ScanVolumeBootcode()");
     Volume->HasBootCode = FALSE;
     Volume->OSIconName = NULL;
     Volume->OSName = NULL;
@@ -765,6 +788,11 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     } else {
         SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
     }
+#if defined(EFI32) || defined(EFIX64)
+    MBR_PARTITION_INFO      *MbrTable;
+    BOOLEAN                 MbrTableFound = FALSE;
+    UINTN                   i;
+
     if ((Status == EFI_SUCCESS) && (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)) {
         if ((*((UINT16 *)(Buffer + 510)) == 0xaa55 && Buffer[0] != 0) &&
             (FindMem(Buffer, 512, "EXFAT", 5) == -1)) {
@@ -892,6 +920,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         }
 
     }
+#endif
 } /* VOID ScanVolumeBootcode() */
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
@@ -1063,6 +1092,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     UINTN                   PartialLength;
     BOOLEAN                 Bootable;
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering ScanVolume()");
     // get device path
     Volume->DevicePath = DuplicateDevicePath(DevicePathFromHandle(Volume->DeviceHandle));
 #if REFIT_DEBUG > 0
@@ -1408,7 +1438,7 @@ VOID SetVolumeIcons(VOID) {
 // file and dir functions
 //
 
-BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
+BOOLEAN FileExists(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath)
 {
     EFI_STATUS         Status;
     EFI_FILE_HANDLE    TestFile;
@@ -1423,7 +1453,7 @@ BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath)
     return FALSE;
 }
 
-EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
+EFI_STATUS DirNextEntry(IN EFI_FILE_PROTOCOL *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode)
 {
     EFI_STATUS Status;
     VOID *Buffer;
@@ -1434,7 +1464,7 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
 
         // free pointer from last call
         if (*DirEntry != NULL) {
-           FreePool(*DirEntry);
+           MyFreePool(*DirEntry);
            *DirEntry = NULL;
         }
 
@@ -1487,7 +1517,7 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
     return Status;
 }
 
-VOID DirIterOpen(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath OPTIONAL, OUT REFIT_DIR_ITER *DirIter)
+VOID DirIterOpen(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath OPTIONAL, OUT REFIT_DIR_ITER *DirIter)
 {
     if (RelativePath == NULL) {
         DirIter->LastStatus = EFI_SUCCESS;
@@ -1548,8 +1578,10 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
     CHAR16  *OnePattern;
 
     if (DirIter->LastFileInfo != NULL) {
-       FreePool(DirIter->LastFileInfo);
-       DirIter->LastFileInfo = NULL;
+        // NOTE: rEFIt and rEFInd through 0.13.3 called
+        // FreePool(DirIter->LastFileInfo) here, but I now believe that was
+        // improper. (It causes some systems to freeze.)
+        DirIter->LastFileInfo = NULL;
     }
 
     if (EFI_ERROR(DirIter->LastStatus))
@@ -1582,7 +1614,7 @@ BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR
 EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter)
 {
     if (DirIter->LastFileInfo != NULL) {
-        FreePool(DirIter->LastFileInfo);
+        MyFreePool(DirIter->LastFileInfo);
         DirIter->LastFileInfo = NULL;
     }
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close))
@@ -1902,6 +1934,7 @@ BOOLEAN FilenameIn(REFIT_VOLUME *Volume, CHAR16 *Directory, CHAR16 *Filename, CH
 // Implement FreePool the way it should have been done to begin with, so that
 // it doesn't throw an ASSERT message if fed a NULL pointer....
 VOID MyFreePool(IN VOID *Pointer) {
+//     LOG(4, LOG_LINE_NORMAL, L"Freeing %lld", Pointer);
     if (Pointer != NULL)
         FreePool(Pointer);
 }
@@ -1944,7 +1977,7 @@ VOID EraseUint32List(UINT32_LIST **TheList) {
 
     while (*TheList) {
         NextItem = (*TheList)->Next;
-        FreePool(*TheList);
+        MyFreePool(*TheList);
         *TheList = NextItem;
     } // while
 } // EraseUin32List()

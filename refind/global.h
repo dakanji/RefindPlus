@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -202,6 +202,15 @@
 // completeness, but that's ridiculous....
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
+// Patterns that identify Linux kernels. Added to the loader match pattern when the
+// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
+// a ".efi" extension to be found when scanning for boot loaders.
+#if defined(EFIAARCH64)
+#define LINUX_PREFIXES          L"vmlinuz,Image,kernel"
+#else
+#define LINUX_PREFIXES          L"vmlinuz,bzImage,kernel"
+#endif
+
 // Definitions for the "hideui" option in refind.conf
 #define HIDEUI_FLAG_NONE       (0x0000)
 #define HIDEUI_FLAG_BANNER     (0x0001)
@@ -257,7 +266,7 @@ typedef struct {
 typedef struct {
    EFI_DEVICE_PATH     *DevicePath;
    EFI_HANDLE          DeviceHandle;
-   EFI_FILE            *RootDir;
+   EFI_FILE_PROTOCOL   *RootDir;
    CHAR16              *PartName; // GPT partition name
    CHAR16              *FsName;   // Filesystem name
    CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
@@ -342,6 +351,8 @@ typedef struct {
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    BOOLEAN          WriteSystemdVars;
+   BOOLEAN          FollowSymlinks;
+   BOOLEAN          GzippedLoaders;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;
@@ -375,6 +386,8 @@ typedef struct {
    CHAR16           *MacOSRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
+   CHAR16           *LinuxPrefixes;      // Linux prefixes (e.g., L"vmlinuz,bzImage"
+   CHAR16           *LinuxMatchPatterns; // Linux prefixes PLUS wildcards (e.g., L"vmlinuz*,bzImage*")
    CHAR16           *ExtraKernelVersionStrings;
    CHAR16           *SpoofOSXVersion;
    UINT32_LIST      *CsrValues;
@@ -384,11 +397,11 @@ typedef struct {
 
 // Global variables
 
-extern EFI_HANDLE       SelfImageHandle;
-extern EFI_LOADED_IMAGE *SelfLoadedImage;
-extern EFI_FILE         *SelfRootDir;
-extern EFI_FILE         *SelfDir;
-extern CHAR16           *SelfDirPath;
+extern EFI_HANDLE         SelfImageHandle;
+extern EFI_LOADED_IMAGE   *SelfLoadedImage;
+extern EFI_FILE_PROTOCOL  *SelfRootDir;
+extern EFI_FILE_PROTOCOL  *SelfDir;
+extern CHAR16             *SelfDirPath;
 
 extern REFIT_VOLUME     *SelfVolume;
 extern REFIT_VOLUME     **Volumes;
@@ -415,6 +428,12 @@ EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
 LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
 VOID StoreLoaderName(IN CHAR16 *Name);
 VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect);
+
+int gunzip(unsigned char *buf, long len,
+           long (*fill)(void*, unsigned long),
+           long (*flush)(void*, unsigned long),
+           unsigned char *out_buf, long out_len,
+           long *pos);
 
 #endif
 

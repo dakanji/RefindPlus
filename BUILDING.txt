@@ -231,6 +231,45 @@ package. Once the toolkit is installed, you can build the filesystem drivers
 or rEFInd, as described below.
 
 
+Preparing SBAT Support
+======================
+
+Starting with rEFInd 0.14.0, by default the build system adds an .sbat
+section to the compiled binaries so as to support SBAT-enabled Shims.
+Without the .sbat section, modern Shims won't launch an EFI binary, even if
+it's otherwise properly signed. Including the .sbat section requires the
+presence of a .csv file, as documented here:
+
+https://github.com/rhboot/shim/blob/main/SBAT.md
+
+The rEFInd source code includes two .csv files: refind-sbat.csv (which is
+used by default) and refind-sbat-local.csv (which is intended for use if you
+compile locally). If you make changes to the source code, PLEASE create and
+use a suitable altered .csv file, as described in the link above. To select
+which .csv file to use, set the REFIND_SBAT_CSV variable in Make.common or
+override it on the command line, as in:
+
+make REFIND_SBAT_CSV=foo.csv all
+
+Incorporating the .sbat section requires a version of objcopy that supports
+certain features that are fairly modern. I don't know the precise version
+where this support was added, but I believe it was added around 2019. If you
+don't care about SBAT support and want to compile rEFInd with an earlier
+toolchain, you can set the OMIT_SBAT variable to 1, as in:
+
+make OMIT_SBAT=1
+
+See the upcoming sections for more information on options used to build
+different programs or in different ways.
+
+If you build rEFInd in the TianoCore way, as described later, in "Compiling
+rEFInd the TianoCore Way," the SBAT section will not be added. It also will
+not be added if you use the "make tiano" targets, which are deprecated. The
+SBAT section will be added if you use the "make edk2" or "make gnuefi"
+targets, though. The various make targets are described in more detail
+shortly, in "Compiling rEFInd the Unix/Linux Way."
+
+
 Compiling rEFInd the Unix/Linux Way
 ===================================
 
@@ -371,7 +410,7 @@ A Note about NTFS
 =================
 
 Over the years, I've received far too many queries from people who've had
-problems with rEFInd hanging because of the NTFS driver. Thus, beginning
+problems with rEFInd freezing because of the NTFS driver. Thus, beginning
 with rEFInd 0.11.5, the NTFS driver is NOT compiled by default. (If using
 Tianocore EDK2, the file is actually compiled, but it's not copied to the
 output directory.) If you need it, you can still compile it manually by
@@ -543,6 +582,13 @@ assumes that the ESP is mounted at /boot/efi. Also, Debian packages try to
 create symbolic links when updating packages, which won't work on an ESP,
 which should use FAT. For packaging examples, see the refind.spec file and
 debian subdirectory of the rEFInd source tarball.
+
+Distribution packagers should create their own SBAT .csv filess, as
+described earlier, in "Preparing SBAT Support" and adjust the
+REFIND_SBAT_CSV variable in Make.common or override it on the make command
+line, as in:
+
+make REFIND_SBAT_CSV=foo.csv all
 
 
 Adding Support for Network Boot

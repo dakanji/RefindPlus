@@ -25,6 +25,7 @@
 
 #include "global.h"
 #include "../refind/screen.h"
+#include "../refind/lib.h"
 #include "lodepng.h"
 
 // EFI's equivalent of realloc requires the original buffer's size as an
@@ -51,7 +52,7 @@ void* lodepng_malloc(size_t size) {
 void lodepng_free (void *ptr) {
    if (ptr) {
       ptr = (void *) (((size_t *) ptr) - 1);
-      FreePool(ptr);
+      MyFreePool(ptr);
    }
 } // void lodepng_free()
 

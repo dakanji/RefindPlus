@@ -231,9 +231,8 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
 VOID egFreeImage(IN EG_IMAGE *Image)
 {
     if (Image != NULL) {
-        if (Image->PixelData != NULL)
-            FreePool(Image->PixelData);
-        FreePool(Image);
+        MyFreePool(Image->PixelData);
+        MyFreePool(Image);
     }
 }
 
@@ -241,7 +240,7 @@ VOID egFreeImage(IN EG_IMAGE *Image)
 // Basic file operations
 //
 
-EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
+EFI_STATUS egLoadFile(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
 {
     EFI_STATUS          Status;
     EFI_FILE_HANDLE     FileHandle;
@@ -267,7 +266,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
     ReadSize = FileInfo->FileSize;
     if (ReadSize > MAX_FILE_SIZE)
         ReadSize = MAX_FILE_SIZE;
-    FreePool(FileInfo);
+    MyFreePool(FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool(BufferSize);
@@ -279,12 +278,13 @@ EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR(Status)) {
-        FreePool(Buffer);
+        MyFreePool(Buffer);
         return Status;
     }
 
     *FileData = Buffer;
     *FileDataLength = BufferSize;
+    LOG(4, LOG_LINE_NORMAL, L"Done loading file '%s'", FileName);
     return EFI_SUCCESS;
 }
 
@@ -300,12 +300,12 @@ EFI_STATUS egFindESP(OUT EFI_FILE_HANDLE *RootDir)
         *RootDir = LibOpenRoot(Handles[0]);
         if (*RootDir == NULL)
             Status = EFI_NOT_FOUND;
-        FreePool(Handles);
+        MyFreePool(Handles);
     }
     return Status;
 }
 
-EFI_STATUS egSaveFile(IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
+EFI_STATUS egSaveFile(IN EFI_FILE_PROTOCOL *BaseDir OPTIONAL, IN CHAR16 *FileName,
                       IN UINT8 *FileData, IN UINTN FileDataLength)
 {
     EFI_STATUS          Status;
@@ -372,14 +372,14 @@ EG_IMAGE * egLoadImage(IN EFI_FILE* BaseDir, IN CHAR16 *FileName, IN BOOLEAN Wan
 
     // decode it
     NewImage = egDecodeAny(FileData, FileDataLength, 128 /* arbitrary value */, WantAlpha);
-    FreePool(FileData);
+    MyFreePool(FileData);
 
     return NewImage;
 }
 
 // Load an icon from (BaseDir)/Path, extracting the icon of size IconSize x IconSize.
 // Returns a pointer to the image data, or NULL if the icon could not be loaded.
-EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
+EG_IMAGE * egLoadIcon(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 {
     EFI_STATUS      Status;
     UINT8           *FileData;
@@ -396,7 +396,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 
     // decode it
     Image = egDecodeAny(FileData, FileDataLength, IconSize, TRUE);
-    FreePool(FileData);
+    MyFreePool(FileData);
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
         NewImage = egScaleImage(Image, IconSize, IconSize);
         if (NewImage) {
@@ -419,7 +419,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // SubdirName is "myicons" and BaseName is "os_linux", this function will return
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
-EG_IMAGE * egLoadIconAnyType(IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
+EG_IMAGE * egLoadIconAnyType(IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
     EG_IMAGE *Image = NULL;
     CHAR16 *Extension;
     CHAR16 *FileName;

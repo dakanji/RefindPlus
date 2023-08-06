@@ -371,11 +371,12 @@ EFI_STATUS ConnectAllDriversToAllControllers(VOID)
     BOOLEAN              Parent;
     BOOLEAN              Device;
 
-    Status = LibLocateHandle(AllHandles,
-                             NULL,
-                             NULL,
-                             &AllHandleCount,
-                             &AllHandleBuffer);
+    Status = refit_call5_wrapper(gBS->LocateHandleBuffer,
+                                 AllHandles,
+                                 NULL,
+                                 NULL,
+                                 &AllHandleCount,
+                                 &AllHandleBuffer);
     if (EFI_ERROR(Status))
         return Status;
 
@@ -531,9 +532,9 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
                 } // if
             } // if
         } // for
-        FreePool (OpenInfo);
+        MyFreePool (OpenInfo);
     }
-    FreePool(Handles);
+    MyFreePool(Handles);
 } // VOID ConnectFilesystemDriver()
 
 // Scan a directory for drivers.

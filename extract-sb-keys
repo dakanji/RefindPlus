@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+
+"""
+Extract Secure Boot public key files from a Shim binary
+
+Copyright (c) 2023 Roderick W. Smith
+
+Authors:
+  Roderick W. Smith <rodsmith@rodsbooks.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, or
+(at your option) any later version, as published by the Free Software
+Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+"""
+Principle of operation:
+
+Shim binaries normally include a DER-format Secure Boot public key for their
+host distribution, which is used to obviate the need to enroll a key in the
+computer's in-NVRAM MOK list. Rather than try to track down the public key
+files for use with another Shim binary (in a multi-boot configuration, for
+example), it can be extracted from the readily-available Shim binary.
+
+By observation, all DER-format Secure Boot public keys include the hexadecimal
+bytes '\xA0\x03\x02\x01\x02\x02' beginning at 9 bytes into the file. This
+program searches for that string, backtracks the required number of bytes
+to find the start of the DER public key, and writes 3000 bytes to an output
+file. (All the Secure Boot DER keys I've found are between 767 and 1656 bytes,
+so I figured that 3000 bytes should be more than big enough.
+
+The script then calls openssl three times: Once to transform the new
+DER-format (.cer) file into a .crt file, a second time to transform it
+back (thus producing a cruft-free version), and a third time to extract
+and display the 'Issuer:' line (this is ugly in the screen output, but it's
+better than sifting through the files one at a time to figure out what each
+file is).
+
+In most of my test runs, about half the resulting public key files are copies
+of Microsoft's keys and the other half belong to the distribution that issued
+the Shim binary. I don't know why so many keys are in the Shim binaries, but
+they do exist.
+"""
+
+import shlex
+import shutil
+import sys
+
+from subprocess import Popen, PIPE
+from argparse import ArgumentParser
+
+
+def main():
+    """Extract .cer/.der data from a Shim binary."""
+    description = "Extract Secure Boot public keys from a Shim binary. " + \
+                  "Most Shim binaries hold multiple public keys, so this " + \
+                  "program extracts multiple target files, at least one " + \
+                  "of which SHOULD verify against the GRUB binary that " + \
+                  "the Shim launches. (Use 'sbverify --cert out-1.crt " + \
+                  " /path/to/grubx64.efi' to test this.)"
+    parser = ArgumentParser(description=description)
+    parser.add_argument("infile", help="The input Shim binary filename")
+    parser.add_argument("outfile", help="The output public key filename " +
+                        "template (multiple files will be created)")
+    args = parser.parse_args()
+
+    if shutil.which("openssl") is None:
+        print("The openssl utility is not installed; exiting!")
+        return(1)
+
+    shimFile = open(args.infile, mode='rb')
+    shimContent = shimFile.read()
+    derSignature = 0
+    certNum = 1
+    while derSignature >= 0:
+        print("Searching for signature # {}".format(certNum))
+        derSignature = shimContent.find(b'\xA0\x03\x02\x01\x02\x02',
+                                        derSignature+1)
+        if derSignature > 8:
+            print("   --> Found at {}!".format(derSignature))
+            newCerFile = args.outfile + "-" + str(certNum) + ".cer"
+            derFile = open(newCerFile, mode='wb')
+            derFile.write(shimContent[derSignature-8:derSignature+2992])
+            derFile.close()
+
+            newCrtFile = args.outfile + "-" + str(certNum) + ".crt"
+            command = "openssl x509 -in {} -out {}". \
+                format(newCerFile, newCrtFile)
+            opensslBytes = (Popen(shlex.split(command), stdout=PIPE)
+                            .communicate()[0])
+
+            newCerFile = args.outfile + "-" + str(certNum) + ".cer"
+            command = "openssl x509 -in {} -out {} -outform DER". \
+                format(newCrtFile, newCerFile)
+            opensslBytes = (Popen(shlex.split(command), stdout=PIPE)
+                            .communicate()[0])
+            command = "openssl x509 -in {} -noout -text".format(newCrtFile)
+            opensslBytes = (Popen(shlex.split(command), stdout=PIPE)
+                            .communicate()[0])
+            SslInfo = (opensslBytes.decode(encoding="utf-8", errors="ignore")
+                       .splitlines())
+
+            for k, line in enumerate(SslInfo):
+                if line.find("Issuer:") != -1:
+                    print(SslInfo[k])
+
+            certNum += 1
+        else:
+            print("   --> No more signatures")
+
+
+if __name__ == '__main__':
+    sys.exit(main())

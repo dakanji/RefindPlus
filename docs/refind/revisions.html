@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 4/12/2022</p>
+<p>Last Web page update: 3/6/2023</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,123 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.14.4.2 (3/6/2022)</b>&mdash;This is a minor update to address a bug in the <tt>refind-install</tt> script that caused it to fail to identify a mounted ESP in Linux. This in turn could cause package installation problems. This is actually a return of a bug that was fixed in 0.13.3.1, and was caused by bad advice from the <tt>shellcheck</tt> script-checking tool. I've added comments to make it less likely that I'll make the same mistake again.</li>
+
+<li><b>0.14.0 (3/4/2023)</b>&mdash;This version features several bug fixes and new features:
+
+<ul>
+
+    <li>New features for this round are:
+    <ul>
+
+    <li>rEFInd can now launch EFI programs that are compressed via
+	<tt>gzip</tt>. This is most useful on ARM64 systems, where Linux
+	distributions typically compress their <i>whole</i> kernels with
+	<tt>gzip</tt>. (On x86 and x86-64, kernels typically include an
+	uncompressed EFI stub loader and enough code to uncompress the rest
+	of the kernel, so this rEFInd feature isn't required.) This option
+	is controlled by the <tt>support_gzipped_loaders</tt> token in
+	<tt>refind.conf</tt>. The default value for this option is
+	<tt>false</tt> on x86 and x86-64 systems, but <tt>true</tt> on
+	ARM64.</li>
+
+    <li>rEFInd binaries now include an <tt>.sbat</tt> section, which is
+	needed by the <i>Secure Boot Advanced Targeting (SBAT)</i> feature
+	required by Shims released since early 2021. Using previous versions
+	of rEFInd with newer Shims didn't work without manually adding an
+	<tt>.sbat</tt> section and re-signing the binaries. Version 0.14.0
+	and later should work directly, although a MOK matching the private
+	key used to sign rEFInd is still necessary.</li>
+
+    <li>A new script, <tt>refind-sb-healthcheck</tt>, makes Secure Boot
+	maintenance easier. This new script can update the Shim version used
+	to launch rEFInd, update an out-of-date local rEFInd signing key,
+	and warn you about other Secure Boot keys that might be nearing (or
+	past) expiration. See the <a
+	href="secureboot.html#sb-healthcheck">Secure Boot page of this
+	documentation</a> for details.</li>
+
+    <li>A new <tt>refind.conf</tt> option, <tt>follow_symlinks</tt>,
+	controls whether rEFInd will follow symbolic links on filesystems
+	that support this feature. This option defaults to <tt>false</tt>
+	(and this was how previous versions worked) because many Linux
+	distributions include symbolic links that point to kernel files that
+	rEFInd will discover directly, so the symbolic link is redundant. On
+	openSUSE, though, and maybe some other distributions, the symbolic
+	link is in a location that rEFInd scans but the linked-to file is
+	somewhere that rEFInd will not scan. Setting <tt>follow_symlinks
+	true</tt> can be helpful in these cases.</li>
+
+    <li>Adrien Destugues submitted a new Haiku OS icon, based on official
+	Haiku OS artwork.</li>
+
+    </ul></li>
+
+    <li>Bug fixes for this round include:
+    <ul>
+
+    <li>Multiple memory management bugs have been squashed. Most of these
+	seem to have caused few or no problems on most computers, but some
+	caused rEFInd to crash, particularly on ARM64 systems. The
+	<tt>NEWS.txt</tt> file details these fixes with more
+	specificity.</li>
+
+    <li>Fixed bug in <tt>refind-install</tt> that caused it to fail to
+	install the filesystem driver in some Linux distributions (notably
+	Ubuntu 22.04; but both 21.10 and 22.10 worked fine without this
+	fix).</li>
+
+    <li>Fixed a bug that caused my USB flash drive images to be damaged. (I
+	released updated 0.13.3.1 USB flash drive images prior to the 0.14.0
+	release.)</li>
+
+    <li>Fixed a bug that could cause some error messages to appear on screen
+	for a fraction of a second and then disappear.</li>
+
+    <li>Fixed a bug that caused directories specified in
+	<tt>also_scan_dirs</tt> to not be scanned if a filesystem or
+	partition name was included in the specification.</li>
+
+    <li>The ext4fs driver now ignores the <tt>metadata_csum_seed</tt> flag,
+	which is being set by default in <tt>e2fsprogs</tt> version 1.47.0
+	and later. Not ignoring the flag caused the driver to fail to read
+	such filesystems. Thanks to Martin Whitaker for the relevant
+	patch.</li>
+
+    <li>Fixed a bug in my release scripts that caused my RPM files, and
+	Debian packages derived from them, to be missing Secure Boot
+	signatures.</li>
+
+    <li>Changed the way that <tt>refind-install</tt> manages local keys,
+	making accidental deletion of symlinked keys less likely. Thanks to
+	Das Menschy for this fix.</li>
+
+    <li>The build rules now disallow parallel compilation of filesystem
+	driver files when building with GNU-EFI, since this caused corrupted
+	binaries.</li>
+
+    </ul></li>
+
+    <li>Miscellaneous other changes are:
+    <ul>
+
+    <li>Minor code cleanup of <tt>mkrlconf</tt> and <tt>refind-install</tt>
+	scripts. This should not affect functionality.</li>
+
+    <li>Added several new Secure Boot keys for Red Hat in the <tt>keys</tt>
+        subdirectory.</li>
+
+    <li>Updated the LodePNG library to version 20221108.</li>
+
+    <li>The ReiserFS driver is now officially deprecated, since ReiserFS is
+	also deprecated in the Linux kernel, with an announced removal date
+	in 2025.</li>
+
+    </ul></li>
+
+
+</ul></li>
 
 <li><b>0.13.3.1 (4/12/2022)</b>&mdash;This is a minor update to address two bugs in the <tt>refind-install</tt> script. The first bug caused it to fail to identify a mounted ESP in Linux. This in turn could cause package installation problems. The second bug caused <tt>refind-install</tt> to fail to re-use an existing EFI boot manager entry for rEFInd when the system was booting through Shim, thus creating duplicated entries. There are no changes to the rEFInd program itself with this version (although it's a fresh build from source).</li>
 
@@ -1212,7 +1329,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2023 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

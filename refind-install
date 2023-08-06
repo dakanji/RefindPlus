@@ -38,6 +38,8 @@
 
 # Revision history:
 #
+# 0.14.0.2-- Fix bug that caused failure to detect mounted ESP in Linux (AGAIN)
+# 0.14.0  -- Fix bug that caused failure to install filesystem driver in Linux
 # 0.13.3.1-- Fix bug that caused failure to detect mounted ESP in Linux
 # 0.13.3  -- Remove stray exit from CreateBootCsvFile()
 # 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
@@ -161,7 +163,7 @@ GetParams() {
          --encryptkeys) EncryptKeys=1
               ;;
          --shim | --preloader) ShimSource="$2"
-              ShimType=$(basename $ShimSource)
+              ShimType=$(basename "$ShimSource")
               shift
               ;;
          --keepname) KeepName=1
@@ -578,6 +580,14 @@ SetBootFS() {
            if command -v blkid &>/dev/null; then
               BootPart=$(df "$RootDir"/boot | grep dev | cut -f 1 -d " ")
               BootFS=$(blkid -o export "$BootPart" 2> /dev/null | grep TYPE= | cut -f 2 -d =)
+              # The above line fails in Ubuntu 22.04, but is OK in 20.10 and 22.10;
+              # the "-o export" option seems to have temporarily disappeared. In case
+              # it fails, try another approach (which I think uses newer grep features,
+              # so don't rely 100% on it, either; but at least it works in Ubuntu
+              # 22.04)....
+              if [[ -z "$BootFS" ]] ; then
+                 BootFS=$(blkid "$BootPart" 2> /dev/null | grep -Po 'TYPE=\"\K[^\"]*')
+              fi
            fi
            ;;
       darwin*)
@@ -882,7 +892,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.13.3</string>
+        <string>0.14.0</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -1074,15 +1084,15 @@ GenerateKeys() {
       fi
       if [[ -f "$PrivateKey" ]] ; then
          echo "Backing up existing $PrivateKey"
-         cp -f "$PrivateKey" "$PrivateKey.backup" 2> /dev/null
+         mv -f "$PrivateKey" "$PrivateKey.backup" 2> /dev/null
       fi
       if [[ -f "$CertKey" ]] ; then
          echo "Backing up existing $CertKey"
-         cp -f "$CertKey" "$CertKey.backup" 2> /dev/null
+         mv -f "$CertKey" "$CertKey.backup" 2> /dev/null
       fi
       if [[ -f "$DerKey" ]] ; then
          echo "Backing up existing $DerKey"
-         cp -f "$DerKey" "$DerKey.backup" 2> /dev/null
+         mv -f "$DerKey" "$DerKey.backup" 2> /dev/null
       fi
       if [[ $EncryptKeys == 1 ]]; then
          KeyEncryptionArgument=""
@@ -1138,15 +1148,16 @@ ReSignBinaries() {
    fi
    GenerateKeys
    mkdir -p "$TempDir/drivers_$Platform"
-   cp "$RefindDir/refind.conf-sample $TempDir" 2> /dev/null
-   cp "$ThisDir/refind.conf-sample $TempDir" 2> /dev/null
-   cp "$RefindDir/refind_ia32.efi $TempDir" 2> /dev/null
-   cp -a "$RefindDir/drivers_ia32 $TempDir" 2> /dev/null
-   cp -a "$ThisDir/drivers_ia32 $TempDir" 2> /dev/null
+   cp "$RefindDir"/refind.conf-sample "$TempDir" 2> /dev/null
+   cp "$ThisDir"/refind.conf-sample "$TempDir" 2> /dev/null
+   cp "$RefindDir"/refind_ia32.efi "$TempDir" 2> /dev/null
+   cp -a "$RefindDir"/drivers_ia32 "$TempDir" 2> /dev/null
+   cp -a "$ThisDir"/drivers_ia32 "$TempDir" 2> /dev/null
    SignOneBinary "$RefindDir/refind_$Platform.efi" "$TempDir/refind_$Platform.efi"
    SaveIFS=$IFS
    IFS=$(echo -en "\n\b")
-   for Driver in $(ls "$RefindDir"/drivers_$Platform/*.efi "$ThisDir"/drivers_$Platform/*.efi 2> /dev/null) ; do
+   for Driver in "$RefindDir"/drivers_"$Platform"/*.efi "$ThisDir"/drivers_"$Platform"/*.efi ; do
+      [[ -e "$Driver" ]] || break  # handle the case of no files
       TempName=$(basename "$Driver")
       SignOneBinary "$Driver" "$TempDir/drivers_$Platform/$TempName"
    done
@@ -1281,7 +1292,7 @@ AddBootEntry() {
       for Name in $(lsblk -r | grep disk | cut -f 1 -d " ") ; do
          if [[ $InstallPart == *"$Name"* ]] ; then
             InstallDisk="/dev/"$Name
-            PartNum=${InstallPart#$InstallDisk}
+            PartNum=${InstallPart#"$InstallDisk"}
             PartNum="${PartNum//[!0-9]/}"
             break
          fi
@@ -1292,7 +1303,9 @@ AddBootEntry() {
          return 1
       fi
       EntryFilename="$TargetDir/$Refind"
-      EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
+      EfiEntryFilename=$(echo "${EntryFilename}" | tr '/' '\\')
+      # DO NOT change the below to use "$(...)" syntax; despite shellcheck's complaint,
+      # such a change will BREAK IT!
       EfiEntryFilename2=`echo "${EfiEntryFilename}" | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
       InstallPartGuid=$(blkid -s PARTUUID -o value "$InstallPart")
       FirstBoot=$("$Efibootmgr" | grep BootOrder | cut -c 12-15)
@@ -1379,9 +1392,9 @@ GenerateRefindLinuxConf() {
          local FirstCmdlineOption
          FirstCmdlineOption=$(cut -d ' ' -f 1 < /proc/cmdline)
          if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
-            DefaultOptions=$(cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//')
+            DefaultOptions=$(cut -d ' ' -f 2- < /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//')
          else
-            DefaultOptions=$(cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//')
+            DefaultOptions=$(sed 's/\S*initrd=\S*//g' < /proc/cmdline | sed 's/ *$//' | sed 's/^ *//')
          fi
       else
          if [[ -f "$RootDir/etc/default/grub" ]] ; then

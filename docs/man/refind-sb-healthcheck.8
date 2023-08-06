@@ -1,0 +1,126 @@
+.\" Copyright 2023 Roderick W. Smith (rodsmith@rodsbooks.com)
+.\" May be distributed under the GNU Free Documentation License version 1.3 or
+any later version
+.TH "REFIND-SB-HEALTHCHECK" "8" "0.14.0" "Roderick W. Smith" "rEFInd Manual"
+.SH "NAME"
+refind-sb-healthcheck \- Interactively check and update Shim and Secure Boot keys
+.SH "SYNOPSIS"
+.BI "refind-sb-healthcheck "
+
+.SH "DESCRIPTION"
+
+Booting via Secure Boot relies upon a number of keys and, in most cases
+under Linux, the an EFI binary known as Shim (typically \fIshimx64.efi\fR
+for x86-64 computers). This Shim binary, and the keys upon which the whole
+process relies, can age out of usefulness. Because most distributions are
+not rEFInd-centric, keeping the keys and Shim binary up-to-date falls on the
+individual system administrator. The \fIrefind-sb-healthcheck\fR script
+helps with that; it performs a number of checks, and can optionally update
+binaries and key files (but not public keys stored in NVRAM):
+
+.TP
+.B *
+The script first attempts to identify the Shim binary that launched the
+current boot session. The script then searches the EFI System Partition
+(ESP) and \fI/usr\fR for newer Shim binaries (as identified by the files'
+timestamps). If any newer Shim binaries are found, the script offers to
+update the currently-in-use Shim with the newer binary. The MokManager
+program (\fImmx64.efi\fR on x86-64 systems) is updated along with Shim.
+
+.TP
+.B *
+The \fIrefind-install\fR script generates local rEFInd keys, to be used when
+signing rEFInd binaries that are not signed or to override existing
+signatures. These keys have a 10-year lifespan by default. The
+\fIrefind-sb-healthcheck\fR script checks the age of the current local
+rEFInd signing key and, if it's expired or within one year of expiration,
+offers to replace the existing key. Note that, even if the user opts to
+update the key, existing rEFInd binaries are not re-signed. The new key may
+be added to the MOK list, but if the rEFInd key was added to the Secure Boot
+db, updating the db is left to the user.
+
+.TP
+.B *
+The Machine Owner Key (MOK) list is stored in NVRAM. It can contain keys for
+rEFInd, Linux distributions, and other keys, all of which will eventually
+expire. The \fIrefind-sb-healthcheck\fR script scans the MOK and reports if
+there are any expired keys or keys that will expire within a year. If the
+user wants to update such keys, the user must track down appropriate updates
+and install them manually with \fImokutil\fR or \fIMokManager\fR. Note that
+keeping expired keys in the MOK is not necessarily a problem, although
+deleting expired keys is advisable from a security point of view. Also,
+expired keys have probably been updated by their maintainers, so their
+updates should probably be installed.
+
+.TP
+.B *
+\fIrefind-sb-healthcheck\fR scans the Secure Boot db, KEK, and PK for
+expired keys much as it scans the MOK list. The issues here are similar,
+except that these keys cannot be easily updated by the user without first
+taking full control of the Secure Boot subsystem. Updates provided by
+Microsoft, a Linux distribution, or a computer manufacturer may, however,
+include updates to one or more of these key sets.
+
+.SH "OPTIONS"
+
+\fIrefind-sb-healthcheck\fR is an interactive program that provides no
+command-line options. Instead, the program scans for the information it
+needs, or occasionally asks the user for input depending on the environment
+it discovers.
+
+.SH "LIMITATIONS"
+
+\fIrefind-sb-healthcheck\fR is a tool to assist in maintaining a rEFInd
+installation that uses Secure Boot. It is not meant to completely and
+automatically handle all Secure Boot maintenance tasks. Some notable
+limitations include:
+
+.TP
+.B *
+\fIrefind-sb-healthcheck\fR cannot update Secure Boot variables (except for
+the MOK). Even updating the MOK requires a reboot and manual interaction
+with MokManager at reboot.
+
+.TP
+.B *
+\fIrefind-sb-healthcheck\fR relies on files' timestamps to locate Shim
+binaries that are newer than the one currently in use. This is not
+completely reliable; a binary that was recently copied using the default
+\fIcp\fR flags will appear to be recent, even if it's very old by version
+number standards.
+
+.TP
+.B *
+The script does not attempt to maintain non-rEFInd key files, such as those
+a user might maintain to sign kernel binaries or kernel modules.
+
+.TP
+.B *
+\fIrefind-sb-healthcheck\fR incorporates a number of assumptions about the
+locations of rEFInd key files, the existence of common support programs, and
+the nature of the current installation. It may fail in unusual ways if these
+assumptions are violated.
+
+.TP
+.B *
+
+.TP
+.B *
+
+q
+
+.SH "AUTHORS"
+Primary author: Roderick W. Smith (rodsmith@rodsbooks.com)
+
+.SH "SEE ALSO"
+.BR mvrefind (8),
+.BR mkrlconf (8),
+.BR refind-install (8),
+.BR refind-mkdefault (8),
+.BR efibootmgr (8).
+
+\fIhttps://www.rodsbooks.com/refind/\fR
+
+.SH "AVAILABILITY"
+The \fBrefind-mkdefault\fR command is part of the \fIrEFInd\fR package and is
+available from Roderick W. Smith.

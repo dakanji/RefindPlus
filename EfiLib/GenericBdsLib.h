@@ -345,12 +345,11 @@ BdsLibConnectDevicePath (
   IN EFI_DEVICE_PATH_PROTOCOL  *DevicePathToConnect
   );
 
-
 //
 // Bds connect and disconnect driver lib funcions
 //
 /**
- This function connects all system drivers with the corresponding controllers. 
+ This function connects all system drivers with the corresponding controllers.
 
  **/
 VOID

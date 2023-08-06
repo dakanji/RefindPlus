@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-4/10/2022, referencing rEFInd 0.13.3</p>
+3/4/2023, referencing rEFInd 0.14.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -171,7 +171,7 @@ point the computer can begin behaving strangely.</p>
 
 <p class="sidebar"><b>Note:</b> ESPs use the FAT filesystem, which is case-insensitive. Unfortunately, at least one EFI implementation (Gigabyte's <a href="https://www.rodsbooks.com/gb-hybrid-efi/">Hybrid EFI</a>) contains a bug that causes string comparisons that should be case-insensitive to actually be done in a case-sensitive way. This can cause files that are present to appear to be missing. rEFInd includes code to work around this bug in some situations, but not in all of them. If boot loaders appear to be missing, try changing the case on their filenames or on the <tt>EFI</tt> directory in the ESP. (It's coded as uppercase in rEFInd; but EFI loader filename extensions are coded as lowercase <tt>.efi</tt>. I made these choices because they seem to be the most common uses on real-world installations.)</p>
 
-<li><b>Moving, deleting, or renaming files</b>&mdash;By default, rEFInd scans all the filesystems it can read for boot loaders. It scans most of the subdirectories of the <tt>EFI</tt> directory, as well as the root (<tt>/</tt>) and <tt>boot</tt> directories, on every filesystem it can access for files with names that end in <tt>.efi</tt> or that begin with <tt>vmlinuz</tt>, <tt>bzImage</tt>, or <tt>kernel</tt>. (rEFInd gives special treatment to the <tt>EFI/tools</tt> subdirectory, where it looks for system tools rather than boot loaders.) Thus, you can delete EFI program files, move them out of the directory tree that rEFInd scans, or rename them so that they don't have <tt>.efi</tt> extensions. Note that rEFInd does not scan its own directory or the <tt>EFI/tools</tt> directory, so those can be good places to stash seldom-used EFI binaries.</li>
+<li><b>Moving, deleting, or renaming files</b>&mdash;By default, rEFInd scans all the filesystems it can read for boot loaders. It scans most of the subdirectories of the <tt>EFI</tt> directory, as well as the root (<tt>/</tt>) and <tt>boot</tt> directories, on every filesystem it can access for files with names that end in <tt>.efi</tt> or that begin with <tt>vmlinuz</tt>, <tt>bzImage</tt> (<tt>Image</tt> on ARM64), or <tt>kernel</tt>. (rEFInd gives special treatment to the <tt>EFI/tools</tt> subdirectory, where it looks for system tools rather than boot loaders.) Thus, you can delete EFI program files, move them out of the directory tree that rEFInd scans, or rename them so that they don't have <tt>.efi</tt> extensions. Note that rEFInd does not scan its own directory or the <tt>EFI/tools</tt> directory, so those can be good places to stash seldom-used EFI binaries.</li>
 
 <li><b><tt>dont_scan_volumes</tt></b>&mdash;This token in <tt>refind.conf</tt> specifies volumes that rEFInd will not scan. For EFI boot loaders, you can identify a volume by its filesystem label, partition name, or partition unique GUID value. On Macs, you can identify BIOS/CSM/legacy-mode OSes to hide by specifying any unique subset of the OS tag description shown in the rEFInd main menu. In either case, this token takes a comma-delimited list, as in <tt>dont_scan_volumes ESP7,BadVolume</tt> to exclude the <tt>ESP7</tt> and <tt>BadVolume</tt> partitions. This token cannot be used to hide BIOS/CSM/legacy-mode loaders on UEFI-based PCs.</li>
 
@@ -425,6 +425,11 @@ timeout 20
    <p>You can specify multiple parameters to have the program scan for multiple boot loader types. When you do so, the order determines the order in which the boot loaders appear in the menu, although the order of multiple options within each group is determined by the order in which rEFInd discovers the specific loaders. The default is <tt>internal, external, optical, manual</tt> on most systems, but <tt>internal, hdbios, external, biosexternal, optical, cd, manual</tt> on Macs.</p></td>
 </tr>
 <tr>
+   <td><tt>follow_symlinks</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>If enabled, tells rEFInd to follow symbolic links on filesystems that support this feature. This is desirable if a symbolic link is in a scanned directory and references a loader or kernel you want to use, but the link points to a location that rEFInd does not scan. This is common on openSUSE systems that do <i>not</i> use a separate <tt>/boot</tt> partition. Following symbolic links is undesirable if both files are in scanned locations, as this can result in redundant boot entries. The default is <tt>false</tt>.</td>
+</tr>
+<tr>
    <td><tt>uefi_deep_legacy_scan</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
    <td>Tells rEFInd how aggressively to scan for BIOS/CSM/legacy boot loaders on UEFI-based PCs. Ordinarily or if this option is set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, rEFInd presents only those options that were available in the NVRAM when it launched. When uncommented with no option or with <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> set, rEFInd adds every possible BIOS-mode boot device (of types specified by <tt>scanfor</tt>) as a BIOS/CSM/legacy boot option. This latter behavior is sometimes required to detect USB flash drives or hard disks beyond the first one.</td>
@@ -467,12 +472,22 @@ timeout 20
 <tr>
    <td><tt>scan_all_linux_kernels</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to add Linux kernels (files with names that begin with <tt>vmlinuz</tt>, <tt>bzImage</tt>, or <tt>kernel</tt>) to the list of EFI boot loaders, even if they lack <tt>.efi</tt> filename extensions. This simplifies use of rEFInd on most Linux distributions, which usually provide kernels with EFI stub loader support but don't give those kernels names that end in <tt>.efi</tt>. Of course, the kernels must still be stored on a filesystem that rEFInd can read, and in a directory that it scans. (<a href="drivers.html">Drivers</a> and the <tt>also_scan_dirs</tt> options can help with those issues.) This option is enabled by default; to disable this feature, you must uncomment this token and set it to <tt>false</tt> or one of its synonyms (<tt>off</tt> or <tt>0</tt>).</td>
+   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to add Linux kernels (files with names that begin with the strings set with <tt>linux_prefixes</tt>, as described shortly) to the list of EFI boot loaders, even if they lack <tt>.efi</tt> filename extensions. This simplifies use of rEFInd on most Linux distributions, which usually provide kernels with EFI stub loader support but don't give those kernels names that end in <tt>.efi</tt>. Of course, the kernels must still be stored on a filesystem that rEFInd can read, and in a directory that it scans. (<a href="drivers.html">Drivers</a> and the <tt>also_scan_dirs</tt> options can help with those issues.) This option is enabled by default; to disable this feature, you must uncomment this token and set it to <tt>false</tt> or one of its synonyms (<tt>off</tt> or <tt>0</tt>).</td>
+</tr>
+<tr>
+   <td><tt>support_gzipped_loaders</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, causes rEFInd to support launching loaders that have been compressed with <tt>gzip</tt>. This feature is useful mainly when booting Linux on ARM64 computers, since distributions for ARM64 often compress their whole kernel (including the EFI stub loader) in a single <tt>gzip</tt> archive. On x86 and x86-64 systems, by contrast, the main body of the kernel is compressed, but the EFI stub loader is not; the kernel can uncompress itself on x86 and x86-64, without rEFInd's help. This option is enabled by default on ARM64 and disabled by default on x86 and x86-64.</td>
 </tr>
 <tr>
    <td><tt>fold_linux_kernels</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
    <td>When uncommented or set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> (the default), causes rEFInd to "fold" all Linux kernels in a given directory into a single main-menu icon. Selecting that icon launches the most recent kernel. To launch an older kernel, you must press F2, Insert, or Tab; older kernels appear on the resulting submenu display. (You can type, as <tt>root</tt>, <tt class="userinput">touch /boot/vmlinuz-{whatever}</tt>, to make <tt>/boot/vmlinuz-{whatever}</tt> your default kernel in a directory.) If you prefer to see all your kernels in the main menu, set this option to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>. Note that this option is new with version 0.9.0, which changes the default behavior; earlier versions of rEFInd behaved as if <tt>fold_linux_kernels false</tt> was set.</td>
+</tr>
+<tr>
+   <td><tt>linux_prefixes</tt></td>
+   <td>comma-delimited list of strings</td>
+   <td>Sets the strings that identify a Linux kernel, when a file's name begins with the string. (The file must also be recognized as a valid EFI loader by rEFInd.) The default is <tt>vmlinuz,bzImage,kernel</tt> on x86 and x86-64 systems, and <tt>vmlinuz,Image,kernel</tt> on ARM64. If you want to add something to the default, you can do so by using <tt>+</tt>, as in <tt>+,zImage</tt> to make <tt>zImage</tt> a valid prefix, along with the other default prefixes.</td>
 </tr>
 <tr>
    <td><tt>extra_kernel_version_strings</tt></td>
@@ -862,7 +877,7 @@ menuentry Arch {
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2023 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

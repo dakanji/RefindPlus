@@ -1,6 +1,6 @@
 Summary: EFI boot manager software
 Name: refind
-Version: 0.13.3.1
+Version: 0.14.0.2
 Release: 1%{?dist}
 Summary: EFI boot manager software
 License: GPLv3
@@ -61,7 +61,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 # including signing the binaries if sbsign is installed and a %{keydir}/refind.key file
 # is available
 SBSign=`which sbsign 2> /dev/null`
-if [[ -f %{keydir}/refind.key && -x $SBSign ]] ; then
+if [ -f %{keydir}/refind.key ] && [ -x $SBSign ] ; then
    $SBSign --key %{keydir}/refind.key --cert %{keydir}/refind.crt --output $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/refind_%{efiarch}.efi refind/refind_%{efiarch}.efi
    mkdir -p $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/drivers_%{efiarch}
    for File in `ls drivers_%{efiarch}/*_x64.efi` ; do
@@ -95,6 +95,7 @@ install -Dp -m0644 docs/man/mvrefind.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/mkrlconf.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/refind-install.8 $RPM_BUILD_ROOT/usr/share/man/man8
 install -Dp -m0644 docs/man/refind-mkdefault.8 $RPM_BUILD_ROOT/usr/share/man/man8
+install -Dp -m0644 docs/man/refind-sb-healthcheck.8 $RPM_BUILD_ROOT/usr/share/man/man8
 
 # Copy keys to /etc/refind.d/keys
 mkdir -p $RPM_BUILD_ROOT/etc/refind.d/keys
@@ -105,6 +106,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/sbin
 install -Dp -m0755 mkrlconf $RPM_BUILD_ROOT/usr/sbin/
 install -Dp -m0755 mvrefind $RPM_BUILD_ROOT/usr/sbin/
 install -Dp -m0755 refind-mkdefault $RPM_BUILD_ROOT/usr/sbin/
+install -Dp -m0755 refind-sb-healthcheck $RPM_BUILD_ROOT/usr/sbin/
 ln -sr $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind-install $RPM_BUILD_ROOT/usr/sbin
 
 # Copy banners and fonts to /usr/share/refind-%{version}
@@ -122,6 +124,7 @@ cp -a fonts $RPM_BUILD_ROOT/usr/share/refind-%{version}/
 /usr/sbin/mvrefind
 /usr/sbin/refind-install
 /usr/sbin/refind-mkdefault
+/usr/sbin/refind-sb-healthcheck
 /usr/share/refind-%{version}
 /etc/refind.d/
 
@@ -176,8 +179,10 @@ fi
 # thus wiping out the just-updated files.
 
 %changelog
-* Tue Apr 12 2022 R Smith <rodsmith@rodsbooks.com> - 0.13.3.1
-- Updated spec file for 0.13.3
+* Mon Mar 6 2023 R Smith <rodsmith@rodsbooks.com> - 0.14.0.2
+- Updated spec file for 0.14.0.2
+* Sat Mar 4 2023 R Smith <rodsmith@rodsbooks.com> - 0.14.0
+- Updated spec file for 0.14.0
 * Sun Apr 10 2022 R Smith <rodsmith@rodsbooks.com> - 0.13.3
 - Updated spec file for 0.13.3
 * Sat Mar 13 2021 R Smith <rodsmith@rodsbooks.com> - 0.13.2

@@ -664,7 +664,7 @@ VOID egScreenShot(VOID)
 
     // save to file on the ESP
     Status = egSaveFile(BaseDir, Filename, FileData, FileDataLength);
-    FreePool(FileData);
+    MyFreePool(FileData);
     if (CheckError(Status, L"in egSaveFile()")) {
         goto bailout_wait;
     }

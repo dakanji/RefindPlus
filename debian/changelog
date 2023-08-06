@@ -1,8 +1,20 @@
-refind (0.13.3.1-0ppa1) focal; urgency=medium
+refind (0.14.0.2-0ppa1) jammy; urgency=medium
+
+  * Fixed refind-install bug that can cause installation failure.
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Mon, 06 Mar 2023 18:02:40 -0500
+
+refind (0.14.0.1-0ppa2) jammy; urgency=medium
+
+  * Add missing refind-sb-healthcheck script to package
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Sat, 04 Mar 2023 17:01:38 -0500
+
+refind (0.14.0-0ppa1) jammy; urgency=medium
 
   * Version bump
 
- -- Roderick Smith <rodsmith@rodsbooks.com>  Tue, 12 Apr 2022 13:08:23 -0400
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Sat, 04 Mar 2023 13:44:55 -0500
 
 refind (0.13.3-0ppa1) focal; urgency=medium
 

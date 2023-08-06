@@ -35,6 +35,10 @@ Files: refind-mkdefault
 Copyright: 2016 Roderick W. Smith
 License: GPL-3+
 
+Files: refind-sb-healthcheck
+Copyright: 2023 Roderick W. Smith
+License: GPL-3+
+
 Files: mountesp
 Copyright: 2015 Roderick W. Smith
 License: GPL-3+
@@ -120,6 +124,10 @@ Files: mok/mok.[ch]
 Copyright: 2012 Red Hat, Inc. <mjg@redhat.com>
            2009-2012 Intel Corporation
 License: BSD-2-clause
+
+Files: gzip/*
+Copyright: 1995-2005 Jean-loup Gailly and Mark Adler
+License: zlib and GPL-2+
 
 Files: include/*
 Copyright: 2006-2010 Intel Corporation
@@ -348,7 +356,6 @@ Files: icons/boot_win.png
        icons/os_clover.png
        icons/os_freebsd.png
        icons/os_gummiboot.png
-       icons/os_haiku.png
        icons/os_legacy.png
        icons/os_mac.png
        icons/os_netbsd.png
@@ -365,6 +372,10 @@ Files: icons/boot_win.png
        icons/README
 Copyright: 2015-2017 by Roderick W. Smith
 License: LGPL-3+ or CC-BY-SA-3.0
+
+Files: icons/os_haiku.png
+Copyright: 2010-2023 Haiku, inc
+License: Expat
 
 Files: icons/os_trusty.png
        icons/os_xenial.png

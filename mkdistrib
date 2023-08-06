@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #
 # Script to prepare source code and binary distribution files of rEFInd.
-# By Rod Smith, 3/11/2012
+# Copyright Rod Smith, 2012-2023
+# Licensed under the terms of the GNU GPL-3
+#
 # Updated 11/8/2012 to do more things automatically
 # Updated 12/6/2012 to sign binaries with the rEFInd MOK
 # Updated 12/3/2015 to independently compile .zip, RPM, and Debian packages
@@ -69,10 +71,12 @@ MakeTarball() {
     cp --preserve=timestamps icons/*png icons/README "$TargetDir"/refind-"$Version"/icons/
     cp --preserve=timestamps -r icons/licenses/* "$TargetDir"/refind-"$Version"/icons/licenses/
     cp --preserve=timestamps -r icons/svg/* "$TargetDir"/refind-"$Version"/icons/svg/
-    cp -a debian docs images keys fonts banners include EfiLib libeg mok net refind filesystems \
-        gptsync refind.spec refind-install refind-mkdefault mkrlconf mvrefind mountesp CREDITS.txt \
+    cp -a debian docs images keys fonts banners include EfiLib libeg gzip mok net refind filesystems \
+        gptsync refind.spec refind-install refind-mkdefault mkrlconf \
+	mvrefind refind-sb-healthcheck mountesp CREDITS.txt \
         NEWS.txt BUILDING.txt COPYING.txt LICENSE.txt README.txt refind.inf gptsync.inf \
-        Make.common Makefile refind.conf-sample RefindPkg.d?? "$TargetDir"/refind-"$Version"
+        Make.common Makefile refind.conf-sample RefindPkg.d?? refind-sbat.csv refind-sbat-local.csv \
+        "$TargetDir"/refind-"$Version"
 
     # Go there and prepare a souce code tarball....
     cd "$TargetDir"
@@ -147,7 +151,7 @@ MakeZipBinary() {
     fi
     cp refind-bin-"$Version"/refind/refind_x64.efi "$StartDir"
     cp -a docs keys banners fonts COPYING.txt LICENSE.txt README.txt CREDITS.txt NEWS.txt refind-install \
-       refind-mkdefault mkrlconf mvrefind mountesp refind-bin-"$Version"
+       refind-mkdefault refind-sb-healthcheck mkrlconf mvrefind mountesp refind-bin-"$Version"
 
     # Prepare the final .zip file
     zip -9r ../refind-bin-"$Version".zip refind-bin-"$Version"

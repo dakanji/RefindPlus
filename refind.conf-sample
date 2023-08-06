@@ -352,10 +352,14 @@ use_nvram false
 # a volume name and colon before the directory name, as in "myvol:/somedir"
 # to scan the somedir directory only on the filesystem named myvol. If a
 # specified directory doesn't exist, it's ignored (no error condition
-# results). The default is to scan the "boot" directory in addition to
-# various hard-coded directories.
+# results). The "+" symbol denotes appending to the list of scanned
+# directories rather than overwriting that list.
+# The default is to scan the "boot" and "@/boot" directories in addition
+# to various hard-coded directories.
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
+#also_scan_dirs boot,@/boot
+#also_scan_dirs +,@/kernels
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
 # For EFI-mode scans, you normally specify a volume by its label, which you
@@ -438,6 +442,16 @@ use_nvram false
 #
 #scan_all_linux_kernels false
 
+# Support loaders that have been compressed with gzip.
+# On x86 and x86-64 platforms, Linux kernels are self-decompressing.
+# On ARM64, Linux kernel files are typically compressed with gzip,
+# including the EFI stub loader. This makes them unloadable in rEFInd
+# unless rEFInd itself uncompresses them. This option enables rEFInd
+# to do this. This feature is unnecessary on x86 and x86-64 systems.
+# Default is "false" on x86 and x86-64; "true" on ARM64.
+#
+#support_gzipped_loaders true
+
 # Combine all Linux kernels in a given directory into a single entry.
 # When so set, the kernel with the most recent time stamp will be launched
 # by default, and its filename will appear in the entry's description.
@@ -446,6 +460,15 @@ use_nvram false
 # Default is "true" -- kernels are "folded" into a single menu entry.
 #
 #fold_linux_kernels false
+
+# Filename prefixes that indicate a file is a Linux kernel. Files that
+# begin with any of these strings are treated as Linux kernels, if they
+# are also EFI boot loaders. To include the default string, use "+"
+# Default is "vmlinuz,bzImage,kernel", except on ARM64, where it is
+# "vmlinuz,Image,kernel".
+#
+#linux_prefixes vmlinuz,bzImage,kernel
+#linux_prefixes +,zImage
 
 # Comma-delimited list of strings to treat as if they were numbers for the
 # purpose of kernel version number detection. These strings are matched on a
@@ -473,6 +496,14 @@ use_nvram false
 # Default is "false"
 #
 #write_systemd_vars true
+
+# Symlinked loaders will be processed when this setting is set to true.
+# These are ignored by default as they may result in undesirable outcomes.
+# This token may, however, be useful on Linux setups that provide symbolic
+# links in scanned locations that point to kernels in unscanned locations,
+# such as some openSUSE installations.
+#
+#follow_symlinks true
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows

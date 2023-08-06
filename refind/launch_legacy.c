@@ -54,6 +54,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+/*
+ * NOTE: Most of this file is compiled only on x86/IA32 and x86-64/AMD64/X64
+ * systems; only a few stub functions and WarnIfLegacyProblems() remain on
+ * ARM64/AARCH64 (and conceivably other architectures in the future).
+*/
 
 #include "global.h"
 #include "icns.h"
@@ -62,7 +67,9 @@
 #include "menu.h"
 #include "../include/refit_call_wrapper.h"
 #include "screen.h"
+#if defined(EFI32) || defined(EFIX64)
 #include "../include/syslinux_mbr.h"
+#endif
 #include "mystrings.h"
 #include "log.h"
 #include "../EfiLib/BdsHelper.h"
@@ -79,6 +86,7 @@ extern REFIT_MENU_SCREEN MainMenu;
 
 EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
 
+#if defined(EFI32) || defined(EFIX64)
 static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN PartitionIndex)
 {
     EFI_STATUS          Status;
@@ -394,9 +402,11 @@ bailout:
     MyFreePool(FullLoadOptions);
     return ReturnStatus;
 } /* EFI_STATUS StartLegacyImageList() */
+#endif
 
 VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
 {
+#if defined(EFI32) || defined(EFIX64)
     EFI_STATUS          Status;
     EG_IMAGE            *BootLogoImage;
     UINTN               ErrorInStep = 0;
@@ -431,11 +441,13 @@ VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
         }
     }
     FinishExternalScreen();
+#endif
 } /* static VOID StartLegacy() */
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
 VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName)
 {
+#if defined(EFI32) || defined(EFIX64)
     LOG(1, LOG_LINE_SEPARATOR, L"Launching UEFI-style BIOS/CSM/legacy OS '%s'", SelectionName);
     BeginExternalScreen(TRUE, L"Booting Legacy OS (UEFI mode)");
     StoreLoaderName(SelectionName);
@@ -450,8 +462,10 @@ VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName)
     Print(L"Failure booting legacy (BIOS) OS.");
     PauseForKey();
     FinishExternalScreen();
+#endif
 } // static VOID StartLegacyUEFI()
 
+#if defined(EFI32) || defined(EFIX64)
 static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume)
 {
     LEGACY_ENTRY            *Entry, *SubEntry;
@@ -481,6 +495,8 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    if (!Entry)
+        return NULL;
     Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
     Entry->me.Row            = 0;
@@ -517,7 +533,6 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     return Entry;
 } /* static LEGACY_ENTRY * AddLegacyEntry() */
 
-
 /**
     Create a rEFInd boot option from a Legacy BIOS protocol option.
 */
@@ -538,6 +553,8 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    if (!Entry)
+        return NULL;
     Entry->me.Title          = PoolPrint(L"Boot legacy OS from %s", LegacyDescription);
     LOG(1, LOG_LINE_NORMAL, L"Adding UEFI-style BIOS/CSM/legacy entry for '%s'", Entry->me.Title);
     Entry->me.Tag            = TAG_LEGACY_UEFI;
@@ -680,11 +697,13 @@ static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
     if (ShowVolume)
         AddLegacyEntry(NULL, Volume);
 } // static VOID ScanLegacyVolume()
+#endif
 
 // Scan attached optical discs for legacy (BIOS) boot code
 // and add anything found to the list....
 VOID ScanLegacyDisc(VOID)
 {
+#if defined(EFI32) || defined(EFIX64)
     UINTN                   VolumeIndex;
     REFIT_VOLUME            *Volume;
 
@@ -698,12 +717,14 @@ VOID ScanLegacyDisc(VOID)
     } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
         ScanLegacyUEFI(BBS_CDROM);
     }
+#endif
 } /* VOID ScanLegacyDisc() */
 
 // Scan internal hard disks for legacy (BIOS) boot code
 // and add anything found to the list....
 VOID ScanLegacyInternal(VOID)
 {
+#if defined(EFI32) || defined(EFIX64)
     UINTN                   VolumeIndex;
     REFIT_VOLUME            *Volume;
 
@@ -719,12 +740,14 @@ VOID ScanLegacyInternal(VOID)
        // a way to differentiate the two....
        ScanLegacyUEFI(BBS_HARDDISK);
     }
+#endif
 } /* VOID ScanLegacyInternal() */
 
 // Scan external disks for legacy (BIOS) boot code
 // and add anything found to the list....
 VOID ScanLegacyExternal(VOID)
 {
+#if defined(EFI32) || defined(EFIX64)
     UINTN                   VolumeIndex;
     REFIT_VOLUME            *Volume;
 
@@ -740,14 +763,16 @@ VOID ScanLegacyExternal(VOID)
         // fixing it later....
         ScanLegacyUEFI(BBS_USB);
     }
+#endif
 } /* VOID ScanLegacyExternal() */
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType(VOID) {
+    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
+
+#if defined(EFI32) || defined(EFIX64)
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
-
-    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
     // UEFI-style legacy BIOS support is available only with some EFI implementations....
     Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
@@ -762,6 +787,7 @@ VOID FindLegacyBootType(VOID) {
     // perfect.
     if (StriSubCmp(L"Apple", ST->FirmwareVendor))
         GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
+#endif
 } // VOID FindLegacyBootType
 
 // Warn the user if legacy OS scans are enabled but the firmware can't support them....

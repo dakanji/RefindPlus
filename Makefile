@@ -12,6 +12,7 @@ LOADER_DIR=refind
 FS_DIR=filesystems
 LIBEG_DIR=libeg
 MOK_DIR=mok
+GZIP_DIR=gzip
 GPTSYNC_DIR=gptsync
 EFILIB_DIR=EfiLib
 # Two possible locations for TianoCore toolkit:
@@ -83,6 +84,7 @@ endif
 gnuefi:
 	+make MAKEWITH=GNUEFI -C $(LIBEG_DIR)
 	+make MAKEWITH=GNUEFI -C $(MOK_DIR)
+	+make MAKEWITH=GNUEFI -C $(GZIP_DIR)
 	+make MAKEWITH=GNUEFI -C $(EFILIB_DIR)
 	+make MAKEWITH=GNUEFI -C $(LOADER_DIR)
 	+make MAKEWITH=GNUEFI -C $(GPTSYNC_DIR) gnuefi
@@ -110,6 +112,7 @@ tiano:
 	+make MAKEWITH=TIANO AR_TARGET=EfiLib -C $(EFILIB_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO AR_TARGET=libeg -C $(LIBEG_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO AR_TARGET=mok -C $(MOK_DIR) -f Make.tiano
+	+make MAKEWITH=TIANO AR_TARGET=gzip -C $(GZIP_DIR) -f Make.tiano
 	+make MAKEWITH=TIANO BUILDME=refind DLL_TARGET=refind -C $(LOADER_DIR) -f Make.tiano
 ifneq ($(ARCH),aarch64)
 	+make MAKEWITH=TIANO -C $(GPTSYNC_DIR) -f Make.tiano
@@ -146,6 +149,12 @@ fs_tiano:
 edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
+ifneq ($(OMIT_SBAT), 1)
+	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		--adjust-section-vma .sbat+10000000 ./refind/refind_$(FILENAME_CODE).efi
+	$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		--adjust-section-vma .sbat+10000000 ./gptsync/gptsync_$(FILENAME_CODE).efi
+endif
 
 all_edk2: build_edk2 fs_edk2
 	cp $(EDK2_BUILDLOC)/refind.efi ./refind/refind_$(FILENAME_CODE).efi
@@ -155,10 +164,19 @@ gptsync_edk2: build_edk2
 	cp $(EDK2_BUILDLOC)/gptsync.efi ./gptsync/gptsync_$(FILENAME_CODE).efi
 
 fs_edk2: build_edk2
+ifeq ($(OMIT_SBAT), 1)
 	for BASENAME in $(EDK2_DRIVER_BASENAMES) ; do \
 		echo "Copying $$BASENAME""_$(FILENAME_CODE).efi" ; \
 		cp "$(EDK2_BUILDLOC)/$$BASENAME.efi" ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
 	done
+else
+	for BASENAME in $(EDK2_DRIVER_BASENAMES) ; do \
+		echo "Copying $$BASENAME""_$(FILENAME_CODE).efi" ; \
+		cp "$(EDK2_BUILDLOC)/$$BASENAME.efi" ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
+		$(OBJCOPY) --set-section-alignment '.sbat=512' --add-section .sbat=$(REFIND_SBAT_CSV) \
+		    --adjust-section-vma .sbat+10000000 ./drivers_$(FILENAME_CODE)/$$BASENAME\_$(FILENAME_CODE).efi ; \
+	done
+endif
 
 build_edk2: $(EDK2BASE)/RefindPkg
 	cd $(EDK2BASE) && \
@@ -180,6 +198,7 @@ $(EDK2BASE)/RefindPkg:
 clean:
 	make -C $(LIBEG_DIR) clean
 	make -C $(MOK_DIR) clean
+	make -C $(GZIP_DIR) clean
 	make -C $(LOADER_DIR) clean
 	make -C $(EFILIB_DIR) clean
 	make -C $(FS_DIR) clean

@@ -289,7 +289,7 @@ BdsFindLegacyBootOptionByDevTypeAndName (
     // Skip Non-legacy boot option
     //
     if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, BbsIndex)) {
-      FreePool (BootOptionVar);
+      MyFreePool (BootOptionVar);
       continue;
     }
 
@@ -297,14 +297,14 @@ BdsFindLegacyBootOptionByDevTypeAndName (
         (BbsEntry->DeviceType != DevType) ||
         (StrCmp (DevName, (CHAR16*)(BootOptionVar + sizeof (UINT32) + sizeof (UINT16))) != 0)
        ) {
-      FreePool (BootOptionVar);
+      MyFreePool (BootOptionVar);
       continue;
     }
 
     *Attribute    = *(UINT32 *) BootOptionVar;
     *OptionNumber = BootOrder[Index];
     Found         = TRUE;
-    FreePool (BootOptionVar);
+    MyFreePool (BootOptionVar);
     break;
   }
 
@@ -411,7 +411,7 @@ BdsCreateLegacyBootOption (
                         (EFI_DEVICE_PATH_PROTOCOL *) NewBbsDevPathNode
                         );
    if (CurrentBbsDevPath == NULL) {
-    FreePool (NewBbsDevPathNode);
+    MyFreePool (NewBbsDevPathNode);
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -426,8 +426,8 @@ BdsCreateLegacyBootOption (
 
   Buffer = AllocateZeroPool (BufferSize);
   if (Buffer == NULL) {
-    FreePool (NewBbsDevPathNode);
-    FreePool (CurrentBbsDevPath);
+    MyFreePool (NewBbsDevPathNode);
+    MyFreePool (CurrentBbsDevPath);
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -464,20 +464,20 @@ BdsCreateLegacyBootOption (
   Status = EfivarSetRaw(&EfiGlobalVariableGuid, BootString,
                         (CHAR8*) Buffer,
                         BufferSize, TRUE);
-  FreePool (Buffer);
+  MyFreePool (Buffer);
   
   Buffer = NULL;
 
   NewBootOrderList = AllocateZeroPool (*BootOrderListSize + sizeof (UINT16));
   if (NULL == NewBootOrderList) {
-    FreePool (NewBbsDevPathNode);
-    FreePool (CurrentBbsDevPath);
+    MyFreePool (NewBbsDevPathNode);
+    MyFreePool (CurrentBbsDevPath);
     return EFI_OUT_OF_RESOURCES;
   }
 
   if (*BootOrderList != NULL) {
     CopyMem (NewBootOrderList, *BootOrderList, *BootOrderListSize);
-    FreePool (*BootOrderList);
+    MyFreePool (*BootOrderList);
   }
 
   BootOrderLastIndex                    = (UINTN) (*BootOrderListSize / sizeof (UINT16));
@@ -485,8 +485,8 @@ BdsCreateLegacyBootOption (
   *BootOrderListSize += sizeof (UINT16);
   *BootOrderList = NewBootOrderList;
 
-  FreePool (NewBbsDevPathNode);
-  FreePool (CurrentBbsDevPath);
+  MyFreePool (NewBbsDevPathNode);
+  MyFreePool (CurrentBbsDevPath);
   return Status;
 }
 
@@ -543,7 +543,7 @@ BdsCreateOneLegacyBootOption (
             );
   BbsItem->BootPriority = 0x00;
 
-  FreePool (DevPath);
+  MyFreePool (DevPath);
 
   return Status;
 }
@@ -681,7 +681,7 @@ EfiLibDeleteVariable (
     //
     Status = refit_call5_wrapper(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
     ASSERT (!EFI_ERROR (Status));
-    FreePool (VarBuf);
+    MyFreePool (VarBuf);
   }
 
   return Status;
@@ -727,7 +727,7 @@ BdsAddNonExistingLegacyBootOptions (
   }
 
   if (mBootOptionBbsMapping != NULL) {
-    FreePool (mBootOptionBbsMapping);
+    MyFreePool (mBootOptionBbsMapping);
 
     mBootOptionBbsMapping      = NULL;
     mBootOptionBbsMappingCount = 0;
@@ -819,7 +819,7 @@ BdsAddNonExistingLegacyBootOptions (
   }
 
   if (BootOrder != NULL) {
-    FreePool (BootOrder);
+    MyFreePool (BootOrder);
   }
 
   return Status;
@@ -967,7 +967,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
           );
         continue;
       } else {
-        FreePool (BootOrder);
+        MyFreePool (BootOrder);
         return EFI_OUT_OF_RESOURCES;
       }
     }
@@ -977,7 +977,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     //
     if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, &BbsIndex)) {
       if (BootOptionVar!= NULL) {
-        FreePool (BootOptionVar);
+        MyFreePool (BootOptionVar);
       }
       Index++;
       continue;
@@ -1009,7 +1009,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     }
 
     if (BootOptionVar != NULL) {
-      FreePool (BootOptionVar);
+      MyFreePool (BootOptionVar);
     }
     //
     // should delete
@@ -1033,7 +1033,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
   }
 
   if (BootOrder != NULL) {
-    FreePool (BootOrder);
+    MyFreePool (BootOrder);
   }
 
   return Status;

@@ -94,13 +94,14 @@ mkisofs -A "Bootable rEFInd" -V "rEFInd_$Version" -volset "rEFInd_$Version" \
 # sectors)....
 #
 rm -f ../../refind-flashdrive-"$Version".*
-((FatSize=$(du -s keys-part.img | cut -f 1)))
+((FatSize=$(du -s refind-bin-"$Version".img | cut -f 1)))
 ((FatSize=FatSize+2048))
 dd if=/dev/zero of=../../refind-flashdrive-"$Version".img bs=1024 count="$FatSize"
 if ! sgdisk -n 1:2048:0 -t 1:EF00 -g ../../refind-flashdrive-"$Version".img ; then
    echo "sgdisk failed! Exiting!"
    exit 1
 fi
+dosfslabel refind-bin-"$Version".img REFIND
 dd if=refind-bin-"$Version".img of=../../refind-flashdrive-"$Version".img bs=512 seek=2048 conv=notrunc
 
 cd ..

@@ -400,9 +400,13 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
 // Returns TRUE if replacement was done, FALSE otherwise.
 BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString) {
     BOOLEAN WasReplaced = FALSE;
-    CHAR16 *FoundSearchString, *NewString, *EndString;
+    CHAR16 *FoundSearchString = NULL, *NewString, *EndString;
 
-    FoundSearchString = MyStrStr(*MainString, SearchString);
+    if (MainString) {
+        if (MainString[0]) {
+            FoundSearchString = MyStrStr(*MainString, SearchString);
+        }
+    }
     if (FoundSearchString) {
         NewString = AllocateZeroPool(sizeof(CHAR16) * StrLen(*MainString));
         if (NewString) {

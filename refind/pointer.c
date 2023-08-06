@@ -24,6 +24,7 @@
 #include "screen.h"
 #include "icns.h"
 #include "../include/refit_call_wrapper.h"
+#include "../refind/lib.h"
 
 EFI_HANDLE* APointerHandles = NULL;
 EFI_ABSOLUTE_POINTER_PROTOCOL** APointerProtocol = NULL;
@@ -111,11 +112,11 @@ VOID pdCleanup() {
         for(Index = 0; Index < NumAPointerDevices; Index++) {
             refit_call4_wrapper(BS->CloseProtocol, APointerHandles[Index], &APointerGuid, SelfImageHandle, NULL);
         }
-        FreePool(APointerHandles);
+        MyFreePool(APointerHandles);
         APointerHandles = NULL;
     }
     if(APointerProtocol) {
-        FreePool(APointerProtocol);
+        MyFreePool(APointerProtocol);
         APointerProtocol = NULL;
     }
     if(SPointerHandles) {
@@ -123,11 +124,11 @@ VOID pdCleanup() {
         for(Index = 0; Index < NumSPointerDevices; Index++) {
             refit_call4_wrapper(BS->CloseProtocol, SPointerHandles[Index], &SPointerGuid, SelfImageHandle, NULL);
         }
-        FreePool(SPointerHandles);
+        MyFreePool(SPointerHandles);
         SPointerHandles = NULL;
     }
     if(SPointerProtocol) {
-        FreePool(SPointerProtocol);
+        MyFreePool(SPointerProtocol);
         SPointerProtocol = NULL;
     }
     if(MouseImage) {

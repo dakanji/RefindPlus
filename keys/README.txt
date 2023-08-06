@@ -65,6 +65,10 @@ The files in this directory are, in alphabetical order:
   used to sign OpenSUSE; taken from openSUSE's shim 0.7.318.81ee56d
   package.
 
+- redhatsecureboot*.cer & redhatsecureboot*.crt -- Keys associated with the
+  Red Hat kernel. (They do NOT seem to be used to sign Fedora's kernels or
+  GRUB binaries, though.)
+
 - refind.cer & refind.crt -- My own (Roderick W. Smith's) public key,
   matched to the one used to sign refind_x64.efi and the 64-bit rEFInd
   drivers.

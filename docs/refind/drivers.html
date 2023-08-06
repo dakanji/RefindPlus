@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-4/10/2022, referencing rEFInd 0.13.3</p>
+3/4/2023, referencing rEFInd 0.14.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -258,6 +258,8 @@ fs0: <tt class="userinput">map -r</tt>
     changing <tt class="userinput"><i>/dev/sda2</i></tt> to your
     filesystem's device.</li>
 
+<p class="sidebar"><b>Warning:</b> In early 2022, Linux kernel developers began discussing the possibility of removing ReiserFS, and soon thereafter, a notice appeared in the kernel configuration tools to the effect that it has been officially deprecated and would be removed from the kernel in 2025. Although converting a small <tt>/boot</tt> partition from one filesystem to another is fairly painless, I must <i>strongly</i> caution against using ReiserFS for anything larger than <tt>/boot</tt>; and even using it for a <tt>/boot</tt> partition is not the best idea unless you have a compelling reason to do so. I intend to leave rEFInd's ReiserFS driver in place until its Linux kernel equivalent is removed, and maybe a bit longer; but ReiserFS is now officially deprecated in rEFInd, too.</p>
+
 <li><b>ReiserFS</b>&mdash;This driver originated with rEFIt. It can be used
     in the same way as the ext2fs and ext4fs drivers. <b>Caution:</b> If you
     use this driver, you should use the <tt>notail</tt> option in Linux's
@@ -279,20 +281,22 @@ fs0: <tt class="userinput">map -r</tt>
     Liao has used the driver with a compressed Btrfs volume. The driver will
     handle subvolumes, but you may need to add kernel options if you're
     booting a Linux kernel directly from a filesystem that uses subvolumes.
-    For instance, prior to rEFInd 0.10.0, when booting Ubuntu from Btrfs,
-    <tt>also_scan_dirs + @/boot</tt> must be set in <tt>refind.conf</tt>.
-    (The option is set by default beginning with rEFInd 0.10.0.) With any
-    version of rEFInd, <tt>rootflags=subvol=@</tt> must be added to the
-    kernel options in <tt>refind_linux.conf</tt>. If <tt>@/boot</tt> is not
-    scanned, rEFInd can not locate the kernel; and without the
-    <tt>rootflags=subvol=@</tt> kernel option, the boot fails with a message
-    to the effect that the initial RAM disk could not find
-    <tt>/sbin/init</tt>. The <tt>refind-install</tt> and <tt>mkrlconf</tt>
-    scripts should pick up the root flags, assuming the system is booted
-    into the regular installation. These additions make it easier to set up
-    rEFInd to work with Btrfs. Nonetheless, some distributions may have
-    distribution-specific Btrfs peculiarities, so you should be alert to
-    this possibility.</li>
+    Unfortunately, subvolume configuration varies from one Linux
+    distribution to another. Prior to rEFInd 0.10.0, adding
+    <tt>also_scan_dirs + @/boot</tt> to <tt>refind.conf</tt> was often
+    necessary, but <tt>@/boot</tt> is now part of the default. Because
+    subvolume configuration varies, though, you may need to adjust
+    <tt>also_scan_dirs</tt> for your distribution's (or your own personal)
+    setup. You may also need to check your existing GRUB configuration, or
+    rely on <tt>refind-install</tt> or <tt>mkrlconf</tt> to create a
+    suitable <tt>/boot/refind_linux.conf</tt> file (assuming you're already
+    booted to your installation via GRUB or some other method). In
+    particular, most distributions require passing an option like
+    <tt>rootflags=subvol=@</tt> to the kernel &mdash; but again, details
+    vary. For those who live deep in the Btrfs "weeds," the <a
+    href="https://github.com/Venom1991/refind-btrfs">refind-btrfs</a>
+    project provides tools to help you boot into Btrfs snapshots. I've not
+    tried this project myself, but it looks interesting.</li>
 
 <p class="sidebar"><b>Tip:</b> If you partition a USB flash drive and use <tt>dd</tt> to copy Linux <tt>.iso</tt> images to the drive's individual partitions, the rEFInd ISO-9660 driver enables rEFInd to boot multiple Linux distributions' installers from the USB flash drive. I can't promise this feature will work with all distributions, but it does work with some.</p>
 
@@ -415,7 +419,7 @@ me about them,</a> so I can share the information here.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2023 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

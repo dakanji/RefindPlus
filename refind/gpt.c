@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma pack(0)
 #include "gpt.h"
 #include "lib.h"
 #include "screen.h"

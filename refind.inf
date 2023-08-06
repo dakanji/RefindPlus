@@ -33,6 +33,7 @@
   EfiLib/BdsHelper.c
   EfiLib/BdsTianoCore.c
   EfiLib/legacy.c
+  gzip/decompress_inflate.c
   mok/mok.c
   mok/guid.c
   mok/security_policy.c

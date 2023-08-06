@@ -15,6 +15,7 @@ following files and subdirectories:
    keys/                            Subdirectory containing MOKs
    refind-install                   Linux/MacOS installation script
    refind-mkdefault                 Script to make rEFInd the default
+   refind-sb-healthcheck            Script to help manage Secure Boot keys
    mkrlconf                         A script to create refind_linux.conf
    mvrefind                         A script to move a rEFInd installation
    README.txt                       This file

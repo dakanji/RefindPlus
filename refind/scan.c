@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -118,11 +118,6 @@
 
 #define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
 #define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
-
-// Patterns that identify Linux kernels. Added to the loader match pattern when the
-// scan_all_linux_kernels option is set in the configuration file. Causes kernels WITHOUT
-// a ".efi" extension to be found when scanning for boot loaders.
-#define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
@@ -386,7 +381,9 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             InitrdName =  FindInitrd(Entry->LoaderPath, Volume);
             TokenCount = ReadTokenLine(File, &TokenList);
             KernelVersion = FindNumbers(Entry->LoaderPath);
-            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            if (TokenCount >= 2) {
+                ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            }
             // first entry requires special processing, since it was initially set
             // up with a default title but correct options by InitializeSubScreen(),
             // earlier....
@@ -527,7 +524,8 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
     LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
     // detect specific loaders
-    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
+    if (IsInSubstring(NameClues, GlobalConfig.LinuxPrefixes)) {
+//    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
@@ -774,7 +772,7 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
     // See if Path includes an explicit volume declaration that's NOT Volume....
     PathCopy = StrDuplicate(Path);
     if (SplitVolumeAndFilename(&PathCopy, &VolName)) {
-        if (VolName && (!MyStriCmp(VolName, Volume->FsName) ||
+        if (VolName && (!MyStriCmp(VolName, Volume->FsName) &&
             !MyStriCmp(VolName, Volume->PartName))) {
                 ScanIt = FALSE;
         } // if
@@ -893,6 +891,22 @@ static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *FullName, EFI_FILE_I
     return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
+// Log all the current menu entries. Takes the desired log level as an option
+static VOID LogMenuEntries(UINTN LogLevel) {
+    UINTN i;
+
+    if (LogLevel <= GlobalConfig.LogLevel) {
+        LOG(LogLevel, LOG_LINE_NORMAL, L"MainMenu currently has %ld entries; they are....", MainMenu.EntryCount);
+        for (i = 0; i < MainMenu.EntryCount; i++) {
+            if (MainMenu.Entries[i]) {
+                //LOG(LogLevel, LOG_LINE_NORMAL, L"  --> MainMenu.Entries[%ld] is %lld", i, MainMenu.Entries[i]);
+                //LOG(LogLevel, LOG_LINE_NORMAL, L"  --> Menu item %ld Title address is %lld", i, MainMenu.Entries[i]->Title);
+                LOG(LogLevel, LOG_LINE_NORMAL, L"  --> Menu item %ld is '%s'", i, MainMenu.Entries[i]->Title);
+            }
+        }
+    }
+} // VOID LogMenuEntries()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -919,12 +933,15 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
           FullName = StrDuplicate(Path);
           MergeStrings(&FullName, DirEntry->FileName, L'\\');
           CleanUpPathNameSlashes(FullName);
+
+          if (!GlobalConfig.FollowSymlinks && IsSymbolicLink(Volume, FullName, DirEntry)) {
+              continue;   // is symbolic link ... skip as ignoring such
+          }
           if (DirEntry->FileName[0] == '.' ||
               MyStriCmp(Extension, L".icns") ||
               MyStriCmp(Extension, L".png") ||
               (MyStriCmp(DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp(Path, L"EFI\\BOOT"))) ||
               FilenameIn(Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-              IsSymbolicLink(Volume, FullName, DirEntry) || /* is symbolic link */
               HasSignedCounterpart(Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
               FilenameIn(Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader(Volume->RootDir, FullName)) {
@@ -945,9 +962,10 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
 
        NewLoader = LoaderList;
        while (NewLoader != NULL) {
-           IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
-                      StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
-                      StriSubCmp(L"kernel", NewLoader->FileName));
+           IsLinux = IsInSubstring(NewLoader->FileName, GlobalConfig.LinuxPrefixes);
+//            IsLinux = (StriSubCmp(L"bzImage", NewLoader->FileName) ||
+//                       StriSubCmp(L"vmlinuz", NewLoader->FileName) ||
+//                       StriSubCmp(L"kernel", NewLoader->FileName));
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {
@@ -960,6 +978,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        } // while
        if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels)
            AddMenuEntry(FirstKernel->me.SubScreen, &MenuEntryReturn);
+       LogMenuEntries(4);
 
        CleanUpLoaderList(LoaderList);
        Status = DirIterClose(&DirIter);
@@ -1060,7 +1079,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             Volume->PartName ? Volume->PartName : Volume->VolName);
         MatchPatterns = StrDuplicate(LOADER_MATCH_PATTERNS);
         if (GlobalConfig.ScanAllLinux)
-            MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
+            MergeStrings(&MatchPatterns, GlobalConfig.LinuxMatchPatterns, L',');
 
         // check for macOS boot loader
         if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {
@@ -1162,7 +1181,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
         // for the fallback boot loader
         if (ScanFallbackLoader && FileExists(Volume->RootDir, FALLBACK_FULLNAME) && ShouldScan(Volume, L"EFI\\BOOT") &&
             !FilenameIn(Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)) {
-                AddLoaderEntry(FALLBACK_FULLNAME, L"Fallback boot loader", Volume, TRUE);
+                Temp = StrDuplicate(FALLBACK_FULLNAME);
+                AddLoaderEntry(Temp, L"Fallback boot loader", Volume, TRUE);
+                MyFreePool(Temp);
         }
         MyFreePool(MatchPatterns);
     } else {
@@ -1407,8 +1428,8 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
 static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
-    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
-    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
+    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis = NULL;
+    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools = NULL;
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
@@ -1416,9 +1437,11 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName);
     if (gHiddenTools == NULL) {
         DontScanTools = ReadHiddenTags(L"HiddenTools");
-        gHiddenTools = StrDuplicate(DontScanTools);
+        if (DontScanTools)
+            gHiddenTools = StrDuplicate(DontScanTools);
     } else {
-        DontScanTools = StrDuplicate(gHiddenTools);
+        if (gHiddenTools)
+            DontScanTools = StrDuplicate(gHiddenTools);
     }
     MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
@@ -1440,6 +1463,7 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
         } // while
     } else
         retval = FALSE;
+    LOG(4, LOG_LINE_NORMAL, L"About to free multiple variables in IsValidTool()");
     MyFreePool(TestVolName);
     MyFreePool(TestPathName);
     MyFreePool(TestFileName);
@@ -1499,28 +1523,24 @@ VOID ScanForTools(VOID) {
             case TAG_SHUTDOWN:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Shutdown tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_REBOOT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryReset);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_RESET);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Reboot tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_ABOUT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryAbout);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Info/About tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_EXIT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
-                LOG(2, LOG_LINE_NORMAL, L"Adding Exit tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
@@ -1528,7 +1548,6 @@ VOID ScanForTools(VOID) {
                 if (GlobalConfig.HiddenTags) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryManageHidden);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
-                    LOG(2, LOG_LINE_NORMAL, L"Adding Hidden tag");
                     AddMenuEntry(&MainMenu, TempMenuEntry);
                 }
                 break;
@@ -1539,7 +1558,6 @@ VOID ScanForTools(VOID) {
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         TempMenuEntry = CopyMenuEntry(&MenuEntryFirmware);
                         TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE);
-                        LOG(2, LOG_LINE_NORMAL, L"Adding Reboot-to-Firmware tag");
                         AddMenuEntry(&MainMenu, TempMenuEntry);
                     } else {
                         LOG(1, LOG_LINE_NORMAL, L"showtools includes firmware, but EFI lacks support");
@@ -1663,7 +1681,6 @@ VOID ScanForTools(VOID) {
                 if ((GetCsrStatus(&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
                     TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_CSR_ROTATE);
-                    LOG(1, LOG_LINE_NORMAL, L"Adding CSR Rotate tag");
                     AddMenuEntry(&MainMenu, TempMenuEntry);
                 } // if
                 break;
@@ -1671,14 +1688,12 @@ VOID ScanForTools(VOID) {
             case TAG_INSTALL:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_INSTALL);
-                LOG(1, LOG_LINE_NORMAL, L"Adding Install tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 
             case TAG_BOOTORDER:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryBootorder);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_BOOTORDER);
-                LOG(1, LOG_LINE_NORMAL, L"Adding Boot Order tag");
                 AddMenuEntry(&MainMenu, TempMenuEntry);
                 break;
 

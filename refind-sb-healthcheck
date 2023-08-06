@@ -1,0 +1,559 @@
+#!/bin/bash
+#
+# Script to check status of Secure Boot components and help keep them
+# up-to-date for a rEFInd installation
+#
+# This program is copyright (c) 2023 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# Revision history
+#
+# 0.14.0 -- Initial release
+
+FOUND_EXPIRED_KEY="0"
+FOUND_SHORT_KEY="0"
+REBOOT_AFTER="0"
+
+ETC_KEYS_DIR="/etc/refind.d/keys"
+LOCAL_KEYS_BASE="refind_local"
+REFIND_PRIVATE_KEY="$ETC_KEYS_DIR/$LOCAL_KEYS_BASE.key"
+REFIND_CERT_KEY="$ETC_KEYS_DIR/$LOCAL_KEYS_BASE.crt"
+REFIND_DER_KEY="$ETC_KEYS_DIR/$LOCAL_KEYS_BASE.cer"
+
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+
+# Check to see that necessary programs are installed. If not, display an error
+# message and terminate.
+CheckPrerequisites() {
+    local CpuType
+
+    EfiBootmgr="$(command -v efibootmgr 2> /dev/null)"
+    if [[ ! "$EfiBootmgr" ]] ; then
+        echo "The efibootmgr program cannot be found! Terminating!"
+        exit 1
+    fi
+    MokUtil="$(command -v mokutil 2> /dev/null)"
+    if [[ ! "$MokUtil" ]] ; then
+        echo "The mokutil program cannot be found! Terminating!"
+        exit 1
+    fi
+    OpenSsl="$(command -v openssl 2> /dev/null)"
+    if [[ ! "$OpenSsl" ]] ; then
+        echo "The openssl program cannot be found! Terminating!"
+        exit 1
+    fi
+    CpuType=$(uname -m)
+    case "$CpuType" in
+    aarch64)
+       PLATFORM="aa64"
+       ;;
+    x86_64)
+       PLATFORM="x64"
+       ;;
+    i?86)
+       PLATFORM="ia32"
+    esac
+} # CheckPrerequisites()
+
+GetYN() {
+    # $1 = Prompt string
+    # $2 = Default value (assume Y if absent or not "n" or "N")
+    # Returns "Y" or "N" in $YN -- guaranteed uppercase
+    YN=""
+    while [ -z "$YN" ] ; do
+        echo -n "$1"
+        local default="Y"
+        if [ "$2" = "n" ] || [ "$2" = "N" ] ; then
+           default="N"
+        fi
+        if [ $default = "Y" ] ; then
+            echo -n " (Y/n)? "
+        else
+            echo -n " (y/N)? "
+        fi
+        local answer
+        read -r answer
+        if [ -z "$answer" ] ; then
+            YN=$default
+        else
+             if [ "${answer:0:1}" = "y" ] || [ "${answer:0:1}" = "Y" ] ; then
+                 YN="Y"
+             fi
+             if [ "${answer:0:1}" = "n" ] || [ "${answer:0:1}" = "N" ] ; then
+                 YN="N"
+            fi
+        fi
+        if [ -z "$YN" ] ; then
+            echo "Please enter 'Y' or 'N'!"
+        fi
+    done
+} # GetYN()
+
+PauseForKey() {
+    echo -n "Press the Enter key to continue: "
+    read -r Answer
+}
+
+# Parse an efibootmgr Boot#### line. Takes a boot line ($1) as input and sets
+# the following global variables:
+#  ESP_GUID -- The GUID (aka PARTUUID) of the partition
+#  BL_PATH -- The path to the boot loader, with "\" swapped to "/"
+#  BL_FILENAME -- The boot loader's filename alone
+#  BL_FULLNAME -- The boot loader's complete filename, including its path (on the ESP), with "\" swapped to "/"
+# Note that some EFIs uppercase their filenames, so these may not match what
+# Linux presents. Fortunately, Linux ignores case when doing searches,
+# etc., on FAT filesystems, so this doesn't cause problems.
+ParseBootLine() {
+    ESP_GUID=$(echo "$1" | grep -Po 'GPT,\K[^)]*' | cut -d "," -f 1)
+    BL_FULLNAME=$(echo "$1" | grep -Po 'File\(\K[^)]*' | tr '\\' '/')
+    BL_FILENAME=$(echo "$BL_FULLNAME" | rev | cut -d "/" -f 1 | rev)
+    BL_PATH=$(echo "$BL_FULLNAME" | rev | cut -d "/" -f 2-99 | rev)
+    if [[ -z "$BL_FULLNAME" || -z "$BL_FILENAME" || -z "$BL_PATH" ]] ; then
+        echo "Could not identify the boot loader's filename!"
+        echo "Terminating!"
+        exit 1
+    fi
+    if [[ ! $(echo "$1" | grep -i refind) ]] ; then
+        echo "The computer has booted from $BL_FULLNAME, and the current boot"
+        echo "description includes no mention of rEFInd. This script operates on rEFInd,"
+        echo "and it must be run from a rEFInd-mediated boot. If the computer did boot"
+        echo "through rEFInd, but the boot description simply doesn't mention this, then"
+        echo "this is fine; but if the computer did NOT boot through rEFInd, then you should"
+        echo "terminate now to avoid damaging your installation."
+        echo
+        GetYN "Do you want to continue" "N"
+        if [[ "$YN" == "N" ]] ; then
+            exit 0
+        fi
+    fi
+} # ParseBootLine()
+
+# Check the current Secure Boot status. If SB is inactive, offers the option
+# to terminate the program. Sets the global variable SHIM_STATE:
+#  SHIM -- SB is on via Shim
+#  NOSHIM -- SB is off with no evidence of Shim being used
+CheckSbState() {
+    local IsSecureBoot
+    local BootCurrent
+    local BootLine
+    local ShimPresent
+
+    echo "*********************************"
+    echo "* Checking Secure Boot status...."
+    echo "*********************************"
+    echo
+
+    if [[ -f /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c ]] ; then
+        IsSecureBoot=$(od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}')
+    elif [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+        IsSecureBoot=$(od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[:space:]')
+    fi
+    if [[ "$IsSecureBoot" -eq 0 ]] ; then
+        echo "Secure Boot is not currently enabled. You can continue running this program,"
+        echo "but it will be pointless unless you intend to re-enable Secure Boot."
+        GetYN "Do you want to continue" "N"
+        if [[ "$YN" == "N" ]] ; then
+            exit
+        fi
+    else
+        echo "Secure Boot is active"
+    fi
+
+    BootCurrent=$("$EfiBootmgr" | grep BootCurrent | tr -s " " | cut -d " " -f 2)
+    BootLine=$("$EfiBootmgr" -v | grep Boot"$BootCurrent")
+    ParseBootLine "$BootLine"
+    if [[ -n "$BootLine" ]] ; then
+        ShimPresent=$(echo "$BootLine" | grep -i shim)
+        if [[ -n "$ShimPresent" ]] ; then
+            SHIM_STATE="SHIM"
+            echo "Shim program detected"
+        else
+            SHIM_STATE="NOSHIM"
+            echo "No Shim program detected; assuming a full-control Secure Boot configuration"
+        fi
+    else
+        # Theoretically should never get here, since if the efibootmgr output
+        # is incomplete or damaged, ParseBootLine should terminate the script;
+        # but just in case....
+        echo "Unable to detect the current boot path!"
+        echo "Terminating program!"
+        exit 1
+    fi
+    echo
+} # CheckSbState()
+
+# Find where the ESP is mounted. Assumes that ESP_GUID is set correctly.
+# Saves the mount point in the ESP_MOUNT_POINT global variable.
+FindEspMountPoint() {
+    if [[ -n "$ESP_GUID" ]] ; then
+        DeviceFile=$(blkid | grep "$ESP_GUID" | cut -d ":" -f 1)
+        ESP_MOUNT_POINT=$(df --output=target "$DeviceFile" | tail -n 1)
+        echo "Detected ESP mounted at $ESP_MOUNT_POINT"
+    else
+        echo "Cannot automatically detect the ESP mount point."
+        echo -n "Please type the ESP mount point: "
+        read -r ESP_MOUNT_POINT
+    fi
+} # FindEspMountPoint()
+
+# Look for a newer Shim program that might be used instead of the current one
+CheckForShimUpdates() {
+    local CurrentShim
+    local CurrentShimFile
+    local CurrentShimDate
+    local CandidateShimFile
+    local CandidateShimPath
+    local CandidateShimDate
+    local NewestShimFile
+    local NewestShimDate
+    local NewestMokManagerFile
+    local Line
+
+    echo "*****************************************************"
+    echo "* Checking for updates to Shim on the ESP and in /usr"
+    echo "*****************************************************"
+    FindEspMountPoint
+    CurrentShim=$(find "$ESP_MOUNT_POINT"/"$BL_FULLNAME" -printf "%TY-%Tm-%Td-%TH:%TM-%p")
+    CurrentShimFile=$(echo "$CurrentShim" | tr -s "-" | cut -d "-" -f 5-99)
+    CurrentShimDate=$(echo "$CurrentShim" | tr -s "-" | cut -d "-" -f 1-4)
+    echo "The current Shim program is $ESP_MOUNT_POINT/$BL_FULLNAME"
+    echo "Its date stamp is: $CurrentShimDate"
+    NewestShimFile="$CurrentShimFile"
+    NewestShimDate="$CurrentShimDate"
+    echo ""
+    echo "Newer Shim programs are:"
+    for Line in $(find "$ESP_MOUNT_POINT" "/usr" -iname "shim*efi" -printf "%TY-%Tm-%Td-%TH:%TM-%p\n" | grep -v ShimReplace) ; do
+        FoundMokManager="0"
+        CandidateShimDate=$(echo "$Line" | cut -d "-" -f 1-4)
+        CandidateShimFile=$(echo "$Line" | cut -d "-" -f 5-99)
+        CandidateShimPath=$(echo "$CandidateShimFile" | rev | cut -d "/" -f 2-99 | rev)
+        if [[ "$CurrentShimDate" < "$CandidateShimDate" ]] ; then
+            # This find is newER than the current one, but not necessarily the
+            # newEST; and we haven't yet checked for a matching MokManager file
+            echo "  --> $CandidateShimDate: $CandidateShimFile"
+            if [[ -e "$CandidateShimPath/mm$PLATFORM.efi" && ! -d "$CandidateShimPath/mm$PLATFORM.efi" ]] ; then
+                echo "      --> Found matching mm$PLATFORM.efi"
+                FoundMokManager="1"
+            fi
+            if [[ "$NewestShimDate" < "$CandidateShimDate" ]] ; then
+                if [[ "$FoundMokManager" -eq "1" ]] ; then
+                    NewestShimDate="$CandidateShimDate"
+                    NewestShimFile="$CandidateShimFile"
+                    NewestMokManagerFile="$CandidateShimPath"/mm"$PLATFORM".efi
+                else
+                    echo "      --> No matching mm$PLATFORM.efi file found"
+                fi
+            fi
+        fi
+    done
+    echo
+    echo "The newest Shim candidate is $NewestShimFile,"
+    echo "with a date of $NewestShimDate"
+    if [[ "$NewestShimFile" == "$CurrentShimFile" ]] ; then
+        echo "The current Shim seems to be the newest one; making no changes."
+    else
+        GetYN "Do you want to copy the newer Shim binary over the current one" "N"
+        if [[ "$YN" == "Y" ]] ; then
+            echo "Backing up current Shim and MokManager programs...."
+            mv "$CurrentShimFile" "$ESP_MOUNT_POINT"/"$BL_PATH"/"$BL_FILENAME".backup
+            mv "$ESP_MOUNT_POINT"/"$BL_PATH"/mm"$PLATFORM".efi "$ESP_MOUNT_POINT"/"$BL_PATH"/mm"$PLATFORM".efi.backup
+            echo "Copying $NewestShimFile to $ESP_MOUNT_POINT/$BL_PATH/"
+            cp "$NewestShimFile" "$ESP_MOUNT_POINT/$BL_PATH/"
+            echo "Copying $NewestMokManagerFile to $ESP_MOUNT_POINT/$BL_PATH/"
+            cp "$NewestMokManagerFile" "$ESP_MOUNT_POINT/$BL_PATH/"
+        fi
+    fi
+} # CheckForShimUpdates()
+
+ReplaceLocalRefindKey() {
+    mkdir -p "$ETC_KEYS_DIR/backup"
+    chmod 0700 "$ETC_KEYS_DIR/backup"
+    mv -f "$REFIND_PRIVATE_KEY" "$ETC_KEYS_DIR/backup/" 2> /dev/null
+    mv -f "$REFIND_CERT_KEY" "$ETC_KEYS_DIR/backup/" 2> /dev/null
+    mv -f "$REFIND_DER_KEY" "$ETC_KEYS_DIR/backup/" 2> /dev/null
+
+    GetYN "Do you want to encrypt your new keys" "N"
+    if [[ "$YN" == "Y" ]] ; then
+        EncryptKeys=1
+    else
+        EncryptKeys=0
+    fi
+
+    echo "Generating a fresh set of local keys...."
+    chmod 0700 "$ETC_KEYS_DIR"
+    if [[ $EncryptKeys == 1 ]]; then
+        KeyEncryptionArgument=""
+    else
+        KeyEncryptionArgument="-nodes"
+    fi
+    "$OpenSsl" req -new -x509 -newkey rsa:2048 -keyout "$REFIND_PRIVATE_KEY" -out "$REFIND_CERT_KEY" \
+                    $KeyEncryptionArgument -days 3650 -subj "/CN=Locally-generated rEFInd key/"
+    "$OpenSsl" x509 -in "$REFIND_CERT_KEY" -out "$REFIND_DER_KEY" -outform DER
+    chmod 0600 "$REFIND_PRIVATE_KEY"
+    echo
+    echo "Once the new key is used to sign an EFI binary, the key must be available to"
+    echo "the EFI to authenticate the newly-signed binaries."
+    echo
+    if [[ "$SHIM_STATE" == "SHIM" ]] ; then
+        GetYN "Do you want to enroll the new key in your firmware as a MOK" "Y"
+        if [[ "$YN" == "Y" ]] ; then
+            "$MokUtil" --import "$REFIND_DER_KEY"
+            REBOOT_AFTER="1"
+            echo "You must reboot after running this program to finish enrolling the MOK."
+            echo "Remember the password you just entered and opt to enroll the MOK in the"
+            echo "MokManager program that should appear after you reboot. This program will"
+            echo "prompt you to reboot when it ends."
+        fi
+    elif [[ "$SHIM_STATE" == "NOSHIM" ]] ; then
+        echo "This program does not support enrolling the key in a Secure Boot db store."
+        echo "You may be able to do this manually from Linux with a command like this:"
+        echo
+        echo "# efi-updatevar -a -c $REFIND_DER_KEY -k KEK.key db"
+        echo
+        echo "You will need access to your platform's KEK.key file to do this; see"
+        echo "https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html for details."
+        echo "Alternatively, you can use the EFI KeyTool utility or your computer's own"
+        echo "firmware setup utility."
+    fi
+    mkdir -p "$ESP_MOUNT_POINT"/"$BL_PATH"/keys/backup
+    mv "$ESP_MOUNT_POINT"/"$BL_PATH"/keys/refind_local* "$ESP_MOUNT_POINT"/"$BL_PATH"/keys/backup/ 2> /dev/null
+    cp -a "$ETC_KEYS_DIR/$LOCAL_KEYS_BASE"* "$ESP_MOUNT_POINT"/"$BL_PATH"/keys/
+} # ReplaceLocalRefindKey()
+
+# Display the local rEFInd key's expiration date and time and offer to replace it.
+# Also sets the global CURRENT_DATE and CURRENT_SECONDS variables.
+CheckRefindLocalKeyExpiration() {
+    local FullExpirationDate
+    local ExpirationYear
+    local ExpirationMonth
+    local ExpirationDay
+    local ExpirationDate
+
+    echo "*************************************************"
+    echo "* Checking the local rEFInd keys' expiration date"
+    echo "*************************************************"
+    echo
+
+    CURRENT_DATE=$(date +%Y-%m-%d)
+    CURRENT_SECONDS=$(date +%s)
+    if [[ -e "$REFIND_DER_KEY" ]] ; then
+        FullExpirationDate=$("$OpenSsl" x509 -enddate -noout -in "$REFIND_DER_KEY" | tr -s " " | cut -d "=" -f 2)
+        ExpirationYear=$(echo "$FullExpirationDate" | cut -d " " -f 4)
+        ExpirationMonth=$(echo "$FullExpirationDate" | cut -d " " -f 1)
+        ExpirationDay=$(echo "$FullExpirationDate" | cut -d " " -f 2)
+        ExpirationDate=$(date -d "$ExpirationMonth $ExpirationDay $ExpirationYear" "+%Y-%m-%d")
+        ExpirationSeconds=$(date -d "$ExpirationMonth $ExpirationDay $ExpirationYear" "+%s")
+    else
+        echo
+        echo "*** WARNING: rEFInd local keys not found! Pretending that they're expired...."
+        echo
+        ExpirationDate=$(date -d "Jan 01 2000" "+%Y-%m-%d")
+        ExpirationSeconds=$(date -d "Jan 01 2000" "+%s")
+    fi
+    echo "Current date is $CURRENT_DATE"
+    echo "rEFInd local key's expiration date is $ExpirationDate"
+    echo
+    TimeToExpiration="(($ExpirationSeconds-$CURRENT_SECONDS))"
+    if [[ "$TimeToExpiration" -lt $((365*24*60*60)) ]] ; then
+        if [[ $TimeToExpiration -lt 0 ]] ; then
+            echo "rEFInd's local Secure Boot key has expired!"
+            echo "Replacing this key with a new one is recommended!"
+        else
+            echo "rEFInd's local Secure Boot key will expire within a year."
+            echo "You should consider replacing this key soon."
+        fi
+        GetYN "Do you want to replace the current rEFInd local key" "N"
+        if [[ "$YN" == "Y" ]] ; then
+            ReplaceLocalRefindKey
+        fi
+    else
+        echo "rEFInd's local key will expire more than a year from today. Replacing it is"
+        echo "not recommended at this time."
+    fi
+} # CheckRefindLocalKeyExpiration()
+
+# Loops through an array of lines ($1) and parses it to find expired Secure Boot
+# keys (MOK, db, etc.). Displays a summary as it goes, including warning about
+# expired or soon-to-be-expired keys; but does not attempt to update them.
+# Sets the following global variables:
+#  FOUND_EXPIRED_KEY to "1" if any expired key was found
+#  FOUND_SHORT_KEY to "1" if any key with a short expiration date was found
+#  NUM_KEYS to the number of keys identified
+CheckKeyExpiration() {
+    KeyData="$1"
+    KeyNum=0
+    NUM_KEYS=0
+    for Line in "${KeyData[@]}" ; do
+        if [[ "$Line" == "[key"* ]] ; then
+            KeyNum=$(echo "$Line" | cut -d " " -f 2 | cut -d "]" -f 1)
+            Issuer=""
+            ExpirationDate=""
+        fi
+        if [[ "$Line" == *"Issuer:"* ]] ; then
+            Issuer="$Line"
+        fi
+        if [[ "$Line" == *"Not After"* ]] ; then
+            DateStr=$(echo "$Line" | grep -Po 'After : \K[^)]*')
+            ExpirationDate=$(date -d "$DateStr" "+%Y-%m-%d")
+            ExpirationSeconds=$(date -d "$DateStr" "+%s")
+            #echo "Current date is $CURRENT_DATE ($CURRENT_SECONDS)"
+            #echo "Expiration date is $ExpirationDate ($ExpirationSeconds)"
+            TimeToExpiration="(($ExpirationSeconds-CURRENT_SECONDS))"
+
+        fi
+        if [[ -n "$KeyNum" && -n "$Issuer" && -n "$ExpirationDate" ]] ; then
+            ((NUM_KEYS++))
+            if [[ "$TimeToExpiration" -lt $((365*24*60*60)) ]] ; then
+                if [[ $TimeToExpiration -lt 0 ]] ; then
+                    echo "${BOLD}Key # $KeyNum has expired! (Expired on $ExpirationDate.)${NORMAL}"
+                    echo "${BOLD}        It's HIGHLY recommended to replace this key with a new one!${NORMAL}"
+                    FOUND_EXPIRED_KEY="1"
+                else
+                    echo "${BOLD}Key # $KeyNum will expire within a year (on $ExpirationDate)${NORMAL}"
+                    FOUND_SHORT_KEY="1"
+                fi
+                echo "${BOLD}$Issuer${NORMAL}"
+            else
+                echo "Key # $KeyNum seems OK (expires $ExpirationDate)"
+                echo "$Issuer"
+            fi
+            KeyNum=""
+            Issuer=""
+            ExpirationDate=""
+        fi
+    done
+} # CheckKeyExpiration()
+
+CheckMokExpiration() {
+    echo
+    echo "**********************************************"
+    echo "* Checking the enrolled MOKs' expiration dates"
+    echo "**********************************************"
+    echo
+    readarray -t KeyData < <(mokutil --list-enrolled)
+    CheckKeyExpiration "${KeyData[@]}"
+    if [[ "$FOUND_EXPIRED_KEY" == "1" || "$FOUND_SHORT_KEY" == "1" ]] ; then
+        echo
+        echo "Discovered one or more expired or soon-to-be-expired MOK!"
+        echo "Check the above listing and consider looking for a replacement key. If a"
+        echo "replacement key has already been installed, then the old key will do no harm;"
+        echo "however, if a new key has not been installed, then Secure Boot verification of"
+        echo "the affected OS(es) may be impaired."
+        FOUND_EXPIRED_KEY="0"
+        FOUND_SHORT_KEY="0"
+    fi
+    if [[ "$NUM_KEYS" == 0 ]] ; then
+        echo "No MOKs found"
+        if [[ "$SHIM_STATE" == "SHIM" ]] ; then
+            echo "Finding no MOKs when Shim is active is highly unusual. Something weird is"
+            echo "going on that may require investigation."
+        else
+            echo "Finding no MOKs with no active Shim is normal."
+        fi
+    else # MOKs are present
+        if [[ "$SHIM_STATE" == "NOSHIM" ]] ; then
+            echo "MOKs are present, but the computer booted without the help of Shim. This is"
+            echo "normal if you've temporarily disabled Secure Boot and booted via some other"
+            echo "means; however, if you've permanently disabled Secure Boot or permanently"
+            echo "reconfigured the computer to use a full-control Secure Boot configuration"
+            echo "without Shim, then you may want to consider using mokutil in Linux or the"
+            echo "MokManager (mm$PLATFORM.efi) program to remove the now-useless MOKs from your"
+            echo "computer's NVRAM. Doing so is not necessary, but will conserve limited NVRAM"
+            echo "storage space."
+        fi
+    fi
+    PauseForKey
+} # CheckMokExpiration()
+
+CheckDbExpiration() {
+    echo
+    echo "*************************************************"
+    echo "* Checking the enrolled db keys' expiration dates"
+    echo "*************************************************"
+    echo
+    readarray -t KeyData < <(mokutil --db)
+    CheckKeyExpiration "${KeyData[@]}"
+    if [[ "$NUM_KEYS" == 0 ]] ; then
+        echo "No db keys found"
+    fi
+    PauseForKey
+} # CheckDbExpiration
+
+CheckKekExpiration() {
+    echo
+    echo "**********************************************"
+    echo "* Checking the enrolled KEKs' expiration dates"
+    echo "**********************************************"
+    echo
+    readarray -t KeyData < <(mokutil --kek)
+    CheckKeyExpiration "${KeyData[@]}"
+    if [[ "$NUM_KEYS" == 0 ]] ; then
+        echo "No KEKs found"
+    fi
+} # CheckKekExpiration
+
+CheckPkExpiration() {
+    echo
+    echo "*********************************************"
+    echo "* Checking the enrolled PKs' expiration dates"
+    echo "*********************************************"
+    echo
+    readarray -t KeyData < <(mokutil --pk)
+    CheckKeyExpiration "${KeyData[@]}"
+    if [[ "$NUM_KEYS" == 0 ]] ; then
+        echo "No PKs found"
+    fi
+} # CheckPkExpiration
+
+CheckAllKeysExpiration() {
+    CheckMokExpiration
+    CheckDbExpiration
+    CheckKekExpiration
+    CheckPkExpiration
+    if [[ "$FOUND_EXPIRED_KEY" == "1" || "$FOUND_SHORT_KEY" == "1" ]] ; then
+        echo
+        echo "Discovered one or more expired or soon-to-be-expired Secure Boot keys!"
+        echo "Replacing PK, KEK, or db keys is a job for experts; see"
+        echo "https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html for details."
+    fi
+} # CheckKeyExpiration()
+
+##########################################################
+#
+# Main part of script
+#
+##########################################################
+
+if [[ $UID != 0 ]] ; then
+   echo "Not running as root; attempting to elevate privileges via sudo...."
+   if ! sudo "${BASH_SOURCE[0]}" "$@" ; then
+      echo "This script must be run as root (or using sudo). Exiting!"
+      exit 1
+   else
+      exit 0
+   fi
+fi
+
+CheckPrerequisites
+CheckSbState
+if [[ "$SHIM_STATE" == "SHIM" ]] ; then
+    CheckForShimUpdates
+    PauseForKey
+fi
+CheckRefindLocalKeyExpiration
+PauseForKey
+CheckAllKeysExpiration
+if [[ "$REBOOT_AFTER" -eq 1 ]] ; then
+    echo
+    echo "You must reboot the computer to finish key management. you can do so yourself,"
+    echo "or this program can reboot right now."
+    GetYN "Do you want to reboot IMMEDIATELY" "N"
+    if [[ "$YN" == "Y" ]] ; then
+        reboot
+    fi
+fi

@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -102,6 +102,12 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* ShutdownAfterTimeout = */ FALSE,
                               /* Install = */ FALSE,
                               /* WriteSystemdVars = */ FALSE,
+                              /* FollowSymlinks = */ FALSE,
+#ifdef EFIAARCH64
+                              /* GzippedLoaders = */ TRUE,
+#else
+                              /* GzippedLoaders = */ FALSE,
+#endif
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -138,6 +144,8 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *MacOSRecoveryFiles = */ NULL,
                               /* *DriverDirs = */ NULL,
                               /* *IconsDir = */ NULL,
+                              /* *LinuxPrefixes = */ NULL,
+                              /* *LinuxMatchPatterns = */ NULL,
                               /* *ExtraKernelVersionStrings = */ NULL,
                               /* *SpoofOSXVersion = */ NULL,
                               /* CsrValues = */ NULL,
@@ -166,7 +174,7 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"rEFInd Version %s", REFIND_VERSION));
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
-        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2021 Roderick W. Smith");
+        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2023 Roderick W. Smith");
         AddMenuInfoLine(&AboutMenu, L"Portions Copyright (c) Intel Corporation and others");
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
@@ -243,12 +251,19 @@ VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 
 // Minimal initialization function
 static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
+    EFI_STATUS Status;
+
     gST            = SystemTable;
     //    gImageHandle   = ImageHandle;
     gBS            = SystemTable->BootServices;
     //    gRS            = SystemTable->RuntimeServices;
     gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
-    EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+    Status = EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+    if (EFI_ERROR(Status)) {
+        // Be sure that gDS isn't pointing to some random place; check it
+        // before each use....
+        gDS = 0;
+    }
 }
 
 #endif
@@ -435,6 +450,12 @@ VOID LogBasicInfo(VOID) {
     LOG(1, LOG_LINE_NORMAL, L"System does%s support GOP graphics mode",
         EFI_ERROR(Status) ? L" not" : L"");
 
+#ifdef __MAKEWITH_TIANO
+    if (gDS == 0) {
+        LOG(1, LOG_LINE_NORMAL, L"WARNING: EfiGetSystemConfigurationTable() returned error status %lu!", Status);
+        LOG(1, LOG_LINE_NORMAL, L"         Some functionality will be impaired!");
+    }
+#endif
 } // VOID LogBasicInfo()
 
 //

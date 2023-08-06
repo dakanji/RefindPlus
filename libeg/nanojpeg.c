@@ -113,9 +113,9 @@
 #define _NANOJPEG_H
 
 // Modified: Map libc-style free() and malloc() to their EFI equivalents....
-#define free FreePool
+#define free MyFreePool
 #define malloc AllocatePool
-#define memset MyMemSet
+#define memset(b, c, v) MyMemSet(b, v, c)
 #define memcpy MyMemCpy
 
 
@@ -341,6 +341,8 @@ typedef struct _nj_ctx {
 } nj_context_t;
 
 static nj_context_t nj;
+
+nj_vlc_code_t *nj_vlctab[] = {NULL, NULL, NULL, NULL};
 
 static const char njZZ[64] = { 0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18,
 11, 4, 5, 12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6, 7, 14, 21, 28, 35,
@@ -885,16 +887,21 @@ int njInit(void) {
     int i, retval = 1;
     njFillMem(&nj, 0, sizeof(nj_context_t));
     for (i = 0; i < 4; i++) {
-        nj.vlctab[i] = njAllocMem(sizeof(nj_vlc_code_t) * 65536);
-        if (nj.vlctab[i])
-            njFillMem(nj.vlctab[i], 0, sizeof(nj_vlc_code_t) * 65536);
-        else
+        if (!nj_vlctab[i]) {
+            nj_vlctab[i] = njAllocMem(sizeof (nj_vlc_code_t) * 65536);
+        }
+        if (nj_vlctab[i]) {
+            nj.vlctab[i] = nj_vlctab[i];
+            njFillMem(nj.vlctab[i], 0, sizeof (nj_vlc_code_t) * 65536);
+        }
+        else {
             retval = 0;
+        }
     } // for
     if (retval == 0) {
         for (i = 0; i < 4; i++) {
-            njFreeMem(nj.vlctab[i]);
-            nj.vlctab[i] = NULL;
+            MyFreePool(nj_vlctab[i]);
+            nj_vlctab[i] = NULL;
         } // for
     } // if
     return retval;
@@ -908,8 +915,10 @@ void njDone(void) {
     for (i = 0;  i < 3;  ++i)
         if (nj.comp[i].pixels) njFreeMem((void*) nj.comp[i].pixels);
     if (nj.rgb) njFreeMem((void*) nj.rgb);
-    for (i = 0; i < 4; i++)
-        njFreeMem(nj.vlctab[i]);
+    for (i = 0; i < 4; i++) {
+        njFreeMem(nj_vlctab[i]);
+        nj_vlctab[i] = NULL;
+    }
     njInit();
 }
 

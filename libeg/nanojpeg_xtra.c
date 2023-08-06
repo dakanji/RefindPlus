@@ -26,6 +26,7 @@
 
 #include "global.h"
 #include "../refind/screen.h"
+#include "../refind/lib.h"
 // nanojpeg.c is weird; it doubles as both a header file and a .c file,
 // depending on whether _NJ_INCLUDE_HEADER_ONLY is defined....
 #define _NJ_INCLUDE_HEADER_ONLY
@@ -72,7 +73,7 @@ EG_IMAGE * egDecodeJPEG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
             if (WantAlpha)
                 NewImage->PixelData[i].a = 255;
         }
-        FreePool(JpegData);
+        MyFreePool(JpegData);
         njDone();
     }
 

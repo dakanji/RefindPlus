@@ -37,6 +37,9 @@
 
 //#define VERSION L"0.9.1"
 
+#ifndef __GPTSYNC_H
+#define __GPTSYNC_H
+
 //
 // config
 //
@@ -227,4 +230,5 @@ UINTN detect_mbrtype_fs(UINT64 partlba, UINTN *parttype, CHARN **fsname);
 UINTN gptsync(VOID);
 UINTN showpart(VOID);
 
+#endif
 /* EOF */

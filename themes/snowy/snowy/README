@@ -35,6 +35,11 @@ Icon Sources (Overview)
   - Copyright (c) 2014-2017 Canonical Ltd.
   - License: CC-BY-SA 3.0
 
+- Haiku OS icon
+  - Source: Direct submission to rEFInd by Adrien Destugues
+  - Copyright 2010-2023 Haiku, inc.
+  - License: Expat
+
 Some icons have been altered from their original forms -- normally
 conversion from SVG to PNG format, resizing, changes in coloration, or
 addition of "drop shadow" effects. Details follow....
@@ -118,7 +123,6 @@ mouse.png
 os_clover.png
 os_freebsd.png
 os_gummiboot.png
-os_haiku.png
 os_legacy.png
 os_mac.png
 os_netbsd.png

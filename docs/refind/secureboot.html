@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/13/2012; last Web page update:
-4/10/2022, referencing rEFInd 0.13.3</p>
+3/4/2023, referencing rEFInd 0.14.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -140,11 +140,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="#preloader">Using rEFInd with PreLoader</a></li>
 
+<li class="tight"><a href="#sb-healthcheck">Performing Secure Boot Maintenance</a></li>
+
 <li class="tight"><a href="#caveats">Secure Boot Caveats</a></li>
 
 </ul>
 
 </div>
+
+<p class="sidebar"><b>Note:</b> rEFInd added Secure Boot support in late 2012. By default, the local Secure Boot keys created by the <tt>refind-install</tt> script have 10-year lifespans. Thus, if you used local keys from the start, you may need to renew them, as described in the section, <a href="#sb-healthcheck">Performing Secure Boot Maintenance.</a></p>
 
 <p>If you're using a computer that supports Secure Boot, you may run into extra complications. This feature is intended to make it difficult for malware to insert itself early into the computer's boot process. Unfortunately, it also complicates multi-boot configurations such as those that rEFInd is intended to manage. This page describes some <a href="#basic">Secure Boot basics</a> and two specific ways of using rEFInd with Secure Boot: <a href="#shim">Using the Shim program</a> and <a href="#preloader">using the PreLoader program.</a> (My separate <a href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html">EFI Boot Loaders for Linux page on Secure Boot</a> covers the additional topics of <a href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">disabling Secure Boot</a> and <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">adding keys to the firmware's own set of keys.)</a> This page concludes with a look at <a href="#caveats">known bugs and limitations</a> in rEFInd's Secure Boot features.</p>
 
@@ -537,6 +541,182 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 <p>Although PreLoader is easier to set up than Shim, particularly if you need to launch programs or kernels that aren't already signed, it suffers from the problem that you must register every new program you install, including Linux kernels if you launch them directly from rEFInd. This need can be a hassle if you update your kernels frequently, and every new registration chews up a little space in your NVRAM. Nonetheless, PreLoader can be a good Secure Boot solution for many users or if you want to build a portable Linux installation that you can use on any computer with minimal fuss.</p>
 
+<a name="sb-healthcheck">
+<h2>Performing Secure Boot Maintenance</h2>
+</a>
+
+<p class="sidebar"><b>Note:</b> rEFInd binaries that I built myself have the 20-year key expiration dates; however, if you installed rEFInd via a package built elsewhere (including those in the Debian, Ubuntu, or Ubuntu PPA archives), then they came unsigned and were signed with your local key. In the case of Debian, Ubuntu, and Ubuntu PPA packages, this signing occurs quietly, so the distinction between my officially-signed and locally-signed binaries may not be obvious, but it can be important.</p>
+
+<p>Once you've configured rEFInd to use Secure Boot, it will usually keep working for a good long time; however, there are a couple of maintenance items you may want to consider. The first of these is keeping your Shim binary up-to-date. Most Linux distributions install new Shim binaries from time to time; but they usually assume that the computer uses GRUB to boot, and so will seldom update rEFInd's Shim binary automatically. (The MokManager utility must usually be updated in lockstep with the Shim binary, as well.) The second maintenance item is to replace your rEFInd MOK (or Secure Boot db key, if you <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">took complete control</a> of your computer's Secure Boot process), if and when that becomes necessary. The local signing keys created by the <tt>refind-install</tt> script last for ten years. Because this support was added in late 2012, some local signing have already expired, or are close to expiration. (The keys I use to sign binaries I build locally were created with 20-year lifespans, so they won't expire until December 1, 2032.) Key expiration may not be a big deal, though; in my tests, neither Shim nor the computers I've tested enforce key expiration dates. It may therefore be possible to use even a long-expired key indefinitely. I can't promise this will always be true, though, and in fact I've heard of one server that does enforce key expiration dates. Thus, it's probably prudent to keep ahead of this matter.</p>
+
+<p>The <tt>refind-sb-healthcheck</tt> script can help with maintaining both the Shim you use to launch rEFInd and Secure Boot keys. This script is interactive, and it produces a fair amount of output, which can vary greatly from one computer to another. It includes a number of pause points so that you can read the just-generated output, but in some cases this output may scroll off a screen. It's therefore best to run it in a GUI Terminal program rather than at a text-mode console.</p>
+
+<p>To begin, run <tt>refind-sb-healthcheck</tt> as <tt>root</tt> or using <tt>sudo</tt>. (If you run it as an ordinary user, the script will try to escalate its privilege level.) The script begins by trying to update Shim, if your computer uses Shim to boot. (If the script detects a non-Shim boot path, as when you <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">completely control Secure Boot,</a> then it skips this part.)</p>
+
+<pre class="listing">
+$ <b>sudo refind-sb-healthcheck</b>
+*********************************"
+* Checking Secure Boot status....
+*********************************
+
+Secure Boot is active
+Shim program detected
+*****************************************************
+* Checking for updates to Shim on the ESP and in /usr
+*****************************************************
+Detected ESP mounted at /boot/efi
+The current Shim program is /boot/efi//EFI/refind/shimx64.efi
+Its date stamp is: 2019-02-28-19:39
+
+Newer Shim programs are:
+  --> 2023-03-01-03:05: /boot/efi/EFI/ubuntu/shimx64.efi
+      --> Found matching mmx64.efi
+  --> 2023-01-31-11:57: /usr/lib/shim/shimx64.efi
+      --> Found matching mmx64.efi
+
+The newest Shim candidate is /boot/efi/EFI/ubuntu/shimx64.efi,
+with a date of 2023-03-01-03:05
+Do you want to copy the newer Shim binary over the current one (y/N)? <b>y</b>
+Backing up current Shim and MokManager programs....
+Copying /boot/efi/EFI/ubuntu/shimx64.efi to /boot/efi//EFI/refind/
+Copying /boot/efi/EFI/ubuntu/mmx64.efi to /boot/efi//EFI/refind/
+Press the Enter key to continue:
+</pre>
+
+<p>In this example, the script has identified that the computer booted through Shim, and it's searched the ESP and the <tt>/usr</tt> directory tree for a more recent Shim than the one used to boot the computer. <b><i>The script uses the files' date stamps to determine their age, not the Shim binaries' version numbers!</i></b> The version numbers would be a better measure of which Shim is the most recent, but version numbers are very difficult to identify, so <tt>refind-sb-healthcheck</tt> uses the date stamps instead. This is a reasonable, but imperfect, proxy. As noted in the output, the script also looks for a matching <tt>mmx64.efi</tt> (MokManager) binary; it will not offer to copy a Shim binary without a matching MokManager.</p>
+
+<p>In this example, the script has identified a newer Shim binary than the one rEFInd used, and has offered to copy it over the existing rEFInd Shim binary. The newer binary is part of an Ubuntu installation on the ESP. This is a common configuration; distributions frequently update their own on-ESP boot managers' Shim programs, even if they don't update rEFInd's Shim. Also, in this example, two Shim binaries were found. They are in fact identical, but the one on the ESP has a later timestamp because it was copied after it was written to the <tt>/usr/lib/shim</tt> directory.</p>
+
+<p>When copying a newer Shim binary, <tt>refind-sb-healthcheck</tt> backs up the original Shim and MokManager binaries by renaming them with <tt>.backup</tt> added to their filenames. This should enable you to restore the originals if the new binaries give you problems; however, you'll need to boot in some other way, at least into an EFI shell, to do so. Thus, I recommend proceeding with this operation only if you know how to do this.</p>
+
+<p>With the Shim binary updated (or the update bypassed, deferred, or unnecessary), <tt>refind-sb-healthcheck</tt> proceeds to check the rEFInd local keys' expiration dates:</p>
+
+<pre class="listing">
+*************************************************
+* Checking the local rEFInd keys' expiration date
+*************************************************
+
+Current date is 2023-03-01
+rEFInd local key's expiration date is 2022-12-07
+
+rEFInd's local Secure Boot key has expired!
+Replacing this key with a new one is recommended!
+Do you want to replace the current rEFInd local key (y/N)?
+</pre>
+
+<p>Unlike checking the Shim binaries' relative ages, this check digs into the key files themselves to identify their expiration dates. In this example, the local keys have expired, so the program gives you the chance to update them. If you choose to do so, the old keys are moved to the <tt>/etc/refind.d/keys/backup</tt> directory and fresh keys are created in <tt>/etc/refind.d/keys</tt>. If the existing keys have a year or more of life left in them, <tt>refind-sb-healthcheck</tt> will declare that replacing the keys is not recommended and move on; you can skip ahead a bit in this example.</p>
+
+<p>If you choose to upgrade your keys, <tt>refind-sb-healthcheck</tt> asks if you want to encrypt them. Encrypting keys means that you'll have to enter a password to use them, which can be a nuisance; but this also makes it much harder for an intruder to use your keys.</p>
+
+<pre class="listing">
+Do you want to replace the current rEFInd local key (y/N)? <b>y</b>
+Do you want to encrypt your new keys (y/N)? <b>n</b>
+Generating a fresh set of local keys....
+....+...+.....+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*......+.....+...+..........+...+...+.....+.....................+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+...+.....+...+...+.......+........+.+......+...+...........+.+..+...+.........+.+........+.+.....+....+.....+..........+......+...+...............+.....+............+...+.+............+.....+....+......+........+............+.............+......+...+......+..+..................+.+......+...............+...+..+.......+..+......+....+...+..+....+..+.........+....+..+....+...+........+.............+..+...+..........+.....................+.....+...+......+......+.............+.....+...+....+..............................+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+.....+..................+.+..+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+..............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..........+..+.....................+....+...+..+.+..+.+...........+...+.+...........+......+...+.....................+...+.......+.....+...+.+..+....+........+...+...+.+.....+.+.........+......+....................+.........+.+.....+...+......+......+.......+..+.............+.....+...+...+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-----
+
+Once the new key is used to sign an EFI binary, the key must be available to
+the EFI to authenticate the newly-signed binaries.
+
+Do you want to enroll the new key in your firmware as a MOK (Y/n)? <b>y</b>
+input password:
+input password again:
+You must reboot after running this program to finish enrolling the MOK.
+Remember the password you just entered and opt to enroll the MOK in the
+MokManager program that should appear after you reboot. This program will
+prompt you to reboot when it ends.
+Press the Enter key to continue:
+</pre>
+
+<p>Whatever choices you make regarding rEFInd's local keys, once this is done the script moves on to checking the MOKs, db keys, KEKs, and PKs that are enrolled in your computer's NVRAM:</p>
+
+<pre class="listing">
+**********************************************
+* Checking the enrolled MOKs' expiration dates
+**********************************************
+
+Key # 1 seems OK (expires 2031-02-23)
+        Issuer: CN=Locally-generated rEFInd key
+Key # 2 seems OK (expires 2032-12-01)
+        Issuer: CN=Roderick W. Smith, rodsmith@rodsbooks.com
+Key # 3 seems OK (expires 2025-02-18)
+        Issuer: CN=Ringworld 2015-02-21 DB
+Key # 4 seems OK (expires 2034-12-24)
+        Issuer: CN=openSUSE Secure Boot CA, C=DE, L=Nuremberg, O=openSUSE Project/emailAddress=build@opensuse.org
+<b>Key # 5 has expired! (Expired on 2021-03-20.)
+        Replacing this key with a new one is recommended!
+        Issuer: C=US, L=SomeCity, O=SomeOrg</b>
+Key # 6 seems OK (expires 2042-04-11)
+        Issuer: C=GB, ST=Isle of Man, L=Douglas, O=Canonical Ltd., CN=Canonical Ltd. Master Certificate Authority
+
+Discovered one or more expired or soon-to-be-expired MOK!
+Check the above listing and consider looking for a replacement key. If a
+replacement key has already been installed, then the old key will do no harm;
+however, if a new key has not been installed, then Secure Boot verification of
+the affected OS(es) may be impaired.
+Press the Enter key to continue:
+</pre>
+
+<p>The first set of keys to be examined is the MOKs. In this example, six MOKs are enrolled. Of those, five expire more than a year in the future and so are not reported in detail; however, the fifth MOK has already expired! (This example was run in March of 2023.) In most of my code listings, I use bold text to denote something you type; but the <tt>refind-sb-healthcheck</tt> script uses bold text to help draw your attention to keys that have expired or that will expire soon. The <tt>Issuer</tt> field isn't very informative in this example, but in fact this is a very old Canonical key (for the Ubuntu Linux distribution).</p>
+
+<p>Old MOKs aren't necessarily a problem. Typically, the issuer will release an updated MOK before the old one expires, and as long as the new MOK is installed and any programs signed with the old MOK are updated before the expiration date, everything will work fine. In the preceding output, for instance, key #6 is a newer Canonical key, which renders key #5 redundant. If desired, you can use <tt>mokutil</tt> in Linux or <tt>MokManager</tt> in EFI to delete the old MOK. Although this isn't required, it is desirable &mdash; an old key can be a security risk because it might have been used to sign programs that had security vulnerabilities, and it's better if your computer not run such programs. In any event, you should do some more digging to discover what the expired MOK is and determine if an updated MOK is available. You can obtain a complete list of installed MOKs by typing <tt>mokutil --list-installed</tt>, but be aware that the output is copious because it includes a lot of technical details.</p>
+
+<p>After checking MOKs, <tt>refind-sb-healthcheck</tt> moves on to the UEFI's Secure Boot db:</p>
+
+<pre class="listing">
+*************************************************
+* Checking the enrolled db keys' expiration dates
+*************************************************
+
+Key # 1 seems OK (expires 2026-10-19)
+        Issuer: C=US, ST=Washington, L=Redmond, O=Microsoft Corporation, CN=Microsoft Root Certificate Authority 2010
+Key # 2 seems OK (expires 2026-06-27)
+        Issuer: C=US, ST=Washington, L=Redmond, O=Microsoft Corporation, CN=Microsoft Corporation Third Party Marketplace Root
+Press the Enter key to continue:
+</pre>
+
+<p>This example is typical of a stock setup; it includes nothing but two Microsoft keys. Both expire in 2026, so there's no imminent threat of Secure Boot problems arising from their expiration.</p>
+
+<p>If you've <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">taken complete control of Secure Boot</a> on your computer, then you may have several keys in the db. There may also be another key or two even on a stock setup, because some manufacturers install a key of their own, or sometimes a trusted third-party key.</p>
+
+<p>If you do find outdated keys in the db, then there's not much you can do about it, except by <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">taking complete control of Secure Boot.</a> This is a tricky process, so it's probably not worth attempting unless you're technically inclined and well-motivated. It's also conceivable that a firmware update or even an OS update will remove old db keys and replace them with new ones.</p>
+
+<p>Finally, <tt>refind-sb-healthcheck</tt> reports on the KEK and PK entries:</p>
+
+<pre class="listing">
+**********************************************
+* Checking the enrolled KEKs' expiration dates
+**********************************************
+
+Key # 1 seems OK (expires 2026-06-24)
+        Issuer: C=US, ST=Washington, L=Redmond, O=Microsoft Corporation, CN=Microsoft Corporation Third Party Marketplace Root
+
+*********************************************
+* Checking the enrolled PKs' expiration dates
+*********************************************
+
+<b>Key # 1 has expired! (Expired on 2018-04-09.)
+        Replacing this key with a new one is recommended!
+        Issuer: CN=Root Agency</b>
+
+Discovered one or more expired or soon-to-be-expired Secure Boot keys!
+Replacing PK, KEK, or db keys is a job for experts; see
+https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html for details.
+
+You must reboot the computer to finish key management. you can do so yourself,
+or this program can reboot right now.
+Do you want to reboot IMMEDIATELY (y/N)?
+</pre>
+
+<p>Secure Boot supports just one PK per computer, and most computers have just one (or occasionally two) KEKs, so there's no built-in pause in <tt>refind-sb-healthcheck</tt>'s reporting of these keys.</p>
+
+<p>This example turns up something interesting: Although the KEK has yet to expire, the PK (which is the top-level key, upon which all other Secure Boot keys ultimately depend) has expired! This example is based on an ASROCK FM2A88M motherboard, which was introduced in 2013. Its PK was created in 2013 and had a mere 5-year lifespan. The computer has never run Windows, so there's been no chance of key updates from Microsoft. (That said, the PK appears to come from ASROCK, so they're the ones who would have to have issued updates to the PK, barring my taking control of the Secure Boot subsystem myself.) Despite the expiration of the PK, Secure Boot seems to be functioning correctly on this computer, so no harm has come from this (apparent) problem.</p>
+
+<p>As had been promised when I opted to enroll my new rEFInd MOK in the NVRAM, the script now prompts to reboot the computer. Selecting <tt class="userinput">Y</tt> will do so; pressing the Enter key or typing <tt class="userinput">N</tt> will not. The next time the computer reboots, though, it will enter the MokManager EFI program, which was described briefly <a href="#installation">earlier.</a> After typing your password, you should tell it to finish enrolling your new MOK. If you fail to do so, though, you should be able to do so in the future by reading the MOK off the ESP, just as after installing rEFInd.</p>
+
+<p>Be aware that the <tt>refind-sb-healthcheck</tt> script is new with rEFInd version 0.14.0 (released in March of 2023). It may contain bugs, and it performs potentially dangerous tasks &mdash replacing files, adjusting rEFInd local Secure Boot keys, and adjusting the MOK list. Thus, you should treat <tt>refind-sb-healthcheck</tt> with extra care!</p>
+
 <a name="caveats">
 <h2>Secure Boot Caveats</h2>
 </a>
@@ -596,6 +776,23 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     <tt>shimx64.efi</tt> file in rEFInd's directory with the latest
     version.</li>
 
+<li>As a follow-on to the preceding point, versions of Shim released since
+    early 2021 require that signed EFI binaries launched by Shim include
+    version information. This is known as the <i>Secure Boot Advanced
+    Targeting</i> (SBAT) system, and the version information is stored in a
+    part of the boot program binary known as <tt>.sbat</tt>. Starting with
+    rEFInd 0.14.0, rEFInd builds an <tt>.sbat</tt> section. If you're using
+    a version of Shim that was released prior to early 2021, you might want
+    to consider upgrading it to a newer version. Note that the Shim that
+    launches rEFInd is <i>not</i> updated automatically when a new Shim is
+    installed; you must do this manually! If you <a
+    href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">completely
+    control Secure Boot</a> on your computer, or if you disable Secure Boot,
+    then SBAT is irrelevant; it provides no benefit, and the <tt>.sbat</tt>
+    section in rEFInd does no harm.</p>
+
+</li>
+
 </ul>
 
 <p>If you launch a boot loader or other program from rEFInd that relies on the EFI's standard program-launching code, that program should take advantage of Shim and its MOKs. For instance, if you launch gummiboot (aka systemd-boot) from rEFInd (and rEFInd from Shim), gummiboot should be able to launch Shim/MOK-signed Linux kernels. In practice, this may not work with all versions of Shim, though. Shim 0.8 and later enables the binary that it launches to launch just one additional binary, not an endless stream of them. (rEFInd employs an internal workaround to this problem to do its own job.)</p>
@@ -606,7 +803,7 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2023 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

@@ -1,5 +1,115 @@
+0.14.1 (?/?/2023):
+------------------
+
+- Fixed bug that caused JPEG decoding to produce garbled images when rEFInd
+  was compiled with most Linux toolchains. It happened to work fine when
+  compiled with Ubuntu (which I use) or Gentoo, but not with Arch, Debian,
+  Fedora, or openSUSE.
+
+- Fixed a memory leak in JPEG handling code.
+
+- Fixed a bug that could cause some EFI programs (notably Pete Batard's
+  drivers on ARM64 systems) to be incorrectly marked as invalid.
+
+- Improved error checking of log file creation and rotation. Bugs in
+  Tow-Boot (aka Das U-Boot) 8225.40 on a Raspberry Pi were interacting with
+  rEFInd's minimal error checking on log file rotation, causing rEFInd to
+  crash when attempting to rotate the log file. This is now fixed.
+
+- Excise most BIOS/CSM/legacy scanning and boot code from builds that are
+  not on x86/IA32 or x86-64/ARM64/X64. This code is useless without a CSM,
+  which is a component that is useful only on x86/x86-64 systems. Removing
+  this useless code reduces binary size and minimizes the risk of
+  BIOS/CSM/legacy-related bugs affecting ARM64/AARCH64 builds (and
+  conceivably others, in the future).
+
+- Added linux_prefixes token, which specifies string(s) that, when present
+  at the start of a filename, denote a Linux kernel.
+
+- Replaced "bzImage" with "Image" as a kernel identifier on ARM64 systems.
+  (This is unchanged on x86/x86-64 systems.) Some Linux distributions call
+  their Linux kernels Image, Image.gz, or something else that starts with
+  "Image".
+
+- Worked around a bug in at least one UEFI that could cause rEFInd to freeze
+  when doing a self-install.
+
+
+0.14.0 (3/4/2023):
+------------------
+
+- Added ability to launch gzip-compressed loaders. This is useful mainly on
+  ARM64 platforms.
+
+- Added support for .sbat sections in rEFInd binaries. These are needed
+  for recent versions of Shim to launch follow-on programs, including
+  rEFInd.
+
+- Added new refind-sb-healthcheck script, which helps manage Secure Boot
+  keys. See the docs/refind/secureboot.html documentation and
+  docs/man/refind-sb-healthcheck.8 man page for details.
+
+- Added new follow_symlinks option. This causes rEFInd to read loaders that
+  are symbolic links on filesystems that support this feature. In most
+  cases, these symlinks are redundant; but in some cases (such as on
+  openSUSE) following the symlinks is necessary to read a kernel. Credit to
+  dakanji for adding this feature.
+
+- Minor cleanup of mkrlconf and refind-install scripts; should not affect
+  functionality
+
+- Adrien Destugues submitted a new icon for the Haiku OS, based on an
+  official Haiku OS icon.
+
+- The ext4fs driver now ignores the metadata_csum_seed flag, which is being
+  set by default in e2fsprogs 1.47.0 and later. Thanks to Martin Whitaker
+  for the relevant patch.
+
+- Added several new Secure Boot keys for Red Hat in the keys directory.
+  (This doesn't affect rEFInd functionality; they're just there for
+  convenience.)
+
+- Fixed bug in refind-install that caused it to fail to install the
+  filesystem driver in some Linux distributions. (The output of blkid
+  changed somewhere along the line, breaking refind-install.)
+
+- Fixed bug in mkcdimage that caused USB flash drive image to be
+  damaged.
+
+- Fixed bug that could cause rEFInd since 0.11.5 to freeze on some
+  computers.
+
+- Fixed bugs that could cause rEFInd to freeze when opening a new log file,
+  opening filesystems, installing itself, or even just scanning for boot
+  loaders on some systems.
+
+- Fixed a bug that could cause rEFInd to freeze if refind_linux.conf was
+  of zero length or had certain types of malformed content.
+
+- Fixed a bug that would cause important error messages (such as those about
+  loader files that are missing, despite being in menus) appearing for a
+  fraction of a second and then disappearing.
+
+- Fixed a bug that could cause directories specified in also_scan_dirs to
+  not be scanned if a filesystem/partition name was used in addition to a
+  directory path.
+
+- Fixed a bug that caused generated RPM file and Debian package derived from
+  it by alien to not be properly signed with a Secure Boot key.
+
+- Change to how refind-install manages local keys, which makes accidentally
+  deleting symlinked keys less likely. Thanks to Das Menschy for this fix.
+
+- Updated LodePNG library to the latest version (20221108).
+
+- The ReiserFS driver is now deprecated; see docs/refind/drivers.html for
+  details.
+
+- Disallow parallel builds of filesystem drivers with GNU-EFI, since this
+  can cause problems.
+
 0.13.3.1 (4/12/2022):
--------------------
+---------------------
 
 - Fixed bug that caused refind-install to not recognize already-mounted
   ESP in Linux. This was causing installation failures on some systems.

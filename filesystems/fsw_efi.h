@@ -78,13 +78,13 @@ typedef struct {
 #define FSW_VOLUME_FROM_FILE_SYSTEM(a)  CR (a, FSW_VOLUME_DATA, FileSystem, FSW_VOLUME_DATA_SIGNATURE)
 
 /**
- * EFI Host: Private structure for a EFI_FILE interface.
+ * EFI Host: Private structure for a EFI_FILE_PROTOCOL interface.
  */
 
 typedef struct {
     UINT64                      Signature;      //!< Used to identify this structure
 
-    EFI_FILE                    FileHandle;     //!< Published EFI protocol interface structure
+    EFI_FILE_PROTOCOL           FileHandle;     //!< Published EFI protocol interface structure
 
     UINT64                       Type;           //!< File type used for dispatching
     struct fsw_shandle          shand;          //!< FSW handle for this file

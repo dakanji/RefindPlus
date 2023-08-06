@@ -22,6 +22,12 @@ GNUEFILIB       = /usr/lib
 EFILIB          = /usr/lib
 EFICRT0         = /usr/lib
 
+# Below are good for compiling with Fedora on x86-64....
+#EFIINC          = /usr/include/efi
+#GNUEFILIB       = /usr/lib64
+#EFILIB          = /usr/lib64
+#EFICRT0         = /usr/lib64/gnuefi
+
 # Comment out above and uncomment below if using locally-compiled GNU-EFI....
 #EFIINC          = /usr/local/include/efi
 #GNUEFILIB       = /usr/local/lib
@@ -30,6 +36,12 @@ EFICRT0         = /usr/lib
 
 HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
 ARCH            ?= $(HOSTARCH)
+
+# Pointer to SBAT .csv file. First is default; uncomment second (or make your
+# your own) if you build your own binary. If you make changes and build your
+# own binary, creating your own file is the best practice.
+REFIND_SBAT_CSV = refind-sbat.csv
+#REFIND_SBAT_CSV = refind-sbat-local.csv
 
 # Note: TIANOBASE is defined in master Makefile and exported
 GENFW           = $(TIANOBASE)/BaseTools/Source/C/bin/GenFw
@@ -64,7 +76,7 @@ OPTIMFLAGS      = -Os -fno-strict-aliasing -fno-tree-loop-distribute-patterns
 CFLAGS          = $(OPTIMFLAGS) -fno-stack-protector -fshort-wchar -Wall
 
 # ...for GNU-EFI....
-GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
+GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok -I../gzip
 
 # ...and for TianoCore....
 TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
@@ -76,6 +88,7 @@ TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
                      -I .. \
                      -I ../refind \
                      -I ../libeg \
+                     -I ../gzip \
                      -I ../include \
                      -I ../mok
 #

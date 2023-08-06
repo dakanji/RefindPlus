@@ -35,7 +35,7 @@
  */
 
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  * 
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3) or (at your option) any later version.
@@ -114,7 +114,7 @@ EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFI
         return EFI_LOAD_ERROR;
     }
     ReadSize = FileInfo->FileSize;
-    FreePool(FileInfo);
+    MyFreePool(FileInfo);
 
     File->BufferSize = (UINTN)ReadSize;
     File->Buffer = AllocatePool(File->BufferSize);
@@ -260,7 +260,7 @@ static BOOLEAN KeepReading(IN OUT CHAR16 *p, IN OUT BOOLEAN *IsQuoted) {
             Temp = StrDuplicate(&p[1]);
             if (Temp != NULL) {
                 StrCpy(p, Temp);
-                FreePool(Temp);
+                MyFreePool(Temp);
             }
             MoreToRead = TRUE;
         } else {
@@ -316,7 +316,7 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
             AddListElement((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate(Token));
         }
 
-        FreePool(Line);
+        MyFreePool(Line);
     }
     return (TokenCount);
 } /* ReadTokenLine() */
@@ -360,7 +360,7 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
     }
 
     if ((*Target != NULL) && !AddMode) {
-        FreePool(*Target);
+        MyFreePool(*Target);
         *Target = NULL;
     } // if
     for (i = 1; i < TokenCount; i++) {
@@ -494,6 +494,24 @@ static LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry) {
     return(Entry);
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
 
+// Sets GlobalConfig.LinuxMatchPatterns based on the input comma-delimited set
+// of prefixes. An asterisk ("*") is added to each of the input prefixes and
+// GlobalConfig.LinuxMatchPatterns is set to the resulting comma-delimited
+// string.
+static VOID SetLinuxMatchPatterns(CHAR16 *Prefixes) {
+    CHAR16 *Pattern, *PatternSet = NULL;
+    UINTN i = 0;
+
+    while ((Pattern = FindCommaDelimited(Prefixes, i++)) != NULL) {
+        MergeStrings(&Pattern, L"*", 0);
+        MergeStrings(&PatternSet, Pattern, L',');
+        MyFreePool(Pattern);
+    }
+    if (GlobalConfig.LinuxMatchPatterns)
+        MyFreePool(GlobalConfig.LinuxMatchPatterns);
+    GlobalConfig.LinuxMatchPatterns = PatternSet;
+} // VOID SetLinuxMatchPatterns()
+
 // read config file
 VOID ReadConfig(CHAR16 *FileName)
 {
@@ -528,6 +546,7 @@ VOID ReadConfig(CHAR16 *FileName)
         GlobalConfig.MacOSRecoveryFiles = StrDuplicate(MACOS_RECOVERY_FILES);
         MyFreePool(GlobalConfig.DefaultSelection);
         GlobalConfig.DefaultSelection = StrDuplicate(L"+");
+        GlobalConfig.LinuxPrefixes = StrDuplicate(LINUX_PREFIXES);
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
@@ -592,6 +611,9 @@ VOID ReadConfig(CHAR16 *FileName)
                 else
                     GlobalConfig.ScanFor[i] = ' ';
             }
+
+        } else if (MyStriCmp(TokenList[0], L"follow_symlinks")) {
+            GlobalConfig.FollowSymlinks = HandleBoolean(TokenList, TokenCount);
 
         } else if (MyStriCmp(TokenList[0], L"use_nvram")) {
             GlobalConfig.UseNvram = HandleBoolean(TokenList, TokenCount);
@@ -687,6 +709,9 @@ VOID ReadConfig(CHAR16 *FileName)
                 }
             } // showtools options
 
+        } else if (MyStriCmp(TokenList[0], L"support_gzipped_loaders")) {
+           GlobalConfig.GzippedLoaders = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"banner")) {
             HandleString(TokenList, TokenCount, &(GlobalConfig.BannerFileName));
 
@@ -780,6 +805,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"fold_linux_kernels")) {
             GlobalConfig.FoldLinuxKernels = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"linux_prefixes")) {
+            HandleStrings(TokenList, TokenCount, &(GlobalConfig.LinuxPrefixes));
+
         } else if (MyStriCmp(TokenList[0], L"extra_kernel_version_strings")) {
             HandleStrings(TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
 
@@ -830,6 +858,8 @@ VOID ReadConfig(CHAR16 *FileName)
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles))
         MergeStrings(&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     MyFreePool(File.Buffer);
+
+    SetLinuxMatchPatterns(GlobalConfig.LinuxPrefixes);
 
     if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
         Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
@@ -1081,9 +1111,9 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
         Status = ReadFile(Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
         if (CheckError(Status, L"while reading /etc/fstab")) {
             if (Options != NULL)
-                FreePool(Options);
+                MyFreePool(Options);
             if (Fstab != NULL)
-                FreePool(Fstab);
+                MyFreePool(Fstab);
             Options = NULL;
             Fstab = NULL;
         } else { // File read; locate root fs and create entries
@@ -1200,8 +1230,7 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
                 File = AllocateZeroPool(sizeof(REFIT_FILE));
                 Status = ReadFile(Volume->RootDir, FullFilename, File, &size);
                 if (CheckError(Status, L"while loading the Linux options file")) {
-                    if (File != NULL)
-                        FreePool(File);
+                    MyFreePool(File);
                     File = NULL;
                 } else {
                     GoOn = FALSE;
@@ -1238,8 +1267,7 @@ CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume)
         if (TokenCount > 1)
             Options = StrDuplicate(TokenList[1]);
         FreeTokenLine(&TokenList, &TokenCount);
-        FreePool(File);
+        MyFreePool(File);
     } // if
     return Options;
 } // static CHAR16 * GetOptionsFile()
-

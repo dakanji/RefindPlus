@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -70,6 +70,11 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
 #endif
 
+// Return values for IsValidLoader()
+#define LOADER_TYPE_INVALID 0
+#define LOADER_TYPE_EFI     1
+#define LOADER_TYPE_GZIP    2
+
 EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
                          IN CHAR16 *Filename,
                          IN CHAR16 *LoadOptions,
@@ -77,7 +82,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
                          IN CHAR8 OSType,
                          IN BOOLEAN Verbose,
                          IN BOOLEAN IsDriver);
-BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
+UINTN IsValidLoader(EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName);
 EFI_STATUS RebootIntoFirmware(VOID);
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
 VOID StartTool(IN LOADER_ENTRY *Entry);

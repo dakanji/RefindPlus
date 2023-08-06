@@ -80,6 +80,10 @@ Program (C source code and script) files:
 * Pavel Penev contributed the code to enable encrypting rEFInd's locally
   generated signing keys in refind-install.
 
+* The code to expand gzip-compressed files (in the gzip subdirectory)
+  originates with the Linux kernel, version 6.1.11, which in turn took it
+  from Jean-loup Gailly and Mark Adler's zlib.
+
 * The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
   rEFInd in the traditional TianoCore way, come from
   https://github.com/snarez/refind-edk2.
@@ -99,6 +103,9 @@ Icons and graphics:
 * The Elementary OS icon is based on the SVG available from
   https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
   it to fit the general style set by the AwOken icons.
+
+* The Haiku OS icon is based on an icon for the Haiku OS, as submitted by
+  Adrien Destugues.
 
 * Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
   combination of the common refresh/reload icon and the search/find icon.

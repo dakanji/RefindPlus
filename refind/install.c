@@ -2,7 +2,7 @@
  * refind/install.c
  * Functions related to installation of rEFInd and management of EFI boot order
  *
- * Copyright (c) 2020 by Roderick W. Smith
+ * Copyright (c) 2020-2023 by Roderick W. Smith
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), a copy of which must be distributed with this source
@@ -41,7 +41,7 @@ static VOID DeleteESPList(ESP_LIST *AllESPs) {
     while (AllESPs != NULL) {
         Temp = AllESPs;
         AllESPs = AllESPs->NextESP;
-        MyFreePool(&Temp);
+        MyFreePool(Temp);
     } // while
 } // VOID DeleteESPList()
 
@@ -55,7 +55,7 @@ static ESP_LIST * FindAllESPs(VOID) {
     UINTN VolumeIndex;
     EFI_GUID ESPGuid = ESP_GUID_VALUE;
 
-    LOG(2, LOG_LINE_NORMAL, L"Searching for ESPs");
+    LOG(2, LOG_LINE_NORMAL, L"Checking %ld volumes to find ESP(s)", VolumesCount);
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL &&
             GuidsAreEqual(&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
@@ -121,8 +121,8 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
             } else {
                 Temp = PoolPrint(L"%s - no name", GuidStr);
             }
-            LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to UI list of ESPs");
-            MyFreePool(&GuidStr);
+            LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to UI list of ESPs", Temp);
+            MyFreePool(GuidStr);
             MenuEntryItem->Title = Temp;
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = i++;
@@ -138,13 +138,15 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
                     ChosenVolume = CurrentESP->Volume;
                 } // if
                 CurrentESP = CurrentESP->NextESP;
-                MyFreePool(&Temp);
+                MyFreePool(Temp);
+                Temp = NULL;
             } // while
         } // if
     } else {
         DisplaySimpleMessage(L"Information", L"No eligible ESPs found");
         LOG(2, LOG_LINE_NORMAL, L"No ESPs found");
     } // if
+    MyFreePool(Temp);
     return ChosenVolume;
 } // REFIT_VOLUME *PickOneESP()
 
@@ -154,11 +156,17 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
  *
  ***********************/
 
-static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewName) {
-    EFI_STATUS    Status;
-    EFI_FILE      *FilePtr;
-    EFI_FILE_INFO *NewInfo, *Buffer = NULL;
-    UINTN         NewInfoSize;
+// Rename OldName to NewName in BaseDir.
+// CAUTION: On a Raspberry Pi running Tow-Boot (aka Das U-Boot) 8225.40, the
+// attempt to rename the file (specific point called out below) can fail,
+// which results in a subsequent crash if an attempt is made to create a new
+// file using the old (supposedly changed) name. Checking the return value
+// is therefore important for this call!
+static EFI_STATUS RenameFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *OldName, CHAR16 *NewName) {
+    EFI_STATUS        Status;
+    EFI_FILE_PROTOCOL *FilePtr = NULL; // DO NOT FREE!
+    EFI_FILE_INFO     *NewInfo, *Buffer = NULL;
+    UINTN             NewInfoSize;
 
     LOG(3, LOG_LINE_NORMAL, L"Trying to rename '%s' to '%s'", OldName, NewName);
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FilePtr, OldName,
@@ -177,26 +185,28 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
             CopyMem(NewInfo, Buffer, sizeof(EFI_FILE_INFO));
             NewInfo->FileName[0] = 0;
             StrCat(NewInfo->FileName, NewName);
+            // Note: The below call is where Tow-Boot can error out.
             Status = refit_call4_wrapper(BaseDir->SetInfo,
                                          FilePtr,
                                          &gEfiFileInfoGuid,
                                          NewInfoSize,
                                          (VOID *) NewInfo);
-            MyFreePool(NewInfo);
-            MyFreePool(FilePtr);
-            MyFreePool(Buffer);
+            refit_call1_wrapper(FilePtr->Close, FilePtr);
         } else {
             Status = EFI_BUFFER_TOO_SMALL;
         }
+        MyFreePool(NewInfo);
     } // if
-    refit_call1_wrapper(FilePtr->Close, FilePtr);
+    MyFreePool(Buffer);
     return Status;
 } // EFI_STATUS RenameFile()
 
 // Rename *FileName to add a "-old" extension, but only if that file doesn't
 // already exist. Called on the icons directory to preserve it in case the
 // user wants icons stored there that have been supplanted by new icons.
-EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+// BaseDir = The directory in which the file exists
+// FileName = The name of the file
+EFI_STATUS BackupOldFile(IN EFI_FILE_PROTOCOL *BaseDir, CHAR16 *FileName) {
     EFI_STATUS          Status = EFI_SUCCESS;
     CHAR16              *NewName;
 
@@ -214,26 +224,25 @@ EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
 } // EFI_STATUS BackupOldFile()
 
 // Create directories in which rEFInd will reside....
-static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
-    CHAR16   *FileName = NULL;
-    UINTN    i = 0, Status = EFI_SUCCESS;
-    EFI_FILE *TheDir = NULL;
+static EFI_STATUS CreateDirectories(IN EFI_FILE_PROTOCOL *BaseDir) {
+    CHAR16            *FileName = NULL;
+    UINTN             i = 0, Status = EFI_SUCCESS;
+    EFI_FILE_PROTOCOL *TheDir = NULL; // NOTE: DO NOT FREE!
 
     while ((FileName = FindCommaDelimited(INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
         Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TheDir, FileName,
                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
         Status = refit_call1_wrapper(TheDir->Close, TheDir);
         MyFreePool(FileName);
-        MyFreePool(TheDir);
     } // while()
     return (Status);
 } // CreateDirectories()
 
-static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
+static EFI_STATUS CopyOneFile(IN EFI_FILE_PROTOCOL *SourceDir,
                               IN CHAR16 *SourceName,
-                              IN EFI_FILE *DestDir,
+                              IN EFI_FILE_PROTOCOL *DestDir,
                               IN CHAR16 *DestName) {
-    EFI_FILE           *SourceFile = NULL, *DestFile = NULL;
+    EFI_FILE_PROTOCOL  *SourceFile = NULL, *DestFile = NULL; // NOTE: DO NOT FREE!
     UINTN              FileSize = 0, Status;
     EFI_FILE_INFO      *FileInfo = NULL;
     UINTN              *Buffer = NULL;
@@ -270,8 +279,6 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
     if (Status == EFI_SUCCESS)
         Status = refit_call1_wrapper(DestFile->Close, DestFile);
 
-    MyFreePool(SourceFile);
-    MyFreePool(DestFile);
     MyFreePool(Buffer);
 
     if (EFI_ERROR(Status)) {
@@ -281,10 +288,10 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
 } // EFI_STATUS CopyOneFile()
 
 // Copy a single directory (non-recursively)
-static EFI_STATUS CopyDirectory(IN EFI_FILE *SourceDirPtr,
-                             IN CHAR16 *SourceDirName,
-                             IN EFI_FILE *DestDirPtr,
-                             IN CHAR16 *DestDirName) {
+static EFI_STATUS CopyDirectory(IN EFI_FILE_PROTOCOL *SourceDirPtr,
+                                IN CHAR16 *SourceDirName,
+                                IN EFI_FILE_PROTOCOL *DestDirPtr,
+                                IN CHAR16 *DestDirName) {
     REFIT_DIR_ITER  DirIter;
     EFI_FILE_INFO   *DirEntry;
     CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
@@ -307,9 +314,9 @@ static EFI_STATUS CopyDirectory(IN EFI_FILE *SourceDirPtr,
 // but it DOES copy the HFS+ driver on non-Apple hardware if HFS+ is detected,
 // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
 // as a Linux /boot partition. That's weird, but it does work.
-static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
+static EFI_STATUS CopyDrivers(IN EFI_FILE_PROTOCOL *SourceDirPtr,
                               IN CHAR16 *SourceDirName,
-                              IN EFI_FILE *DestDirPtr,
+                              IN EFI_FILE_PROTOCOL *DestDirPtr,
                               IN CHAR16 *DestDirName) {
     CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
     CHAR16          *DriverName = NULL; // Note: Assign to string constants; do not free.
@@ -321,9 +328,9 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
     for (i = 0; i < NUM_FS_TYPES; i++)
         DriverCopied[i] = FALSE;
 
-    LOG(3, LOG_LINE_NORMAL, L"Scanning %d volumes for identifiable filesystems", VolumesCount);
+    LOG(1, LOG_LINE_NORMAL, L"Scanning %d volumes for identifiable filesystems", VolumesCount);
     for (i = 0; i < VolumesCount; i++) {
-        LOG(1, LOG_LINE_NORMAL, L"Looking for driver for volume # %d, '%s'", i, Volumes[i]->VolName);
+        LOG(3, LOG_LINE_NORMAL, L"Looking for driver for volume # %d, '%s'", i, Volumes[i]->VolName);
         DriverName = NULL;
         switch (Volumes[i]->FSType) {
 
@@ -388,7 +395,7 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
 } // EFI_STATUS CopyDrivers()
 
 // Copy all the files from the source to *TargetDir
-static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
+static EFI_STATUS CopyFiles(IN EFI_FILE_PROTOCOL *TargetDir) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
     CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindName;
@@ -416,7 +423,11 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
         //    copy to refind.conf-sample if refind.conf is present.
         ConfFile = PoolPrint(L"%s\\refind.conf-sample", SourceDir);
         if (FileExists(SourceVolume->RootDir, ConfFile)) {
-            StrCpy(SourceFile, ConfFile);
+            // The following line originally used StrCpy(), but that had a bug
+            // because it didn't allocate SourceFile; but even after fixing
+            // that, one particular UEFI froze when freeing SourceFile later.
+            // Using PoolPrint() rather than StrCpy() works around this issue.
+            SourceFile = PoolPrint(L"%s", ConfFile);
         } else {
             SourceFile = PoolPrint(L"%s\\refind.conf", SourceDir);
         }
@@ -457,10 +468,10 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
 // Success isn't critical, so we don't return a Status value.
-static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
-    CHAR16   *Contents = NULL;
-    UINTN    FileSize, Status;
-    EFI_FILE *FilePtr;
+static VOID CreateFallbackCSV(IN EFI_FILE_PROTOCOL *TargetDir) {
+    CHAR16            *Contents = NULL;
+    UINTN             FileSize, Status;
+    EFI_FILE_PROTOCOL *FilePtr; // NOTE: DO NOT FREE!
 
     Status = refit_call5_wrapper(TargetDir->Open, TargetDir, &FilePtr, L"\\EFI\\refind\\BOOT.CSV",
                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
@@ -472,7 +483,6 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
             Status = refit_call3_wrapper(FilePtr->Write, FilePtr, &FileSize, Contents);
             if (Status == EFI_SUCCESS)
                 refit_call1_wrapper(FilePtr->Close, FilePtr);
-            MyFreePool(FilePtr);
         } // if
         MyFreePool(Contents);
     } // if
@@ -481,7 +491,7 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
     }
 } // VOID CreateFallbackCSV()
 
-static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
+static BOOLEAN CopyRefindFiles(IN EFI_FILE_PROTOCOL *TargetDir) {
     EFI_STATUS Status = EFI_SUCCESS, Status2;
 
     if (FileExists(TargetDir, L"\\EFI\\refind\\icons")) {
@@ -688,7 +698,7 @@ VOID InstallRefind(VOID) {
     REFIT_VOLUME  *SelectedESP; // Do not free
     UINTN         Status;
 
-    LOG(1, LOG_LINE_NORMAL, L"Installing rEFInd to an ESP");
+    LOG(1, LOG_LINE_THIN_SEP, L"Installing rEFInd to an ESP");
     AllESPs = FindAllESPs();
     SelectedESP = PickOneESP(AllESPs);
     if (SelectedESP) {
@@ -702,6 +712,7 @@ VOID InstallRefind(VOID) {
             DisplaySimpleMessage(L"Warning", L"Problems encountered during installation");
         } // if/else
     } // if
+    LOG(1, LOG_LINE_THIN_SEP, L"Done installing rEFInd to an ESP");
 } // VOID InstallRefind()
 
 /***********************

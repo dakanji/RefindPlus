@@ -11,10 +11,10 @@
  *
  */
 
-#include "global.h"
-
 #ifndef __GPT_H_
 #define __GPT_H_
+
+#include "global.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"

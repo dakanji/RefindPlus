@@ -7,6 +7,7 @@ icons/README usr/share/refind/refind/icons
 keys etc/refind.d
 mkrlconf usr/sbin
 mvrefind usr/sbin
+refind-sb-healthcheck usr/sbin
 refind-install usr/share/refind
 refind-mkdefault usr/sbin
 refind.conf-sample usr/share/refind/refind
