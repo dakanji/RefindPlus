@@ -63,8 +63,10 @@
 
 // Constants
 
-#define LINUX_OPTIONS_FILENAMES  L"refindplus_linux.conf,refindplus-linux.conf,refind_linux.conf,refind-linux.conf"
-#define MAXCONFIGFILESIZE        (128*1024)
+#define LINUX_OPTIONS_FILENAMES  \
+L"refindplus_linux.conf,refindplus-linux.conf,\
+refind_linux.conf,refind-linux.conf"
+
 
 #define ENCODING_ISO8859_1  (0)
 #define ENCODING_UTF8       (1)
@@ -115,7 +117,7 @@ VOID SetLinuxMatchPatterns (
 } // static VOID SetLinuxMatchPatterns()
 
 static
-VOID AlsoScanDirs (VOID) {
+VOID SyncAlsoScanDirs (VOID) {
     if (!GlobalConfig.AlsoScan) {
         GlobalConfig.AlsoScan = StrDuplicate (
             ALSO_SCAN_DIRS
@@ -127,7 +129,7 @@ VOID AlsoScanDirs (VOID) {
             ALSO_SCAN_DIRS, L','
         );
     }
-} // static VOID AlsoScanDirs()
+} // static VOID SyncAlsoScanDirs()
 
 static
 VOID SyncDontScanDirs (VOID) {
@@ -167,13 +169,13 @@ static
 VOID SyncDontScanFiles (VOID) {
     if (!GlobalConfig.DontScanFiles) {
         GlobalConfig.DontScanFiles = StrDuplicate (
-            MOK_NAMES
+            DONT_SCAN_FILES
         );
     }
     else {
         MergeUniqueItems (
             &GlobalConfig.DontScanFiles,
-            MOK_NAMES, L','
+            DONT_SCAN_FILES, L','
         );
     }
 
@@ -199,7 +201,7 @@ VOID SyncDontScanFiles (VOID) {
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
-        DONT_SCAN_FILES, L','
+        MOK_NAMES, L','
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
@@ -212,6 +214,10 @@ VOID SyncDontScanFiles (VOID) {
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
         GlobalConfig.WindowsRecoveryFiles, L','
+    );
+    MergeUniqueItems (
+        &GlobalConfig.DontScanFiles,
+        GlobalConfig.MacOSRecoveryFiles, L','
     );
 } // static VOID SyncDontScanFiles()
 
@@ -1923,7 +1929,8 @@ VOID ReadConfig (
     UINTN             InvalidEntries;
     INTN              MaxLogLevel;
 
-    static UINTN      ReadLoops = 0;
+    static UINTN      ReadLoops   =     0;
+    static BOOLEAN    HasTertiary = FALSE;
 
 
     #if REFIT_DEBUG > 0
@@ -1937,6 +1944,7 @@ VOID ReadConfig (
         LOG_MSG("%s  ** Ignoring Tertiary Config ... %s", OffsetNext, FileName);
         #endif
 
+        HasTertiary = TRUE;
         ReadLoops = ReadLoops - 1;
         return;
     }
@@ -2571,7 +2579,9 @@ VOID ReadConfig (
             }
             #endif
         }
-        else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
+        else if (MyStriCmp (TokenList[0], L"resolution") &&
+            ((TokenCount == 2) || (TokenCount == 3))
+        ) {
             if (MyStriCmp(TokenList[1], L"max")) {
                 // DA-TAG: Has been set to 0 so as to ignore the 'max' setting
                 //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
@@ -3346,10 +3356,7 @@ VOID ReadConfig (
     #endif
 
     // Skip this on inner loops
-    if (!OuterLoop) {
-        ReadLoops = ReadLoops - 1;
-    }
-    else {
+    if (OuterLoop) {
         // Set a few defaults if required
         SilenceAPFS = GlobalConfig.SilenceAPFS;
         if (!GlobalConfig.DontScanVolumes) {
@@ -3371,7 +3378,7 @@ VOID ReadConfig (
             GlobalConfig.DefaultSelection = StrDuplicate (L"+");
         }
 
-        AlsoScanDirs();
+        SyncAlsoScanDirs();
         SyncDontScanDirs();
         SyncDontScanFiles();
         SyncLinuxPrefixes();
@@ -3469,11 +3476,15 @@ VOID ReadConfig (
         #if REFIT_DEBUG > 0
         // Log formating on exiting outer loop
         LOG_MSG("\n");
-        LOG_MSG("Process Configuration Options ... Success");
+        Status = (!HasTertiary) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
+        LOG_MSG("Process Configuration Options ... %r", Status);
         LOG_MSG("\n\n");
         #endif
 
-        // Reset loop count
-        ReadLoops = 0;
+        // Reset Tertiary Flag
+        HasTertiary = FALSE;
     }
+
+    // Reset Loop Count
+    ReadLoops = ReadLoops - 1;
 } // VOID ReadConfig()

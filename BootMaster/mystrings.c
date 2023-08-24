@@ -284,7 +284,7 @@ CHAR8 * MyAsciiStrStr (
     const CHAR8 *SearchStringTmp;
 
     //
-    // ASSERT both strings are less long than PcdMaximumAsciiStringLength
+    // ASSERT both strings are shorter than PcdMaximumAsciiStringLength
     //
     ASSERT (AsciiStrSize (String) != 0);
     ASSERT (AsciiStrSize (SearchString) != 0);
@@ -684,7 +684,7 @@ VOID MergeUniqueWords (
     }
 } // VOID MergeUniqueWords()
 
-// As MergeUniqueWords, but Items are separated by ','
+// As MergeUniqueWords, but items are separated by ','
 VOID MergeUniqueItems (
     CHAR16 **MergeTo,
     CHAR16  *InString,
@@ -756,11 +756,10 @@ CHAR16 * SanitiseString (
     return OutString;
 } // CHAR16 * SanitiseString()
 
-// Restrict 'TheString' to at most 'Limit' characters.
-// Does this in two ways:
-// - Locates stretches of two or more spaces and compresses
-//   them down to one space.
-// - Truncates TheString
+// Restrict 'TheString' to no more than 'Limit' characters.
+// Does this in two steps:
+//   - Compresses blocks of two or more spaces down to one.
+//   - Truncates 'TheString' if still longer than 'Limit'.
 // Returns TRUE if changes were made, FALSE otherwise
 BOOLEAN LimitStringLength (
     CHAR16 *TheString,
@@ -863,9 +862,8 @@ BOOLEAN TruncateString (
 // Returns all the digits in the input string, including intervening
 // non-digit characters. For instance, if InString is "foo-3.3.4-7.img",
 // this function returns "3.3.4-7". The GlobalConfig.ExtraKernelVersionStrings
-// variable specifies extra strings that may be treated as numbers. If
-// InString contains no digits or ExtraKernelVersionStrings, the return value
-// is NULL.
+// variable specifies extra strings that may be treated as numbers. If InString
+// contains no digits or ExtraKernelVersionStrings, the return value is NULL.
 CHAR16 * FindNumbers (
     IN CHAR16 *InString
 ) {
@@ -1394,7 +1392,7 @@ EFI_GUID StringAsGuid (
 ) {
     EFI_GUID  Guid = NULL_GUID_VALUE;
 
-    if (!IsGuid(InString)) {
+    if (!IsGuid (InString)) {
         return Guid;
     }
 

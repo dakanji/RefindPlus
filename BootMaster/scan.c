@@ -1017,9 +1017,7 @@ VOID SetLoaderDefaults (
             } // if Volume->FsName
 
             BREAD_CRUMB(L"%s:  3b 1b 7", FuncTag);
-            if (Volume->PartName &&
-                Volume->PartName[0] != L'\0'
-            ) {
+            if (Volume->PartName && Volume->PartName[0] != L'\0') {
                 BREAD_CRUMB(L"%s:  3b 1b 7a 1", FuncTag);
                 if (Entry->me.Image == NULL) {
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 1", FuncTag);
@@ -1045,9 +1043,10 @@ VOID SetLoaderDefaults (
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL,
                         L"Merge Hints Based on Partition Name:- '%s'",
-                        Volume->PartName
+                        TargetName
                     );
                     #endif
+
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4", FuncTag);
                     MergeUniqueWords (&OSIconName, Volume->PartName, L',');
                 }
@@ -1900,13 +1899,11 @@ BOOLEAN ShouldScan (
         }
     } // if Volume->FSType
 
-    if (ScanIt) {
-        if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
-            IsListItem (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
-            IsListItem (Volume->PartName, GlobalConfig.DontScanVolumes)
-        ) {
-            ScanIt = FALSE;
-        }
+    if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
+        IsListItem (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
+        IsListItem (Volume->PartName, GlobalConfig.DontScanVolumes)
+    ) {
+        ScanIt = FALSE;
     }
     if (ScanIt) {
         VolGuid = GuidAsString (&(Volume->PartGuid));
@@ -2533,7 +2530,7 @@ VOID ScanEfiFiles (
         !Volume->VolName ||
         !Volume->IsReadable
     ) {
-        //BREAD_CRUMB(L"%s:  1a 1 - END:- VOID ... Exit on Invalid Volume", FuncTag);
+        //BREAD_CRUMB(L"%s:  1a 0 - END:- VOID ... Exit on Invalid Volume", FuncTag);
         //LOG_DECREMENT();
         //LOG_SEP(L"X");
 
@@ -3708,12 +3705,10 @@ BOOLEAN IsValidTool (
         return TRUE;
     }
 
-    TestVolName = TestPathName = TestFileName = NULL;
-    SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
-    MY_FREE_POOL(TestVolName);
-
     retval       = TRUE;
-    DontScanThis = DontVolName = DontPathName = DontFileName = NULL;
+    TestVolName  = TestPathName = TestFileName = NULL;
+    DontScanThis = DontPathName = DontFileName = DontVolName = NULL;
+    SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
     i = 0;
     while (retval && (DontScanThis = FindCommaDelimited (DontScanTools, i++))) {
@@ -3726,16 +3721,15 @@ BOOLEAN IsValidTool (
             retval = FALSE;
         }
 
-        MY_FREE_POOL(TestPathName);
-        MY_FREE_POOL(TestFileName);
-
         MY_FREE_POOL(DontVolName);
         MY_FREE_POOL(DontPathName);
         MY_FREE_POOL(DontFileName);
-
         MY_FREE_POOL(DontScanThis);
     } // while
 
+    MY_FREE_POOL(TestVolName);
+    MY_FREE_POOL(TestPathName);
+    MY_FREE_POOL(TestFileName);
     MY_FREE_POOL(DontScanTools);
 
     return retval;
@@ -3750,8 +3744,7 @@ BOOLEAN FindTool (
     CHAR16 *Description,
     UINTN   Icon
 ) {
-    UINTN    j;
-    UINTN    k;
+    UINTN    i, j;
     UINTN    VolumeIndex;
     CHAR16  *DirName;
     CHAR16  *FileName;
@@ -3766,10 +3759,10 @@ BOOLEAN FindTool (
     DirName   =  NULL;
     FoundTool = FALSE;
 
-    j = 0;
-    while ((DirName = FindCommaDelimited (Locations, j++)) != NULL) {
-        k = 0;
-        while ((FileName = FindCommaDelimited (Names, k++)) != NULL) {
+    i = 0;
+    while ((DirName = FindCommaDelimited (Locations, i++)) != NULL) {
+        j = 0;
+        while ((FileName = FindCommaDelimited (Names, j++)) != NULL) {
             // DA-TAG: Do not free 'PathName'
             //         Used in 'AddToolEntry'
             PathName  = StrDuplicate (DirName);
@@ -4554,8 +4547,7 @@ VOID ScanForTools (VOID) {
                                 continue;
                             }
 
-                            if (
-                                GuidsAreEqual (
+                            if (GuidsAreEqual (
                                     &(RecoveryVolumes[j]->PartGuid),
                                     &(SystemVolumes[k]->PartGuid)
                                 )

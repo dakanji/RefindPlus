@@ -86,8 +86,6 @@
 CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
-BOOLEAN SkipForcedReboot = FALSE;
-
 extern BOOLEAN  IsBoot;
 extern EFI_GUID AppleVendorOsGuid;
 
@@ -622,8 +620,6 @@ EFI_STATUS StartEFIImage (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
-    SkipForcedReboot = FALSE;
-
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
 
@@ -642,8 +638,10 @@ EFI_STATUS StartEFIImage (
     }
 
     // Set load options
-    FullLoadOptions = NULL;
-    if (LoadOptions != NULL) {
+    if (LoadOptions == NULL) {
+        FullLoadOptions = NULL;
+    }
+    else {
         FullLoadOptions = StrDuplicate (LoadOptions);
 
         // DA-TAG: The last space is also added by the EFI shell and is
@@ -805,8 +803,9 @@ EFI_STATUS StartEFIImage (
             }
 
             ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
-            ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-                ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
+            ChildLoadedImage->LoadOptionsSize = (FullLoadOptions)
+                ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
+                : 0;
 
             // DA-TAG: Investigate This
             //         Re-enable the EFI watchdog timer (optionally)
@@ -860,7 +859,10 @@ EFI_STATUS StartEFIImage (
             #if REFIT_DEBUG > 0
             ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
             if (!IsDriver) {
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+                ALT_LOG(1, LOG_LINE_NORMAL,
+                    L"%s via Loader File:- '%s'",
+                    ConstMsgStr, ImageTitle
+                );
                 OUT_TAG();
             }
             #endif
@@ -894,8 +896,6 @@ EFI_STATUS StartEFIImage (
                     ReturnStatus == EFI_NOT_FOUND   &&
                     FindSubStr (ImageTitle, L"gptsync")
                 ) {
-                    SkipForcedReboot = TRUE;
-
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_SET;
                     #endif
@@ -947,6 +947,7 @@ EFI_STATUS StartEFIImage (
 
     // DA-TAG: bailout:
     MY_FREE_POOL(FullLoadOptions);
+
     if (!IsDriver) FinishExternalScreen();
 
     return ReturnStatus;

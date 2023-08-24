@@ -209,7 +209,7 @@ BOOLEAN egIsGraphicsModeEnabled (VOID);
 
 // DA-TAG: Stash here for later use
 //         Allows getting user input
-// NOTE: Currently Disabled by 'if 0'
+// NOTE: Currently Disabled by '#if 0'
 #if 0
 static
 UINTN GetUserInput (
@@ -218,12 +218,14 @@ UINTN GetUserInput (
 ) {
     EFI_STATUS          Status;
     UINTN               Index;
+    BOOLEAN             ErrorOut;
     EFI_INPUT_KEY       Key;
 
     ReadAllKeyStrokes(); // Remove buffered key strokes
 
     Print(prompt);
 
+    ErrorOut = FALSE;
     do {
         REFIT_CALL_3_WRAPPER(
             gBS->WaitForEvent, 1,
@@ -232,9 +234,11 @@ UINTN GetUserInput (
 
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &Key);
         if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
-            return 1;
+            ErrorOut = TRUE;
+            break;
         }
     } while (EFI_ERROR(Status));
+    if (ErrorOut) return 1;
 
     if (Key.UnicodeChar == 'y' || Key.UnicodeChar == 'Y') {
         Print(L"Yes\n");
@@ -245,14 +249,12 @@ UINTN GetUserInput (
         *bool_out = FALSE;
     }
 
-    ReadAllKeyStrokes();
+    ReadAllKeyStrokes(); // Remove buffered key strokes
+
     return 0;
-} // UINTN GetUserInput()
+} // static UINTN GetUserInput()
 #endif
 
-//
-// Pathname manipulations
-//
 
 // Converts forward slashes to backslashes, removes duplicate slashes, and
 // removes slashes from both the start and end of the pathname.
@@ -435,16 +437,18 @@ static
 VOID UninitVolume (
     IN OUT REFIT_VOLUME  **Volume
 ) {
-    if (Volume && *Volume) {
-        if ((*Volume)->RootDir != NULL) {
-            REFIT_CALL_1_WRAPPER((*Volume)->RootDir->Close, (*Volume)->RootDir);
-            (*Volume)->RootDir = NULL;
-        }
-
-        (*Volume)->BlockIO          = NULL;
-        (*Volume)->DeviceHandle     = NULL;
-        (*Volume)->WholeDiskBlockIO = NULL;
+    if (!Volume || !(*Volume)) {
+        return;
     }
+
+    if ((*Volume)->RootDir != NULL) {
+        REFIT_CALL_1_WRAPPER((*Volume)->RootDir->Close, (*Volume)->RootDir);
+        (*Volume)->RootDir = NULL;
+    }
+
+    (*Volume)->BlockIO          = NULL;
+    (*Volume)->DeviceHandle     = NULL;
+    (*Volume)->WholeDiskBlockIO = NULL;
 } // static VOID UninitVolume()
 
 static

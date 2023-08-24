@@ -219,6 +219,7 @@ CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                gKernelStarted       = FALSE;
 BOOLEAN                IsBoot               = FALSE;
+BOOLEAN                RunningOC            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                OverrideSB           = FALSE;
 BOOLEAN                OneMainLoop          = FALSE;
@@ -270,7 +271,6 @@ extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
-extern BOOLEAN                       SkipForcedReboot;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
@@ -286,13 +286,15 @@ EFI_STATUS CheckStatusOC (VOID){
   VOID        *Bootstrap;
   EFI_GUID     GuidBootstrapOC = OC_BOOTSTRAP_GUID_VALUE;
 
-  Bootstrap = NULL;
+  RunningOC = FALSE;
+  Bootstrap =  NULL;
   Status = REFIT_CALL_3_WRAPPER(
       gBS->LocateProtocol, &GuidBootstrapOC,
       NULL, &Bootstrap
   );
   if (!EFI_ERROR (Status)) {
-    return EFI_ALREADY_STARTED;
+      RunningOC = TRUE;
+      return EFI_ALREADY_STARTED;
   }
 
   return EFI_NOT_STARTED;
@@ -315,7 +317,7 @@ VOID UnexpectedReturn (
 #endif
 
 static
-VOID RebootSystem (
+BOOLEAN RebootSystem (
     BOOLEAN Confirmed
 ) {
     CHAR16            *TypeStr;
@@ -346,7 +348,7 @@ VOID RebootSystem (
             #endif
 
             // Early Exit
-            return;
+            return TRUE;
         }
     }
 
@@ -386,7 +388,9 @@ VOID RebootSystem (
         gRT->ResetSystem, EfiResetCold,
         EFI_SUCCESS, 0, NULL
     );
-}
+
+    return FALSE;
+} // static BOOLEAN RebootSystem()
 
 static
 VOID InitMainMenu (VOID) {
@@ -2447,6 +2451,7 @@ EFI_STATUS EFIAPI efi_main (
     EFI_TIME           Now;
     UINTN              i, k;
     UINTN              Trigger;
+    UINT8              ResetNVRam;
     INTN               MenuExit;
     CHAR16            *MsgStr;
     CHAR16            *PartMsg;
@@ -2455,7 +2460,6 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16            *SelectionName;
     CHAR16            *VarNVRAM;
     CHAR16             KeyAsString[2];
-    BOOLEAN            RunningOC;
     BOOLEAN            FoundTool;
     BOOLEAN            RunOurTool;
     BOOLEAN            MokProtocol;
@@ -2570,7 +2574,7 @@ EFI_STATUS EFIAPI efi_main (
 #elif defined(EFIAARCH64)
     ArchType = L"ARM_64 (64 bit)";
 #else
-    ArchType = L"Unknown Arch";
+    ArchType = L"Unknown";
 #endif
 
 #if REFIT_DEBUG > 0
@@ -2660,14 +2664,12 @@ EFI_STATUS EFIAPI efi_main (
     /* Load config tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
 
-    RunningOC = FALSE;
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO
-    /* Disable 'NvramProtect' and 'NvramProtectEx' if loaded via OpenCore */
-    if (GlobalConfig.NvramProtect || GlobalConfig.NvramProtectEx) {
-        Status = CheckStatusOC();
-        if (Status == EFI_ALREADY_STARTED) {
-            RunningOC                   =  TRUE;
+    Status = CheckStatusOC();
+    if (Status == EFI_ALREADY_STARTED) {
+        // Disable 'NvramProtect' and 'NvramProtectEx' if loaded via OpenCore
+        if (GlobalConfig.NvramProtect || GlobalConfig.NvramProtectEx) {
             GlobalConfig.NvramProtect   = FALSE;
             GlobalConfig.NvramProtectEx = FALSE;
         }
@@ -3073,7 +3075,7 @@ EFI_STATUS EFIAPI efi_main (
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"             Program Behaviour is Undefined!!             ", NEXTLINE);
+        PrintUglyText (L"            Program Behaviour is *NOT* Defined            ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PauseForKey();
@@ -3397,7 +3399,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 // Force nvram garbage collection on Macs
                 if (AppleFirmware) {
-                    UINT8 ResetNVRam = 1;
+                    ResetNVRam = 1;
                     REFIT_CALL_5_WRAPPER(
                         gRT->SetVariable, L"ResetNVRam",
                         &AppleVendorOsGuid, AccessFlagsFull,
@@ -3412,28 +3414,34 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                RebootSystem (TRUE);
+                MainLoopRunning = RebootSystem (TRUE);
+                if (!MainLoopRunning) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Reset Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
 
             break;
             case TAG_REBOOT:    // Reboot
-                RebootSystem (FALSE);
-
-                // Just in case we get this far
-                MainLoopRunning = FALSE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"System Reset Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
+                MainLoopRunning = RebootSystem (FALSE);
+                if (!MainLoopRunning) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Reset Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
 
             break;
             case TAG_SHUTDOWN: // Shut Down
                 TypeStr = L"Running System Shutdown";
 
                 RunOurTool = ConfirmShutdown();
-                if (RunOurTool == FALSE) {
+                if (!RunOurTool) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Aborted %s", TypeStr);
                     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -3443,42 +3451,40 @@ EFI_STATUS EFIAPI efi_main (
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
-
-                    // Early Exit
-                    break;
                 }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    LOG_MSG("%s", MsgStr);
+                    LOG_MSG("\n");
+                    MY_FREE_POOL(MsgStr);
 
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n");
-                MY_FREE_POOL(MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
+                    LOG_MSG("%s", TypeStr);
+                    END_TAG();
+                    #endif
 
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
-                LOG_MSG("%s", TypeStr);
-                END_TAG();
-                #endif
+                    // Terminate Screen
+                    TerminateScreen();
 
-                // Terminate Screen
-                TerminateScreen();
+                    REFIT_CALL_4_WRAPPER(
+                        gRT->ResetSystem, EfiResetShutdown,
+                        EFI_SUCCESS, 0, NULL
+                    );
 
-                REFIT_CALL_4_WRAPPER(
-                    gRT->ResetSystem, EfiResetShutdown,
-                    EFI_SUCCESS, 0, NULL
-                );
+                    // Just in case we get this far
+                    MainLoopRunning = FALSE;
 
-                // Just in case we get this far
-                MainLoopRunning = FALSE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"System Shutdown Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Shutdown Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                } // if/else !RunOurTool
 
             break;
             case TAG_ABOUT:    // About RefindPlus

@@ -253,18 +253,16 @@ EFI_STATUS ActivateMbrPartition (
                 if (EMbrTable[i].StartLBA == 0 || EMbrTable[i].Size == 0) {
                     break;
                 }
-
-                if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
+                else if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
                     // link to next EMBR
                     NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
                     EMbrTable[i].Flags = (PartitionIndex >= LogicalPartitionIndex) ? 0x80 : 0x00;
                     break;
                 }
-                else {
-                    // logical partition
-                    EMbrTable[i].Flags = (PartitionIndex == LogicalPartitionIndex) ? 0x80 : 0x00;
-                    LogicalPartitionIndex++;
-                }
+
+                // Logical Partition
+                EMbrTable[i].Flags = (PartitionIndex == LogicalPartitionIndex) ? 0x80 : 0x00;
+                LogicalPartitionIndex++;
             }
 
             // Write current EMBR
@@ -278,7 +276,8 @@ EFI_STATUS ActivateMbrPartition (
             }
 
             if (PartitionIndex < LogicalPartitionIndex) {
-                break;  // stop the loop, no need to touch further EMBRs
+                // Stop the loop ... Ignore other EMBRs
+                break;
             }
         } // for
     } // if PartitionIndex
@@ -296,11 +295,8 @@ EFI_STATUS WriteBootDiskHint (
        &AppleVariableVendorID, L"BootCampHD",
        WholeDiskDevicePath, GetDevicePathSize (WholeDiskDevicePath), TRUE
    );
-   if (EFI_ERROR(Status)) {
-       return Status;
-   }
 
-   return EFI_SUCCESS;
+   return Status;
 } // EFI_STATUS WriteBootDiskHint
 
 //
@@ -424,22 +420,15 @@ EFI_STATUS StartLegacyImageList (
     EFI_HANDLE                        ChildImageHandle;
     EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage;
     UINTN                             DevicePathIndex;
-    CHAR16                           *FullLoadOptions;
 
     if (ErrorInStep != NULL) {
         *ErrorInStep = 0;
     }
 
-    // Set load options
-    if (LoadOptions == NULL) {
-        FullLoadOptions = NULL;
-    }
-    else {
-        FullLoadOptions = StrDuplicate (LoadOptions);
-    }
+    // Default in case the DevicePath list is empty
+    Status = EFI_LOAD_ERROR;
 
     // Load the image into memory
-    Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
@@ -457,7 +446,7 @@ EFI_STATUS StartLegacyImageList (
             *ErrorInStep = 1;
         }
 
-        goto bailout;
+        return Status;
     }
 
     ChildLoadedImage = NULL;
@@ -474,18 +463,18 @@ EFI_STATUS StartLegacyImageList (
         goto bailout_unload;
     }
 
-    ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
+    ChildLoadedImage->LoadOptions     = (VOID *) LoadOptions;
+    ChildLoadedImage->LoadOptionsSize = (LoadOptions)
+        ? ((UINT32) StrLen (LoadOptions) + 1) * sizeof (CHAR16)
         : 0;
     // Turn control over to the image
     // DA-TAG: (optionally) re-enable the EFI watchdog timer!
 
-    // Close open file handles
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Loading 'Mac-Style' Legacy Bootcode");
     #endif
 
+    // Close open file handles
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
@@ -502,7 +491,7 @@ EFI_STATUS StartLegacyImageList (
         }
     }
 
-    // Control returned after child image called 'Exit()'
+    // Control returned after error or 'Exit()' call by child image 
     #if REFIT_DEBUG > 0
     RET_TAG();
     #endif
@@ -513,9 +502,6 @@ EFI_STATUS StartLegacyImageList (
 bailout_unload:
     // Unload the child image ... We do not care if it works or not
     REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
-
-bailout:
-    MY_FREE_POOL(FullLoadOptions);
 
     return Status;
 } // static EFI_STATUS StartLegacyImageList()
@@ -1183,7 +1169,7 @@ VOID ScanLegacyVolume (
                 if (Volumes[VolumeIndex2]->HasBootCode &&
                     Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
                 ) {
-                    BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - Found Other Bootable Entry ... Hiding Whole Disk Entry", FuncTag);
+                    BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - Found Other Bootable Legacy Entry", FuncTag);
                     ShowVolume = FALSE;
                 }
 
@@ -1213,7 +1199,8 @@ VOID ScanLegacyVolume (
             BREAD_CRUMB(L"%s:  3a 1a 2 - FOR LOOP:- END", FuncTag);
             LOG_SEP(L"X");
             if (!ShowVolume) break;
-        }
+        } // for
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  4", FuncTag);

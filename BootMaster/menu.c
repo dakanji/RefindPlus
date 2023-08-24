@@ -3413,17 +3413,14 @@ BOOLEAN ConfirmRestart (VOID) {
         );
 
         // Useless return for Coverity
-        return FALSE;
+        return TRUE;
     }
 
-    // Prime RetVal
-    RetVal = FALSE;
-
     // Build the menu page
-    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm Restart"     );
-    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET );
-    ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
-    ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
+    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm System Restart");
+    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET   );
+    ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
     AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?", FALSE);
 
@@ -3443,6 +3440,9 @@ BOOLEAN ConfirmRestart (VOID) {
 
     if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
     }
 
     FreeMenuScreen (&ConfirmRestartMenu);
@@ -3469,17 +3469,14 @@ BOOLEAN ConfirmShutdown (VOID) {
         );
 
         // Useless return for Coverity
-        return FALSE;
+        return TRUE;
     }
 
-    // Prime RetVal
-    RetVal = FALSE;
-
     // Build the menu page
-    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm Shutdown"      );
-    ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
-    ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
-    ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
+    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm System Shutdown");
+    ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN );
+    ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT        );
+    ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT   );
 
     AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?", FALSE);
 
@@ -3499,6 +3496,9 @@ BOOLEAN ConfirmShutdown (VOID) {
 
     if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
     }
 
     FreeMenuScreen (&ConfirmShutdownMenu);

@@ -218,6 +218,7 @@ VOID RotateCsrValue (
     BOOLEAN UnsetDynamic
 ) {
     EFI_STATUS    Status;
+    BOOLEAN       ShowMessage;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
     UINT32        CurrentValue;
@@ -227,7 +228,7 @@ VOID RotateCsrValue (
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
     #endif
 
-    if (GlobalConfig.CsrValues != NULL) {
+    if (GlobalConfig.CsrValues == NULL) {
         FlagNoCSR();
 
         #if REFIT_DEBUG > 0
@@ -245,7 +246,7 @@ VOID RotateCsrValue (
     }
 
     Status = GetCsrStatus (&CurrentValue);
-    if (EFI_ERROR(Status) || GlobalConfig.CsrValues != NULL) {
+    if (EFI_ERROR(Status)) {
         MY_FREE_POOL(gCsrStatus);
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
@@ -326,7 +327,12 @@ VOID RotateCsrValue (
         NormaliseCall = TRUE;
     }
 
-    RecordgCsrStatus (TargetCsr, TRUE);
+    #if REFIT_DEBUG > 0
+    ShowMessage = TRUE;
+    #else
+    ShowMessage = UnsetDynamic;
+    #endif
+    RecordgCsrStatus (TargetCsr, ShowMessage);
 
     if (NormaliseCall) {
         NormaliseCall = FALSE;
