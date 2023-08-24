@@ -306,7 +306,7 @@ CHAR16 * AddInitrdToOptions (
     BREAD_CRUMB(L"%s:  2", FuncTag);
     if (InitrdPath != NULL) {
         BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-        if (FindSubStr (Options, L"%v")) {
+        if (FindSubStr (NewOptions, L"%v")) {
             BREAD_CRUMB(L"%s:  2a 1a 1", FuncTag);
             InitrdVersion = FindNumbers (InitrdPath);
 
@@ -316,7 +316,7 @@ CHAR16 * AddInitrdToOptions (
             BREAD_CRUMB(L"%s:  2a 1a 3", FuncTag);
             MY_FREE_POOL(InitrdVersion);
         }
-        else if (!FindSubStr (Options, L"initrd=")) {
+        else if (!FindSubStr (NewOptions, L"initrd=")) {
             BREAD_CRUMB(L"%s:  2a 1b 1", FuncTag);
             MergeStrings (&NewOptions, L"initrd=", L' ');
 
@@ -365,6 +365,7 @@ CHAR16 * GetMainLinuxOptions (
         if (Options) {
             BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
+            BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
         }
         MY_FREE_POOL(KernelVersion);
     }
@@ -374,6 +375,7 @@ CHAR16 * GetMainLinuxOptions (
     if (InitrdName || Options) {
         BREAD_CRUMB(L"%s:  4a 1", FuncTag);
         FullOptions = AddInitrdToOptions (Options, InitrdName);
+        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  5", FuncTag);
@@ -570,7 +572,7 @@ VOID AddKernelToSubmenu (
             CleanUpPathNameSlashes (SubEntry->LoaderPath);
 
             BREAD_CRUMB(L"%s:  6a 3a 10", FuncTag);
-            SubEntry->Volume = CopyVolume (Volume);
+            SubEntry->Volume = Volume;
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
 
             BREAD_CRUMB(L"%s:  6a 3a 11", FuncTag);

@@ -3302,7 +3302,7 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                             ourLoaderEntry->me.Title        =  StrDuplicate (TypeStr);
                             ourLoaderEntry->me.Tag          =     TAG_LOAD_NVRAMCLEAN;
-                            ourLoaderEntry->Volume          = CopyVolume (Volumes[i]);
+                            ourLoaderEntry->Volume          =              Volumes[i];
                             ourLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
                             ourLoaderEntry->UseGraphicsMode =                   FALSE;
 
@@ -3876,7 +3876,7 @@ EFI_STATUS EFIAPI efi_main (
                         i = 0;
                         FoundVentoy = FALSE;
                         while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                            if (MyStriCmp (EntryVol->VolName, VentoyName)) {
+                            if (MyStrBegins (VentoyName, EntryVol->VolName)) {
                                 FoundVentoy = TRUE;
                                 MsgStr = PoolPrint (
                                     L"Load Instance: Ventoy on %s Partition via '%s'",

@@ -721,10 +721,9 @@ VOID AddSubmenu (
             BREAD_CRUMB(L"%s:  5a 1b", FuncTag);
 
             // Set the boot loader filename
-            FreeVolume (&SubEntry->Volume);
             MY_FREE_POOL(SubEntry->LoaderPath);
             SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
-            SubEntry->Volume     = CopyVolume (Volume);
+            SubEntry->Volume     = Volume;
         }
         else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
             BREAD_CRUMB(L"%s:  5a 1c", FuncTag);
@@ -732,9 +731,8 @@ VOID AddSubmenu (
             if (FindVolume (&Volume, TokenList[1])) {
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                     TitleVolume = TRUE;
-                    FreeVolume (&SubEntry->Volume);
                     MY_FREE_IMAGE(SubEntry->me.BadgeImage);
-                    SubEntry->Volume        = CopyVolume (Volume);
+                    SubEntry->Volume        = Volume;
                     SubEntry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
                 }
             }
@@ -884,7 +882,7 @@ LOADER_ENTRY * AddStanzaEntries (
         : StrDuplicate (L"Manual Stanza: Title Not Found");
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
-    Entry->Volume          = CopyVolume (Volume);
+    Entry->Volume          = Volume;
     Entry->me.BadgeImage   = egCopyImage (Volume->VolBadgeImage);
     Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
@@ -950,9 +948,7 @@ LOADER_ENTRY * AddStanzaEntries (
                     ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
                     #endif
 
-                    // DA-TAG: Avoid Memory Leak
-                    FreeVolume (&Entry->Volume);
-                    Entry->Volume = CopyVolume (CurrentVolume);
+                    Entry->Volume = CurrentVolume;
 
                     // DA-TAG: Avoid Memory Leak
                     MY_FREE_IMAGE(Entry->me.BadgeImage);

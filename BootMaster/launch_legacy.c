@@ -810,7 +810,7 @@ VOID AddLegacyEntry (
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (Volume->OSIconName, L"legacy", FALSE);
-    Entry->Volume            = CopyVolume (Volume);
+    Entry->Volume            = Volume;
     Entry->me.BadgeImage     = egCopyImage (Volume->VolBadgeImage);
     Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
                                ? L"CD"
@@ -864,7 +864,7 @@ VOID AddLegacyEntry (
 
     SubEntry->me.Title    = PoolPrint (L"Load %s", LoaderTitle);
     SubEntry->me.Tag      = TAG_LEGACY;
-    SubEntry->Volume      = CopyVolume (Entry->Volume);
+    SubEntry->Volume      = Entry->Volume;
     SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);

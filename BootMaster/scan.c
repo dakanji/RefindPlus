@@ -238,7 +238,7 @@ LOADER_ENTRY * InitializeLoaderEntry (
     else {
         NewEntry->EfiBootNum      =  Entry->EfiBootNum;
         NewEntry->UseGraphicsMode =  Entry->UseGraphicsMode;
-        NewEntry->Volume          = (Entry->Volume       ) ? CopyVolume          (Entry->Volume)        : NULL;
+        NewEntry->Volume          = (Entry->Volume       ) ?                      Entry->Volume         : NULL;
         NewEntry->LoaderPath      = (Entry->LoaderPath   ) ? StrDuplicate        (Entry->LoaderPath)    : NULL;
         NewEntry->InitrdPath      = (Entry->InitrdPath   ) ? StrDuplicate        (Entry->InitrdPath)    : NULL;
         NewEntry->LoadOptions     = (Entry->LoadOptions  ) ? StrDuplicate        (Entry->LoadOptions)   : NULL;
@@ -263,7 +263,6 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     CHAR16                 *TmpStr;
     CHAR16                 *TmpName;
     CHAR16                 *FileName;
-    CHAR16                 *MainOptions;
     CHAR16                 *DisplayName;
     LOADER_ENTRY           *SubEntry;
     REFIT_MENU_SCREEN      *SubScreen;
@@ -344,12 +343,19 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         else if (FindSubStr (SubScreen->Title, L"OpenCore"                      )) NameOS = L"Instance: OpenCore"        ;
         else if (FindSubStr (SubScreen->Title, L"Clover"                        )) NameOS = L"Instance: Clover"          ;
 
-        SubEntry->me.Title    = PoolPrint (L"Load %s with Default Options", NameOS);
-        MainOptions           = StrDuplicate (SubEntry->LoadOptions);
-        SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
-        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+        SubEntry->me.Title = PoolPrint (
+            L"Load %s with Default Options",
+            NameOS
+        );
 
-        MY_FREE_POOL(MainOptions);
+        if (SubEntry->InitrdPath) {
+            SubEntry->LoadOptions = AddInitrdToOptions (
+                SubEntry->LoadOptions,
+                SubEntry->InitrdPath
+            );
+        }
+
+        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
     }
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -518,7 +524,7 @@ VOID GenerateSubScreen (
                     SubEntry = InitializeLoaderEntry (Entry);
                     if (SubEntry != NULL) {
                         MY_FREE_POOL(SubEntry->LoaderPath);
-                        SubEntry->Volume          = CopyVolume (DiagnosticsVolume);
+                        SubEntry->Volume          = DiagnosticsVolume;
                         SubEntry->me.Title        = StrDuplicate (L"Run Apple Hardware Test");
                         SubEntry->LoaderPath      = StrDuplicate (MACOSX_DIAGNOSTICS);
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
@@ -759,6 +765,7 @@ VOID SetLoaderDefaults (
     BREAD_CRUMB(L"%s:  3", FuncTag);
     ShortcutLetter = 0;
     OSIconName     = NULL;
+    GotFlag        = FALSE;
     if (!AllowGraphicsMode) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         #if REFIT_DEBUG > 0
@@ -1572,7 +1579,7 @@ LOADER_ENTRY * AddLoaderEntry (
     }
 
     MergeStrings (&(Entry->LoaderPath), LoaderPath, 0);
-    Entry->Volume = CopyVolume (Volume);
+    Entry->Volume = Volume;
     SetLoaderDefaults (Entry, LoaderPath, Volume);
     GenerateSubScreen (Entry, Volume, SubScreenReturn);
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
@@ -3218,13 +3225,13 @@ LOADER_ENTRY * AddToolEntry (
     LOADER_ENTRY *Entry;
 
     Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-    Entry->me.Title          = (LoaderTitle) ? StrDuplicate (LoaderTitle) : StrDuplicate (L"Unknown Tool");
+    Entry->me.Title          = (LoaderTitle) ? LoaderTitle : StrDuplicate (L"Unknown Tool");
     Entry->me.Tag            = TAG_TOOL;
     Entry->me.Row            = 1;
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = egCopyImage (Image);
-    Entry->LoaderPath        = (LoaderPath) ? StrDuplicate (LoaderPath) : NULL;
-    Entry->Volume            = CopyVolume (Volume);
+    Entry->LoaderPath        = (LoaderPath) ? LoaderPath : NULL;
+    Entry->Volume            = Volume;
     Entry->UseGraphicsMode   = UseGraphicsMode;
 
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);

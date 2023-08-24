@@ -2935,7 +2935,7 @@ VOID ManageHiddenTags (VOID) {
         MenuEntryItem  = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
         MenuEntryItem->Title = StrDuplicate (OneElement);
         MenuEntryItem->Tag   = TAG_RETURN;
-        AddMenuEntryCopy (RestoreItemMenu, MenuEntryItem);
+        AddMenuEntry (RestoreItemMenu, MenuEntryItem);
 
         MY_FREE_POOL(OneElement);
     } // while
@@ -3876,7 +3876,6 @@ VOID FreeLegacyEntry (
     MY_FREE_IMAGE((*Entry)->me.BadgeImage);
     FreeMenuScreen (&(*Entry)->me.SubScreen);
 
-    FreeVolume (&(*Entry)->Volume);
     FreeBdsOption (&(*Entry)->BdsOption);
     MY_FREE_POOL((*Entry)->LoadOptions);
     MY_FREE_POOL(*Entry);
@@ -3911,20 +3910,17 @@ VOID FreeLoaderEntry (
     MY_FREE_IMAGE((*Entry)->me.Image);
     MY_FREE_IMAGE((*Entry)->me.BadgeImage);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    FreeVolume (&(*Entry)->Volume);
-
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
     MY_FREE_POOL((*Entry)->Title);
     MY_FREE_POOL((*Entry)->LoaderPath);
     MY_FREE_POOL((*Entry)->InitrdPath);
     MY_FREE_POOL((*Entry)->LoadOptions);
     MY_FREE_POOL((*Entry)->EfiLoaderPath);
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%s:  5", FuncTag);
     MY_FREE_POOL(*Entry);
 
-    BREAD_CRUMB(L"%s:  7 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  6 - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FreeLoaderEntry()

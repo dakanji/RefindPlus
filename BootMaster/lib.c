@@ -1014,24 +1014,26 @@ VOID FreeSyncVolumes (VOID) {
         return;
     }
 
-    FreeVolumes (&RecoveryVolumes, &RecoveryVolumesCount);
-    FreeVolumes (&SkipApfsVolumes, &SkipApfsVolumesCount);
-    FreeVolumes (&PreBootVolumes,  &PreBootVolumesCount );
-    FreeVolumes (&SystemVolumes,   &SystemVolumesCount  );
-    FreeVolumes (&HfsRecovery,     &HfsRecoveryCount    );
-    FreeVolumes (&DataVolumes,     &DataVolumesCount    );
+    MY_FREE_POOL(RecoveryVolumes);
+    MY_FREE_POOL(SkipApfsVolumes);
+    MY_FREE_POOL(PreBootVolumes );
+    MY_FREE_POOL(SystemVolumes  );
+    MY_FREE_POOL(HfsRecovery    );
+    MY_FREE_POOL(DataVolumes    );
+
+    RecoveryVolumesCount      = 0;
+    SkipApfsVolumesCount      = 0;
+    PreBootVolumesCount       = 0;
+    SystemVolumesCount        = 0;
+    HfsRecoveryCount          = 0;
+    DataVolumesCount          = 0;
 } // VOID FreeSyncVolumes()
 
 VOID FreeVolumes (
     IN OUT REFIT_VOLUME  ***ListVolumes,
     IN OUT UINTN           *ListCount
 ) {
-    UINTN i;
-
     if ((*ListCount > 0) && (**ListVolumes != NULL)) {
-        for (i = 0; i < *ListCount; i++) {
-            FreeVolume (&(*ListVolumes)[i]);
-        }
         MY_FREE_POOL(*ListVolumes);
         *ListCount = 0;
     }
@@ -2838,7 +2840,7 @@ VOID ScanVolumes (VOID) {
                             AddListElement (
                                 (VOID ***) &RecoveryVolumes,
                                 &RecoveryVolumesCount,
-                                CopyVolume (Volume)
+                                Volume
                             );
 
                             // Flag NULL VolUUID or PartGuid if found and not previously flagged
@@ -2855,7 +2857,7 @@ VOID ScanVolumes (VOID) {
                             AddListElement (
                                 (VOID ***) &DataVolumes,
                                 &DataVolumesCount,
-                                CopyVolume (Volume)
+                                Volume
                             );
 
                             // Flag NULL VolUUID or PartGuid if found and not previously flagged
@@ -2870,7 +2872,7 @@ VOID ScanVolumes (VOID) {
                             AddListElement (
                                 (VOID ***) &PreBootVolumes,
                                 &PreBootVolumesCount,
-                                CopyVolume (Volume)
+                                Volume
                             );
 
                             // Flag NULL VolUUID or PartGuid if found and not previously flagged
@@ -2888,7 +2890,7 @@ VOID ScanVolumes (VOID) {
                             AddListElement (
                                 (VOID ***) &SystemVolumes,
                                 &SystemVolumesCount,
-                                CopyVolume (Volume)
+                                Volume
                             );
 
                             if (!ShouldScan (Volume, MACOSX_LOADER_DIR)) {
@@ -2896,7 +2898,7 @@ VOID ScanVolumes (VOID) {
                                 AddListElement (
                                     (VOID ***) &SkipApfsVolumes,
                                     &SkipApfsVolumesCount,
-                                    CopyVolume (Volume)
+                                    Volume
                                 );
                             }
 
@@ -2961,7 +2963,7 @@ VOID ScanVolumes (VOID) {
                 AddListElement (
                     (VOID ***) &HfsRecovery,
                     &HfsRecoveryCount,
-                    CopyVolume (Volume)
+                    Volume
                 );
             }
 
