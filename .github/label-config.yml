@@ -490,7 +490,7 @@ Resolved:
     unlabel:
       - 'Uncertain'
       - 'Cancelled'
-      - 'Resolved'
+      - 'Accepted'
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
