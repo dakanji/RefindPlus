@@ -1160,7 +1160,9 @@ VOID ScanLegacyVolume (
     ShowVolume = TRUE;
     if (HideIfOthersFound) {
         // Check for other bootable entries on the same disk
-        BREAD_CRUMB(L"%s:  3a 1 - Found ... Check for Other Bootable Entries on Same Disk", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 1 - Found Flag ... Check for Other Bootable Legacy Entries on *SAME* Disk%s", FuncTag,
+            (GlobalConfig.HandleVentoy) ? L" or Ventoy Entry on *ANY* Disk" : L""
+        );
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             LOG_SEP(L"X");
             BREAD_CRUMB(L"%s:  3a 1a 1 - FOR LOOP:- START", FuncTag);
@@ -1174,24 +1176,20 @@ VOID ScanLegacyVolume (
                 }
 
                 BREAD_CRUMB(L"%s:  3a 1a 1a 2", FuncTag);
-                if (ShowVolume) {
+                if (ShowVolume && GlobalConfig.HandleVentoy) {
                     BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1", FuncTag);
-                    if (GlobalConfig.HandleVentoy) {
-                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1", FuncTag);
-                        i = 0;
-                        FoundVentoy = FALSE;
-                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1 - WHILE LOOP:- START ... Check for Ventoy", FuncTag);
-                            if (MyStriCmp (Volumes[VolumeIndex2]->VolName, VentoyName)) {
-                                BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1a 1 - Found Ventoy Partition ... Hiding Whole Disk Entry", FuncTag);
-                                ShowVolume  = FALSE;
-                                FoundVentoy =  TRUE;
-                            }
-                            MY_FREE_POOL(VentoyName);
-                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 2 - WHILE LOOP:- END", FuncTag);
-                        } // while
-                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 2", FuncTag);
-                    }
+                    i = 0;
+                    FoundVentoy = FALSE;
+                    while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1 - WHILE LOOP:- START", FuncTag);
+                        if (MyStrBegins (VentoyName, Volumes[VolumeIndex2]->VolName)) {
+                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1 - Found Ventoy Entry", FuncTag);
+                            ShowVolume  = FALSE;
+                            FoundVentoy =  TRUE;
+                        }
+                        MY_FREE_POOL(VentoyName);
+                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                    } // while
                     BREAD_CRUMB(L"%s:  3a 1a 1a 2a 2", FuncTag);
                 }
                 BREAD_CRUMB(L"%s:  3a 1a 1a 3", FuncTag);

@@ -2753,6 +2753,11 @@ EFI_STATUS EFIAPI efi_main (
     else {
         LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"        );
     }
+    LOG_MSG(
+        "%s      HandleVentoy:- '%s'",
+        OffsetNext,
+        GlobalConfig.HandleVentoy ? L"Active" : L"Inactive"
+    );
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
         LOG_MSG("'Disabled'"                                                        );

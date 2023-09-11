@@ -2973,7 +2973,7 @@ VOID ScanVolumes (VOID) {
                     j = 0;
                     FoundVentoy = FALSE;
                     while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, j++)) != NULL) {
-                        if (MyStriCmp (Volume->VolName, VentoyName)) {
+                        if (MyStrBegins (VentoyName, Volume->VolName)) {
                             FoundVentoy = TRUE;
                             RoleStr = L" * Part Ventoy";
                         }
