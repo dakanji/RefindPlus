@@ -61,8 +61,8 @@ decline_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 decline_apfs_mute     |Disables suppression of verbose APFS text on boot
 decline_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_apple_fb      |Disables provision under some circumstances of missing AppleFramebuffers
-decline_help_icon     |Disables feature that may enhance loading speed by preferring default icons
-decline_help_tags     |Disables feature that ensures hidden tags can always be unhidden
+decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
+decline_help_tags     |Disables feature that ensures hidden display entries can always be unhidden
 decline_help_text     |Disables complementary text colours if not required
 decline_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
 decline_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
@@ -72,7 +72,6 @@ disable_compat_check  |Disables Mac version compatibility checks if required
 disable_nvram_paniclog|Disables macOS kernel panic logging to NVRAM
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
-follow_symlinks       |Allows following symbolic links to loaders (Ignored by default)
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
@@ -122,7 +121,6 @@ In addition to the new functionality listed above, the following upstream tokens
 ## Divergence
 Implementation differences with the upstream v0.14.0 base are:
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
-- **Resolution:** The maximum available resolution, which might be the system default, is always used by RefindPlus when a specific resolution is not defined or when a defined resolution is not available. That is, the `max` setting for `resolution` in the configuration file is the default in RefindPlus. The upstream implementation effectively uses the system default, which might not be the maximum, in such cases.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_help_tags` configuration token to switch it off.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_reload_gop` configuration token to switch it off.
@@ -136,7 +134,7 @@ Implementation differences with the upstream v0.14.0 base are:
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted, and the `Entry` object immediately discarded, once a `Disabled` setting is encountered. The outcome is the same as upstream, which always continues to create and return a fully built object in such cases to be discarded later. The approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/27ad097947f67fbf372ac1a302ad813a029b927f/config.conf-sample#L1224-L1249) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
 - **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.
 - **GZipped Loaders:** RefindPlus only provides stub support for handling GZipped loaders as this is largely relevant for units on the ARM architecture. This stub support can be activated using the same `support_gzipped_loaders` configuration token as upstream.
-- **Loader Icons:** To improve loading speed, RefindPlus always prefers generic default theme icons for loaders, where possible, ahead of custom icons. Such generic default icons are typically used but the inherited icon search involves only using such icons after a search for custom icons has not turned anything up. Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_help_icon` configuration token to switch it off.
+- **Loader Icons:** RefindPlus defaults to preferring generic icons for loaders ahead of custom icons where possible. The upstream icon search implementation involves only loading such icons after a search for custom icons has not turned anything up. Users can activate the RefindPlus-Specific `decline_help_icon` configuration token to use the upstream icon search implementation instead of the RefindPlus default.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x86_64 Only).

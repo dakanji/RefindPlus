@@ -1,11 +1,36 @@
 
 # Configuration for Label Actions - https://github.com/dessant/label-actions
 
+# The `Acknowledged` label is added to issues
+Acknowledged:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Uncertain'
+      - 'Cancelled'
+      - 'Accepted'
+      - 'Resolved'
+      - 'Triage'
+      - 'Not-Planned'
+      - 'Parked'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
+    # Close thread
+    close: true
+
 # The `Accepted` label is added to issues
 Accepted:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Resolved'
@@ -26,13 +51,12 @@ Accepted:
 # The `Declined` label is added to Pull Requests
 Declined:
   prs:
-    # Add labels
-    label:
-      - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
+      - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
@@ -48,12 +72,15 @@ Declined:
       - 'Cannot-Replicate'
     # Close thread
     close: true
+    # Closure reason
+    close-reason: 'not planned'
 
 # The `Uncertain` label is added to issues
 Uncertain:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -76,6 +103,7 @@ Bug:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -99,6 +127,7 @@ Cancelled:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Accepted'
       - 'Resolved'
@@ -123,6 +152,7 @@ Discussion:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -148,6 +178,7 @@ Dismissed:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -166,9 +197,10 @@ Dismissed:
       - 'Cannot-Replicate'
     # Close thread
     close: true
+    # Closure reason
+    close-reason: 'not planned'
     # Lock thread
     lock: true
-    # Add Comment
 
 # The `Documentation` label is added to issues
 Documentation:
@@ -189,17 +221,14 @@ Documentation:
       - 'Invalid'
       - 'Prorogued'
       - 'Incomplete'
-      - 'Known-Issue'
       - 'Cannot-Replicate'
 
 # The `Duplicate` label is added to issues
 Duplicate:
   issues:
-    # Add labels
-    label:
-      - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -226,6 +255,7 @@ Enhancement:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -249,6 +279,7 @@ Tagged:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -269,6 +300,7 @@ Good-First-Issue:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -292,9 +324,8 @@ Help-Wanted:
   issues:
     # Remove labels
     unlabel:
-      - 'Uncertain'
+      - 'Acknowledged'
       - 'Cancelled'
-      - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
@@ -302,7 +333,6 @@ Help-Wanted:
       - 'Tagged'
       - 'Stale'
       - 'Queries'
-      - 'Unclear'
       - 'Invalid'
       - 'Prorogued'
       - 'Duplicate'
@@ -315,6 +345,7 @@ Incomplete:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -339,6 +370,7 @@ Invalid:
       - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -359,11 +391,9 @@ Invalid:
 # The `Known-Issue` label is added to issues
 Known-Issue:
   issues:
-    # Add labels
-    label:
-      - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -387,6 +417,7 @@ Parked:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -409,9 +440,10 @@ Upstream:
   issues:
     # Add labels
     label:
-      - 'Known-Issue'
+      - 'Acknowledged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -433,6 +465,7 @@ Queries:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -455,11 +488,9 @@ Queries:
 # The `Resolved` label is added to issues
 Resolved:
   issues:
-    # Add labels
-    label:
-      - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -508,6 +539,7 @@ Unclear:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -532,6 +564,7 @@ Not-Planned:
       - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -561,11 +594,9 @@ Not-Planned:
 # The `Cannot-Replicate` label is added to issues
 Cannot-Replicate:
   issues:
-    # Add labels
-    label:
-      - 'Tagged'
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -589,6 +620,7 @@ Prorogued:
   issues:
     # Remove labels
     unlabel:
+      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'

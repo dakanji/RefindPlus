@@ -82,7 +82,7 @@ body:
       placeholder: |
         Reports not requiring log files are typically best under Discussions.
         Reports without log files will be automatically closed in most cases.
-        Debug logs at Log Level '0' are preferred unless otherwise indicated.
+        Debug logs at Log Level '0' are usually preferred over higher levels.
     validations:
       required: true
   - type: textarea

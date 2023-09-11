@@ -34,7 +34,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '0'
           include-any-issue-labels: 'Resolved'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -52,7 +52,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Not-Planned'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -71,7 +71,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Cannot-Replicate, Known-Issue, Cancelled'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -90,7 +90,7 @@ jobs:
           add-issue-labels: 'Abandoned'
           issue-inactive-days: '4'
           include-any-issue-labels: 'Stale, Incomplete'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This item is being locked.
             Trigger: Apparent Abandonment
@@ -107,7 +107,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: 'Unclear'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -127,7 +127,7 @@ jobs:
           issue-inactive-days: '3'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Unclear, Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 

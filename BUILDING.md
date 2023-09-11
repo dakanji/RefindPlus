@@ -120,22 +120,23 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 ### Build RefindPlus
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
 - Open a new Terminal window
+  - Always open a new Terminal window when building
 - Drag the `RefindPlusBuilder.sh` file onto the Terminal window
-  - Enter a space and `MyEdits`, or any other branch name, to the end of the line if you want to build on that branch
+  - Enter a space followed by a branch name to the end of the line to build on that branch
   - If nothing is entered, the script will build on the default `GOPFix` branch
 - Press `Enter`
 
 ### Syncing Your Repositories with Source Repositories
-If a period of time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with the source repositories in order to incorporate changes made in the intervening period.
+If some time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with the source repositories in order to incorporate changes made in the intervening period.
 
 #### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
 - Open a new Terminal window
+  - A new Terminal window is best for syncing
 - Drag the `RepoUpdater.sh` file onto the Terminal window
 - Press `Enter`
 
-**NB:** If you get an error after running the script, try running it again as subsequent runs should realign things.
-If the script still fails after a third attempt, try the manual sync steps outlined below instead.
+**NB:** If you get an error after running the script, try running it again as subsequent runs should realign things. If the script still fails after a third attempt, try the manual sync steps outlined below instead.
 
 #### OPTION 2: Manual Sync
 ##### RefindPlus
@@ -163,4 +164,4 @@ $ git push
 ```
 
 #### OPTION 3: GitHub Sync
-GitHub now includes an interface for syncing forks. While Options 1 and 2 will leave the fork with a clean history consistent with the source repository, some may find the GitHub interface easier to use.
+GitHub includes an interface for syncing forks (which will need to be pulled to your local machine). While, unlike Option 3, Options 1 and 2 will leave your fork with a clean history consistent with the source repositories, some may find the GitHub interface easier to use.
