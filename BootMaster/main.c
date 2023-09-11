@@ -1809,13 +1809,11 @@ VOID AboutRefindPlus (VOID) {
         TmpStr = (!EFI_ERROR(Status))
             ? StrDuplicate (gCsrStatus)
             : PoolPrint (L"%s ... %r", gCsrStatus, Status);
+
+        LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
     }
-    LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for Mac   : %s", TmpStr), TRUE);
-    MY_FREE_POOL(TmpStr);
-    TmpStr = egScreenDescription();
-    LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLine (AboutMenu, PoolPrint(L"Screen Output : %s", TmpStr),  TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for Mac   : %s", TmpStr),                   TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Output : %s", egScreenDescription()),    TRUE);
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
@@ -2176,7 +2174,7 @@ VOID AdjustDefaultSelection (VOID) {
                 MY_FREE_POOL(Element);
 
                 #if REFIT_DEBUG > 0
-                BRK_MOD("\n");
+                LOG_MSG("\n");
                 #endif
 
                 Status = EfivarGetRaw (

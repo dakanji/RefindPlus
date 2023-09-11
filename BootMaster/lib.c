@@ -294,7 +294,7 @@ VOID CleanUpPathNameSlashes (
             }
         }
         else {
-            // Regular character; copy it straight.
+            // Regular character ... copy directly.
             PathName[Dest] = PathName[Source];
             Source++;
             Dest++;
@@ -306,7 +306,6 @@ VOID CleanUpPathNameSlashes (
     }
 
     PathName[Dest]   = L'\0';
-
     if (PathName[0] == L'\0') {
         PathName[0]  = L'\\';
         PathName[1]  = L'\0';
@@ -314,14 +313,20 @@ VOID CleanUpPathNameSlashes (
 } // CleanUpPathNameSlashes()
 
 // Splits an EFI device path into device and filename components.
-// For instance, if InString is PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)/\bzImage-3.5.1.efi,
-// this function will truncate that input to PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)
+// For instance, if InString is
+// PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)/\bzImage-3.5.1.efi,
+// this function will truncate that input to
+// PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)
 // and return bzImage-3.5.1.efi as its return value.
-// It does this by searching for the last ")" character in InString, copying everything
-// after that string (after some cleanup) as the return value, and truncating the original
-// input value.
-// If InString contains no ")" character, this function leaves the original input string
-// unmodified and also returns that string. If InString is NULL, this function returns NULL.
+//
+// It does this by searching for the last ")" character in InString,
+// copying everything after that string (after some cleanup) as the return
+// value, and truncating the original after that string (after some cleanup)
+// as the return value, and truncating the original input value.
+//
+// If InString contains no ")" character, this function leaves the original
+// input string unmodified and also returns that string. If InString is NULL,
+// this function returns NULL.
 CHAR16 * SplitDeviceString (
     IN OUT CHAR16 *InString
 ) {
@@ -998,6 +1003,7 @@ VOID SanitiseVolumeName (
         else if (NAME_FIX(L"Ext4 Volume"                 );
         else if (NAME_FIX(L"Ext3 Volume"                 );
         else if (NAME_FIX(L"Ext2 Volume"                 );
+        else if (NAME_FIX(L"ExFAT Volume"                );
         else if (NAME_FIX(L"BTRFS Volume"                );
         else if (NAME_FIX(L"ReiserFS Volume"             );
         else if (NAME_FIX(L"ISO-9660 Volume"             );
@@ -1137,6 +1143,7 @@ CHAR16 * FSTypeName (
         case FS_TYPE_HFSPLUS:   retval = L"HFS+"      ;       break;
         case FS_TYPE_APFS:      retval = L"APFS"      ;       break;
         case FS_TYPE_NTFS:      retval = L"NTFS"      ;       break;
+        case FS_TYPE_EXFAT:     retval = L"ExFAT"     ;       break;
         case FS_TYPE_EXT4:      retval = L"Ext4"      ;       break;
         case FS_TYPE_EXT3:      retval = L"Ext3"      ;       break;
         case FS_TYPE_EXT2:      retval = L"Ext2"      ;       break;
@@ -1166,8 +1173,9 @@ CHAR16 * FSTypeName (
         return retval;
     }
 
-    if (0);
-    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) retval = L"NTFS (Assumed)";
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) {
+        retval = (MyStrBegins (Volume->VolName, L"Ventoy")) ? L"ExFAT (Assumed)" : L"NTFS (Assumed)";
+    }
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) retval = L"NTFS (Assumed)";
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) retval = L"Mac Raid (OFF)";
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn )) retval = L"Mac Raid (ON)" ;
@@ -1311,27 +1319,30 @@ VOID SetFilesystemData (
         // These all have 0xAA55 at the end of the first sector, so we must
         // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
         // figure out where to look for the filesystem serial numbers.
-        Magic16 = (UINT16*) (Buffer + 510);
+        Magic16 = (UINT16 *) (Buffer + 510);
         if (*Magic16 == FAT_MAGIC) {
             MagicString = (char*) Buffer;
-            if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
+            if (CompareMem (MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_NTFS;
-                CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
+                CopyMem (&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
             }
-            else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+            else if (CompareMem (MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_FAT32;
-                CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
+                CopyMem (&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
             }
-            else if (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0) {
+            else if (CompareMem (MagicString + 0x36, FAT16_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_FAT16;
-                CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+                CopyMem (&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
             }
-            else if (CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) {
+            else if (CompareMem (MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_FAT12;
-                CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+                CopyMem (&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
             }
             else if (!Volume->BlockIO->Media->LogicalPartition) {
                 Volume->FSType = FS_TYPE_WHOLEDISK;
+            }
+            else {
+                Volume->FSType = FS_TYPE_EXFAT;
             }
 
             return;
@@ -1784,7 +1795,14 @@ CHAR16 * GetVolumeName (
         (Volume->FsName[0] != L'\0') &&
         (StrLen (Volume->FsName) > 0)
     ) {
-        FoundName = StrDuplicate (Volume->FsName);
+        if (MyStriCmp (Volume->FsName, L"FAT") &&
+            Volume->FSType == FS_TYPE_EXFAT
+        ) {
+            FoundName = StrDuplicate (L"ExFAT");
+        }
+        else {
+            FoundName = StrDuplicate (Volume->FsName);
+        }
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1793,10 +1811,12 @@ CHAR16 * GetVolumeName (
         );
         #endif
     }
+    if (FoundName != NULL) {
+        return FoundName;
+    }
 
     // Try to use the partition name if no filesystem name
-    if ((FoundName == NULL) &&
-        (Volume->PartName) &&
+    if ((Volume->PartName) &&
         (StrLen (Volume->PartName) > 0) &&
         !IsListItem (Volume->PartName, IGNORE_PARTITION_NAMES)
     ) {
@@ -1809,95 +1829,97 @@ CHAR16 * GetVolumeName (
         );
         #endif
     }
+    if (FoundName != NULL) {
+        return FoundName;
+    }
 
     // 'FSTypeName' returns a constant ... Do not free 'TypeName'!
     TypeName = FSTypeName (Volume);
 
     // No filesystem or acceptable partition name ... use fs type and size
-    if (FoundName == NULL) {
-        FileSystemInfoPtr = (Volume->RootDir == NULL)
-            ? NULL
-            : LibFileSystemInfo (Volume->RootDir);
+    FileSystemInfoPtr = (Volume->RootDir == NULL)
+        ? NULL
+        : LibFileSystemInfo (Volume->RootDir);
 
-        if (FileSystemInfoPtr != NULL) {
-            SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
-            FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Set Name to Filesystem Description:- '%s'",
-                FoundName
-            );
-            #endif
-
-            MY_FREE_POOL(SISize);
-            MY_FREE_POOL(FileSystemInfoPtr);
-        }
-    }
-
-    if (FoundName == NULL) {
-        if (Volume->DiskKind == DISK_KIND_OPTICAL) {
-            if (Volume->FSType == FS_TYPE_ISO9660) {
-                FoundName = StrDuplicate (L"Optical ISO-9660 Image");
-            }
-            else {
-                FoundName = StrDuplicate (L"Optical Disc Drive");
-            }
-        }
-        else if (MediaCheck) {
-            FoundName = StrDuplicate (L"Network Volume (Assumed)");
-        }
-        else {
-            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                FoundName = StrDuplicate (L"APFS/FileVault Container");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux)) {
-                FoundName = StrDuplicate (L"Linux Volume");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) {
-                FoundName = StrDuplicate (L"Microsoft Reserved Partition");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
-                FoundName = StrDuplicate (L"Recovery HD");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT)) {
-                FoundName = StrDuplicate (L"GPT Home Partition");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT)) {
-                FoundName = StrDuplicate (L"GPT Server Partition");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
-                FoundName = StrDuplicate (L"Apple Raid Partition (Online)");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
-                FoundName = StrDuplicate (L"Apple Raid Partition (Offline)");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) {
-                FoundName = StrDuplicate (L"Fusion/FileVault Container");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidApplTvRec)) {
-                FoundName = StrDuplicate (L"AppleTV Recovery Partition");
-            }
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
-            }
-            else {
-                if (MyStriCmp (TypeName, L"APFS")) {
-                    FoundName = StrDuplicate (L"APFS Volume (Assumed)");
-                }
-                else {
-                    FoundName = PoolPrint (L"%s Volume", TypeName);
-                }
-            }
-        }
+    if (FileSystemInfoPtr != NULL) {
+        SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
+        FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Set Name to Generic Description:- '%s'",
+            L"Set Name to Filesystem Description:- '%s'",
             FoundName
         );
         #endif
-    } // if FoundName == NULL
+
+        MY_FREE_POOL(SISize);
+        MY_FREE_POOL(FileSystemInfoPtr);
+    }
+    if (FoundName != NULL) {
+        return FoundName;
+    }
+
+    if (Volume->DiskKind == DISK_KIND_OPTICAL) {
+        if (Volume->FSType == FS_TYPE_ISO9660) {
+            FoundName = StrDuplicate (L"Optical ISO-9660 Image");
+        }
+        else {
+            FoundName = StrDuplicate (L"Optical Disc Drive");
+        }
+    }
+    else if (MediaCheck) {
+        FoundName = StrDuplicate (L"Network Volume (Assumed)");
+    }
+    else {
+        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+            FoundName = StrDuplicate (L"APFS/FileVault Container");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux)) {
+            FoundName = StrDuplicate (L"Linux Volume");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) {
+            FoundName = StrDuplicate (L"Microsoft Reserved Partition");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
+            FoundName = StrDuplicate (L"Recovery HD");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHomeGPT)) {
+            FoundName = StrDuplicate (L"GPT Home Partition");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidServerGPT)) {
+            FoundName = StrDuplicate (L"GPT Server Partition");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
+            FoundName = StrDuplicate (L"Apple Raid Partition (Online)");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
+            FoundName = StrDuplicate (L"Apple Raid Partition (Offline)");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidContainerHFS)) {
+            FoundName = StrDuplicate (L"Fusion/FileVault Container");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidApplTvRec)) {
+            FoundName = StrDuplicate (L"AppleTV Recovery Partition");
+        }
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+            FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
+        }
+        else {
+            if (MyStriCmp (TypeName, L"APFS")) {
+                FoundName = StrDuplicate (L"APFS Volume (Assumed)");
+            }
+            else {
+                FoundName = PoolPrint (L"%s Volume", TypeName);
+            }
+        }
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Set Name to Generic Description:- '%s'",
+        FoundName
+    );
+    #endif
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
     //       such as:
@@ -2261,9 +2283,9 @@ VOID VetMultiInstanceAPFS (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN AppleRecovery;
     CHAR16 *MsgStrA;
-    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for APFS macOS Instances'"     ;
-    CHAR16 *MsgStrC = L"Disabled:- 'Apple Hardware Test on Synced AFPS Volumes'" ;
-    CHAR16 *MsgStrD = L"Disabled:- 'Hide/Unhide Synced AFPS Volume Entries'"     ;
+    CHAR16 *MsgStrB = L"Disabled:- 'APFS macOS Instances - Recovery Tool'"     ;
+    CHAR16 *MsgStrC = L"Disabled:- 'Synced AFPS Volumes - Apple Hardware Test'";
+    CHAR16 *MsgStrD = L"Disabled:- 'Synced AFPS Volumes - Hide/Unhide Entries'";
 
     // Check if configured to show Apple Recovery
     AppleRecovery = FALSE;
@@ -2786,6 +2808,7 @@ VOID ScanVolumes (VOID) {
             else if (FindSubStr (PartType, L"APFS"    )) Volume->FSType = FS_TYPE_APFS   ;
             else if (FindSubStr (PartType, L"HFS+"    )) Volume->FSType = FS_TYPE_HFSPLUS;
             else if (FindSubStr (PartType, L"ISO-9660")) Volume->FSType = FS_TYPE_ISO9660;
+            else if (FindSubStr (PartType, L"ExFAT"   )) Volume->FSType = FS_TYPE_EXFAT  ;
 
             RoleStr = NULL;
             VolumeRole = 0;
@@ -3380,9 +3403,20 @@ VOID SetVolumeIcons (VOID) {
         #endif
 
         // Load custom volume icon for internal/external disks if present
-        if (!Volume->VolIconImage) {
-            if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
-                (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.HiddenIconsExternal)
+        if (Volume->VolIconImage) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Skipped '%s' ... Icon Already Set",
+                Volume->VolName
+            );
+            #endif
+        }
+        else {
+            if (Volume->DiskKind == DISK_KIND_INTERNAL ||
+                (
+                    GlobalConfig.HiddenIconsExternal &&
+                    Volume->DiskKind == DISK_KIND_EXTERNAL
+                )
             ) {
                 Volume->VolIconImage = egLoadIconAnyType (
                     Volume->RootDir,
@@ -3393,28 +3427,20 @@ VOID SetVolumeIcons (VOID) {
             }
             else {
                 #if REFIT_DEBUG > 0
-                if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Skipped External Volume: '%s' ... Config Setting is *NOT* Active:- 'hidden_icons_external'",
-                        Volume->VolName
-                    );
-                }
-                else {
+                if (Volume->DiskKind != DISK_KIND_EXTERNAL) {
                     ALT_LOG(1, LOG_LINE_NORMAL,
                         L"Skipped '%s' ... Not Internal Volume",
                         Volume->VolName
                     );
                 }
+                else {
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Skipped External Volume: '%s' ... Config Setting is *NOT* Active:- 'hidden_icons_external'",
+                        Volume->VolName
+                    );
+                }
                 #endif
             }
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Skipped '%s' ... Icon Already Set",
-                Volume->VolName
-            );
-            #endif
         }
 
         #if REFIT_DEBUG > 0
@@ -3780,7 +3806,7 @@ BOOLEAN DirIterNext (
 
         BREAD_CRUMB(L"%s:  3a 3", FuncTag);
         if (EFI_ERROR(DirIter->LastStatus) || LastFileInfo == NULL) {
-            BREAD_CRUMB(L"%s:  3a 3a 1 - END:- return BOOLEAN FALSE ... ERROR DirIter->LastStatus", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 3a 1 - FOR LOOP END:- return BOOLEAN FALSE ... ERROR DirIter->LastStatus", FuncTag);
             LOG_DECREMENT();
             LOG_SEP(L"X");
 
@@ -3789,7 +3815,7 @@ BOOLEAN DirIterNext (
 
         BREAD_CRUMB(L"%s:  3a 4", FuncTag);
         if (FilePattern == NULL || LastFileInfo->Attribute & EFI_FILE_DIRECTORY) {
-            BREAD_CRUMB(L"%s:  3a 4a 1 - END:- FilePattern == NULL ... return BOOLEAN TRUE", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 4a 1 - FOR LOOP END:- FilePattern == NULL ... return BOOLEAN TRUE", FuncTag);
             LOG_DECREMENT();
             LOG_SEP(L"X");
 
@@ -3812,7 +3838,7 @@ BOOLEAN DirIterNext (
 
         BREAD_CRUMB(L"%s:  3a 6", FuncTag);
         if (Found) {
-            BREAD_CRUMB(L"%s:  3a 6 - END:- Found == TRUE ... return BOOLEAN TRUE", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 6a 1 - FOR LOOP END:- Found == TRUE ... return BOOLEAN TRUE", FuncTag);
             LOG_DECREMENT();
             LOG_SEP(L"X");
 

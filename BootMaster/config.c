@@ -859,8 +859,11 @@ LOADER_ENTRY * AddStanzaEntries (
     CHAR16        **TokenList;
     CHAR16         *OurEfiBootNumber;
     CHAR16         *LoadOptions;
+    CHAR16         *LoaderToken;
     BOOLEAN         RetVal;
     BOOLEAN         HasPath;
+    BOOLEAN         DoneIcon;
+    BOOLEAN         DoneLoader;
     BOOLEAN         DefaultsSet;
     BOOLEAN         AddedSubmenu;
     BOOLEAN         FirmwareBootNum;
@@ -906,8 +909,9 @@ LOADER_ENTRY * AddStanzaEntries (
     #endif
 
     CurrentVolume   = Volume;
-    LoadOptions     = OurEfiBootNumber                     =  NULL;
+    LoaderToken     = LoadOptions  = OurEfiBootNumber      =  NULL;
     FirmwareBootNum = AddedSubmenu = DefaultsSet = HasPath = FALSE;
+    DoneLoader      = DoneIcon                             = FALSE;
 
     while (Entry->Enabled
         && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
@@ -917,22 +921,31 @@ LOADER_ENTRY * AddStanzaEntries (
             Entry->Enabled = FALSE;
         }
         else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
-            // Set the boot loader filename
-            // DA-TAG: Avoid Memory Leak
-            MY_FREE_POOL(Entry->LoaderPath);
-            Entry->LoaderPath = StrDuplicate (TokenList[1]);
-
-            HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
+            HasPath = (TokenList[1] && StrLen (TokenList[1]) > 0);
             if (HasPath) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
-                #endif
+                if (!DoneIcon) {
+                    MY_FREE_POOL(LoaderToken);
+                    LoaderToken = StrDuplicate (TokenList[1]);
+                }
+                else {
+                    // Set the boot loader filename
+                    // DA-TAG: Avoid Memory Leak
+                    MY_FREE_POOL(Entry->LoaderPath);
+                    Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
-                SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
+                    HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
+                    if (HasPath) {
+                        #if REFIT_DEBUG > 0
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                        #endif
 
-                // Discard default options, if any
-                MY_FREE_POOL(Entry->LoadOptions);
-                DefaultsSet = TRUE;
+                        SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
+
+                        DefaultsSet = TRUE;
+                    }
+
+                    DoneLoader = TRUE;
+                }
             }
         }
         else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
@@ -1002,6 +1015,8 @@ LOADER_ENTRY * AddStanzaEntries (
                     Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
                 }
             }
+
+            DoneIcon = TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
@@ -1086,6 +1101,22 @@ LOADER_ENTRY * AddStanzaEntries (
         return NULL;
     }
 
+    if (!DoneLoader && (LoaderToken && StrLen (LoaderToken) > 0)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", LoaderToken);
+        #endif
+
+        // Set the boot loader filename
+        // DA-TAG: Avoid Memory Leak
+        MY_FREE_POOL(Entry->LoaderPath);
+        Entry->LoaderPath = StrDuplicate (LoaderToken);
+
+        SetLoaderDefaults (Entry, LoaderToken, CurrentVolume);
+        MY_FREE_POOL(LoaderToken);
+
+        DefaultsSet = TRUE;
+    }
+
     // Set Screen Title
     if (!FirmwareBootNum && Entry->Volume->VolName) {
         Entry->me.Title = PoolPrint (
@@ -1102,7 +1133,6 @@ LOADER_ENTRY * AddStanzaEntries (
             // Clear potentially wrongly set items
             MY_FREE_POOL(Entry->InitrdPath   );
             MY_FREE_POOL(Entry->LoaderPath   );
-            MY_FREE_POOL(Entry->LoadOptions  );
             MY_FREE_POOL(Entry->EfiLoaderPath);
 
             Entry->me.Title = PoolPrint (
@@ -1121,8 +1151,9 @@ LOADER_ENTRY * AddStanzaEntries (
     }
 
     // Set load options, if any
+    // DA-TAG: Remove any previously set values first
+    MY_FREE_POOL(Entry->LoadOptions);
     if (LoadOptions && StrLen (LoadOptions) > 0) {
-        MY_FREE_POOL(Entry->LoadOptions);
         Entry->LoadOptions = StrDuplicate (LoadOptions);
     }
 
@@ -1723,14 +1754,24 @@ VOID ScanUserConfigured (
 
     #if REFIT_DEBUG > 0
     CountStr = (ValidEntryCount > 0) ? PoolPrint (L"%d", ValidEntryCount) : NULL;
-    LogLineType = (ManualInclude) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
+
+    if (ManualInclude) {
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LogLineType = LOG_THREE_STAR_MID;
+    }
+    else {
+        LogLineType = LOG_THREE_STAR_SEP;
+    }
+
     ALT_LOG(1, LogLineType,
-        L"Processed %d Manual Stanzas in '%s'%s%s%s%s",
-        TotalEntryCount, FileName,
+        L"Processed %d Manual Stanza%s in '%s'%s%s%s%s",
+        TotalEntryCount,
+        (TotalEntryCount == 1) ? L""      : L"s",
+        FileName,
         (TotalEntryCount == 0) ? L""      : L" ... Found ",
         (ValidEntryCount  > 0) ? CountStr : (TotalEntryCount == 0) ? L"" : L"0",
         (TotalEntryCount == 0) ? L""      : L" Valid/Active Stanza",
-        (ValidEntryCount  < 1) ? L""      : L"s"
+        (ValidEntryCount  < 2) ? L""      : L"s"
     );
     MY_FREE_POOL(CountStr);
     #endif
@@ -1763,6 +1804,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
     EFI_STATUS   Status;
     CHAR16      *OptionsFilename;
     CHAR16      *FullFilename;
+    CHAR16      *BaseFilename;
     UINTN        size;
     UINTN        i;
     BOOLEAN      GoOn;
@@ -1779,68 +1821,62 @@ REFIT_FILE * ReadLinuxOptionsFile (
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
     File         =  NULL;
-    GoOn         = FALSE;
+    GoOn         =  TRUE;
     FileFound    = FALSE;
-    FullFilename =  NULL;
+    BaseFilename =  NULL;
+    FullFilename = FindPath (LoaderPath);
 
     i = 0;
-    do {
-        OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
-        if (OptionsFilename == NULL) {
-            break;
-        }
-
+    while (
+        GoOn         &&
+        FullFilename &&
+        (OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++)) != NULL
+    ) {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  2a 1 - DO LOOP:- START", FuncTag);
-        if (!GoOn) {
-            GoOn = TRUE;
-
-            BREAD_CRUMB(L"%s:  2a 1a 1", FuncTag);
-            FullFilename = FindPath (LoaderPath);
-            if (FullFilename == NULL) {
-                BREAD_CRUMB(L"%s:  2a 1a 1a 1 - DO LOOP:- BREAK - LoaderPath Missing", FuncTag);
-                LOG_SEP(L"X");
-
-                MY_FREE_POOL(OptionsFilename);
-
-                break;
-            }
+        BREAD_CRUMB(L"%s:  2a 1 - WHILE LOOP:- START", FuncTag);
+        BaseFilename = StrDuplicate (FullFilename);
+        MergeStrings (&BaseFilename, OptionsFilename, '\\');
+        if (!FileExists (Volume->RootDir, BaseFilename)) {
+            BREAD_CRUMB(L"%s:  2a 1a 1 - Seek OptionsFile ... Not Found", FuncTag);
         }
-
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
-        MergeStrings (&FullFilename, OptionsFilename, '\\');
-        if (FileExists (Volume->RootDir, FullFilename)) {
-            BREAD_CRUMB(L"%s:  2a 2a 1", FuncTag);
+        else {
+            BREAD_CRUMB(L"%s:  2a 1b 1 - Seek OptionsFile ... Success", FuncTag);
             MY_FREE_FILE(File);
             File = AllocateZeroPool (sizeof (REFIT_FILE));
             if (File == NULL) {
                 MY_FREE_POOL(OptionsFilename);
                 MY_FREE_POOL(FullFilename);
+                MY_FREE_POOL(BaseFilename);
 
-                BREAD_CRUMB(L"%s:  2a 2a 1a 1 - DO LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 1b 1a 1 - WHILE LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
                 LOG_DECREMENT();
                 LOG_SEP(L"X");
 
                 return NULL;
             }
 
-            BREAD_CRUMB(L"%s:  2a 2a 2", FuncTag);
-            Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
-
-            BREAD_CRUMB(L"%s:  2a 2a 3", FuncTag);
-            if (!CheckError (Status, L"While Loading the Linux Options File")) {
-                BREAD_CRUMB(L"%s:  2a 2a 3a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 1b 2", FuncTag);
+            Status = RefitReadFile (Volume->RootDir, BaseFilename, File, &size);
+            BREAD_CRUMB(L"%s:  2a 1b 3", FuncTag);
+            if (!EFI_ERROR(Status)) {
+                BREAD_CRUMB(L"%s:  2a 1b 3a 1", FuncTag);
                 GoOn      = FALSE;
                 FileFound =  TRUE;
             }
+            else {
+                BREAD_CRUMB(L"%s:  2a 1b 3b 1", FuncTag);
+                CheckError (Status, L"While Loading the Linux Options File");
+            }
+            BREAD_CRUMB(L"%s:  2a 1b 4", FuncTag);
         }
 
-        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         MY_FREE_POOL(OptionsFilename);
+        MY_FREE_POOL(BaseFilename);
 
-        BREAD_CRUMB(L"%s:  2a 4 - DO LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 3 - WHILE LOOP:- END", FuncTag);
         LOG_SEP(L"X");
-    } while (GoOn);
+    } // while;
     MY_FREE_POOL(FullFilename);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
@@ -1919,6 +1955,8 @@ VOID ReadConfig (
     EFI_STATUS        Status;
     REFIT_FILE        File;
     BOOLEAN           DoneTool;
+    BOOLEAN           DoneManual;
+    BOOLEAN           CheckManual;
     BOOLEAN           HiddenTagsFlag;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
@@ -2013,6 +2051,13 @@ VOID ReadConfig (
 
         return;
     }
+
+    CheckManual = DoneManual = FALSE;
+    #if REFIT_DEBUG > 0
+    if (!OuterLoop) {
+        CheckManual = TRUE;
+    }
+    #endif
 
     MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
     for (;;) {
@@ -3344,6 +3389,22 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (
+            CheckManual &&
+            !DoneManual &&
+            MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)
+        ) {
+            DoneManual = TRUE;
+
+            // DA-TAG: Log Manual Stanza Update in DBG Builds
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'Manual Stanzas'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
 
         FreeTokenLine (&TokenList, &TokenCount);
     } // for ;;
@@ -3351,140 +3412,139 @@ VOID ReadConfig (
 
     MY_FREE_POOL(File.Buffer);
 
+    // Reset Loop Count
+    ReadLoops = ReadLoops - 1;
+
+    // Halt here on inner loops
+    if (!OuterLoop) {
+        #if REFIT_DEBUG > 0
+        MuteLogger = FALSE;
+        #endif
+
+        return;
+    }
+
+    // Set a few defaults if required
+    SilenceAPFS = GlobalConfig.SilenceAPFS;
+    if (!GlobalConfig.DontScanVolumes) {
+        GlobalConfig.DontScanVolumes = StrDuplicate (
+            DONT_SCAN_VOLUMES
+        );
+    }
+    if (!GlobalConfig.WindowsRecoveryFiles) {
+        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (
+            WINDOWS_RECOVERY_FILES
+        );
+    }
+    if (!GlobalConfig.MacOSRecoveryFiles) {
+        GlobalConfig.MacOSRecoveryFiles = StrDuplicate (
+            MACOS_RECOVERY_FILES
+        );
+    }
+    if (!GlobalConfig.DefaultSelection) {
+        GlobalConfig.DefaultSelection = StrDuplicate (L"+");
+    }
+
+    SyncAlsoScanDirs();
+    SyncDontScanDirs();
+    SyncDontScanFiles();
+    SyncLinuxPrefixes();
+
+    // Forced Default Settings
+    if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
+    if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
+
+    // Prioritise EnableTouch
+    if (GlobalConfig.EnableTouch) {
+        GlobalConfig.EnableMouse = FALSE;
+    }
+
+    if (GlobalConfig.HelpTags) {
+        // "TagHelp" feature is active ... Set "found" flag to false
+        HiddenTagsFlag = FALSE;
+        // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
+        for (i = 0; i < NUM_TOOLS; i++) {
+            switch (GlobalConfig.ShowTools[i]) {
+                case TAG_EXIT:
+                case TAG_ABOUT:
+                case TAG_SHELL:
+                case TAG_GDISK:
+                case TAG_REBOOT:
+                case TAG_MEMTEST:
+                case TAG_GPTSYNC:
+                case TAG_NETBOOT:
+                case TAG_INSTALL:
+                case TAG_MOK_TOOL:
+                case TAG_FIRMWARE:
+                case TAG_SHUTDOWN:
+                case TAG_BOOTORDER:
+                case TAG_CSR_ROTATE:
+                case TAG_FWUPDATE_TOOL:
+                case TAG_INFO_NVRAMCLEAN:
+                case TAG_RECOVERY_WINDOWS:
+                case TAG_RECOVERY_APPLE:
+                    // Continue checking
+
+                break;
+                case TAG_HIDDEN:
+                    // Tag to end search ... "hidden_tags" tool is already set
+                    HiddenTagsFlag = TRUE;
+
+                break;
+                default:
+                    // Setup help needed ... "hidden_tags" tool is not set
+                    GlobalConfig.ShowTools[i] = TAG_HIDDEN;
+                    GlobalConfig.HiddenTags   = TRUE;
+
+                    // Tag to end search ... "hidden_tags" tool is now set
+                    HiddenTagsFlag = TRUE;
+            } // switch
+
+            if (HiddenTagsFlag) {
+                // Halt search loop
+                break;
+            }
+        } // for
+    } // if GlobalConfig.HelpTags
+
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE;
     #endif
 
-    // Skip this on inner loops
-    if (OuterLoop) {
-        // Set a few defaults if required
-        SilenceAPFS = GlobalConfig.SilenceAPFS;
-        if (!GlobalConfig.DontScanVolumes) {
-            GlobalConfig.DontScanVolumes = StrDuplicate (
-                DONT_SCAN_VOLUMES
-            );
-        }
-        if (!GlobalConfig.WindowsRecoveryFiles) {
-            GlobalConfig.WindowsRecoveryFiles = StrDuplicate (
-                WINDOWS_RECOVERY_FILES
-            );
-        }
-        if (!GlobalConfig.MacOSRecoveryFiles) {
-            GlobalConfig.MacOSRecoveryFiles = StrDuplicate (
-                MACOS_RECOVERY_FILES
-            );
-        }
-        if (!GlobalConfig.DefaultSelection) {
-            GlobalConfig.DefaultSelection = StrDuplicate (L"+");
-        }
-
-        SyncAlsoScanDirs();
-        SyncDontScanDirs();
-        SyncDontScanFiles();
-        SyncLinuxPrefixes();
-
-        if (GlobalConfig.HandleVentoy) {
-            MergeUniqueItems (
-                &GlobalConfig.DontScanVolumes,
-                VENTOY_NAMES, L','
-            );
-        }
-
-        // Forced Default Settings
-        if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
-        if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
-        if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
-        if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
-
-        // Prioritise EnableTouch
-        if (GlobalConfig.EnableTouch) {
-            GlobalConfig.EnableMouse = FALSE;
-        }
-
-        if (GlobalConfig.HelpTags) {
-            // "TagHelp" feature is active ... Set "found" flag to false
-            HiddenTagsFlag = FALSE;
-            // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
-            for (i = 0; i < NUM_TOOLS; i++) {
-                switch (GlobalConfig.ShowTools[i]) {
-                    case TAG_EXIT:
-                    case TAG_ABOUT:
-                    case TAG_SHELL:
-                    case TAG_GDISK:
-                    case TAG_REBOOT:
-                    case TAG_MEMTEST:
-                    case TAG_GPTSYNC:
-                    case TAG_NETBOOT:
-                    case TAG_INSTALL:
-                    case TAG_MOK_TOOL:
-                    case TAG_FIRMWARE:
-                    case TAG_SHUTDOWN:
-                    case TAG_BOOTORDER:
-                    case TAG_CSR_ROTATE:
-                    case TAG_FWUPDATE_TOOL:
-                    case TAG_INFO_NVRAMCLEAN:
-                    case TAG_RECOVERY_WINDOWS:
-                    case TAG_RECOVERY_APPLE:
-                        // Continue checking
-
-                    break;
-                    case TAG_HIDDEN:
-                        // Tag to end search ... "hidden_tags" tool is already set
-                        HiddenTagsFlag = TRUE;
-
-                    break;
-                    default:
-                        // Setup help needed ... "hidden_tags" tool is not set
-                        GlobalConfig.ShowTools[i] = TAG_HIDDEN;
-                        GlobalConfig.HiddenTags   = TRUE;
-
-                        // Tag to end search ... "hidden_tags" tool is now set
-                        HiddenTagsFlag = TRUE;
-                } // switch
-
-                if (HiddenTagsFlag) {
-                    // Halt search loop
-                    break;
-                }
-            } // for
-        } // if GlobalConfig.HelpTags
-
-        if (!FileExists (SelfDir, L"icons") &&
-            !FileExists (SelfDir, GlobalConfig.IconsDir)
-        ) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG(
-                "%s  - WARN: Cannot Find Icons Directory ... Activating Text-Only Mode",
-                OffsetNext
-            );
-            #endif
-
-            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-        }
-
-        if (!FoundFontImage) {
-            FoundFontImage = TRUE;
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG(
-                "%s  - WARN: Defined Font File is *NOT* Valid ... Using Default Font",
-                OffsetNext
-            );
-            #endif
-        }
-
+    if (!FileExists (SelfDir, L"icons") &&
+        !FileExists (SelfDir, GlobalConfig.IconsDir)
+    ) {
         #if REFIT_DEBUG > 0
-        // Log formating on exiting outer loop
-        LOG_MSG("\n");
-        Status = (!HasTertiary) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
-        LOG_MSG("Process Configuration Options ... %r", Status);
-        LOG_MSG("\n\n");
+        LOG_MSG(
+            "%s  - WARN: Cannot Find Icons Directory ... Activating Text-Only Mode",
+            OffsetNext
+        );
         #endif
 
-        // Reset Tertiary Flag
-        HasTertiary = FALSE;
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
     }
 
-    // Reset Loop Count
-    ReadLoops = ReadLoops - 1;
+    if (!FoundFontImage) {
+        FoundFontImage = TRUE;
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG(
+            "%s  - WARN: Defined Font File is *NOT* Valid ... Using Default Font",
+            OffsetNext
+        );
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    // Log formating on exiting outer loop
+    LOG_MSG("\n");
+    Status = (!HasTertiary) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
+    LOG_MSG("Process Configuration Options ... %r", Status);
+    LOG_MSG("\n\n");
+    #endif
+
+    // Reset Tertiary Flag
+    HasTertiary = FALSE;
 } // VOID ReadConfig()

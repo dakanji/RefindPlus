@@ -132,7 +132,7 @@
 #define DEVICE_TYPE_BIOS       (0x05) /* returned by Legacy Boot loaders */
 #define DEVICE_TYPE_END        (0x75) /* end of path */
 
-// Filesystem type identifiers ... Not all are used.
+// Filesystem type identifiers ... Not all used.
 #define FS_TYPE_UNKNOWN           (0)
 #define FS_TYPE_WHOLEDISK         (1)
 #define FS_TYPE_FAT12             (2)

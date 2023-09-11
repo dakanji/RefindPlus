@@ -17,6 +17,10 @@
   * Hence, on return, RefindPlus did not operate as it should
   * Previously fixed but re-emerged and now addressed again
 - Improves Misc Item Handling
+  * Linux Param File Handling
+    - A memory conflict meant the files were not always read
+  * Filesystem Drivers
+    - Failure to install on some handles
   * GPT Handling
     - Misc minor tweaks
   * Comma Delimited Strings Handling

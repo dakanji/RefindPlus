@@ -19,6 +19,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
+
 
 static uint32_t crc32c_table [256];
 

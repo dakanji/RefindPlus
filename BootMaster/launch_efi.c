@@ -860,7 +860,7 @@ EFI_STATUS StartEFIImage (
             ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
             if (!IsDriver) {
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"%s via Loader File:- '%s'",
+                    L"%s via Loader:- '%s'",
                     ConstMsgStr, ImageTitle
                 );
                 OUT_TAG();

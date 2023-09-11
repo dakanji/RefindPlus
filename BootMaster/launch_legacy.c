@@ -491,7 +491,7 @@ EFI_STATUS StartLegacyImageList (
         }
     }
 
-    // Control returned after error or 'Exit()' call by child image 
+    // Control returned after error or 'Exit()' call by child image
     #if REFIT_DEBUG > 0
     RET_TAG();
     #endif

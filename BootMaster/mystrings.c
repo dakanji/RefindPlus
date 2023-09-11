@@ -1173,6 +1173,7 @@ BOOLEAN ReplaceSubstring (
         BREAD_CRUMB(L"%s:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
+
         return FALSE;
     }
 
@@ -1220,7 +1221,7 @@ BOOLEAN ReplaceSubstring (
     MergeStrings (&NewString, EndString, L'\0');
 
     BREAD_CRUMB(L"%s:  10", FuncTag);
-    MY_FREE_POOL(MainString);
+    MY_FREE_POOL(*MainString);
     *MainString = NewString;
 
     BREAD_CRUMB(L"%s:  11 - END:- return BOOLEAN 'TRUE'", FuncTag);

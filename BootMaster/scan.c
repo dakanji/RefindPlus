@@ -82,8 +82,8 @@ BOOLEAN  HasMacOS        = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
-// Structure used to hold boot loader filenames and time stamps in
-// a linked list; used to sort entries within a directory.
+// Structure used to hold boot loader filenames and time stamps
+// in a linked list ... For sorting entries within a directory.
 struct
 LOADER_LIST {
     CHAR16              *FileName;
@@ -91,9 +91,29 @@ LOADER_LIST {
     struct LOADER_LIST  *NextEntry;
 };
 
-//
-// misc functions
-//
+
+static
+BOOLEAN IsInstallerMac (
+    REFIT_VOLUME *Volume
+) {
+    BOOLEAN MacInstaller;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    MacInstaller = (
+        FindSubStr (Volume->VolName, L"OS X Install")  ||
+        FindSubStr (Volume->VolName, L"macOS Install") ||
+        FindSubStr (Volume->VolName, L"Mac OS Install")
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    return MacInstaller;
+} // static BOOLEAN IsInstallerMac()
 
 static
 VOID VetCSR (VOID) {
@@ -259,14 +279,22 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     IN LOADER_ENTRY *Entry
 ) {
     EFI_STATUS              Status;
+    UINTN                   i;
     CHAR16                 *NameOS;
     CHAR16                 *TmpStr;
     CHAR16                 *TmpName;
     CHAR16                 *FileName;
+    CHAR16                 *LinuxName;
     CHAR16                 *DisplayName;
+    BOOLEAN                 Found;
     LOADER_ENTRY           *SubEntry;
     REFIT_MENU_SCREEN      *SubScreen;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
+
 
     FileName = Basename (Entry->LoaderPath);
     if (Entry->me.SubScreen) {
@@ -323,25 +351,65 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     // Default entry
     SubEntry = InitializeLoaderEntry (Entry);
     if (SubEntry != NULL) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
-        #endif
-
         // DA-TAG: Do not free 'NameOS'
-        NameOS = Entry->Title;
-        // DA-TAG: Maintain space after NameOS
         if (0);
+        else if (Entry->OSType == 'M') {
+            NameOS = (IsInstallerMac (Entry->Volume))
+                ? L"Instance: macOS Installer"
+                : L"Instance: macOS";
+        }
         else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Instance: Windows (Legacy)";
         else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"  )) NameOS = L"Instance: Windows (UEFI)"  ;
         else if (Entry->OSType == 'W'                                            ) NameOS = L"Instance: Windows"         ;
-        else if (Entry->OSType == 'M'                                            ) NameOS = L"Instance: macOS"           ;
-        else if (Entry->OSType == 'L'                                            ) NameOS = L"Instance: Linux"           ;
-        else if (Entry->OSType == 'G'                                            ) NameOS = L"Instance: Grub"            ;
         else if (Entry->OSType == 'X'                                            ) NameOS = L"Instance: XoM"             ;
         else if (Entry->OSType == 'E'                                            ) NameOS = L"Instance: Elilo"           ;
         else if (Entry->OSType == 'R'                                            ) NameOS = L"Instance: rEFit Variant"   ;
         else if (FindSubStr (SubScreen->Title, L"OpenCore"                      )) NameOS = L"Instance: OpenCore"        ;
         else if (FindSubStr (SubScreen->Title, L"Clover"                        )) NameOS = L"Instance: Clover"          ;
+        else if (Entry->OSType == 'L' || Entry->OSType == 'G') {
+            Found = FALSE;
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_SET;
+            #endif
+            if (
+                !FindSubStr (SubScreen->Title, L"vmlinuz")     &&
+                !FindSubStr (SubScreen->Title, L"bzImage")     &&
+                !FindSubStr (SubScreen->Title, L"Manual Stanza:")
+            ) {
+                i = 0;
+                while (!Found &&
+                    (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
+                ) {
+                    if (FindSubStr (SubScreen->Title, LinuxName)) {
+                        MY_FREE_POOL(DisplayName);
+                        if (Entry->OSType == 'L') {
+                            DisplayName = PoolPrint (L"Instance: Linux - %s", LinuxName);
+                        }
+                        else {
+                            DisplayName = PoolPrint (L"Instance: Linux - %s via Grub", LinuxName);
+                        }
+                        NameOS = DisplayName;
+                        Found = TRUE;
+                    }
+                    MY_FREE_POOL(LinuxName);
+                } // while
+            }
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_OFF;
+            #endif
+
+            if (!Found) {
+                if (Entry->OSType == 'L') {
+                    NameOS = L"Instance: Linux";
+                }
+                else {
+                    NameOS = L"Instance: Grub";
+                }
+            }
+        }
+        else {
+            NameOS = Entry->Title;
+        }
 
         SubEntry->me.Title = PoolPrint (
             L"Load %s with Default Options",
@@ -1431,18 +1499,20 @@ LOADER_ENTRY * AddLoaderEntry (
     IN OUT CHAR16       *LoaderPath,
     IN     CHAR16       *LoaderTitle,
     IN     REFIT_VOLUME *Volume,
-    IN     BOOLEAN       SubScreenReturn
+    IN     BOOLEAN       SubScreenReturn,
+    IN     BOOLEAN       CheckLinux
 ) {
     EFI_STATUS              Status;
+    UINTN                   i;
     CHAR16                 *DisplayName;
     CHAR16                 *TmpName;
+    CHAR16                 *LinuxName;
+    CHAR16                 *SearchName;
+    BOOLEAN                 Found;
+    BOOLEAN                 GotGrub;
     BOOLEAN                 FoundPreBootName;
     LOADER_ENTRY           *Entry;
     APPLE_APFS_VOLUME_ROLE  VolumeRole;
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    #endif
 
     if (Volume == NULL) {
         // Early Return
@@ -1527,23 +1597,43 @@ LOADER_ENTRY * AddLoaderEntry (
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
 
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_SET;
-    #endif
-    if (FindSubStr(Volume->VolName, L"OS X Install")  ||
-        FindSubStr(Volume->VolName, L"macOS Install") ||
-        FindSubStr(Volume->VolName, L"Mac OS Install")
-    ) {
-        Entry->Title = StrDuplicate (L"macOS Installer");
+    if (LoaderTitle) {
+        Entry->Title = StrDuplicate (LoaderTitle);
     }
     else {
-        Entry->Title = StrDuplicate (
-            (LoaderTitle) ? LoaderTitle : LoaderPath
-        );
-    }
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
+        Found = FALSE;
+        if (CheckLinux) {
+            if (FindSubStr (LoaderPath, L"Grub")) {
+                GotGrub = TRUE;
+            }
+            else {
+                GotGrub = FALSE;
+            }
+
+            i = 0;
+            while (!Found &&
+                (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
+            ) {
+                SearchName = PoolPrint (L"\\%s", LinuxName);
+                if (FindSubStr (LoaderPath, SearchName)) {
+                    Found = TRUE;
+
+                    if (!GotGrub) {
+                        Entry->Title = PoolPrint (L"Instance: Linux - %s", LinuxName);
+                    }
+                    else {
+                        Entry->Title = PoolPrint (L"Instance: Linux - %s via Grub", LinuxName);
+                    }
+                }
+                MY_FREE_POOL(LinuxName);
+                MY_FREE_POOL(SearchName);
+            } // while
+        }
+
+        if (!Found) {
+            Entry->Title = StrDuplicate (LoaderPath);
+        }
+    } // if/else LoaderTitle
 
     #if REFIT_DEBUG > 0
     if (DisplayName) {
@@ -1724,6 +1814,7 @@ CHAR16 * SetVolKind (
     else if (VolumeFSType == FS_TYPE_FAT32          ) RetVal = L""          ;
     else if (VolumeFSType == FS_TYPE_FAT16          ) RetVal = L""          ;
     else if (VolumeFSType == FS_TYPE_FAT12          ) RetVal = L""          ;
+    else if (VolumeFSType == FS_TYPE_EXFAT          ) RetVal = L""          ;
     else if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume:- " ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -1795,10 +1886,12 @@ CHAR16 * SetVolType (
     else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L" Partition"       ;
     else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L" Partition"       ;
     else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"vmlinuz-linux"  ))   RetVal = L" Partition"       ;
+    else if (MyStriCmp  (InstanceName, L"vmlinuz-"       ))   RetVal = L" Partition"       ;
+    else if (MyStriCmp  (InstanceName, L"bzImage-"       ))   RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT32                )   RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT16                )   RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT12                )   RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_EXFAT                )   RetVal = L" Partition"       ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1925,7 +2018,7 @@ BOOLEAN ShouldScan (
             ) {
                 FoundVentoy = TRUE;
                 // DA-TAG: Add a one-time entry for Ventoy fallback loader
-                AddLoaderEntry (FALLBACK_FULLNAME, L"Instance: Ventoy", Volume, TRUE);
+                AddLoaderEntry (FALLBACK_FULLNAME, L"Instance: Ventoy", Volume, TRUE, FALSE);
             }
             MY_FREE_POOL(VentoyName);
         } // while
@@ -2132,7 +2225,6 @@ BOOLEAN ScanLoaderDir (
     struct LOADER_LIST      *LoaderList;
     LOADER_ENTRY            *FirstKernel;
     LOADER_ENTRY            *LatestEntry;
-    BOOLEAN                  RetVal;
     BOOLEAN                  IsLinux;
     BOOLEAN                  InSelfPath;
     BOOLEAN                  IsFallbackLoader;
@@ -2288,7 +2380,8 @@ BOOLEAN ScanLoaderDir (
                     LatestEntry = AddLoaderEntry (
                         NewLoader->FileName,
                         NULL, Volume,
-                        !(IsLinux && GlobalConfig.FoldLinuxKernels)
+                        !(IsLinux && GlobalConfig.FoldLinuxKernels),
+                        TRUE
                     );
                     //BREAD_CRUMB(L"%s:  2a 3a 1a 2b 2", FuncTag);
                     if (IsLinux && (FirstKernel == NULL)) {
@@ -2306,16 +2399,8 @@ BOOLEAN ScanLoaderDir (
             //BREAD_CRUMB(L"%s:  2a 3a 2", FuncTag);
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 //BREAD_CRUMB(L"%s:  2a 3a 2a 1", FuncTag);
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding 'Return' Entry to Folded Linux Kernels");
-                #endif
-
-                RetVal = GetReturnMenuEntry (&FirstKernel->me.SubScreen);
+                GetReturnMenuEntry (&FirstKernel->me.SubScreen);
                 //BREAD_CRUMB(L"%s:  2a 3a 2a 2", FuncTag);
-                if (!RetVal) {
-                    //BREAD_CRUMB(L"%s:  2a 3a 2a 2a 1", FuncTag);
-                    FreeMenuScreen (&FirstKernel->me.SubScreen);
-                }
             }
 
             //BREAD_CRUMB(L"%s:  2a 3a 3", FuncTag);
@@ -2406,7 +2491,7 @@ VOID ScanNetboot (VOID) {
     REFIT_VOLUME  *NetVolume;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE boot options");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE Boot Options");
     #endif
 
     if (FileExists (SelfVolume->RootDir, IPXE_NAME) &&
@@ -2427,7 +2512,7 @@ VOID ScanNetboot (VOID) {
                 MY_FREE_POOL(NetVolume->VolName);
                 MY_FREE_POOL(NetVolume->FsName);
 
-                AddLoaderEntry (IPXE_NAME, Location, NetVolume, TRUE);
+                AddLoaderEntry (IPXE_NAME, Location, NetVolume, TRUE, FALSE);
 
                 FreeVolume (&NetVolume);
             }
@@ -2445,6 +2530,7 @@ BOOLEAN ScanMacOsLoader (
     CHAR16       *FullFileName
 ) {
     UINTN     i;
+    CHAR16   *NameOS;
     CHAR16   *VolName;
     CHAR16   *PathName;
     CHAR16   *FileName;
@@ -2461,7 +2547,7 @@ BOOLEAN ScanMacOsLoader (
         if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
-            AddLoaderEntry (FullFileName, L"Instance: RefindPlus", Volume, TRUE);
+            AddLoaderEntry (FullFileName, L"Instance: RefindPlus", Volume, TRUE, FALSE);
         }
         else {
             AddThisEntry = HasMacOS = TRUE;
@@ -2475,7 +2561,11 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                AddLoaderEntry (FullFileName, L"Instance: macOS", Volume, TRUE);
+                NameOS = (IsInstallerMac (Volume))
+                    ? L"Instance: macOS Installer"
+                    : L"Instance: macOS";
+
+                AddLoaderEntry (FullFileName, NameOS, Volume, TRUE, FALSE);
             }
         }
 
@@ -2732,7 +2822,7 @@ VOID ScanEfiFiles (
             !FilenameIn (Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
         ) {
             //BREAD_CRUMB(L"%s:  6a 7a 1", FuncTag);
-            AddLoaderEntry (FileName, L"Instance: Windows XP (XoM)", Volume, TRUE);
+            AddLoaderEntry (FileName, L"Instance: Windows XP (XoM)", Volume, TRUE, FALSE);
 
             //BREAD_CRUMB(L"%s:  6a 7a 2", FuncTag);
             if (DuplicatesFallback (Volume, FileName)) {
@@ -2765,7 +2855,7 @@ VOID ScanEfiFiles (
         ) {
             //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
             // Boot Repair Backup
-            AddLoaderEntry (FileName, L"Instance: UEFI Windows (BRBackup)", Volume, TRUE);
+            AddLoaderEntry (FileName, L"Instance: UEFI Windows (BRBackup)", Volume, TRUE, FALSE);
 
             //BREAD_CRUMB(L"%s:  7a 2a 2", FuncTag);
             FoundBRBackup = TRUE;
@@ -2790,7 +2880,7 @@ VOID ScanEfiFiles (
             TmpMsg = (FoundBRBackup)
                 ? L"Instance: Assumed UEFI Windows (Potentially GRUB)"
                 : L"Instance: Windows (UEFI)";
-            AddLoaderEntry (FileName, TmpMsg, Volume, TRUE);
+            AddLoaderEntry (FileName, TmpMsg, Volume, TRUE, FALSE);
 
             if (DuplicatesFallback (Volume, FileName)) {
                 ScanFallbackLoader = FALSE;
@@ -2934,7 +3024,7 @@ VOID ScanEfiFiles (
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
         //BREAD_CRUMB(L"%s:  15a 1", FuncTag);
-        AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Loader", Volume, TRUE);
+        AddLoaderEntry (FALLBACK_FULLNAME, TmpMsg, Volume, TRUE, FALSE);
         //BREAD_CRUMB(L"%s:  15a 2", FuncTag);
     }
 
