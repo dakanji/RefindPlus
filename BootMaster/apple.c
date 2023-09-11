@@ -750,12 +750,12 @@ VOID * RP_GetFileInfo (
 
 static
 EFI_STATUS RP_GetApfsSpecialFileInfo (
-    IN     EFI_FILE_PROTOCOL           *Root,
-    IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo    OPTIONAL,
-    IN OUT APPLE_APFS_CONTAINER_INFO  **ContainerInfo OPTIONAL
+    IN     EFI_FILE_PROTOCOL     *Root,
+    IN OUT APFS_INFO_VOLUME     **VolumeInfo    OPTIONAL,
+    IN OUT APFS_INFO_CONTAINER  **ContainerInfo OPTIONAL
 ) {
-    EFI_GUID AppleApfsVolumeInfoGuid    = APPLE_APFS_VOLUME_INFO_GUID;
-    EFI_GUID AppleApfsContainerInfoGuid = APPLE_APFS_CONTAINER_INFO_GUID;
+    EFI_GUID AppleApfsVolumeInfoGuid    = GUID_APFS_INFO_VOLUME;
+    EFI_GUID AppleApfsContainerInfoGuid = GUID_APFS_INFO_CONTAINER;
 
     if (ContainerInfo == NULL && VolumeInfo == NULL) {
         // Early Return ... Return Error
@@ -792,16 +792,16 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
 } // static EFI_STATUS RP_GetApfsSpecialFileInfo()
 
 EFI_STATUS RP_GetApfsVolumeInfo (
-    IN  EFI_HANDLE               Device,
-    OUT EFI_GUID                *ContainerGuid OPTIONAL,
-    OUT EFI_GUID                *VolumeGuid    OPTIONAL,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
+    IN  EFI_HANDLE         Device,
+    OUT EFI_GUID          *ContainerGuid OPTIONAL,
+    OUT EFI_GUID          *VolumeGuid    OPTIONAL,
+    OUT APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 ) {
     EFI_STATUS                       Status;
     EFI_FILE_PROTOCOL               *Root;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
-    APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
-    APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
+    APFS_INFO_CONTAINER             *ApfsContainerInfo;
+    APFS_INFO_VOLUME                *ApfsVolumeInfo;
 
     if (ContainerGuid == NULL
         && VolumeGuid == NULL

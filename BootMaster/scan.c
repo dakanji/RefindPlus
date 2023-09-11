@@ -278,7 +278,6 @@ LOADER_ENTRY * InitializeLoaderEntry (
 REFIT_MENU_SCREEN * InitializeSubScreen (
     IN LOADER_ENTRY *Entry
 ) {
-    EFI_STATUS              Status;
     UINTN                   i;
     CHAR16                 *NameOS;
     CHAR16                 *TmpStr;
@@ -289,7 +288,6 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     BOOLEAN                 Found;
     LOADER_ENTRY           *SubEntry;
     REFIT_MENU_SCREEN      *SubScreen;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
@@ -310,25 +308,11 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     }
 
     DisplayName = NULL;
-    if (Entry->Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
-        VolumeRole = 0;
-
-        // DA-TAG: Limit to TianoCore
-        #ifndef __MAKEWITH_TIANO
-        Status = EFI_NOT_STARTED;
-        #else
-        Status = RP_GetApfsVolumeInfo (
-            Entry->Volume->DeviceHandle,
-            NULL, NULL,
-            &VolumeRole
-        );
-        #endif
-
-        if (!EFI_ERROR(Status)) {
-            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
-            }
-        }
+    if (GlobalConfig.SyncAPFS                           &&
+        Entry->Volume->FSType  == FS_TYPE_APFS          &&
+        Entry->Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
+    ) {
+        DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
     }
 
     TmpStr = (Entry->Title != NULL) ? Entry->Title  : FileName;
@@ -442,7 +426,6 @@ VOID GenerateSubScreen (
     IN     REFIT_VOLUME *Volume,
     IN     BOOLEAN       GenerateReturn
 ) {
-    EFI_STATUS               Status;
     UINTN                    i;
     UINTN                    TokenCount;
     CHAR16                  *InitrdName;
@@ -453,7 +436,6 @@ VOID GenerateSubScreen (
     LOADER_ENTRY            *SubEntry;
     REFIT_VOLUME            *DiagnosticsVolume;
     REFIT_MENU_SCREEN       *SubScreen;
-    APPLE_APFS_VOLUME_ROLE   VolumeRole;
 
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"GenerateSubScreen";
@@ -560,30 +542,19 @@ VOID GenerateSubScreen (
                 //         Is SingleAPFS really needed?
                 //         Play safe and add it for now
                 if (SingleAPFS) {
-                    if (Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
-                        VolumeRole = 0;
-
-                        // DA-TAG: Limit to TianoCore
-                        #ifndef __MAKEWITH_TIANO
-                        Status = EFI_NOT_STARTED;
-                        #else
-                        Status = RP_GetApfsVolumeInfo (
-                            Volume->DeviceHandle,
-                            NULL, NULL,
-                            &VolumeRole
-                        );
-                        #endif
-
-                        if (!EFI_ERROR(Status)) {
-                            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                                for (i = 0; i < SystemVolumesCount; i++) {
-                                    if (GuidsAreEqual (&(SystemVolumes[i]->PartGuid), &(Volume->PartGuid))) {
-                                        UseSystemVolume = TRUE;
-                                        break;
-                                    }
-                                } // for
+                    if (GlobalConfig.SyncAPFS                    &&
+                        Volume->FSType  == FS_TYPE_APFS          &&
+                        Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
+                    ) {
+                        for (i = 0; i < SystemVolumesCount; i++) {
+                            if (GuidsAreEqual (
+                                &(SystemVolumes[i]->PartGuid),
+                                &(Volume->PartGuid))
+                            ) {
+                                UseSystemVolume = TRUE;
+                                break;
                             }
-                        }
+                        } // for
                     }
                 }
 
@@ -789,7 +760,6 @@ VOID SetLoaderDefaults (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    EFI_STATUS              Status;
     UINTN                   i;
     CHAR16                 *Temp;
     CHAR16                 *PathOnly;
@@ -807,7 +777,6 @@ VOID SetLoaderDefaults (
     BOOLEAN                 GetImage;
     BOOLEAN                 FoundVentoy;
     BOOLEAN                 MergeFsName;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
 
     #if REFIT_DEBUG > 1
@@ -1024,34 +993,14 @@ VOID SetLoaderDefaults (
                     if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1", FuncTag);
                         DisplayName = NULL;
-
-                        if (Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
+                        if (GlobalConfig.SyncAPFS                    &&
+                            Volume->FSType  == FS_TYPE_APFS          &&
+                            Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
+                        ) {
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 1", FuncTag);
-                            VolumeRole = 0;
-
-                            // DA-TAG: Limit to TianoCore
-                            #ifndef __MAKEWITH_TIANO
-                            Status = EFI_NOT_STARTED;
-                            #else
-                            Status = RP_GetApfsVolumeInfo (
-                                Volume->DeviceHandle,
-                                NULL, NULL,
-                                &VolumeRole
-                            );
-                            #endif
-
+                            DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 2", FuncTag);
-                            if (!EFI_ERROR(Status)) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 2a 1", FuncTag);
-                                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 2a 1a 1", FuncTag);
-                                    DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
-                                }
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 2a 2", FuncTag);
-                            }
-
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 3", FuncTag);
-                        } // if Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS
+                        }
 
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2", FuncTag);
                         if (Entry->me.Image == NULL) {
@@ -1539,7 +1488,6 @@ LOADER_ENTRY * AddLoaderEntry (
     IN     BOOLEAN       SubScreenReturn,
     IN     BOOLEAN       CheckLinux
 ) {
-    EFI_STATUS              Status;
     UINTN                   i;
     CHAR16                 *DisplayName;
     CHAR16                 *TmpName;
@@ -1549,7 +1497,7 @@ LOADER_ENTRY * AddLoaderEntry (
     BOOLEAN                 GotGrub;
     BOOLEAN                 FoundPreBootName;
     LOADER_ENTRY           *Entry;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
+
 
     if (Volume == NULL) {
         // Early Return
@@ -1568,41 +1516,29 @@ LOADER_ENTRY * AddLoaderEntry (
 
     DisplayName = NULL;
     if (Volume->FSType == FS_TYPE_APFS) {
-        VolumeRole = 0;
-
         // DA-TAG: Limit to TianoCore
-        #ifndef __MAKEWITH_TIANO
-        Status = EFI_NOT_STARTED;
-        #else
-        Status = RP_GetApfsVolumeInfo (
-            Volume->DeviceHandle,
-            NULL, NULL,
-            &VolumeRole
-        );
-        #endif
-        if (EFI_ERROR(Status) && Status != EFI_NOT_STARTED) {
-            // Early Return on Invalid APFS Volume
+        #ifdef __MAKEWITH_TIANO
+        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
+            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
+            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
+        ) {
+            // Early Return on APFS Support Volume
             return NULL;
         }
 
-        if (Status != EFI_NOT_STARTED) {
-            if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
-            ) {
-                // Early Return on APFS Support Volume
-                return NULL;
-            }
+        if (GlobalConfig.SyncAPFS) {
+            if (Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT) {
+                DisplayName = GetVolumeGroupName (LoaderPath, Volume);
+                if (!DisplayName) {
+                    // Do not display this PreBoot Volume Menu Entry
+                    return NULL;
+                }
 
-            if (GlobalConfig.SyncAPFS) {
-                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                    DisplayName = GetVolumeGroupName (LoaderPath, Volume);
-
-                    if (!DisplayName) {
-                        // Do not display this PreBoot Volume Menu Entry
-                        return NULL;
-                    }
-
+                FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
+                if (FoundPreBootName) {
+                    MY_FREE_POOL(DisplayName);
+                }
+                else {
                     FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
                     if (FoundPreBootName) {
                         MY_FREE_POOL(DisplayName);
@@ -1623,6 +1559,7 @@ LOADER_ENTRY * AddLoaderEntry (
                 }
             }
         }
+        #endif
     } // if/else if Volume->FSType
 
     CleanUpPathNameSlashes (LoaderPath);
@@ -1946,7 +1883,6 @@ BOOLEAN ShouldScan (
     REFIT_VOLUME *Volume,
     CHAR16       *Path
 ) {
-    EFI_STATUS              Status;
     UINTN                   i;
     CHAR16                 *VolName;
     CHAR16                 *VolGuid;
@@ -1958,9 +1894,6 @@ BOOLEAN ShouldScan (
     BOOLEAN                 ScanIt;
     BOOLEAN                 FoundVentoy;
     EFI_GUID                GuidRecoveryHD = MAC_RECOVERY_HD_GUID_VALUE;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
-
-
 
 
     // Skip 'NULL' Volumes
@@ -1988,46 +1921,34 @@ BOOLEAN ShouldScan (
 
     ScanIt = TRUE;
     if (Volume->FSType == FS_TYPE_APFS) {
-        VolumeRole = 0;
-
         // DA-TAG: Limit to TianoCore
-        #ifndef __MAKEWITH_TIANO
-        Status = EFI_NOT_STARTED;
-        #else
-        Status = RP_GetApfsVolumeInfo (
-            Volume->DeviceHandle,
-            NULL, NULL,
-            &VolumeRole
-        );
-        #endif
-
-        if (!EFI_ERROR(Status)) {
-            if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
-            ) {
-                // Early Return on APFS Support Volume
-                return FALSE;
-            }
-
-            if (GlobalConfig.SyncAPFS) {
-                TmpVolNameB = PoolPrint (L"%s - DATA", Volume->VolName);
-                if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
-                    ScanIt = FALSE;
-                }
-                MY_FREE_POOL(TmpVolNameB);
-                if (!ScanIt) return FALSE;
-
-                TmpVolNameA = SanitiseString (Volume->VolName);
-                TmpVolNameB = PoolPrint (L"%s - DATA", TmpVolNameA);
-                if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
-                    ScanIt = FALSE;
-                }
-                MY_FREE_POOL(TmpVolNameA);
-                MY_FREE_POOL(TmpVolNameB);
-                if (!ScanIt) return FALSE;
-            }
+        #ifdef __MAKEWITH_TIANO
+        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
+            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
+            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
+        ) {
+            // Early Return on APFS Support Volume
+            return FALSE;
         }
+
+        if (GlobalConfig.SyncAPFS) {
+            TmpVolNameB = PoolPrint (L"%s - DATA", Volume->VolName);
+            if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
+                ScanIt = FALSE;
+            }
+            MY_FREE_POOL(TmpVolNameB);
+            if (!ScanIt) return FALSE;
+
+            TmpVolNameA = SanitiseString (Volume->VolName);
+            TmpVolNameB = PoolPrint (L"%s - DATA", TmpVolNameA);
+            if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
+                ScanIt = FALSE;
+            }
+            MY_FREE_POOL(TmpVolNameA);
+            MY_FREE_POOL(TmpVolNameB);
+            if (!ScanIt) return FALSE;
+        }
+        #endif
     } // if Volume->FSType
 
     if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
@@ -2640,7 +2561,6 @@ VOID ScanEfiFiles (
     BOOLEAN                 FoundVentoy;
     EFI_FILE_INFO          *EfiDirEntry;
     REFIT_DIR_ITER          EfiDirIter;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
 
     #if REFIT_DEBUG > 0
@@ -2655,7 +2575,7 @@ VOID ScanEfiFiles (
     //LOG_INCREMENT();
     //BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    if (!Volume ||
+    if (!Volume          ||
         !Volume->RootDir ||
         !Volume->VolName ||
         !Volume->IsReadable
@@ -2738,90 +2658,68 @@ VOID ScanEfiFiles (
     //BREAD_CRUMB(L"%s:  3", FuncTag);
     if (Volume->FSType == FS_TYPE_APFS) {
         //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
-        VolumeRole = 0;
-
         // DA-TAG: Limit to TianoCore
-        #ifndef __MAKEWITH_TIANO
-        Status = EFI_NOT_STARTED;
-        #else
-        Status = RP_GetApfsVolumeInfo (
-            Volume->DeviceHandle,
-            NULL, NULL,
-            &VolumeRole
-        );
-        #endif
-        if (EFI_ERROR(Status) && Status != EFI_NOT_STARTED) {
-            //BREAD_CRUMB(L"%s:  3a 1 X - END:- VOID ... Exit on Invalid APFS Volume", FuncTag);
+        #ifdef __MAKEWITH_TIANO
+        //BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
+        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
+            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
+            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
+        ) {
+            //BREAD_CRUMB(L"%s:  3a 1a 1a 1 - END:- VOID ... Exit on APFS Support Volume", FuncTag);
             //LOG_DECREMENT();
             //LOG_SEP(L"X");
 
-            // Early Return on Invalid APFS Volume
+            // Early Return on APFS Support Volume
             return;
         }
+        #endif
 
         //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
-        if (Status != EFI_NOT_STARTED) {
-            //BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
-            if (VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
-            ) {
-                //BREAD_CRUMB(L"%s:  3a 2a 1a 1 - END:- VOID ... Exit on APFS Support Volume", FuncTag);
-                //LOG_DECREMENT();
-                //LOG_SEP(L"X");
-
-                // Early Return on APFS Support Volume
-                return;
-            }
-            //BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
-        }
-
-        //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
         if (GlobalConfig.SyncAPFS) {
-            //BREAD_CRUMB(L"%s:  3a 3a 1", FuncTag);
-            if (!EFI_ERROR(Status) && SingleAPFS &&
+            //BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
+            if (SingleAPFS &&
                 (
-                    VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM  ||
-                    VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT ||
-                    VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                    Volume->VolRole == APFS_VOLUME_ROLE_SYSTEM  ||
+                    Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT ||
+                    Volume->VolRole == APFS_VOLUME_ROLE_UNDEFINED
                 )
             ) {
-                //BREAD_CRUMB(L"%s:  3a 3a 1a 1", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 2a 1a 1", FuncTag);
                 for (i = 0; i < SkipApfsVolumesCount; i++) {
                     //LOG_SEP(L"X");
-                    //BREAD_CRUMB(L"%s:  3a 3a 1a 1a 1 - FOR LOOP:- START", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 1 - FOR LOOP:- START", FuncTag);
                     if (GuidsAreEqual (&(SkipApfsVolumes[i]->PartGuid), &(Volume->PartGuid))) {
-                        //BREAD_CRUMB(L"%s:  3a 3a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on Skipped APFS Volume", FuncTag);
+                        //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on Skipped APFS Volume", FuncTag);
                         //LOG_DECREMENT();
                         //LOG_SEP(L"X");
 
                         // Early Return on Skipped APFS Volume
                         return;
                     }
-                    //BREAD_CRUMB(L"%s:  3a 3a 1a 1a 2 - FOR LOOP:- END", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 2 - FOR LOOP:- END", FuncTag);
                     //LOG_SEP(L"X");
                 } // for
-                //BREAD_CRUMB(L"%s:  3a 3a 1a 2", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 2a 1a 2", FuncTag);
             }
 
-            //BREAD_CRUMB(L"%s:  3a 3a 2", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
             for (i = 0; i < SystemVolumesCount; i++) {
                 //LOG_SEP(L"X");
-                //BREAD_CRUMB(L"%s:  3a 3a 2a 1 - FOR LOOP:- START", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 2a 2a 1 - FOR LOOP:- START", FuncTag);
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
-                    //BREAD_CRUMB(L"%s:  3a 3a 2a 1a 1 - FOR LOOP:- END VOID ... Exit on ReMapped APFS System Volume", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 2a 2a 1a 1 - FOR LOOP:- END VOID ... Exit on ReMapped APFS System Volume", FuncTag);
                     //LOG_DECREMENT();
                     //LOG_SEP(L"X");
 
                     // Early Return on ReMapped APFS System Volume
                     return;
                 }
-                //BREAD_CRUMB(L"%s:  3a 3a 2a 2 - FOR LOOP:- END", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 2a 2a 2 - FOR LOOP:- END", FuncTag);
                 //LOG_SEP(L"X");
             } // for
-            //BREAD_CRUMB(L"%s:  3a 3a 3", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 2a 3", FuncTag);
         }
-        //BREAD_CRUMB(L"%s:  3a 4", FuncTag);
+        //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
     } // if Volume->FSType == FS_TYPE_APFS
 
     //BREAD_CRUMB(L"%s:  4", FuncTag);
@@ -4030,7 +3928,6 @@ VOID ScanForTools (VOID) {
     BOOLEAN                 FoundTool;
     BOOLEAN                 OtherFind;
     BOOLEAN                 FoundThis;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
 
     REFIT_MENU_ENTRY *MenuEntryPreCleanNvram;
     REFIT_MENU_ENTRY *MenuEntryHiddenTags   ;
@@ -4741,27 +4638,17 @@ VOID ScanForTools (VOID) {
                                     &(SystemVolumes[k]->PartGuid)
                                 )
                             ) {
-                                VolumeRole = 0;
+                                if (SystemVolumes[k]->VolRole == APFS_VOLUME_ROLE_SYSTEM ||
+                                    SystemVolumes[k]->VolRole == APFS_VOLUME_ROLE_UNDEFINED
+                                ) {
+                                    // DA-TAG: Do not free 'FileName'
+                                    //         Used in 'AddToolEntry'
+                                    RecoverVol  = StrDuplicate (SystemVolumes[k]->VolName);
+                                    TmpStr      = GuidAsString (&(SystemVolumes[k]->VolUuid));
+                                    FileName    = PoolPrint (L"%s\\boot.efi", TmpStr);
+                                    MY_FREE_POOL(TmpStr);
 
-                                Status = RP_GetApfsVolumeInfo (
-                                    SystemVolumes[k]->DeviceHandle,
-                                    NULL, NULL,
-                                    &VolumeRole
-                                );
-
-                                if (!EFI_ERROR(Status)) {
-                                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
-                                        VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                                    ) {
-                                        // DA-TAG: Do not free 'FileName'
-                                        //         Used in 'AddToolEntry'
-                                        RecoverVol  = StrDuplicate (SystemVolumes[k]->VolName);
-                                        TmpStr      = GuidAsString (&(SystemVolumes[k]->VolUuid));
-                                        FileName    = PoolPrint (L"%s\\boot.efi", TmpStr);
-                                        MY_FREE_POOL(TmpStr);
-
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
                         } // for k = 0
@@ -5085,7 +4972,11 @@ VOID ScanForTools (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    ToolStr = PoolPrint (L"Processed %d Tool Types", ToolTotal);
+    ToolStr = PoolPrint (
+        L"Processed %d Tool List Item%s",
+        ToolTotal,
+        (ToolTotal == 1) ? L"" : L"s"
+    );
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", ToolStr);
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"%s", ToolStr);
     LOG_MSG("\n\n");
@@ -5093,7 +4984,7 @@ VOID ScanForTools (VOID) {
     LOG_MSG("\n\n");
     #endif
 
-    BREAD_CRUMB(L"%s:  C - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  B - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanForTools

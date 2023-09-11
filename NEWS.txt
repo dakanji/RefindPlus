@@ -12,6 +12,7 @@
   * Eliminates extra UI scaling that may happen on main screen rescans
 - Improves `SyncAPFS` Handling
   * Handles synced multi instance APFS container volumes in DontScanVolumes list
+  * Stores APFS Roles in volume object instead of retrieving such each time
 - Improves Misc `External Screen` Tool Handling
   * Some tools that run external screens, such as `GDisk`, may change volume device paths
   * Hence, on return, RefindPlus did not operate as it should

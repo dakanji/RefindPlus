@@ -2275,10 +2275,8 @@ VOID ScanExtendedPartition (
 // Check for Multi-Instance APFS Containers
 static
 VOID VetMultiInstanceAPFS (VOID) {
-    EFI_STATUS                       Status;
     UINTN                              i, j;
     BOOLEAN                 ActiveContainer;
-    APPLE_APFS_VOLUME_ROLE       VolumeRole;
 
     #if REFIT_DEBUG > 0
     BOOLEAN AppleRecovery;
@@ -2334,23 +2332,15 @@ VOID VetMultiInstanceAPFS (VOID) {
                         &(Volumes[i]->PartGuid)
                     )
                 ) {
-                    VolumeRole = 0;
-                    Status = RP_GetApfsVolumeInfo (
-                        Volumes[i]->DeviceHandle,
-                        NULL, NULL,
-                        &VolumeRole
-                    );
-                    if (!EFI_ERROR(Status)) {
-                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
-                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                        ) {
-                            if (!ActiveContainer) {
-                                ActiveContainer = TRUE;
-                            }
-                            else {
-                                SingleAPFS = FALSE;
-                                break;
-                            }
+                    if (Volumes[i]->VolRole == APFS_VOLUME_ROLE_SYSTEM ||
+                        Volumes[i]->VolRole == APFS_VOLUME_ROLE_UNDEFINED
+                    ) {
+                        if (!ActiveContainer) {
+                            ActiveContainer = TRUE;
+                        }
+                        else {
+                            SingleAPFS = FALSE;
+                            break;
                         }
                     }
                 } // if GuidsAreEqual
@@ -2514,29 +2504,29 @@ VOID VetSyncAPFS (VOID) {
 #if REFIT_DEBUG > 0
 static
 CHAR16 * GetApfsRoleString (
-    IN APPLE_APFS_VOLUME_ROLE VolumeRole
+    IN APFS_VOLUME_ROLE VolumeRole
 ) {
     CHAR16 *retval;
 
     switch (VolumeRole) {
-        case APPLE_APFS_VOLUME_ROLE_UNDEFINED:       retval = L"0x00 - Undefined"  ;       break;
-        case APPLE_APFS_VOLUME_ROLE_SYSTEM:          retval = L"0x01 - System"     ;       break;
-        case APPLE_APFS_VOLUME_ROLE_USER:            retval = L"0x02 - UserHome"   ;       break;
-        case APPLE_APFS_VOLUME_ROLE_RECOVERY:        retval = L"0x04 - Recovery"   ;       break;
-        case APPLE_APFS_VOLUME_ROLE_VM:              retval = L"0x08 - VM"         ;       break;
-        case APPLE_APFS_VOLUME_ROLE_PREBOOT:         retval = L"0x10 - PreBoot"    ;       break;
-        case APPLE_APFS_VOLUME_ROLE_INSTALLER:       retval = L"0x20 - Installer"  ;       break;
-        case APPLE_APFS_VOLUME_ROLE_DATA:            retval = L"0x40 - Data"       ;       break;
-        case APPLE_APFS_VOLUME_ROLE_UPDATE:          retval = L"0xC0 - Snapshot"   ;       break;
-        case APFS_VOL_ROLE_XART:                     retval = L"0x0? - SecData"    ;       break;
-        case APFS_VOL_ROLE_HARDWARE:                 retval = L"0x1? - Firmware"   ;       break;
-        case APFS_VOL_ROLE_BACKUP:                   retval = L"0x2? - BackupTM"   ;       break;
-        case APFS_VOL_ROLE_RESERVED_7:               retval = L"0x3? - Resrved07"  ;       break;
-        case APFS_VOL_ROLE_RESERVED_8:               retval = L"0x4? - Resrved08"  ;       break;
-        case APFS_VOL_ROLE_ENTERPRISE:               retval = L"0x5? - Enterprse"  ;       break;
-        case APFS_VOL_ROLE_RESERVED_10:              retval = L"0x6? - Resrved10"  ;       break;
-        case APFS_VOL_ROLE_PRELOGIN:                 retval = L"0x7? - PreLogin"   ;       break;
-        default:                                     retval = L"0xFF - Unknown"    ;       break;
+        case APFS_VOLUME_ROLE_UNDEFINED:  retval = L"0x00 - Undefined";   break;
+        case APFS_VOLUME_ROLE_SYSTEM:     retval = L"0x01 - System"   ;   break;
+        case APFS_VOLUME_ROLE_USER:       retval = L"0x02 - UserHome" ;   break;
+        case APFS_VOLUME_ROLE_RECOVERY:   retval = L"0x04 - Recovery" ;   break;
+        case APFS_VOLUME_ROLE_VM:         retval = L"0x08 - VM"       ;   break;
+        case APFS_VOLUME_ROLE_PREBOOT:    retval = L"0x10 - PreBoot"  ;   break;
+        case APFS_VOLUME_ROLE_INSTALLER:  retval = L"0x20 - Installer";   break;
+        case APFS_VOLUME_ROLE_DATA:       retval = L"0x40 - Data"     ;   break;
+        case APFS_VOLUME_ROLE_UPDATE:     retval = L"0xC0 - Snapshot" ;   break;
+        case APFS_VOL_ROLE_XART:          retval = L"0x0? - SecData"  ;   break;
+        case APFS_VOL_ROLE_HARDWARE:      retval = L"0x1? - Firmware" ;   break;
+        case APFS_VOL_ROLE_BACKUP:        retval = L"0x2? - BackupTM" ;   break;
+        case APFS_VOL_ROLE_RESERVED_7:    retval = L"0x3? - Resrved07";   break;
+        case APFS_VOL_ROLE_RESERVED_8:    retval = L"0x4? - Resrved08";   break;
+        case APFS_VOL_ROLE_ENTERPRISE:    retval = L"0x5? - Enterprse";   break;
+        case APFS_VOL_ROLE_RESERVED_10:   retval = L"0x6? - Resrved10";   break;
+        case APFS_VOL_ROLE_PRELOGIN:      retval = L"0x7? - PreLogin" ;   break;
+        default:                          retval = L"0xFF - Unknown"  ;   break;
     } // switch
 
     return retval;
@@ -2567,7 +2557,7 @@ VOID ScanVolumes (VOID) {
     BOOLEAN                 FoundVentoy;
     EFI_GUID                VolumeGuid = NULL_GUID_VALUE;
     EFI_GUID               *UuidList;
-    APPLE_APFS_VOLUME_ROLE  VolumeRole;
+    APFS_VOLUME_ROLE        VolumeRole;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
@@ -2669,6 +2659,7 @@ VOID ScanVolumes (VOID) {
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
+        Volume->VolRole = APFS_VOLUME_ROLE_UNKNOWN;
         if (Volume == NULL) {
             MY_FREE_POOL(UuidList);
 
@@ -2811,7 +2802,7 @@ VOID ScanVolumes (VOID) {
             else if (FindSubStr (PartType, L"ExFAT"   )) Volume->FSType = FS_TYPE_EXFAT  ;
 
             RoleStr = NULL;
-            VolumeRole = 0;
+            VolumeRole = APFS_VOLUME_ROLE_UNKNOWN;
             if (0);
             else if (FindSubStr (Volume->VolName, L"APFS/FileVault"         )) RoleStr = L"0xCC - Container" ;
             else if (FindSubStr (Volume->VolName, L"Optical Disc Drive"     )) RoleStr = L" * Type Optical"  ;
@@ -2854,13 +2845,14 @@ VOID ScanVolumes (VOID) {
                     PartType        = L"APFS";
                     Volume->FSType  = FS_TYPE_APFS;
                     Volume->VolUuid = VolumeGuid;
+                    Volume->VolRole = VolumeRole;
                     #if REFIT_DEBUG > 0
                     RoleStr         = GetApfsRoleString (VolumeRole);
                     #endif
 
                     // DA-TAG: Update FreeSyncVolumes() if expanding this
                     if (ValidAPFS) {
-                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
+                        if (Volume->VolRole == APFS_VOLUME_ROLE_RECOVERY) {
                             // Set as 'UnReadable' to boost load speed
                             Volume->IsReadable = FALSE;
                             // Create or add to a list representing APFS VolumeGroups
@@ -2877,7 +2869,7 @@ VOID ScanVolumes (VOID) {
                                 ValidAPFS = FALSE;
                             }
                         }
-                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
+                        else if (Volume->VolRole == APFS_VOLUME_ROLE_DATA) {
                             // Set as 'UnReadable' to boost load speed
                             Volume->IsReadable = FALSE;
                             // Create or add to a list representing APFS VolumeGroups
@@ -2894,7 +2886,7 @@ VOID ScanVolumes (VOID) {
                                 ValidAPFS = FALSE;
                             }
                         }
-                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                        else if (Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT) {
                             // Create or add to a list of APFS PreBoot Volumes
                             AddListElement (
                                 (VOID ***) &PreBootVolumes,
@@ -2910,8 +2902,8 @@ VOID ScanVolumes (VOID) {
                             }
                         }
                         else if (
-                            VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
-                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                            Volume->VolRole == APFS_VOLUME_ROLE_SYSTEM ||
+                            Volume->VolRole == APFS_VOLUME_ROLE_UNDEFINED
                         ) {
                             // Create or add to a list of APFS System Volumes
                             AddListElement (

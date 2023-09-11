@@ -396,7 +396,8 @@ typedef struct {
     EFI_FILE_PROTOCOL         *RootDir;
     CHAR16                    *PartName;
     CHAR16                    *FsName;   // Filesystem name
-    CHAR16                    *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
+    CHAR16                    *VolName;  // One of two above OR fs desc (e.g., "2 GiB FAT volume")
+    UINT32                     VolRole;  // APFS_VOLUME_ROLE
     EFI_GUID                   VolUuid;
     EFI_GUID                   PartGuid;
     EFI_GUID                   PartTypeGuid;

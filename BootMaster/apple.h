@@ -74,27 +74,27 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (IN BOOLEAN Rein
 }
 
 
-#define APPLE_APFS_CONTAINER_INFO_GUID  \
+#define GUID_APFS_INFO_CONTAINER  \
 { \
   0x3533CF0D, 0x685F, 0x5EBF, {0x8D, 0xC6, 0x73, 0x93, 0x48, 0x5B, 0xAF, 0xA2}  \
 }
 typedef struct {
     UINT32     Always1;
     EFI_GUID   Uuid;
-} APPLE_APFS_CONTAINER_INFO;
+} APFS_INFO_CONTAINER;
 
 
-#define APPLE_APFS_VOLUME_ROLE_UNDEFINED  (0x00) // Early APFS ... Combined System/Data Volume
-#define APPLE_APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
-#define APPLE_APFS_VOLUME_ROLE_USER       (0x02) // Usersʼ home directories
-#define APPLE_APFS_VOLUME_ROLE_RECOVERY   (0x04)
-#define APPLE_APFS_VOLUME_ROLE_VM         (0x08)
-#define APPLE_APFS_VOLUME_ROLE_PREBOOT    (0x10)
-#define APPLE_APFS_VOLUME_ROLE_INSTALLER  (0x20)
-#define APPLE_APFS_VOLUME_ROLE_DATA       (0x40)
-#define APPLE_APFS_VOLUME_ROLE_UPDATE     (0xC0)
-#define APPLE_APFS_VOLUME_ROLE_UNKNOWN    (0xFF)
-typedef UINT32 APPLE_APFS_VOLUME_ROLE;
+#define APFS_VOLUME_ROLE_UNDEFINED  (0x00) // Early APFS ... Combined System/Data Volume
+#define APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
+#define APFS_VOLUME_ROLE_USER       (0x02) // Usersʼ home directories
+#define APFS_VOLUME_ROLE_RECOVERY   (0x04)
+#define APFS_VOLUME_ROLE_VM         (0x08)
+#define APFS_VOLUME_ROLE_PREBOOT    (0x10)
+#define APFS_VOLUME_ROLE_INSTALLER  (0x20)
+#define APFS_VOLUME_ROLE_DATA       (0x40)
+#define APFS_VOLUME_ROLE_UPDATE     (0xC0)
+#define APFS_VOLUME_ROLE_UNKNOWN    (0xFF)
+typedef UINT32 APFS_VOLUME_ROLE;
 
 #define APFS_VOLUME_ENUM_SHIFT               (6)
 
@@ -110,24 +110,24 @@ typedef UINT32 APPLE_APFS_VOLUME_ROLE;
 #define APFS_VOL_ROLE_RESERVED_10 (10 << APFS_VOLUME_ENUM_SHIFT)
 #define APFS_VOL_ROLE_PRELOGIN    (11 << APFS_VOLUME_ENUM_SHIFT) // Stores system data used before login
 
-#define APPLE_APFS_VOLUME_INFO_GUID  \
+#define GUID_APFS_INFO_VOLUME  \
 { \
   0x900C7693, 0x8C14, 0x58BA, {0xB4, 0x4E, 0x97, 0x45, 0x15, 0xD2, 0x7C, 0x78}  \
 }
 typedef struct {
-    UINT32                 Always1;
-    EFI_GUID               Uuid;
-    APPLE_APFS_VOLUME_ROLE Role;
-} APPLE_APFS_VOLUME_INFO;
+    UINT32           Always1;
+    EFI_GUID         Uuid;
+    APFS_VOLUME_ROLE Role;
+} APFS_INFO_VOLUME;
 
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore - START
 EFI_STATUS RP_GetApfsVolumeInfo (
-    IN  EFI_HANDLE               Device,
-    OUT EFI_GUID                *ContainerGuid OPTIONAL,
-    OUT EFI_GUID                *VolumeGuid    OPTIONAL,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
+    IN  EFI_HANDLE         Device,
+    OUT EFI_GUID          *ContainerGuid OPTIONAL,
+    OUT EFI_GUID          *VolumeGuid    OPTIONAL,
+    OUT APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 );
 CHAR16 * RP_GetAppleDiskLabel (
     IN  REFIT_VOLUME *Volume
