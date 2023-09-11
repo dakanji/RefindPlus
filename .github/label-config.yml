@@ -9,7 +9,6 @@ Acknowledged:
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
-      - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
@@ -374,7 +373,6 @@ Invalid:
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
-      - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
       - 'Parked'
@@ -490,10 +488,8 @@ Resolved:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Uncertain'
       - 'Cancelled'
-      - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Not-Planned'
@@ -504,7 +500,6 @@ Resolved:
       - 'Prorogued'
       - 'Duplicate'
       - 'Incomplete'
-      - 'Known-Issue'
       - 'Cannot-Replicate'
     # Close thread
     close: true
