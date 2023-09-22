@@ -255,6 +255,27 @@ UINTN GetUserInput (
 } // static UINTN GetUserInput()
 #endif
 
+static
+BOOLEAN IsSystemVolume (
+    IN REFIT_VOLUME *Volume
+) {
+    UINTN         i;
+    BOOLEAN       FoundSysVol;
+
+    FoundSysVol = FALSE;
+    for (i = 0; i < SystemVolumesCount; i++) {
+        if (GuidsAreEqual (
+                &(Volume->VolUuid),
+                &(SystemVolumes[i]->VolUuid)
+            )
+        ) {
+            FoundSysVol = TRUE;
+            break;
+        }
+    }
+
+    return FoundSysVol;
+} // static BOOLEAN IsSystemVolume()
 
 // Converts forward slashes to backslashes, removes duplicate slashes, and
 // removes slashes from both the start and end of the pathname.
@@ -1928,6 +1949,69 @@ CHAR16 * GetVolumeName (
     return FoundName;
 } // CHAR16 * GetVolumeName()
 
+BOOLEAN VolumeScanAllowed (
+    IN REFIT_VOLUME *Volume
+) {
+    CHAR16      *VolGuid;
+    BOOLEAN      ScanAllowed;
+
+    if (!Volume          ||
+        !Volume->RootDir ||
+        !Volume->VolName ||
+        !Volume->IsReadable
+    ) {
+        return FALSE;
+    }
+
+    if (Volume->FSType == FS_TYPE_APFS) {
+        if (GlobalConfig.SyncAPFS                    &&
+            Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
+        ) {
+            return TRUE;
+        }
+
+        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
+            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
+            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
+        ) {
+            return FALSE;
+        }
+    }
+
+    if (Volume->FSType == FS_TYPE_HFSPLUS                    &&
+        GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)
+    ) {
+        return FALSE;
+    }
+
+    if (Volume->FSType == FS_TYPE_NTFS) {
+        if (MyStriCmp (Volume->VolName, L"System Reserved"             )  ||
+            MyStriCmp (Volume->VolName, L"System Device Bay"           )  ||
+            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+        ) {
+            return FALSE;
+        }
+    }
+
+    if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
+        IsListItem (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
+        IsListItem (Volume->PartName, GlobalConfig.DontScanVolumes)
+    ) {
+        return FALSE;
+    }
+
+    VolGuid = GuidAsString (&(Volume->PartGuid));
+    if (IsListItem (VolGuid, GlobalConfig.DontScanVolumes)) {
+        ScanAllowed = FALSE;
+    }
+    else {
+        ScanAllowed = TRUE;
+    }
+    MY_FREE_POOL(VolGuid);
+
+    return ScanAllowed;
+} // BOOLEAN VolumeScanAllowed()
+
 // Return TRUE if NTFS boot files are found or if Volume is unreadable,
 // FALSE otherwise. The idea is to weed out non-boot NTFS volumes from
 // BIOS/legacy boot list on Macs. We cannot assume NTFS will be readable,
@@ -3176,8 +3260,7 @@ VOID ScanVolumes (VOID) {
 
 static
 VOID GetVolumeBadgeIcons (VOID) {
-    UINTN         i, VolumeIndex;
-    BOOLEAN       FoundSysVol;
+    UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -3234,29 +3317,14 @@ VOID GetVolumeBadgeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        // Skip 'UnReadable' volumes
-        if (!Volume->IsReadable) {
+        // Skip Volumes in 'DontScanVolumes' List
+        if (!VolumeScanAllowed (Volume)) {
             continue;
         }
 
-        // Skip volumes in 'DontScanVolumes' list
-        if (IsListItem (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+        // Skip APFS system volumes when SyncAPFS is active
+        if (GlobalConfig.SyncAPFS && IsSystemVolume (Volume)) {
             continue;
-        }
-
-        if (GlobalConfig.SyncAPFS) {
-            FoundSysVol = FALSE;
-            for (i = 0; i < SystemVolumesCount; i++) {
-                if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
-                    FoundSysVol = TRUE;
-                    break;
-                }
-            }
-
-            // Skip APFS system volumes when SyncAPFS is active
-            if (FoundSysVol) {
-                continue;
-            }
         }
 
         #if REFIT_DEBUG > 0
@@ -3290,8 +3358,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 } // VOID GetVolumeBadgeIcons()
 
 VOID SetVolumeIcons (VOID) {
-    UINTN         i, VolumeIndex;
-    BOOLEAN       FoundSysVol;
+    UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -3358,29 +3425,14 @@ VOID SetVolumeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        // Skip 'UnReadable' volumes
-        if (!Volume->IsReadable) {
+        // Skip Volumes in 'DontScanVolumes' List
+        if (!VolumeScanAllowed (Volume)) {
             continue;
         }
 
-        // Skip volumes in 'DontScanVolumes' list
-        if (IsListItem (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+        // Skip APFS system volumes when SyncAPFS is active
+        if (GlobalConfig.SyncAPFS && IsSystemVolume (Volume)) {
             continue;
-        }
-
-        if (GlobalConfig.SyncAPFS) {
-            FoundSysVol = FALSE;
-            for (i = 0; i < SystemVolumesCount; i++) {
-                if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
-                    FoundSysVol = TRUE;
-                    break;
-                }
-            }
-
-            // Skip APFS system volumes when SyncAPFS is active
-            if (FoundSysVol) {
-                continue;
-            }
         }
 
         #if REFIT_DEBUG > 0

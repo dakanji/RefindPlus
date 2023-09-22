@@ -718,19 +718,9 @@ VOID AddLegacyEntry (
     UINTN              LogLineType;
     #endif
 
-    if (Volume == NULL) {
-        // Early Return
+    if (!VolumeScanAllowed (Volume)) {
+        // Early Return on 'DontScan' Volume
         return;
-    }
-
-    if (Volume->FSType == FS_TYPE_NTFS) {
-        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
-            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
-            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
-        ) {
-            // Early Return on Windows Support Volume
-            return;
-        }
     }
 
     ShortcutLetter = 0;

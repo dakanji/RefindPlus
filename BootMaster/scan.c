@@ -1491,6 +1491,8 @@ LOADER_ENTRY * AddLoaderEntry (
     UINTN                   i;
     CHAR16                 *DisplayName;
     CHAR16                 *TmpName;
+    CHAR16                 *VentoyName;
+    BOOLEAN                 FoundVentoy;
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     BOOLEAN                 Found;
@@ -1499,17 +1501,25 @@ LOADER_ENTRY * AddLoaderEntry (
     LOADER_ENTRY           *Entry;
 
 
-    if (Volume == NULL) {
-        // Early Return
-        return NULL;
-    }
-
-    if (Volume->FSType == FS_TYPE_NTFS) {
-        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
-            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
-            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+    if (!VolumeScanAllowed (Volume)) {
+        FoundVentoy = FALSE;
+        if (GlobalConfig.HandleVentoy                   &&
+            FileExists (Volume->RootDir, FALLBACK_FULLNAME)
         ) {
-            // Early Return on Windows Support Volume
+            i = 0;
+            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                if (MyStrBegins (VentoyName, Volume->VolName) ||
+                    MyStrBegins (VentoyName, Volume->FsName)  ||
+                    MyStrBegins (VentoyName, Volume->PartName)
+                ) {
+                    FoundVentoy = TRUE;
+                }
+                MY_FREE_POOL(VentoyName);
+            } // while
+        }
+
+        if (!FoundVentoy) {
+            // Early Return
             return NULL;
         }
     }
@@ -1518,14 +1528,6 @@ LOADER_ENTRY * AddLoaderEntry (
     if (Volume->FSType == FS_TYPE_APFS) {
         // DA-TAG: Limit to TianoCore
         #ifdef __MAKEWITH_TIANO
-        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
-            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
-            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
-        ) {
-            // Early Return on APFS Support Volume
-            return NULL;
-        }
-
         if (GlobalConfig.SyncAPFS) {
             if (Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT) {
                 DisplayName = GetVolumeGroupName (LoaderPath, Volume);
@@ -1885,7 +1887,6 @@ BOOLEAN ShouldScan (
 ) {
     UINTN                   i;
     CHAR16                 *VolName;
-    CHAR16                 *VolGuid;
     CHAR16                 *PathCopy;
     CHAR16                 *DontScanDir;
     CHAR16                 *TmpVolNameA;
@@ -1893,18 +1894,7 @@ BOOLEAN ShouldScan (
     CHAR16                 *VentoyName;
     BOOLEAN                 ScanIt;
     BOOLEAN                 FoundVentoy;
-    EFI_GUID                GuidRecoveryHD = MAC_RECOVERY_HD_GUID_VALUE;
 
-
-    // Skip 'NULL' Volumes
-    if (!Volume) {
-        return FALSE;
-    }
-
-    // Skip 'UnReadable' Volumes
-    if (!Volume->IsReadable) {
-        return FALSE;
-    }
 
     if (MyStriCmp (Path, SelfDirPath) &&
         Volume->DeviceHandle == SelfVolume->DeviceHandle
@@ -1912,59 +1902,29 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    // DA-TAG: Skip HFS+ Recovery HD
-    if (Volume->FSType == FS_TYPE_HFSPLUS) {
-        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
-            return FALSE;
-        }
-    }
-
-    ScanIt = TRUE;
-    if (Volume->FSType == FS_TYPE_APFS) {
-        // DA-TAG: Limit to TianoCore
-        #ifdef __MAKEWITH_TIANO
-        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
-            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
-            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
-        ) {
-            // Early Return on APFS Support Volume
-            return FALSE;
-        }
-
+    ScanIt = VolumeScanAllowed (Volume);
+    if (ScanIt && Volume->FSType == FS_TYPE_APFS) {
         if (GlobalConfig.SyncAPFS) {
-            TmpVolNameB = PoolPrint (L"%s - DATA", Volume->VolName);
-            if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
-                ScanIt = FALSE;
-            }
-            MY_FREE_POOL(TmpVolNameB);
-            if (!ScanIt) return FALSE;
-
-            TmpVolNameA = SanitiseString (Volume->VolName);
-            TmpVolNameB = PoolPrint (L"%s - DATA", TmpVolNameA);
-            if (IsListItem (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
+            TmpVolNameA = PoolPrint (L"%s - DATA", Volume->VolName);
+            if (IsListItem (TmpVolNameA, GlobalConfig.DontScanVolumes)) {
                 ScanIt = FALSE;
             }
             MY_FREE_POOL(TmpVolNameA);
-            MY_FREE_POOL(TmpVolNameB);
+
+            if (ScanIt) {
+                TmpVolNameB = SanitiseString (Volume->VolName);
+                TmpVolNameA = PoolPrint (L"%s - DATA", TmpVolNameB);
+                if (IsListItem (TmpVolNameA, GlobalConfig.DontScanVolumes)) {
+                    ScanIt = FALSE;
+                }
+                MY_FREE_POOL(TmpVolNameA);
+                MY_FREE_POOL(TmpVolNameB);
+            }
             if (!ScanIt) return FALSE;
         }
-        #endif
-    } // if Volume->FSType
+    }
 
-    if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
-        IsListItem (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
-        IsListItem (Volume->PartName, GlobalConfig.DontScanVolumes)
-    ) {
-        ScanIt = FALSE;
-    }
-    if (ScanIt) {
-        VolGuid = GuidAsString (&(Volume->PartGuid));
-        if (IsListItem (VolGuid, GlobalConfig.DontScanVolumes)) {
-            ScanIt = FALSE;
-        }
-        MY_FREE_POOL(VolGuid);
-    }
-    if (!ScanIt && GlobalConfig.HandleVentoy && Volume->RootDir ) {
+    if (!ScanIt && GlobalConfig.HandleVentoy) {
         if (MyStriCmp (Path, L"EFI\\BOOT") &&
             FileExists (Volume->RootDir, FALLBACK_FULLNAME)
         ) {
@@ -2575,26 +2535,10 @@ VOID ScanEfiFiles (
     //LOG_INCREMENT();
     //BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    if (!Volume          ||
-        !Volume->RootDir ||
-        !Volume->VolName ||
-        !Volume->IsReadable
-    ) {
-        //BREAD_CRUMB(L"%s:  1a 0 - END:- VOID ... Exit on Invalid Volume", FuncTag);
-        //LOG_DECREMENT();
-        //LOG_SEP(L"X");
-
-        // Early Return on Invalid Volume
-        return;
-    }
-    FoundVentoy = FALSE;
-
     // Skip Volumes in 'DontScanVolumes' List
     // Unless 'Ventoy Volume' in this instance
-    if (IsListItem (Volume->VolName,  GlobalConfig.DontScanVolumes) ||
-        IsListItem (Volume->FsName,   GlobalConfig.DontScanVolumes) ||
-        IsListItem (Volume->PartName, GlobalConfig.DontScanVolumes)
-    ) {
+    FoundVentoy = FALSE;
+    if (!VolumeScanAllowed (Volume)) {
         //BREAD_CRUMB(L"%s:  1a 1", FuncTag);
         if (GlobalConfig.HandleVentoy                   &&
             FileExists (Volume->RootDir, FALLBACK_FULLNAME)
@@ -2633,20 +2577,8 @@ VOID ScanEfiFiles (
     //BREAD_CRUMB(L"%s:  2", FuncTag);
     if (Volume->FSType == FS_TYPE_NTFS) {
         //BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-        if (MyStriCmp (Volume->VolName, L"System Reserved") ||
-            MyStriCmp (Volume->VolName, L"Basic Data Partition") ||
-            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
-        ) {
-            //BREAD_CRUMB(L"%s:  2a 1a 1 - END:- VOID ... Exit on Windows Support Volume", FuncTag);
-            //LOG_DECREMENT();
-            //LOG_SEP(L"X");
-
-            // Early Return on Windows Support Volume
-            return;
-        }
-        //BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         if (AppleFirmware && MyStrStr (Volume->VolName, L"BOOTCAMP")) {
-            //BREAD_CRUMB(L"%s:  2a 2a 1 - END:- VOID ... Exit on Windows BootCamp Volume", FuncTag);
+            //BREAD_CRUMB(L"%s:  2a 1a 1 - END:- VOID ... Exit on Windows BootCamp Volume", FuncTag);
             //LOG_DECREMENT();
             //LOG_SEP(L"X");
 
@@ -2658,25 +2590,8 @@ VOID ScanEfiFiles (
     //BREAD_CRUMB(L"%s:  3", FuncTag);
     if (Volume->FSType == FS_TYPE_APFS) {
         //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
-        // DA-TAG: Limit to TianoCore
-        #ifdef __MAKEWITH_TIANO
-        //BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
-        if (Volume->VolRole != APFS_VOLUME_ROLE_SYSTEM  &&
-            Volume->VolRole != APFS_VOLUME_ROLE_PREBOOT &&
-            Volume->VolRole != APFS_VOLUME_ROLE_UNDEFINED
-        ) {
-            //BREAD_CRUMB(L"%s:  3a 1a 1a 1 - END:- VOID ... Exit on APFS Support Volume", FuncTag);
-            //LOG_DECREMENT();
-            //LOG_SEP(L"X");
-
-            // Early Return on APFS Support Volume
-            return;
-        }
-        #endif
-
-        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
         if (GlobalConfig.SyncAPFS) {
-            //BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
             if (SingleAPFS &&
                 (
                     Volume->VolRole == APFS_VOLUME_ROLE_SYSTEM  ||
@@ -2684,42 +2599,42 @@ VOID ScanEfiFiles (
                     Volume->VolRole == APFS_VOLUME_ROLE_UNDEFINED
                 )
             ) {
-                //BREAD_CRUMB(L"%s:  3a 2a 1a 1", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 1a 1a 1", FuncTag);
                 for (i = 0; i < SkipApfsVolumesCount; i++) {
                     //LOG_SEP(L"X");
-                    //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 1 - FOR LOOP:- START", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - FOR LOOP:- START", FuncTag);
                     if (GuidsAreEqual (&(SkipApfsVolumes[i]->PartGuid), &(Volume->PartGuid))) {
-                        //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on Skipped APFS Volume", FuncTag);
+                        //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on Skipped APFS Volume", FuncTag);
                         //LOG_DECREMENT();
                         //LOG_SEP(L"X");
 
                         // Early Return on Skipped APFS Volume
                         return;
                     }
-                    //BREAD_CRUMB(L"%s:  3a 2a 1a 1a 2 - FOR LOOP:- END", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 2 - FOR LOOP:- END", FuncTag);
                     //LOG_SEP(L"X");
                 } // for
-                //BREAD_CRUMB(L"%s:  3a 2a 1a 2", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 1a 1a 2", FuncTag);
             }
 
-            //BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 1a 2", FuncTag);
             for (i = 0; i < SystemVolumesCount; i++) {
                 //LOG_SEP(L"X");
-                //BREAD_CRUMB(L"%s:  3a 2a 2a 1 - FOR LOOP:- START", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 1a 2a 1 - FOR LOOP:- START", FuncTag);
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
-                    //BREAD_CRUMB(L"%s:  3a 2a 2a 1a 1 - FOR LOOP:- END VOID ... Exit on ReMapped APFS System Volume", FuncTag);
+                    //BREAD_CRUMB(L"%s:  3a 1a 2a 1a 1 - FOR LOOP:- END VOID ... Exit on ReMapped APFS System Volume", FuncTag);
                     //LOG_DECREMENT();
                     //LOG_SEP(L"X");
 
                     // Early Return on ReMapped APFS System Volume
                     return;
                 }
-                //BREAD_CRUMB(L"%s:  3a 2a 2a 2 - FOR LOOP:- END", FuncTag);
+                //BREAD_CRUMB(L"%s:  3a 1a 2a 2 - FOR LOOP:- END", FuncTag);
                 //LOG_SEP(L"X");
             } // for
-            //BREAD_CRUMB(L"%s:  3a 2a 3", FuncTag);
+            //BREAD_CRUMB(L"%s:  3a 1a 3", FuncTag);
         }
-        //BREAD_CRUMB(L"%s:  3a 3", FuncTag);
+        //BREAD_CRUMB(L"%s:  3a 2", FuncTag);
     } // if Volume->FSType == FS_TYPE_APFS
 
     //BREAD_CRUMB(L"%s:  4", FuncTag);
@@ -2732,8 +2647,7 @@ VOID ScanEfiFiles (
     );
     #endif
 
-    FirstLoaderScan    = FALSE;
-    ScanFallbackLoader =  TRUE;
+    FirstLoaderScan = FALSE;
 
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     MatchPatterns = StrDuplicate (LOADER_MATCH_PATTERNS);
