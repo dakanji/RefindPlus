@@ -948,21 +948,20 @@ VOID SetLoaderDefaults (
                         TargetName = Volume->FsName;
 
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2", FuncTag);
+                        i = 0;
                         FoundVentoy = FALSE;
-                        if (GlobalConfig.HandleVentoy) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1", FuncTag);
-                            i = 0;
-                            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Filesystem", FuncTag);
-                                if (MyStrBegins (VentoyName, TargetName)) {
-                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1a 1 - Found Ventoy Filesystem ... Set Ventoy Icon", FuncTag);
-                                    FoundVentoy = TRUE;
-                                    TargetName  = L"ventoy";
-                                }
-                                MY_FREE_POOL(VentoyName);
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
-                            } // while
-                        }
+                        while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Filesystem", FuncTag);
+                            if (MyStrBegins (VentoyName, TargetName)) {
+                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1 - Found Ventoy Filesystem ... Set Ventoy Icon", FuncTag);
+                                FoundVentoy = TRUE;
+                                TargetName  = L"ventoy";
+                            }
+                            MY_FREE_POOL(VentoyName);
+                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
+
+                            if (FoundVentoy) break;
+                        } // while
 
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 3", FuncTag);
                         #if REFIT_DEBUG > 0
@@ -1010,22 +1009,20 @@ VOID SetLoaderDefaults (
                                 : Volume->VolName;
 
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2", FuncTag);
+                            i = 0;
                             FoundVentoy = FALSE;
-                            if (GlobalConfig.HandleVentoy) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1", FuncTag);
-                                i = 0;
-                                while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Volume", FuncTag);
-                                    if (MyStrBegins (VentoyName, TargetName)) {
-                                        BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 1a 1 - Found Ventoy Volume ... Set Ventoy Icon", FuncTag);
-                                        FoundVentoy = TRUE;
-                                        TargetName  = L"ventoy";
-                                    }
-                                    MY_FREE_POOL(VentoyName);
-                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
-                                } // while
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 2", FuncTag);
-                            }
+                            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Volume", FuncTag);
+                                if (MyStrBegins (VentoyName, TargetName)) {
+                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 1 - Found Ventoy Volume ... Set Ventoy Icon", FuncTag);
+                                    FoundVentoy = TRUE;
+                                    TargetName  = L"ventoy";
+                                }
+                                MY_FREE_POOL(VentoyName);
+                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 2 - WHILE LOOP:- END", FuncTag);
+
+                                if (FoundVentoy) break;
+                            } // while
 
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 3", FuncTag);
                             #if REFIT_DEBUG > 0
@@ -1065,22 +1062,20 @@ VOID SetLoaderDefaults (
                     TargetName = Volume->PartName;
 
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2", FuncTag);
+                    i = 0;
                     FoundVentoy = FALSE;
-                    if (GlobalConfig.HandleVentoy) {
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1", FuncTag);
-                        i = 0;
-                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
-                            if (MyStrBegins (VentoyName, TargetName)) {
-                                BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
-                                FoundVentoy = TRUE;
-                                TargetName  = L"ventoy";
-                            }
-                            MY_FREE_POOL(VentoyName);
-                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
-                        } // while
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 2", FuncTag);
-                    }
+                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
+                        if (MyStrBegins (VentoyName, TargetName)) {
+                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
+                            FoundVentoy = TRUE;
+                            TargetName  = L"ventoy";
+                        }
+                        MY_FREE_POOL(VentoyName);
+                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
+
+                        if (FoundVentoy) break;
+                    } // while
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 3", FuncTag);
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1491,8 +1486,6 @@ LOADER_ENTRY * AddLoaderEntry (
     UINTN                   i;
     CHAR16                 *DisplayName;
     CHAR16                 *TmpName;
-    CHAR16                 *VentoyName;
-    BOOLEAN                 FoundVentoy;
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     BOOLEAN                 Found;
@@ -1501,27 +1494,9 @@ LOADER_ENTRY * AddLoaderEntry (
     LOADER_ENTRY           *Entry;
 
 
-    if (!VolumeScanAllowed (Volume)) {
-        FoundVentoy = FALSE;
-        if (GlobalConfig.HandleVentoy                   &&
-            FileExists (Volume->RootDir, FALLBACK_FULLNAME)
-        ) {
-            i = 0;
-            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                if (MyStrBegins (VentoyName, Volume->VolName) ||
-                    MyStrBegins (VentoyName, Volume->FsName)  ||
-                    MyStrBegins (VentoyName, Volume->PartName)
-                ) {
-                    FoundVentoy = TRUE;
-                }
-                MY_FREE_POOL(VentoyName);
-            } // while
-        }
-
-        if (!FoundVentoy) {
-            // Early Return
-            return NULL;
-        }
+    if (!VolumeScanAllowed (Volume, TRUE)) {
+        // Early Return
+        return NULL;
     }
 
     DisplayName = NULL;
@@ -1902,7 +1877,7 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    ScanIt = VolumeScanAllowed (Volume);
+    ScanIt = VolumeScanAllowed (Volume, FALSE); // Do NOT Check Ventoy Here
     if (ScanIt && Volume->FSType == FS_TYPE_APFS) {
         if (GlobalConfig.SyncAPFS) {
             TmpVolNameA = PoolPrint (L"%s - DATA", Volume->VolName);
@@ -1924,13 +1899,13 @@ BOOLEAN ShouldScan (
         }
     }
 
-    if (!ScanIt && GlobalConfig.HandleVentoy) {
+    if (!ScanIt) {
+        FoundVentoy = FALSE;
         if (MyStriCmp (Path, L"EFI\\BOOT") &&
             FileExists (Volume->RootDir, FALLBACK_FULLNAME)
         ) {
             i = 0;
-            FoundVentoy = FALSE;
-            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
                 if (MyStrBegins (VentoyName, Volume->VolName) ||
                     MyStrBegins (VentoyName, Volume->FsName)  ||
                     MyStrBegins (VentoyName, Volume->PartName)
@@ -1938,11 +1913,13 @@ BOOLEAN ShouldScan (
                     FoundVentoy = TRUE;
                 }
                 MY_FREE_POOL(VentoyName);
+
+                if (FoundVentoy) break;
             } // while
-            if (FoundVentoy) return TRUE;
         }
+
+        return FoundVentoy;
     }
-    if (!ScanIt) return FALSE;
 
     // See if Path includes an explicit volume declaration that is NOT Volume.
     VolName  = NULL;
@@ -1954,16 +1931,14 @@ BOOLEAN ShouldScan (
             ) {
                 ScanIt = FALSE;
             }
+            MY_FREE_POOL(VolName);
         }
     }
     MY_FREE_POOL(PathCopy);
-    MY_FREE_POOL(VolName);
 
     // See if Volume is in GlobalConfig.DontScanDirs.
     i = 0;
-    while (ScanIt &&
-        (DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))
-    ) {
+    while ((DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))) {
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
         if (VolName == NULL) {
@@ -1981,6 +1956,8 @@ BOOLEAN ShouldScan (
 
         MY_FREE_POOL(DontScanDir);
         MY_FREE_POOL(VolName);
+
+        if (!ScanIt) break;
     } // while
 
     return ScanIt;
@@ -2535,29 +2512,24 @@ VOID ScanEfiFiles (
     //LOG_INCREMENT();
     //BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    // Skip Volumes in 'DontScanVolumes' List
-    // Unless 'Ventoy Volume' in this instance
+    i = 0;
     FoundVentoy = FALSE;
-    if (!VolumeScanAllowed (Volume)) {
-        //BREAD_CRUMB(L"%s:  1a 1", FuncTag);
-        if (GlobalConfig.HandleVentoy                   &&
-            FileExists (Volume->RootDir, FALLBACK_FULLNAME)
+    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+        if (MyStrBegins (VentoyName, Volume->VolName) ||
+            MyStrBegins (VentoyName, Volume->FsName)  ||
+            MyStrBegins (VentoyName, Volume->PartName)
         ) {
-            //BREAD_CRUMB(L"%s:  1a 1a 1", FuncTag);
-            i = 0;
-            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                if (MyStrBegins (VentoyName, Volume->VolName) ||
-                    MyStrBegins (VentoyName, Volume->FsName)  ||
-                    MyStrBegins (VentoyName, Volume->PartName)
-                ) {
-                    FoundVentoy = TRUE;
-                }
-                MY_FREE_POOL(VentoyName);
-            } // while
-            //BREAD_CRUMB(L"%s:  1a 1a 2", FuncTag);
+            FoundVentoy = TRUE;
         }
+        MY_FREE_POOL(VentoyName);
 
-        //BREAD_CRUMB(L"%s:  1a 2", FuncTag);
+        if (FoundVentoy) break;
+    } // while
+
+    // Skip Volumes in 'DontScanVolumes' List
+    // Unless this is a 'Ventoy Volume'
+    if (!VolumeScanAllowed (Volume, TRUE)) {
+        //BREAD_CRUMB(L"%s:  1a 1", FuncTag);
         if (!FoundVentoy) {
             //BREAD_CRUMB(L"%s:  1a 2a 1 - END:- VOID ... Exit on 'DontScan' Volume", FuncTag);
             //LOG_DECREMENT();
@@ -2566,11 +2538,11 @@ VOID ScanEfiFiles (
             // Early Return on 'DontScan' Volume
             return;
         }
-        //BREAD_CRUMB(L"%s:  1a 3", FuncTag);
     }
 
     ScanFallbackLoader = TRUE;
     if (FoundVentoy) {
+        //BREAD_CRUMB(L"%s:  1a - GOTO 'VentoyJump'", FuncTag);
         goto VentoyJump;
     }
 
@@ -2857,7 +2829,6 @@ VOID ScanEfiFiles (
         //BREAD_CRUMB(L"%s:  12a 3", FuncTag);
     }
 
-VentoyJump:
     //BREAD_CRUMB(L"%s:  13", FuncTag);
     // Do not scan fallback loader if on the same volume and a duplicate of RefindPlus.
     if (ScanFallbackLoader) {
@@ -2911,6 +2882,7 @@ VentoyJump:
         //LOG_SEP(L"X");
     } // while
 
+VentoyJump:
     //BREAD_CRUMB(L"%s:  15", FuncTag);
     // Create an entry for fallback loaders
     if (ScanFallbackLoader &&
@@ -2919,22 +2891,16 @@ VentoyJump:
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
         //BREAD_CRUMB(L"%s:  15a 1", FuncTag);
-        TmpMsg = L"Fallback Loader";
-        if (GlobalConfig.HandleVentoy) {
-            i = 0;
-            FoundVentoy = FALSE;
-            while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                if (MyStrBegins (VentoyName, Volume->VolName) ||
-                    MyStrBegins (VentoyName, Volume->FsName)  ||
-                    MyStrBegins (VentoyName, Volume->PartName)
-                ) {
-                    FoundVentoy = TRUE;
-                    TmpMsg = L"Instance: Ventoy";
-                }
-                MY_FREE_POOL(VentoyName);
-            } // while
+        if (FoundVentoy) {
+            //BREAD_CRUMB(L"%s:  15a 1a 1", FuncTag);
+            TmpMsg = L"Instance: Ventoy";
+        }
+        else {
+            //BREAD_CRUMB(L"%s:  15a 1b 1", FuncTag);
+            TmpMsg = L"Fallback Loader";
         }
 
+        //BREAD_CRUMB(L"%s:  15a 2", FuncTag);
         AddLoaderEntry (FALLBACK_FULLNAME, TmpMsg, Volume, TRUE, FALSE);
         //BREAD_CRUMB(L"%s:  15a 2", FuncTag);
     }

@@ -73,7 +73,6 @@ disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
-handle_ventoy         |Rationalises the binaries displayed for `Ventoy` instances
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
 hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available

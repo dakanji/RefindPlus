@@ -3123,18 +3123,6 @@ VOID ReadConfig (
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"handle_ventoy")) {
-            GlobalConfig.HandleVentoy = HandleBoolean (TokenList, TokenCount);
-
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'handle_ventoy'", OffsetNext);
-                MuteLogger = TRUE;
-            }
-            #endif
-        }
-        else if (
             MyStriCmp (TokenList[0], L"disable_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvramprotect")

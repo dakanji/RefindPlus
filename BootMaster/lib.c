@@ -1950,9 +1950,13 @@ CHAR16 * GetVolumeName (
 } // CHAR16 * GetVolumeName()
 
 BOOLEAN VolumeScanAllowed (
-    IN REFIT_VOLUME *Volume
+    IN REFIT_VOLUME *Volume,
+    IN BOOLEAN       SkipVentoy
 ) {
+    UINTN        i;
     CHAR16      *VolGuid;
+    CHAR16      *VentoyName;
+    BOOLEAN      FoundVentoy;
     BOOLEAN      ScanAllowed;
 
     if (!Volume          ||
@@ -2006,6 +2010,28 @@ BOOLEAN VolumeScanAllowed (
     }
     else {
         ScanAllowed = TRUE;
+
+        if (!SkipVentoy) {
+            i = 0;
+            FoundVentoy = FALSE;
+            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                if (MyStrBegins (VentoyName, Volume->VolName) ||
+                    MyStrBegins (VentoyName, Volume->FsName)  ||
+                    MyStrBegins (VentoyName, Volume->PartName)
+                ) {
+                    FoundVentoy = TRUE;
+                }
+                MY_FREE_POOL(VentoyName);
+
+                if (FoundVentoy) break;
+            } // while
+
+            if (FoundVentoy) {
+                if (!FileExists (Volume->RootDir, FALLBACK_FULLNAME)) {
+                    ScanAllowed = FALSE;
+                }
+            }
+        }
     }
     MY_FREE_POOL(VolGuid);
 
@@ -3045,20 +3071,25 @@ VOID ScanVolumes (VOID) {
             }
 
             if (!RoleStr) {
-                if (GlobalConfig.HandleVentoy) {
-                    j = 0;
-                    FoundVentoy = FALSE;
-                    while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, j++)) != NULL) {
-                        if (MyStrBegins (VentoyName, Volume->VolName)) {
-                            FoundVentoy = TRUE;
-                            RoleStr = L" * Part Ventoy";
-                        }
-                        MY_FREE_POOL(VentoyName);
-                    } // while
-                }
+                j = 0;
+                FoundVentoy = FALSE;
+                while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, j++))) {
+                    if (MyStrBegins (VentoyName, Volume->VolName)) {
+                        FoundVentoy = TRUE;
+                        RoleStr = L" * Part Ventoy";
+                    }
+                    MY_FREE_POOL(VentoyName);
+
+                    if (FoundVentoy) break;
+                } // while
 
                 if (!RoleStr) {
-                    RoleStr = L"** Role Undefined";
+                    if (Volume->FSType == FS_TYPE_EXFAT) {
+                        RoleStr = L" * Part DataStore";
+                    }
+                    else {
+                        RoleStr = L"** Role Undefined";
+                    }
                 }
             }
             else if (FindSubStr (RoleStr, L"HFS Recovery")) {
@@ -3318,7 +3349,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         Volume = Volumes[VolumeIndex];
 
         // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume)) {
+        if (!VolumeScanAllowed (Volume, FALSE)) {
             continue;
         }
 
@@ -3426,7 +3457,7 @@ VOID SetVolumeIcons (VOID) {
         Volume = Volumes[VolumeIndex];
 
         // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume)) {
+        if (!VolumeScanAllowed (Volume, FALSE)) {
             continue;
         }
 

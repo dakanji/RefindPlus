@@ -130,7 +130,6 @@ REFIT_CONFIG GlobalConfig = {
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
     /* SupplyAppleFB = */ TRUE,
-    /* HandleVentoy = */ FALSE,
     /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
@@ -2456,11 +2455,13 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16            *TypeStr;
     CHAR16            *FilePath;
     CHAR16            *SelectionName;
+    CHAR16            *VentoyName;
     CHAR16            *VarNVRAM;
     CHAR16             KeyAsString[2];
     BOOLEAN            FoundTool;
     BOOLEAN            RunOurTool;
     BOOLEAN            MokProtocol;
+    BOOLEAN            FoundVentoy;
     BOOLEAN            MainLoopRunning;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
@@ -2473,8 +2474,6 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     CHAR16            *SelfGUID;
     CHAR16            *DisplayName;
-    CHAR16            *VentoyName;
-    BOOLEAN            FoundVentoy;
     BOOLEAN            ForceContinue;
 
     #if REFIT_DEBUG > 1
@@ -2516,7 +2515,7 @@ EFI_STATUS EFIAPI efi_main (
     }
     else {
         VendorInfo = PoolPrint (
-            L"%s %d.%02d",
+            L"%s v%d.%02d",
             gST->FirmwareVendor,
             gST->FirmwareRevision >> 16U,
             gST->FirmwareRevision & ((1 << 16U) - 1)
@@ -2753,11 +2752,6 @@ EFI_STATUS EFIAPI efi_main (
     else {
         LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"        );
     }
-    LOG_MSG(
-        "%s      HandleVentoy:- '%s'",
-        OffsetNext,
-        GlobalConfig.HandleVentoy ? L"Active" : L"Inactive"
-    );
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
         LOG_MSG("'Disabled'"                                                        );
@@ -3861,23 +3855,29 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
                 }
                 else {
+                    i = 0;
+                    FoundVentoy = FALSE;
+                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                        if (MyStrBegins (VentoyName, EntryVol->VolName)) {
+                            FoundVentoy = TRUE;
+                        }
+                        MY_FREE_POOL(VentoyName);
+
+                        if (FoundVentoy) break;
+                    } // while
+
                     #if REFIT_DEBUG > 0
-                    if (!GlobalConfig.HandleVentoy) {
-                        MsgStr = PoolPrint (L"Load EFI File:- '%s'", ourLoaderEntry->LoaderPath);
+                    if (!FoundVentoy) {
+                        MsgStr = PoolPrint (
+                            L"Load EFI File:- '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
                     else {
-                        i = 0;
-                        FoundVentoy = FALSE;
-                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                            if (MyStrBegins (VentoyName, EntryVol->VolName)) {
-                                FoundVentoy = TRUE;
-                                MsgStr = PoolPrint (
-                                    L"Load Instance: Ventoy on %s Partition via '%s'",
-                                    VentoyName, ourLoaderEntry->LoaderPath
-                                );
-                            }
-                            MY_FREE_POOL(VentoyName);
-                        } // while
+                        MsgStr = PoolPrint (
+                            L"Load Instance: Ventoy via '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
 
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -3887,7 +3887,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    if (GlobalConfig.NvramProtectEx) {
+                    if (!FoundVentoy && GlobalConfig.NvramProtectEx) {
                         if (GlobalConfig.NvramProtect) {
                             // Some UEFI Windows installers/updaters may not be in the standard path
                             // So, activate NvramProtect (if set and allowed) on unidentified loaders

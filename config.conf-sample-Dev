@@ -244,16 +244,6 @@
 #
 #force_trim
 
-# The 'Ventoy' tool allows flexibly running ISO images, typically Linux.
-# However, it comes with multiple loaders, many of which have incompatible
-# CPU architectures, that show on the RefindPlus screen but are not unusable.
-# When this token is active, only the relevant Ventoy loader is shown instead.
-# NB: Default Ventoy naming is required for proper instance identification.
-#
-# Inactive when commented out (Does not rationalise Ventoy loaders)
-#
-#handle_ventoy
-
 # RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
 # volumes. However, when this token is active (and the "hidden_icons_ignore"
 # token is not) RefindPlus will also scan "external" volumes for these icons.

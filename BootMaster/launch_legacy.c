@@ -718,7 +718,7 @@ VOID AddLegacyEntry (
     UINTN              LogLineType;
     #endif
 
-    if (!VolumeScanAllowed (Volume)) {
+    if (!VolumeScanAllowed (Volume, FALSE)) {
         // Early Return on 'DontScan' Volume
         return;
     }
@@ -1099,11 +1099,12 @@ VOID ScanLegacyVolume (
     REFIT_VOLUME *Volume,
     UINTN         VolumeIndex
 ) {
-    UINTN    i, VolumeIndex2;
-    CHAR16  *VentoyName;
-    BOOLEAN  FoundVentoy;
-    BOOLEAN  ShowVolume;
-    BOOLEAN  HideIfOthersFound;
+    UINTN           i, VolumeIndex2;
+    CHAR16         *VentoyName;
+    BOOLEAN         ShowVolume;
+    BOOLEAN         HideIfOthersFound;
+
+    static BOOLEAN  FoundVentoy = FALSE;
 
     #if REFIT_DEBUG > 1
     CHAR16 *TheVolName;
@@ -1134,12 +1135,17 @@ VOID ScanLegacyVolume (
     }
 
     BREAD_CRUMB(L"%s:  2 - HasBootCode", FuncTag);
-    if (Volume->OSName == NULL &&
-        Volume->BlockIOOffset == 0 &&
+    ShowVolume = TRUE;
+    if (Volume->OSName == NULL                   &&
+        Volume->BlockIOOffset == 0               &&
         Volume->BlockIO == Volume->WholeDiskBlockIO
     ) {
         BREAD_CRUMB(L"%s:  2a 1 - MBR Entry Type = 'Whole Disk'", FuncTag);
         HideIfOthersFound = TRUE;
+
+        if (FoundVentoy) {
+            ShowVolume = FALSE;
+        }
     }
     else {
         BREAD_CRUMB(L"%s:  2b 1 - MBR Entry Type = 'Partition/Volume'", FuncTag);
@@ -1147,12 +1153,9 @@ VOID ScanLegacyVolume (
     }
 
     BREAD_CRUMB(L"%s:  3 - Check for 'Potential Whole Disk Entry Hide' Flag", FuncTag);
-    ShowVolume = TRUE;
-    if (HideIfOthersFound) {
+    if (ShowVolume && HideIfOthersFound) {
         // Check for other bootable entries on the same disk
-        BREAD_CRUMB(L"%s:  3a 1 - Found Flag ... Check for Other Bootable Legacy Entries on *SAME* Disk%s", FuncTag,
-            (GlobalConfig.HandleVentoy) ? L" or Ventoy Entry on *ANY* Disk" : L""
-        );
+        BREAD_CRUMB(L"%s:  3a 1 - Found Flag ... Check for Other Bootable Legacy Entries on *SAME* Disk or Ventoy Entry on *ANY* Disk", FuncTag);
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             LOG_SEP(L"X");
             BREAD_CRUMB(L"%s:  3a 1a 1 - FOR LOOP:- START", FuncTag);
@@ -1166,11 +1169,10 @@ VOID ScanLegacyVolume (
                 }
 
                 BREAD_CRUMB(L"%s:  3a 1a 1a 2", FuncTag);
-                if (ShowVolume && GlobalConfig.HandleVentoy) {
+                if (ShowVolume) {
                     BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1", FuncTag);
                     i = 0;
-                    FoundVentoy = FALSE;
-                    while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
+                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
                         BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1 - WHILE LOOP:- START", FuncTag);
                         if (MyStrBegins (VentoyName, Volumes[VolumeIndex2]->VolName)) {
                             BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1 - Found Ventoy Entry", FuncTag);
@@ -1179,6 +1181,8 @@ VOID ScanLegacyVolume (
                         }
                         MY_FREE_POOL(VentoyName);
                         BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+
+                        if (FoundVentoy) break;
                     } // while
                     BREAD_CRUMB(L"%s:  3a 1a 1a 2a 2", FuncTag);
                 }
