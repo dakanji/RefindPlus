@@ -43,12 +43,12 @@ static EFI_SYSTEM_TABLE  *mNullSystemTable;
 
 static
 EFI_STATUS ApfsRegisterPartition (
-    IN  EFI_HANDLE             Handle,
-    IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
-    IN  APFS_NX_SUPERBLOCK     *SuperBlock,
+    IN  EFI_HANDLE               Handle,
+    IN  EFI_BLOCK_IO_PROTOCOL   *BlockIo,
+    IN  APFS_NX_SUPERBLOCK      *SuperBlock,
     OUT APFS_PRIVATE_DATA      **PrivateDataPointer
 ) {
-    EFI_STATUS           Status;
+    EFI_STATUS            Status;
     APFS_PRIVATE_DATA    *PrivateData;
 
     PrivateData = AllocateZeroPool (sizeof (*PrivateData));
@@ -89,11 +89,11 @@ static
 EFI_STATUS ApfsStartDriver (
     IN APFS_PRIVATE_DATA  *PrivateData,
     IN VOID               *DriverBuffer,
-    IN UINTN              DriverSize
+    IN UINTN               DriverSize
 ) {
-    EFI_STATUS                 Status;
+    EFI_STATUS                  Status;
+    EFI_HANDLE                  ImageHandle;
     EFI_DEVICE_PATH_PROTOCOL   *DevicePath;
-    EFI_HANDLE                 ImageHandle;
     EFI_LOADED_IMAGE_PROTOCOL  *LoadedImage;
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -167,14 +167,14 @@ EFI_STATUS ApfsStartDriver (
 
 static
 EFI_STATUS ApfsConnectDevice (
-    IN EFI_HANDLE             Handle,
+    IN EFI_HANDLE              Handle,
     IN EFI_BLOCK_IO_PROTOCOL  *BlockIo
 ) {
-    EFI_STATUS           Status;
+    EFI_STATUS            Status;
     APFS_NX_SUPERBLOCK   *SuperBlock;
     APFS_PRIVATE_DATA    *PrivateData;
     VOID                 *DriverBuffer;
-    UINTN                DriverSize;
+    UINTN                 DriverSize;
 
     // This may yet not be APFS but some other file system ... verify
     Status = InternalApfsReadSuperBlock (BlockIo, &SuperBlock);
@@ -209,7 +209,7 @@ EFI_STATUS ApfsConnectDevice (
 EFI_STATUS RP_ApfsConnectHandle (
     IN EFI_HANDLE  Handle
 ) {
-    EFI_STATUS             Status;
+    EFI_STATUS              Status;
     VOID                   *TempProtocol;
     EFI_BLOCK_IO_PROTOCOL  *BlockIo;
 

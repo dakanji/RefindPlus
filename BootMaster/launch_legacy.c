@@ -508,7 +508,7 @@ bailout_unload:
 
 VOID StartLegacy (
     IN LEGACY_ENTRY *Entry,
-    IN CHAR16 *SelectionName
+    IN CHAR16       *SelectionName
 ) {
     EFI_STATUS       Status;
     EG_IMAGE        *BootLogoImage;
@@ -521,7 +521,7 @@ VOID StartLegacy (
     IsBoot = TRUE;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"StartLegacy";
+    const CHAR16 *FuncTag = L"StartLegacy";
     #endif
 
     LOG_SEP(L"X");
@@ -663,9 +663,10 @@ VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
-    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy Bootcode";
-    CHAR16 *MsgStrB = PoolPrint (L"Loading %s", MsgStrA);
-    CHAR16 *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
+    const CHAR16 *MsgStrA = L"'UEFI-Style' Legacy Bootcode";
+    CHAR16       *MsgStrB = PoolPrint (L"Loading %s", MsgStrA);
+    CHAR16       *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -988,7 +989,7 @@ VOID ScanLegacyUEFI (
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanLegacyUEFI";
+    const CHAR16 *FuncTag = L"ScanLegacyUEFI";
     #endif
 
     LOG_SEP(L"X");
@@ -1108,7 +1109,7 @@ VOID ScanLegacyVolume (
 
     #if REFIT_DEBUG > 1
     CHAR16 *TheVolName;
-    CHAR16 *FuncTag = L"ScanLegacyVolume";
+    const CHAR16 *FuncTag = L"ScanLegacyVolume";
     #endif
 
     LOG_SEP(L"X");
@@ -1231,7 +1232,7 @@ VOID ScanLegacyDisc (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanLegacyDisc";
+    const CHAR16 *FuncTag = L"ScanLegacyDisc";
     #endif
 
     LOG_SEP(L"X");
@@ -1264,7 +1265,7 @@ VOID ScanLegacyInternal (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanLegacyInternal";
+    const CHAR16 *FuncTag = L"ScanLegacyInternal";
 
     ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"
@@ -1309,7 +1310,7 @@ VOID ScanLegacyExternal (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanLegacyExternal";
+    const CHAR16 *FuncTag = L"ScanLegacyExternal";
     #endif
 
     LOG_SEP(L"X");
@@ -1373,75 +1374,94 @@ VOID WarnIfLegacyProblems (VOID) {
     UINTN     i;
     BOOLEAN   found;
     CHAR16   *MsgStr;
-    CHAR16   *TmpMsgA;
-    CHAR16   *TmpMsgB;
+    CHAR16   *TxtMsg;
+    CHAR16   *Spacer;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"WarnIfLegacyProblems";
+    const CHAR16 *FuncTag = L"WarnIfLegacyProblems";
+    #endif
     #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
-        i = 0;
-        found = FALSE;
-        do {
-            if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
-                GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
-                GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'b'
-            ) {
-                found = TRUE;
-            }
-            i++;
-        } while ((i < NUM_SCAN_OPTIONS) && (!found));
+    if (GlobalConfig.LegacyType != LEGACY_TYPE_NONE) {
+        BREAD_CRUMB(L"%s:  A1 - END:- VOID ... Early Return", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
 
-        if (found) {
-            #if REFIT_DEBUG > 0
-            MsgStr = L"Legacy BIOS Support Enabled in RefindPlus but Unavailable in EFI";
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
-            LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
-            LOG_MSG("\n\n");
-            #endif
+        // Early Return
+        return;
+    }
 
-            MsgStr = L"Your 'scanfor' config line specifies scanning for one or more legacy     \n"
-                     L"(BIOS) boot options; however, this is not possible because your computer \n"
-                     L"lacks the necessary Compatibility Support Module (CSM) support or because\n"
-                     L"CSM support has been disabled in your firmware.                           ";
-
-            if (!GlobalConfig.DirectBoot) {
-                TmpMsgA = L"** WARN: Legacy BIOS Boot Issues                                          ";
-                TmpMsgB = L"                                                                          ";
-
-                #if REFIT_DEBUG > 0
-                BOOLEAN CheckMute = FALSE;
-                MY_MUTELOGGER_SET;
-                #endif
-                SwitchToText (FALSE);
-
-                PrintUglyText (TmpMsgB, NEXTLINE);
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-                PrintUglyText (TmpMsgA, NEXTLINE);
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-                PrintUglyText (TmpMsgB, NEXTLINE);
-                PrintUglyText (MsgStr, NEXTLINE);
-                PrintUglyText (TmpMsgB, NEXTLINE);
-
-                PauseForKey();
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
-            }
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
-            LOG_SEP(L"X");
-            LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n\n");
-            #endif
+    i = 0;
+    found = FALSE;
+    do {
+        if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
+            GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
+            GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'b'
+        ) {
+            found = TRUE;
         }
-    } // if GlobalConfig.LegacyType
+        i++;
+    } while ((i < NUM_SCAN_OPTIONS) && (!found));
+
+    if (!found) {
+        BREAD_CRUMB(L"%s:  A2 - END:- VOID ... Early Return", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Legacy BIOS Booting Enabled in RefindPlus but *NOT* Available in EFI";
+    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
+    LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
+    LOG_MSG("\n\n");
+    #endif
+
+    MsgStr = L"Your 'scanfor' config line specifies scanning for one or more \n"
+             L"legacy (BIOS) boot options but this is *NOT* possible as your \n"
+             L"computer lacks the required Compatibility Support Module (CSM)\n"
+             L"or because CSM support has been disabled in your firmware.     ";
+
+    if (!GlobalConfig.DirectBoot) {
+        TxtMsg = L"** WARN: Legacy BIOS Boot Issues                               ";
+        Spacer = L"                                                               ";
+
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        SwitchToText (FALSE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (Spacer, NEXTLINE);
+        PrintUglyText (TxtMsg, NEXTLINE);
+        PrintUglyText (Spacer, NEXTLINE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        PrintUglyText (Spacer, NEXTLINE);
+        PrintUglyText (MsgStr, NEXTLINE);
+        PrintUglyText (Spacer, NEXTLINE);
+
+        PauseForKey();
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+    LOG_SEP(L"X");
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n\n");
+    #endif
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();

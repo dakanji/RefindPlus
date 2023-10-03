@@ -689,8 +689,7 @@ EFI_STATUS StartEFIImage (
 
             MsgStr = PoolPrint (
                 L"When Loading %s ... %s",
-                ImageTitle,
-                ValidText
+                ImageTitle, ValidText
             );
             ValidText = L"Invalid Binary";
             CheckError (Status, MsgStr);
@@ -714,7 +713,7 @@ EFI_STATUS StartEFIImage (
         // Stall works best in smaller increments as per Specs
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
             // DA-TAG: 100 Loops = 1 Sec
-            RefitStall (150);
+            RefitStall (50);
         }
 
         ChildImageHandle = NULL;

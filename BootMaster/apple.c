@@ -248,7 +248,7 @@ VOID RotateCsrValue (
     Status = GetCsrStatus (&CurrentValue);
     if (EFI_ERROR(Status)) {
         MY_FREE_POOL(gCsrStatus);
-        gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
+        gCsrStatus = StrDuplicate (L"Could *NOT* Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
@@ -957,7 +957,7 @@ static
 VOID LogInstallStatusFB (
     EFI_STATUS Status
 ) {
-    CHAR16 *MsgStr = L"AppleFramebuffer Install Status";
+    const CHAR16 *MsgStr = L"AppleFramebuffer Install Status";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
     LOG_MSG("%s      %s:- '%r'", OffsetNext, MsgStr, Status);
 } // static VOID LogInstallStatusFB()
@@ -971,7 +971,6 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
-    CHAR16 *DotGap;
     #endif
 
     static
@@ -984,8 +983,6 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
     MsgStr = L"Attempt AppleFramebuffer Install";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s      %s", OffsetNext, MsgStr);
-
-    DotGap = L" ... ";
     #endif
 
     if (Reinstall) {
@@ -994,7 +991,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
             #if REFIT_DEBUG > 0
             MsgStr = L"Uninstall Existing AppleFramebuffer";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
+            LOG_MSG(" ... %s:- '%r'", MsgStr, Status);
             #endif
 
             if (Status != EFI_NOT_FOUND) {
@@ -1015,7 +1012,7 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
             #if REFIT_DEBUG > 0
             MsgStr = L"Locate Existing AppleFramebuffer";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
+            LOG_MSG(" ... %s:- '%r'", MsgStr, Status);
 
             LogInstallStatusFB (Status);
             #endif

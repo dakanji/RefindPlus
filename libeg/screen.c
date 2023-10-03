@@ -415,7 +415,7 @@ EFI_STATUS RefitCheckGOP (
     );
     if (EFI_ERROR(Status) || HandleCount == 1) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s  - Could Not Find %s ConsoleOut GOP Candidates", OffsetNext, TmpStr);
+        LOG_MSG("%s  - Could *NOT* Find %s ConsoleOut GOP Candidates", OffsetNext, TmpStr);
         LOG_MSG("\n\n");
         #endif
 
@@ -527,7 +527,7 @@ EFI_STATUS RefitCheckGOP (
     if (!OurValidGOP || EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "INFO: Could Not Find Usable %s Candidate",
+            "INFO: Could *NOT* Find Usable %s Candidate",
             (FixGOP) ? L"Replacement" : L"Console GOP"
         );
         LOG_MSG("\n\n");
@@ -621,7 +621,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could Not Find GOP Instance");
+        MsgStr = StrDuplicate (L"Could *NOT* Find GOP Instance");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
         LOG_MSG("** WARN: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -720,7 +720,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
     if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could Not Find Usable GOP");
+        MsgStr = StrDuplicate (L"Could *NOT* Find Usable GOP");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
         LOG_MSG("INFO: %s:", MsgStr);
         LOG_MSG("\n\n");
@@ -782,7 +782,7 @@ EFI_STATUS egSetGopMode (
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgStr = L"Could Not Set GOP Mode";
+        MsgStr = L"Could *NOT* Set GOP Mode";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** WARN: %s", MsgStr);
@@ -943,7 +943,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
             Status = egSetGopMode (1);
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Could Not Set BestMode ... Try First Useable Mode");
+            MsgStr = StrDuplicate (L"Could *NOT* Set BestMode ... Try First Useable Mode");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -2010,7 +2010,7 @@ BOOLEAN egSetScreenSize (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Could Not Set GOP Mode");
+                MsgStr = StrDuplicate (L"Could *NOT* Set GOP Mode");
                 #endif
             }
             #if REFIT_DEBUG > 0
@@ -2049,7 +2049,7 @@ BOOLEAN egSetScreenSize (
                     ModeSet = TRUE;
                 }
                 else {
-                    MsgStr = StrDuplicate (L"Could Not Set GOP Mode");
+                    MsgStr = StrDuplicate (L"Could *NOT* Set GOP Mode");
 
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2114,7 +2114,7 @@ BOOLEAN egSetScreenSize (
                     }
                 }
                 else {
-                    MsgStr = StrDuplicate (L"Error : Could Not Query GOP Mode");
+                    MsgStr = StrDuplicate (L"Error : Could *NOT* Query GOP Mode");
 
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2299,7 +2299,7 @@ CHAR16 * egScreenDescription (VOID) {
             );
         }
         else {
-            GraphicsInfo = StrDuplicate (L"Could Not Get Graphics Details");
+            GraphicsInfo = StrDuplicate (L"Could *NOT* Get Graphics Details");
         }
 
         if (!AllowGraphicsMode) {
@@ -2343,7 +2343,7 @@ VOID egSetGraphicsModeEnabled (
     EFI_CONSOLE_CONTROL_SCREEN_MODE NewMode;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"egSetGraphicsModeEnabled";
+    const CHAR16 *FuncTag = L"egSetGraphicsModeEnabled";
     #endif
 
     LOG_SEP(L"X");
@@ -2399,7 +2399,7 @@ VOID egClearScreen (
     EFI_UGA_PIXEL FillColor;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"egClearScreen";
+    const CHAR16 *FuncTag = L"egClearScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -2822,7 +2822,7 @@ VOID egScreenShot (VOID) {
 
     MY_FREE_IMAGE(Image);
     if (EFI_ERROR(Status)) {
-        MsgStr = L"Could Not Encode PNG";
+        MsgStr = L"Could *NOT* Encode PNG";
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2875,7 +2875,7 @@ VOID egScreenShot (VOID) {
     ) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
-            MsgStr = L"Could Not Save Screenshot";
+            MsgStr = L"Could *NOT* Save Screenshot";
 
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
@@ -2907,7 +2907,7 @@ VOID egScreenShot (VOID) {
         // Try to save to first available ESP
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
-            MsgStr = L"Could Not Find ESP for Screenshot";
+            MsgStr = L"Could *NOT* Find ESP for Screenshot";
 
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;

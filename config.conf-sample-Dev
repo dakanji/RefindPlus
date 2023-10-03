@@ -17,10 +17,11 @@
 #
 #continue_on_warning
 
-# This token allows actively enabling or disabling the System Integrity Protection (SIP) and
-# Sealed System Volume (SSV) settings defined under the "csr_values" option. When this token is
-# active, RefindPlus will actively set the CSR Policy as defined. This is done when RefindPlus is
-# loaded but users can manually toggle the set values "ON" or "OFF" by using the "Rotate CSR" tool.
+# Allow actively enabling/disabling the System Integrity Protection (SIP) and
+# Sealed System Volume (SSV) settings defined under the "csr_values" option.
+# When active, RefindPlus will actively set the CSR Policy as defined. This
+# is done when RefindPlus is loaded but users can manually toggle the set
+# values "ON" or "OFF" by using the "Rotate CSR" tool on the main menu.
 # The following options are available:
 #   1    - Always Enable SIP (and SSV on macOS 11.x or later)
 #   0    - Take no Action
@@ -43,13 +44,13 @@
 #
 #csr_normalise
 
-# The "HelpIcon" feature prefers loading default/generic loader icons which are used
-# in most cases. Searches for custom icons are only executed if a generic loader icon
-# is not found. This is a change from the original rEFInd implementation; which is the
-# other way round (Custom icons are searched for first). This implementation can result
-# in significantly faster loading speeds in the best case and should make no difference
-# to loading speed in the worst case. The default/generic loader icons searched for will
-# be those for the current active theme. That is, the current active theme default icons.
+# The "HelpIcon" feature prefers loading default/generic loader icons over custom
+# ones and searches for custom loader icons only executed if a generic loader icon
+# is not found. This can result in significantly faster loading speeds on some units
+# and make no difference at worst. The default/generic loader icons loaded will be
+# those for the current active theme. That is, the current theme's default icons.
+# ".VolumeIcons" and "VolumeBadges" are disabled when this setting is active.
+# When active, generic "linux" icons are used for most linux flavours.
 #
 # The "HelpIcon" feature is enabled when commented out
 #
@@ -102,12 +103,14 @@
 #
 #decouple_key_f10
 
-# Disable Apple Mobile File Integrity (AMFI) checks when booting macOS. When this option
-# is active, RefindPlus will add the "amfi_get_out_of_my_way=1" boot argument which along
-# with System Integrity Protection (SIP), restricts application access to OS entitlements.
-# Note that this setting will create a macOS boot argument the first time it is triggered
-# and that this boot argument will remain active until it is explicitly cleared, even if
-# this setting is subsequently deactivated.
+# Disable Apple Mobile File Integrity (AMFI) checks when booting macOS. When
+# this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
+# argument which along with System Integrity Protection (SIP), restricts
+# application access to OS entitlements. Note that this setting will
+# create a macOS boot argument the first time it is triggered
+# and that this boot argument will remain active until
+# it is explicitly cleared, even if this setting
+# is subsequently deactivated.
 #
 # Inactive when commented out (Does not stop AMFI checks)
 #
@@ -190,10 +193,11 @@
 #
 #disable_nvram_protect
 
-# Replace the Apple FramebufferInfo protocol with a builtin version. By default, RefindPlus
-# is configured to always install the Apple FramebufferInfo protocol when missing on Macs.
-# This feature can be disabled by activating this token. It is only active when the UGA
-# protocol is available and is inactive when running a GPU with the GOP protocol.
+# Replace the Apple FramebufferInfo protocol with a builtin version. By default,
+# RefindPlus is configured to always install the Apple FramebufferInfo protocol
+# when missing on Macs. This feature can be disabled by activating this token.
+# It is only active when the UGA protocol is available and is inactive when
+# running a GPU with the GOP protocol.
 # NB: This functionality is only available on TianoCore builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
@@ -289,6 +293,9 @@
 # ICNS (*.icns), BMP (*.bmp), PNG (*.png), or JPG (*.jpg/jpeg).
 #
 # Does not prioritise ".VolumeIcon" images when commented out
+#
+# NOTE:
+# 1. This token is overridden by "decline_help_icon"
 #
 #hidden_icons_prefer
 
@@ -431,9 +438,10 @@
 #
 #renderer_text
 
-# RefindPlus will automatically scale icons and text when HiDPI or LoRez screens are detected.
-# The detection is basic and based on detecting a minimum 1601px vertical resolution for HiDPI.
-# Screens are considered to be LoRez based on detecting a lower than 1025px vertical resolution.
+# RefindPlus will automatically scale icons and text when HiDPI or LoRez screens
+# are detected. The detection is basic and based on detecting a minimum 1601px
+# resolution on the longest edge for HiDPI. Screens are considered to be LoRez
+# based on detecting a resolution lower than 1025px on the longest edge.
 # This setting allows overriding the detection as follows:
 #  99    - Never scale UI elements
 #   1    - Always scale UI elements up
@@ -477,7 +485,7 @@
 #supply_nvme
 
 # Emulate UEFI 2.x support. The RefindPlus "SupplyUEFI" feature can
-# emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
+# emulate the "CreateEventEx" feature, introduced in UEFI 2.0, when not
 # available. It additionally modifies the EFI Revision value to UEFI 2.3.
 # This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
 # as Legacy Macs as several such tools only require CreateEventEx to work.
@@ -500,10 +508,11 @@
 #
 #transient_boot
 
-# RefindPlus previously simply picked and used the first Unicode Collation Protocol instance
-# it finds. This resulted in a lottery where such instances sometimes worked and sometimes
-# did not. The proper implementation process however is to first locate every instance
-# and select one that supports the English language. This has now been implemented.
+# RefindPlus previously simply picked and used the first Unicode Collation
+# Protocol instance it finds. This resulted in a lottery where such instances
+# sometimes worked and sometimes did not. The proper implementation process
+# however is to first locate every instance and select one that supports
+# the English language. This has now been implemented.
 # NB: This functionality is only fully available on TianoCore builds.
 #
 # Does not look for Unicode English support when commented out.
@@ -1065,8 +1074,8 @@
 # The netboot option is experimental and relies on the ipxe.efi and
 # ipxe_discover.efi program files.
 #
-# On UEFI PCs, the default setting is internal,external,optical,manual
-# On Macs, the default setting is internal,hdbios,external,biosexternal,optical,cd,manual
+# On UEFI PC, the default setting is internal,external,optical,manual
+# On Mac, the default is internal,hdbios,external,biosexternal,optical,cd,manual
 #
 #scanfor internal,external,optical,manual
 

@@ -22,21 +22,20 @@
   * Some tools that run external screens, such as `GDisk`, may change volume device paths
   * Hence, on return, RefindPlus did not operate as it should
   * Previously fixed but re-emerged and now addressed again
-- Improves Misc Item Handling
-  * Linux Param File Handling
-    - A memory conflict meant the files were not always read
-  * Filesystem Drivers
-    - Failure to install on some handles
-  * GPT Handling
-    - Misc minor tweaks
-  * Comma Delimited Strings Handling
-    - Handles leading spaces within the string
-  * Loader Icon Handling
-    - Provides generic `Linux` fallback for some distros
-    - Prevents fallback loaders with invalid architectures from being displayed
-  * `AlsoScan` Feature
-    - The `@root/boot` path was removed from to the default `also_scan_dirs` list
-    - Added in v0.13.3.AD but users should be able to add this if required
+- Improves Linux Param File Handling
+  * A memory conflict meant the files were not always read
+- Improves Filesystem Driver Handling
+  * Resolves failure to install on some handles
+- Improves GPT Handling
+  * Applies misc minor tweaks
+- Improves Comma Delimited Strings Handling
+  * Now accommodates leading spaces before string elements
+- Improves Loader Icon Handling
+  * Provides generic `Linux` fallback for some distros
+  * Prevents fallback loaders with invalid architectures from being displayed
+- Improves `AlsoScan` Feature Handling
+  * The `@root/boot` path was removed from the default `also_scan_dirs` list
+  * Added in v0.13.3.AD but users should be able to add this if required
 - Renames Misc Configuration Tokens
   * `decline_nvram_protect` to `disable_nvram_protect`
   * `decline_reload_gop` to `disable_reload_gop`

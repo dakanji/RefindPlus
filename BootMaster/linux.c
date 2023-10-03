@@ -97,7 +97,7 @@ CHAR16 * FindInitrd (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FindInitrd";
+    const CHAR16 *FuncTag = L"FindInitrd";
     #endif
 
     LOG_SEP(L"X");
@@ -288,7 +288,7 @@ CHAR16 * AddInitrdToOptions (
     CHAR16 *InitrdVersion;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddInitrdToOptions";
+    const CHAR16 *FuncTag = L"AddInitrdToOptions";
     #endif
 
     LOG_SEP(L"X");
@@ -345,7 +345,7 @@ CHAR16 * GetMainLinuxOptions (
     CHAR16 *Options, *FullOptions, *InitrdName, *KernelVersion;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GetMainLinuxOptions";
+    const CHAR16 *FuncTag = L"GetMainLinuxOptions";
     #endif
 
     LOG_SEP(L"X");
@@ -442,7 +442,7 @@ VOID GuessLinuxDistribution (
     CHAR16        *LoaderPath
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GuessLinuxDistribution";
+    const CHAR16 *FuncTag = L"GuessLinuxDistribution";
     #endif
 
     LOG_SEP(L"X");
@@ -499,7 +499,7 @@ VOID AddKernelToSubmenu (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddKernelToSubmenu";
+    const CHAR16 *FuncTag = L"AddKernelToSubmenu";
     #endif
 
     LOG_SEP(L"X");

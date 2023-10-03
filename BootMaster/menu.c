@@ -842,7 +842,7 @@ UINTN RunGenericMenu (
 
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"RunGenericMenu";
+    const CHAR16 *FuncTag = L"RunGenericMenu";
     #endif
 
     LOG_SEP(L"X");
@@ -3544,7 +3544,7 @@ UINTN RunMainMenu (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"RunMainMenu";
+    const CHAR16 *FuncTag = L"RunMainMenu";
     #endif
 
     LOG_SEP(L"X");
@@ -3787,7 +3787,7 @@ VOID FreeMenuScreen (
     UINTN i, j;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeMenuScreen";
+    const CHAR16 *FuncTag = L"FreeMenuScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -3886,7 +3886,7 @@ VOID FreeLoaderEntry (
     IN LOADER_ENTRY **Entry
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeLoaderEntry";
+    const CHAR16 *FuncTag = L"FreeLoaderEntry";
     #endif
 
     LOG_SEP(L"X");
@@ -3942,7 +3942,7 @@ VOID FreeMenuEntry (
     }
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeMenuEntry";
+    const CHAR16 *FuncTag = L"FreeMenuEntry";
     #endif
 
     LOG_SEP(L"X");

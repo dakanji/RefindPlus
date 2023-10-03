@@ -706,7 +706,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                LOG_MSG("INFO: Could Not Identify Path to GOP on Device Handles");
+                LOG_MSG("INFO: Could *NOT* Identify Path to GOP on Device Handles");
             }
         }
         else {

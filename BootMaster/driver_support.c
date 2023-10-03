@@ -676,15 +676,15 @@ UINTN ScanDriverDir (
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
 BOOLEAN LoadDrivers (VOID) {
-    CHAR16      *Directory;
-    CHAR16      *SelfDirectory;
-    UINTN        i;
-    UINTN        k;
+    UINTN        i, k;
     UINTN        NumFound;
     UINTN        CurFound;
+    CHAR16      *Directory;
+    CHAR16      *SelfDirectory;
+    EFI_HANDLE  *DriversListAll;
     EFI_HANDLE  *DriversListProg;
     EFI_HANDLE  *DriversListUser;
-    EFI_HANDLE  *DriversListAll;
+
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
@@ -692,9 +692,10 @@ BOOLEAN LoadDrivers (VOID) {
     UINTN        DriversIndex;
 #endif
 
+
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr;
-    CHAR16  *MsgNotFound;
+    CHAR16        *MsgStr;
+    const CHAR16  *MsgNotFound = L"Not Found or Empty";
 
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
@@ -713,10 +714,6 @@ BOOLEAN LoadDrivers (VOID) {
     SelfDirectory = NULL;
     DriversListProg = DriversListUser = DriversListAll = NULL;
     NumFound = CurFound = i = 0;
-
-    #if REFIT_DEBUG > 0
-    MsgNotFound = L"Not Found or Empty";
-    #endif
 
     while ((CurFound == 0) && (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         CleanUpPathNameSlashes (Directory);

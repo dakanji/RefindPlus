@@ -165,7 +165,7 @@ VOID PrepareBlankLine (VOID) {
 
 VOID InitScreen (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"InitScreen";
+    const CHAR16 *FuncTag = L"InitScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -246,7 +246,7 @@ VOID SetupScreen (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SetupScreen";
+    const CHAR16 *FuncTag = L"SetupScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -532,7 +532,7 @@ VOID SwitchToText (
     BOOLEAN TextModeOnEntry;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToText";
+    const CHAR16 *FuncTag = L"SwitchToText";
     #endif
     #endif
 
@@ -591,7 +591,7 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "Could Not Get Text Console Size ... Using Default:- '%d x %d'",
+                "Could *NOT* Get Text Console Size ... Using Default:- '%d x %d'",
                 ConHeight, ConWidth
             );
         }
@@ -630,7 +630,7 @@ VOID SwitchToText (
 
 EFI_STATUS SwitchToGraphics (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToGraphics";
+    const CHAR16 *FuncTag = L"SwitchToGraphics";
     #endif
 
     LOG_SEP(L"X");
@@ -669,7 +669,7 @@ VOID BeginTextScreen (
     IN CHAR16 *Title
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BeginTextScreen";
+    const CHAR16 *FuncTag = L"BeginTextScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -691,7 +691,7 @@ VOID FinishTextScreen (
     IN BOOLEAN WaitAlways
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FinishTextScreen";
+    const CHAR16 *FuncTag = L"FinishTextScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -718,7 +718,7 @@ VOID BeginExternalScreen (
     IN CHAR16  *Title
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BeginExternalScreen";
+    const CHAR16 *FuncTag = L"BeginExternalScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -797,7 +797,7 @@ VOID BeginExternalScreen (
 
 VOID FinishExternalScreen (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FinishExternalScreen";
+    const CHAR16 *FuncTag = L"FinishExternalScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -1321,7 +1321,7 @@ VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToGraphicsAndClear";
+    const CHAR16 *FuncTag = L"SwitchToGraphicsAndClear";
     #endif
 
     LOG_SEP(L"X");
@@ -1453,7 +1453,7 @@ VOID BltClearScreen (
     static BOOLEAN  LoggedBanner = FALSE;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BltClearScreen";
+    const CHAR16 *FuncTag = L"BltClearScreen";
     #endif
     #endif
 

@@ -284,6 +284,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     CHAR16                 *TmpName;
     CHAR16                 *FileName;
     CHAR16                 *LinuxName;
+    CHAR16                 *SearchName;
     CHAR16                 *DisplayName;
     BOOLEAN                 Found;
     LOADER_ENTRY           *SubEntry;
@@ -355,7 +356,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            if (
+            if (GlobalConfig.HelpScan                          &&
                 !FindSubStr (SubScreen->Title, L"vmlinuz")     &&
                 !FindSubStr (SubScreen->Title, L"bzImage")     &&
                 !FindSubStr (SubScreen->Title, L"Manual Stanza:")
@@ -364,7 +365,8 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 while (!Found &&
                     (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
                 ) {
-                    if (FindSubStr (SubScreen->Title, LinuxName)) {
+                    SearchName = PoolPrint (L"- %s", LinuxName);
+                    if (FindSubStr (SubScreen->Title, SearchName)) {
                         MY_FREE_POOL(DisplayName);
                         if (Entry->OSType == 'L') {
                             DisplayName = PoolPrint (L"Instance: Linux - %s", LinuxName);
@@ -376,6 +378,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                         Found = TRUE;
                     }
                     MY_FREE_POOL(LinuxName);
+                    MY_FREE_POOL(SearchName);
                 } // while
             }
             #if REFIT_DEBUG > 0
@@ -438,7 +441,7 @@ VOID GenerateSubScreen (
     REFIT_MENU_SCREEN       *SubScreen;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GenerateSubScreen";
+    const CHAR16 *FuncTag = L"GenerateSubScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -780,7 +783,7 @@ VOID SetLoaderDefaults (
 
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SetLoaderDefaults";
+    const CHAR16 *FuncTag = L"SetLoaderDefaults";
     #endif
 
     #if REFIT_DEBUG > 0
@@ -844,7 +847,7 @@ VOID SetLoaderDefaults (
                     !GlobalConfig.HiddenIconsIgnore &&
                     GlobalConfig.HiddenIconsPrefer
                 ) {
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Could Not Find '.VolumeIcon' Image");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"Could *NOT* Find '.VolumeIcon' Image");
                 }
                 #endif
 
@@ -1563,6 +1566,7 @@ LOADER_ENTRY * AddLoaderEntry (
 
             i = 0;
             while (!Found &&
+                GlobalConfig.HelpScan &&
                 (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
             ) {
                 SearchName = PoolPrint (L"\\%s", LinuxName);
@@ -1579,7 +1583,7 @@ LOADER_ENTRY * AddLoaderEntry (
                 MY_FREE_POOL(LinuxName);
                 MY_FREE_POOL(SearchName);
             } // while
-        }
+        } // if CheckLinux
 
         if (!Found) {
             Entry->Title = StrDuplicate (LoaderPath);
@@ -2130,7 +2134,7 @@ BOOLEAN ScanLoaderDir (
     BOOLEAN CheckMute = FALSE;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanLoaderDir";
+    const CHAR16 *FuncTag = L"ScanLoaderDir";
     #endif
     #endif
 
@@ -2505,7 +2509,7 @@ VOID ScanEfiFiles (
     #endif
 
     //#if REFIT_DEBUG > 1
-    //CHAR16 *FuncTag = L"ScanEfiFiles";
+    //const CHAR16 *FuncTag = L"ScanEfiFiles";
     //#endif
 
     //LOG_SEP(L"X");
@@ -2923,7 +2927,7 @@ VOID ScanInternal (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanInternal";
+    const CHAR16 *FuncTag = L"ScanInternal";
     #endif
 
     LOG_SEP(L"X");
@@ -2959,7 +2963,7 @@ VOID ScanExternal (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanExternal";
+    const CHAR16 *FuncTag = L"ScanExternal";
     #endif
 
     LOG_SEP(L"X");
@@ -2990,7 +2994,7 @@ VOID ScanOptical (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanOptical";
+    const CHAR16 *FuncTag = L"ScanOptical";
     #endif
 
     LOG_SEP(L"X");
@@ -3033,7 +3037,7 @@ VOID ScanFirmwareDefined (
     BOOT_ENTRY_LIST *CurrentEntry;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanFirmwareDefined";
+    const CHAR16 *FuncTag = L"ScanFirmwareDefined";
     #endif
 
     LOG_SEP(L"X");
@@ -3236,7 +3240,7 @@ VOID ScanForBootloaders (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanForBootloaders";
+    const CHAR16 *FuncTag = L"ScanForBootloaders";
     #endif
 
     LOG_SEP(L"X");
@@ -3528,7 +3532,7 @@ VOID ScanForBootloaders (VOID) {
 
     if (MainMenu->EntryCount < 1) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could Not Find Boot Loaders");
+        MsgStr = StrDuplicate (L"Could *NOT* Find Boot Loaders");
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         LOG_MSG("* WARN: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -3836,7 +3840,7 @@ VOID ScanForTools (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanForTools";
+    const CHAR16 *FuncTag = L"ScanForTools";
     #endif
 
     LOG_SEP(L"X");
@@ -3934,7 +3938,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -3966,7 +3970,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -3998,7 +4002,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4030,7 +4034,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4062,7 +4066,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4084,7 +4088,7 @@ VOID ScanForTools (VOID) {
                     if (!MenuEntryHiddenTags) {
                         #if REFIT_DEBUG > 0
                         if (!FoundTool) {
-                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                            ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             LOG_MSG("*_ WARN _*    %s", ToolStr);
                             MY_FREE_POOL(ToolStr);
@@ -4135,7 +4139,7 @@ VOID ScanForTools (VOID) {
                         MenuEntryFirmware = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                         if (!MenuEntryFirmware) {
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                            ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             LOG_MSG("*_ WARN _*    %s", ToolStr);
                             MY_FREE_POOL(ToolStr);
@@ -4161,7 +4165,7 @@ VOID ScanForTools (VOID) {
                     }
                     else {
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                        ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         LOG_MSG("*_ WARN _*    %s", ToolStr);
                         MY_FREE_POOL(ToolStr);
@@ -4223,7 +4227,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4295,7 +4299,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4355,7 +4359,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4415,7 +4419,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4583,7 +4587,7 @@ VOID ScanForTools (VOID) {
                     FlagAPFS = (!SingleAPFS && SystemVolumesCount > 0);
                     ToolStr = PoolPrint (
                         L"%s:- '%s'",
-                        (FlagAPFS) ? L"Did Not Enable Tool" : L"Could Not Find Tool",
+                        (FlagAPFS) ? L"Did Not Enable Tool" : L"Could *NOT* Find Tool",
                         ToolName
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4665,7 +4669,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4683,7 +4687,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4701,7 +4705,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4840,7 +4844,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);

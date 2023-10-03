@@ -234,7 +234,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_END, L"In egScaleImage ... Could Not Create New Image!!");
+        ALT_LOG(1, LOG_THREE_STAR_END, L"In egScaleImage ... Could *NOT* Create New Image!!");
         #endif
 
         return NULL;
@@ -492,7 +492,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements *NOT* Met!!");
         #endif
 
         // Early Return
@@ -586,7 +586,7 @@ EG_IMAGE * egLoadIcon (
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"In egLoadIcon ... Could Not Decode File Data!!"
+            L"In egLoadIcon ... Could *NOT* Decode File Data!!"
         );
         #endif
 
@@ -619,7 +619,7 @@ EG_IMAGE * egLoadIcon (
         }
         else {
             MsgStr = PoolPrint (
-                L"Could Not Scale Icon in '%s' From %d x %d to %d x %d!!",
+                L"Could *NOT* Scale Icon in '%s' From %d x %d to %d x %d!!",
                 Path, Image->Width, Image->Height, IconSize, IconSize
             );
 
@@ -668,7 +668,7 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"Trying to Load Icon from '%s' with Base Name:- '%s'",
+        L"Trying to Load Icon From '%s' with Base Name:- '%s'",
         (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
         BaseName
     );
@@ -687,7 +687,7 @@ EG_IMAGE * egLoadIconAnyType (
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"In egLoadIconAnyType ... %s",
-        (Image != NULL) ? L"Loaded Icon" : L"Could Not Load Icon!!"
+        (Image != NULL) ? L"Loaded Icon" : L"Could *NOT* Load Icon!!"
     );
     #endif
 
@@ -759,7 +759,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
     #if REFIT_DEBUG > 1
     UINT8  *CompStart;
-    CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
+    const CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
     #endif
 
     LOG_SEP(L"X");

@@ -134,7 +134,7 @@ CHAR16 * MyStrStr (
     CHAR16 *Sub;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MyStrStr";
+    const CHAR16 *FuncTag = L"MyStrStr";
     #endif
 
     if (!NestedStrStr) LOG_SEP(L"X");
@@ -199,7 +199,7 @@ BOOLEAN FindSubStr (
     IN CHAR16  *RawStrCharSet
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FindSubStr";
+    const CHAR16 *FuncTag = L"FindSubStr";
     #endif
 
     LOG_SEP(L"X");
@@ -372,7 +372,7 @@ VOID MergeStrings (
     CHAR16 *NewString;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MergeStrings";
+    const CHAR16 *FuncTag = L"MergeStrings";
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
@@ -470,7 +470,7 @@ VOID MergeUniqueStrings (
     BOOLEAN  SkipMerge;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MergeUniqueStrings";
+    const CHAR16 *FuncTag = L"MergeUniqueStrings";
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
@@ -776,7 +776,7 @@ BOOLEAN LimitStringLength (
     BOOLEAN   WasTruncated;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"LimitStringLength";
+    const CHAR16 *FuncTag = L"LimitStringLength";
     #endif
 
     LOG_SEP(L"X");
@@ -1159,7 +1159,7 @@ BOOLEAN ReplaceSubstring (
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ReplaceSubstring";
+    const CHAR16 *FuncTag = L"ReplaceSubstring";
     #endif
 
     LOG_SEP(L"X");

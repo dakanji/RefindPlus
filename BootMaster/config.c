@@ -64,30 +64,30 @@
 // Constants
 
 #define LINUX_OPTIONS_FILENAMES  \
-L"refindplus_linux.conf,refindplus-linux.conf,\
-refind_linux.conf,refind-linux.conf"
+L"refind_linux.conf,refind-linux.conf,\
+refindplus_linux.conf,refindplus-linux.conf"
 
 
-#define ENCODING_ISO8859_1  (0)
-#define ENCODING_UTF8       (1)
-#define ENCODING_UTF16_LE   (2)
+#define ENCODING_ISO8859_1                 (0)
+#define ENCODING_UTF8                      (1)
+#define ENCODING_UTF16_LE                  (2)
 
-#define LAST_MINUTE         (1439) /* Last minute of a day */
+#define LAST_MINUTE                     (1439) /* Last minute of a day */
 
-UINTN   TotalEntryCount = 0;
-UINTN   ValidEntryCount = 0;
+UINTN                  TotalEntryCount = 0;
+UINTN                  ValidEntryCount = 0;
 
-BOOLEAN OuterLoop      =  TRUE;
-BOOLEAN SilenceAPFS    =  TRUE;
-BOOLEAN FirstInclude   =  TRUE;
-BOOLEAN ManualInclude  = FALSE;
-BOOLEAN FoundFontImage =  TRUE;
+BOOLEAN                OuterLoop       =  TRUE;
+BOOLEAN                SilenceAPFS     =  TRUE;
+BOOLEAN                FirstInclude    =  TRUE;
+BOOLEAN                ManualInclude   = FALSE;
+BOOLEAN                FoundFontImage  =  TRUE;
 
 // Control Forensic Logging
 #if REFIT_DEBUG > 1
-    BOOLEAN ForensicLogging = TRUE;
+    BOOLEAN            ForensicLogging = TRUE;
 #else
-    BOOLEAN ForensicLogging = FALSE;
+    BOOLEAN            ForensicLogging = FALSE;
 #endif
 
 extern BOOLEAN         ForceTextOnly;
@@ -100,7 +100,7 @@ static
 VOID SetLinuxMatchPatterns (
     CHAR16 *Prefixes
 ) {
-    UINTN i;
+    UINTN   i;
     CHAR16 *Pattern;
     CHAR16 *PatternSet;
 
@@ -684,7 +684,7 @@ VOID AddSubmenu (
     BOOLEAN              TitleVolume;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddSubmenu";
+    const CHAR16 *FuncTag = L"AddSubmenu";
     #endif
 
     LOG_SEP(L"X");
@@ -888,7 +888,7 @@ LOADER_ENTRY * AddStanzaEntries (
     Entry = InitializeLoaderEntry (NULL);
     if (Entry == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Could Not Initialise Loader Entry for User Configured Stanza");
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Could *NOT* Initialise Loader Entry for User Configured Stanza");
         #endif
 
         return NULL;
@@ -961,7 +961,7 @@ LOADER_ENTRY * AddStanzaEntries (
             if (!FindVolume (&CurrentVolume, TokenList[1])) {
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Could Not Find Volume:- '%s'",
+                    L"Could *NOT* Find Volume:- '%s'",
                     TokenList[1]
                 );
                 #endif
@@ -984,7 +984,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 else {
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Could Not Add Volume ... Reverting to Previous:- '%s'",
+                        L"Could *NOT* Add Volume ... Reverting to Previous:- '%s'",
                         PreviousVolume->VolName
                     );
                     #endif
@@ -1220,7 +1220,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     REFIT_FILE   *Options;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GenerateOptionsFromEtcFstab";
+    const CHAR16 *FuncTag = L"GenerateOptionsFromEtcFstab";
     #endif
 
     LOG_SEP(L"X");
@@ -1396,7 +1396,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     CHAR16       *Line, *GuidString, *WriteStatus;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GenerateOptionsFromPartTypes";
+    const CHAR16 *FuncTag = L"GenerateOptionsFromPartTypes";
     #endif
 
     LOG_SEP(L"X");
@@ -1675,7 +1675,7 @@ VOID ScanUserConfigured (
     UINTN               LogLineType;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ScanUserConfigured";
+    const CHAR16 *FuncTag = L"ScanUserConfigured";
     #endif
     #endif
 
@@ -1820,7 +1820,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
     REFIT_FILE  *File;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ReadLinuxOptionsFile";
+    const CHAR16 *FuncTag = L"ReadLinuxOptionsFile";
     #endif
 
     LOG_SEP(L"X");
@@ -1921,7 +1921,7 @@ CHAR16 * GetFirstOptionsFromFile (
     REFIT_FILE   *File;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GetFirstOptionsFromFile";
+    const CHAR16 *FuncTag = L"GetFirstOptionsFromFile";
     #endif
 
     LOG_SEP(L"X");
@@ -2817,47 +2817,6 @@ VOID ReadConfig (
             }
             #endif
         }
-        else if (OuterLoop
-            && (TokenCount == 2)
-            && MyStriCmp (TokenList[0], L"include")
-            && MyStriCmp (FileName, GlobalConfig.ConfigFilename)
-        ) {
-            if (!MyStriCmp (TokenList[1], FileName)) {
-                #if REFIT_DEBUG > 0
-                // DA-TAG: Always log this in case LogLevel is overriden
-                RealLogLevel = 0;
-                HighLogLevel = MaxLogLevel * 10;
-                if (GlobalConfig.LogLevel < MINLOGLEVEL) {
-                    RealLogLevel = GlobalConfig.LogLevel;
-                    GlobalConfig.LogLevel = HighLogLevel;
-                }
-
-                MuteLogger = FALSE;
-                if (FirstInclude) {
-                    LOG_MSG("\n");
-                    LOG_MSG("Detected Overrides File - L O A D   S E T T I N G   O V E R R I D E S");
-                    FirstInclude = FALSE;
-                }
-                LOG_MSG("%s* Supplementary Configuration ... %s", OffsetNext, TokenList[1]);
-                MuteLogger = TRUE; /* Explicit For FB Infer */
-                #endif
-
-                // Set 'OuterLoop' to 'false' to break any 'include' chains
-                OuterLoop = FALSE;
-                ReadConfig (TokenList[1]);
-                OuterLoop = TRUE;
-                // Reset 'OuterLoop' to accomodate multiple instances in main file
-
-                #if REFIT_DEBUG > 0
-                MuteLogger = TRUE; /* Explicit For FB Infer */
-
-                // DA-TAG: Restore the RealLogLevel
-                if (GlobalConfig.LogLevel == HighLogLevel) {
-                    GlobalConfig.LogLevel = RealLogLevel;
-                }
-                #endif
-            }
-        }
         else if (MyStriCmp (TokenList[0], L"write_systemd_vars")) {
             GlobalConfig.WriteSystemdVars = HandleBoolean (TokenList, TokenCount);
 
@@ -3412,6 +3371,47 @@ VOID ReadConfig (
                 MuteLogger = TRUE;
             }
             #endif
+        }
+        else if (OuterLoop
+            && (TokenCount == 2)
+            && MyStriCmp (TokenList[0], L"include")
+            && MyStriCmp (FileName, GlobalConfig.ConfigFilename)
+        ) {
+            if (!MyStriCmp (TokenList[1], FileName)) {
+                #if REFIT_DEBUG > 0
+                // DA-TAG: Always log this in case LogLevel is overriden
+                RealLogLevel = 0;
+                HighLogLevel = MaxLogLevel * 10;
+                if (GlobalConfig.LogLevel < MINLOGLEVEL) {
+                    RealLogLevel = GlobalConfig.LogLevel;
+                    GlobalConfig.LogLevel = HighLogLevel;
+                }
+
+                MuteLogger = FALSE;
+                if (FirstInclude) {
+                    LOG_MSG("\n");
+                    LOG_MSG("Detected Override File(s) - L O A D   S E T T I N G   O V E R R I D E S");
+                    FirstInclude = FALSE;
+                }
+                LOG_MSG("%s* Supplementary Configuration ... %s", OffsetNext, TokenList[1]);
+                MuteLogger = TRUE; /* Explicit For FB Infer */
+                #endif
+
+                // Set 'OuterLoop' to 'false' to break any 'include' chains
+                OuterLoop = FALSE;
+                ReadConfig (TokenList[1]);
+                OuterLoop = TRUE;
+                // Reset 'OuterLoop' to accomodate multiple instances in main file
+
+                #if REFIT_DEBUG > 0
+                MuteLogger = TRUE; /* Explicit For FB Infer */
+
+                // DA-TAG: Restore the RealLogLevel
+                if (GlobalConfig.LogLevel == HighLogLevel) {
+                    GlobalConfig.LogLevel = RealLogLevel;
+                }
+                #endif
+            }
         }
 
         FreeTokenLine (&TokenList, &TokenCount);

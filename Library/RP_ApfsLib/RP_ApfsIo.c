@@ -28,14 +28,14 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 static
 UINT64 ApfsFletcher64 (
   VOID    *Data,
-  UINTN   DataSize
+  UINTN    DataSize
   )
 {
   UINT32        *Walker;
   UINT32        *WalkerEnd;
-  UINT64        Sum1;
-  UINT64        Sum2;
-  UINT32        Rem;
+  UINT64         Sum1;
+  UINT64         Sum2;
+  UINT32         Rem;
 
   // For APFS we have the following guarantees (checked outside).
   // - DataSize is always divisible by 4 (UINT32), the only potential exceptions
@@ -80,7 +80,7 @@ UINT64 ApfsFletcher64 (
 static
 BOOLEAN ApfsBlockChecksumVerify (
   APFS_OBJ_PHYS   *Block,
-  UINTN           DataSize
+  UINTN            DataSize
   )
 {
   UINT64  NewChecksum;
@@ -105,11 +105,11 @@ EFI_STATUS ApfsReadJumpStart (
   OUT APFS_NX_EFI_JUMPSTART  **JumpStartPtr
   )
 {
-  EFI_STATUS             Status;
+  EFI_STATUS              Status;
   APFS_NX_EFI_JUMPSTART  *JumpStart;
   EFI_BLOCK_IO_PROTOCOL  *BlockIo;
-  EFI_LBA                Lba;
-  UINT32                 MaxExtents;
+  EFI_LBA                 Lba;
+  UINT32                  MaxExtents;
 
   // No jump start driver, ignore.
   if (PrivateData->EfiJumpStart == 0) {
@@ -162,21 +162,21 @@ EFI_STATUS ApfsReadJumpStart (
 
 static
 EFI_STATUS ApfsReadDriver (
-  IN  APFS_PRIVATE_DATA      *PrivateData,
-  IN  APFS_NX_EFI_JUMPSTART  *JumpStart,
-  OUT UINTN                  *DriverSize,
+  IN  APFS_PRIVATE_DATA       *PrivateData,
+  IN  APFS_NX_EFI_JUMPSTART   *JumpStart,
+  OUT UINTN                   *DriverSize,
   OUT VOID                   **DriverBuffer
   )
 {
-  EFI_STATUS             Status;
+  EFI_STATUS              Status;
   VOID                   *EfiFile;
-  UINTN                  EfiFileSize;
-  UINTN                  OrgEfiFileSize;
+  UINTN                   EfiFileSize;
+  UINTN                   OrgEfiFileSize;
   UINT8                  *ChunkPtr;
-  UINTN                  ChunkSize;
-  UINTN                  Index;
+  UINTN                   ChunkSize;
+  UINTN                   Index;
   EFI_BLOCK_IO_PROTOCOL  *BlockIo;
-  EFI_LBA                Lba;
+  EFI_LBA                 Lba;
 
   EfiFileSize = JumpStart->EfiFileLen / PrivateData->ApfsBlockSize + 1;
   if (OcOverflowMulUN (EfiFileSize, PrivateData->ApfsBlockSize, &EfiFileSize)) {
@@ -237,14 +237,14 @@ EFI_STATUS ApfsReadDriver (
 }
 
 EFI_STATUS InternalApfsReadSuperBlock (
-  IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
+  IN  EFI_BLOCK_IO_PROTOCOL   *BlockIo,
   OUT APFS_NX_SUPERBLOCK     **SuperBlockPtr
   )
 {
-  EFI_STATUS           Status;
+  EFI_STATUS            Status;
   APFS_NX_SUPERBLOCK   *SuperBlock;
-  UINTN                ReadSize;
-  UINTN                Retry;
+  UINTN                 ReadSize;
+  UINTN                 Retry;
 
   // According to APFS specs, APFS block size is a multiple of disk block size.
   // Start by reading APFS_NX_MINIMUM_BLOCK_SIZE aligned to block size.
@@ -279,11 +279,12 @@ EFI_STATUS InternalApfsReadSuperBlock (
     // - A multiple of disk block size.
     // - Divisible by UINT32 for fletcher checksum to work (e.g. when block size is 1 or 2).
     // - Within minimum and maximum edges.
-    if (SuperBlock->BlockSize < BlockIo->Media->BlockSize
-      || (SuperBlock->BlockSize & (BlockIo->Media->BlockSize - 1)) != 0
-      || (SuperBlock->BlockSize & (sizeof (UINT32) - 1)) != 0
-      || SuperBlock->BlockSize < APFS_NX_MINIMUM_BLOCK_SIZE
-      || SuperBlock->BlockSize > APFS_NX_MAXIMUM_BLOCK_SIZE) {
+    if (SuperBlock->BlockSize < BlockIo->Media->BlockSize    ||
+        SuperBlock->BlockSize < APFS_NX_MINIMUM_BLOCK_SIZE   ||
+        SuperBlock->BlockSize > APFS_NX_MAXIMUM_BLOCK_SIZE   ||
+        (SuperBlock->BlockSize & (sizeof (UINT32) - 1)) != 0 ||
+        (SuperBlock->BlockSize & (BlockIo->Media->BlockSize - 1)) != 0
+    ) {
       break;
     }
 
@@ -296,16 +297,22 @@ EFI_STATUS InternalApfsReadSuperBlock (
     }
 
     // Calculate and verify checksum.
-    if (!ApfsBlockChecksumVerify (&SuperBlock->BlockHeader, SuperBlock->BlockSize)) {
+    if (!ApfsBlockChecksumVerify (
+        &SuperBlock->BlockHeader,
+        SuperBlock->BlockSize)
+    ) {
       break;
     }
 
     // Verify object type and flags.
     // SubType being 0 comes from ApfsJumpStart and is not documented.
     // ObjectOid being 1 comes from ApfsJumpStart and is not documented.
-    if (SuperBlock->BlockHeader.ObjectType != (APFS_OBJ_EPHEMERAL | APFS_OBJECT_TYPE_NX_SUPERBLOCK)
-      || SuperBlock->BlockHeader.ObjectSubType != 0
-      || SuperBlock->BlockHeader.ObjectOid != 1) {
+    if (SuperBlock->BlockHeader.ObjectSubType != 0 ||
+        SuperBlock->BlockHeader.ObjectOid     != 1 ||
+        SuperBlock->BlockHeader.ObjectType    != (
+            APFS_OBJ_EPHEMERAL | APFS_OBJECT_TYPE_NX_SUPERBLOCK
+        )
+  ) {
       break;
     }
 
@@ -325,10 +332,10 @@ EFI_STATUS InternalApfsReadSuperBlock (
 EFI_STATUS InternalApfsReadDriver (
   IN  APFS_PRIVATE_DATA    *PrivateData,
   OUT UINTN                *DriverSize,
-  OUT VOID                 **DriverBuffer
+  OUT VOID                **DriverBuffer
   )
 {
-  EFI_STATUS             Status;
+  EFI_STATUS              Status;
   APFS_NX_EFI_JUMPSTART  *JumpStart;
 
   Status = ApfsReadJumpStart (
