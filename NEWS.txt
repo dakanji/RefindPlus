@@ -1,5 +1,11 @@
 0.14.0.AB (PRE-RELEASE):
 -----------------------
+- Adds `HelpScan` Feature
+  * Ensures that some typically unwanted loaders are not displayed in the first row
+    - Enforces tools only appearing in the second row
+    - Always adds program default items for exclusion to user defined ones
+  * Enabled by default but can be disabled using a new `decline_help_scan` configuration token
+    - The new token sets RefindPlus to follow the upstream implementation
 - Fixes `MemTest Tool`
   * The MemTest fallback loader file was not recognised as a MemTest loader
   * Hence MemTest could only be run via explicit `MemTest` efi files

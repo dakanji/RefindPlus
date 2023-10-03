@@ -117,13 +117,30 @@ VOID SetLinuxMatchPatterns (
 } // static VOID SetLinuxMatchPatterns()
 
 static
+VOID SyncLinuxPrefixes (VOID) {
+    if (!GlobalConfig.LinuxPrefixes) {
+        GlobalConfig.LinuxPrefixes = StrDuplicate (
+            LINUX_PREFIXES
+        );
+    }
+    else if (GlobalConfig.HelpScan) {
+        MergeUniqueItems (
+            &GlobalConfig.LinuxPrefixes,
+            LINUX_PREFIXES, L','
+        );
+    }
+
+    SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);
+} // static VOID SyncLinuxPrefixes()
+
+static
 VOID SyncAlsoScanDirs (VOID) {
     if (!GlobalConfig.AlsoScan) {
         GlobalConfig.AlsoScan = StrDuplicate (
             ALSO_SCAN_DIRS
         );
     }
-    else {
+    else if (GlobalConfig.HelpScan) {
         MergeUniqueItems (
             &GlobalConfig.AlsoScan,
             ALSO_SCAN_DIRS, L','
@@ -134,6 +151,10 @@ VOID SyncAlsoScanDirs (VOID) {
 static
 VOID SyncDontScanDirs (VOID) {
     CHAR16 *GuidString;
+
+    if (GlobalConfig.DontScanDirs && !GlobalConfig.HelpScan) {
+        return;
+    }
 
     if (!GlobalConfig.DontScanDirs) {
         GlobalConfig.DontScanDirs = StrDuplicate (
@@ -167,6 +188,10 @@ VOID SyncDontScanDirs (VOID) {
 
 static
 VOID SyncDontScanFiles (VOID) {
+    if (GlobalConfig.DontScanFiles && !GlobalConfig.HelpScan) {
+        return;
+    }
+
     if (!GlobalConfig.DontScanFiles) {
         GlobalConfig.DontScanFiles = StrDuplicate (
             DONT_SCAN_FILES
@@ -220,23 +245,6 @@ VOID SyncDontScanFiles (VOID) {
         GlobalConfig.MacOSRecoveryFiles, L','
     );
 } // static VOID SyncDontScanFiles()
-
-static
-VOID SyncLinuxPrefixes (VOID) {
-    if (!GlobalConfig.LinuxPrefixes) {
-        GlobalConfig.LinuxPrefixes = StrDuplicate (
-            LINUX_PREFIXES
-        );
-    }
-    else {
-        MergeUniqueItems (
-            &GlobalConfig.LinuxPrefixes,
-            LINUX_PREFIXES, L','
-        );
-    }
-
-    SetLinuxMatchPatterns (GlobalConfig.LinuxPrefixes);
-} // static VOID SyncLinuxPrefixes()
 
 //
 // Get a single line of text from a file
@@ -3181,6 +3189,18 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'decline_help_text'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_help_scan")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.HelpScan = (DeclineSetting) ? FALSE : TRUE;
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'decline_help_scan'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif

@@ -1982,18 +1982,20 @@ BOOLEAN VolumeScanAllowed (
         }
     }
 
-    if (Volume->FSType == FS_TYPE_HFSPLUS                    &&
-        GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)
-    ) {
-        return FALSE;
-    }
-
-    if (Volume->FSType == FS_TYPE_NTFS) {
-        if (MyStriCmp (Volume->VolName, L"System Reserved"             )  ||
-            MyStriCmp (Volume->VolName, L"System Device Bay"           )  ||
-            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+    if (GlobalConfig.HelpScan) {
+        if (Volume->FSType == FS_TYPE_HFSPLUS                    &&
+            GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)
         ) {
             return FALSE;
+        }
+
+        if (Volume->FSType == FS_TYPE_NTFS) {
+            if (MyStriCmp (Volume->VolName, L"System Reserved"             )  ||
+                MyStriCmp (Volume->VolName, L"System Device Bay"           )  ||
+                MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
+            ) {
+                return FALSE;
+            }
         }
     }
 
