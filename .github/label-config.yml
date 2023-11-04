@@ -480,8 +480,9 @@ Queries:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
-    # Reopen issue
+    # Reopen issue and unlock thread
     reopen: true
+    unlock: true
 
 # The `Resolved` label is added to issues
 Resolved:
@@ -507,7 +508,7 @@ Resolved:
 # The `Resolved` label is removed from issues
 -Resolved:
   issues:
-    # Reopen and unlock issue
+    # Reopen issue and unlock thread
     reopen: true
     unlock: true
 
@@ -582,7 +583,7 @@ Not-Planned:
     # Remove labels
     unlabel:
       - 'Tagged'
-    # Reopen and unlock issue
+    # Reopen issue and unlock thread
     reopen: true
     unlock: true
 
@@ -638,6 +639,6 @@ Prorogued:
 # The `Prorogued` label is removed from issues
 -Prorogued:
   issues:
-    # Reopen and unlock issue
+    # Reopen issue and unlock thread
     reopen: true
     unlock: true
