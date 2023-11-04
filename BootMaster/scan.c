@@ -104,8 +104,11 @@ BOOLEAN IsInstallerMac (
     MY_MUTELOGGER_SET;
     #endif
     MacInstaller = (
-        FindSubStr (Volume->VolName, L"OS X Install")  ||
-        FindSubStr (Volume->VolName, L"macOS Install") ||
+        FindSubStr (Volume->VolName, L"Install Mac OS") ||
+        FindSubStr (Volume->VolName, L"Install macOS")  ||
+        FindSubStr (Volume->VolName, L"Install OS X")   ||
+        FindSubStr (Volume->VolName, L"OS X Install")   ||
+        FindSubStr (Volume->VolName, L"macOS Install")  ||
         FindSubStr (Volume->VolName, L"Mac OS Install")
     );
     #if REFIT_DEBUG > 0
@@ -142,6 +145,35 @@ VOID VetCSR (VOID) {
     MY_MUTELOGGER_OFF;
     #endif
 } // static VOID VetCSR()
+
+static
+CHAR16 * GetShowName (
+    CHAR16                 *LinuxName
+) {
+    CHAR16                 *ShowName;
+
+    // DA-TAG: Do *NOT* Free 'ShowName'
+    if (MyStriCmp (LinuxName, L"LinuxMint")) {
+        ShowName = L"Mint";
+    }
+    else if (MyStriCmp (LinuxName, L"Zorin")) {
+        ShowName = L"ZorinOS";
+    }
+    else if (MyStriCmp (LinuxName, L"Elementary")) {
+        ShowName = L"ElementaryOS";
+    }
+    else if (MyStriCmp (LinuxName, L"Endeavour")) {
+        ShowName = L"EndeavourOS";
+    }
+    else if (MyStriCmp (LinuxName, L"Cachy")) {
+        ShowName = L"CachyOS";
+    }
+    else {
+        ShowName = LinuxName;
+    }
+
+    return ShowName;
+} // static CHAR16 * GetShowName()
 
 // Creates a copy of a menu screen.
 // Returns a pointer to the copy of the menu screen.
@@ -283,6 +315,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     CHAR16                 *TmpStr;
     CHAR16                 *TmpName;
     CHAR16                 *FileName;
+    CHAR16                 *ShowName;
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     CHAR16                 *DisplayName;
@@ -365,14 +398,17 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 while (!Found &&
                     (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
                 ) {
-                    SearchName = PoolPrint (L"- %s", LinuxName);
+                    // DA-TAG: Do *NOT* Free 'ShowName'
+                    ShowName = GetShowName (LinuxName);
+
+                    SearchName = PoolPrint (L"- %s", ShowName);
                     if (FindSubStr (SubScreen->Title, SearchName)) {
                         MY_FREE_POOL(DisplayName);
                         if (Entry->OSType == 'L') {
-                            DisplayName = PoolPrint (L"Instance: Linux - %s", LinuxName);
+                            DisplayName = PoolPrint (L"Instance: Linux - %s", ShowName);
                         }
                         else {
-                            DisplayName = PoolPrint (L"Instance: Linux - %s via Grub", LinuxName);
+                            DisplayName = PoolPrint (L"Instance: Linux - %s via Grub", ShowName);
                         }
                         NameOS = DisplayName;
                         Found = TRUE;
@@ -953,17 +989,18 @@ VOID SetLoaderDefaults (
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2", FuncTag);
                         i = 0;
                         FoundVentoy = FALSE;
-                        while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Filesystem", FuncTag);
+                        while (
+                            !FoundVentoy &&
+                            (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                        ) {
+                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
                             if (MyStrBegins (VentoyName, TargetName)) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1 - Found Ventoy Filesystem ... Set Ventoy Icon", FuncTag);
+                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
                                 FoundVentoy = TRUE;
                                 TargetName  = L"ventoy";
                             }
                             MY_FREE_POOL(VentoyName);
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
-
-                            if (FoundVentoy) break;
                         } // while
 
                         BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 3", FuncTag);
@@ -1067,17 +1104,18 @@ VOID SetLoaderDefaults (
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2", FuncTag);
                     i = 0;
                     FoundVentoy = FALSE;
-                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                    while (
+                        !FoundVentoy &&
+                        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                    ) {
                         BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
                         if (MyStrBegins (VentoyName, TargetName)) {
-                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - Found Ventoy Partition ... Set Ventoy Icon", FuncTag);
+                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
                             FoundVentoy = TRUE;
                             TargetName  = L"ventoy";
                         }
                         MY_FREE_POOL(VentoyName);
                         BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
-
-                        if (FoundVentoy) break;
                     } // while
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 3", FuncTag);
                     #if REFIT_DEBUG > 0
@@ -1489,6 +1527,7 @@ LOADER_ENTRY * AddLoaderEntry (
     UINTN                   i;
     CHAR16                 *DisplayName;
     CHAR16                 *TmpName;
+    CHAR16                 *ShowName;
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     BOOLEAN                 Found;
@@ -1497,7 +1536,7 @@ LOADER_ENTRY * AddLoaderEntry (
     LOADER_ENTRY           *Entry;
 
 
-    if (!VolumeScanAllowed (Volume, TRUE)) {
+    if (!VolumeScanAllowed (Volume, TRUE, FALSE)) {
         // Early Return
         return NULL;
     }
@@ -1573,11 +1612,14 @@ LOADER_ENTRY * AddLoaderEntry (
                 if (FindSubStr (LoaderPath, SearchName)) {
                     Found = TRUE;
 
+                    // DA-TAG: Do *NOT* Free 'ShowName'
+                    ShowName = GetShowName (LinuxName);
+
                     if (!GotGrub) {
-                        Entry->Title = PoolPrint (L"Instance: Linux - %s", LinuxName);
+                        Entry->Title = PoolPrint (L"Instance: Linux - %s", ShowName);
                     }
                     else {
-                        Entry->Title = PoolPrint (L"Instance: Linux - %s via Grub", LinuxName);
+                        Entry->Title = PoolPrint (L"Instance: Linux - %s via Grub", ShowName);
                     }
                 }
                 MY_FREE_POOL(LinuxName);
@@ -1881,7 +1923,7 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    ScanIt = VolumeScanAllowed (Volume, FALSE); // Do NOT Check Ventoy Here
+    ScanIt = VolumeScanAllowed (Volume, FALSE, FALSE); // Do NOT Check Ventoy Here
     if (ScanIt && Volume->FSType == FS_TYPE_APFS) {
         if (GlobalConfig.SyncAPFS) {
             TmpVolNameA = PoolPrint (L"%s - DATA", Volume->VolName);
@@ -2532,7 +2574,7 @@ VOID ScanEfiFiles (
 
     // Skip Volumes in 'DontScanVolumes' List
     // Unless this is a 'Ventoy Volume'
-    if (!VolumeScanAllowed (Volume, TRUE)) {
+    if (!VolumeScanAllowed (Volume, TRUE, FALSE)) {
         //BREAD_CRUMB(L"%s:  1a 1", FuncTag);
         if (!FoundVentoy) {
             //BREAD_CRUMB(L"%s:  1a 2a 1 - END:- VOID ... Exit on 'DontScan' Volume", FuncTag);
@@ -3232,7 +3274,7 @@ VOID ScanForBootloaders (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-    MsgStr = StrDuplicate (L"S E E K   U E F I   L O A D E R S");
+    MsgStr = StrDuplicate (L"S E E K   I N S T A N C E   L O A D E R S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
@@ -3798,6 +3840,7 @@ BOOLEAN FindTool (
 VOID ScanForTools (VOID) {
     EFI_STATUS              Status;
     UINTN                   i, j, k;
+    UINTN                   ToolTotal;
     UINTN                   VolumeIndex;
     VOID                   *ItemBuffer;
     CHAR16                 *TmpStr;
@@ -3830,9 +3873,8 @@ VOID ScanForTools (VOID) {
 
     #if REFIT_DEBUG > 0
     BOOLEAN   FlagAPFS;
-    UINTN     ToolTotal;
     CHAR16   *ToolStr;
-    CHAR16   *LogSection = L"S E E K   U E F I   T O O L S";
+    CHAR16   *LogSection = L"H A N D L E   T O O L   O P T I O N S";
 
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
@@ -3849,7 +3891,7 @@ VOID ScanForTools (VOID) {
 
     if (GlobalConfig.DirectBoot) {
         #if REFIT_DEBUG > 0
-        LogSection = L"Skipped Loading UEFI Tools ... 'DirectBoot' is Active";
+        LogSection = L"Skipped Loading Tool Options ... 'DirectBoot' is Active";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -3858,6 +3900,50 @@ VOID ScanForTools (VOID) {
         #endif
 
         BREAD_CRUMB(L"%s:  Aa 1 - END:- VOID ... Exit on DirectBoot", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        // Early Return
+        return;
+    }
+
+    ToolTotal = 0;
+    for (i = 0; i < NUM_TOOLS; i++) {
+        switch (GlobalConfig.ShowTools[i]) {
+            case TAG_ABOUT:                break;
+            case TAG_BOOTORDER:            break;
+            case TAG_CSR_ROTATE:           break;
+            case TAG_EXIT:                 break;
+            case TAG_FIRMWARE:             break;
+            case TAG_FWUPDATE_TOOL:        break;
+            case TAG_INSTALL:              break;
+            case TAG_GDISK:                break;
+            case TAG_GPTSYNC:              break;
+            case TAG_INFO_NVRAMCLEAN:      break;
+            case TAG_MEMTEST:              break;
+            case TAG_HIDDEN:               break;
+            case TAG_MOK_TOOL:             break;
+            case TAG_NETBOOT:              break;
+            case TAG_REBOOT:               break;
+            case TAG_RECOVERY_APPLE:       break;
+            case TAG_RECOVERY_WINDOWS:     break;
+            case TAG_SHELL:                break;
+            case TAG_SHUTDOWN:             break;
+            default:                    continue;
+        } // switch
+        ToolTotal++;
+    } // for
+    if (ToolTotal == 0) {
+        #if REFIT_DEBUG > 0
+        LogSection = L"Skipped Loading Tool Options ...  Empty 'showtools' List";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("\n");
+        LOG_MSG("%s", LogSection);
+        LOG_MSG("\n\n");
+        #endif
+
+        BREAD_CRUMB(L"%s:  Aa 2 - END:- VOID ... Exit on Empty List", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3878,37 +3964,34 @@ VOID ScanForTools (VOID) {
         MergeStrings (&MokLocations, SelfDirPath, L',');
     }
 
-    #if REFIT_DEBUG > 0
     ToolTotal = 0;
-    #endif
-
     VolumeTag = NULL;
     for (i = 0; i < NUM_TOOLS; i++) {
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_ABOUT:            ToolName = L"About RefindPlus"   ;      break;
-            case TAG_BOOTORDER:        ToolName = L"Manage BootOrder"   ;      break;
-            case TAG_CSR_ROTATE:       ToolName = L"Rotate CSR"         ;      break;
-            case TAG_EXIT:             ToolName = L"Exit RefindPlus"    ;      break;
-            case TAG_FIRMWARE:         ToolName = L"Firmware Reboot"    ;      break;
-            case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update"    ;      break;
-            case TAG_INSTALL:          ToolName = L"Install RefindPlus" ;      break;
-            case TAG_GDISK:            ToolName = LABEL_GDISK           ;      break;
-            case TAG_GPTSYNC:          ToolName = LABEL_GPTSYNC         ;      break;
-            case TAG_INFO_NVRAMCLEAN:  ToolName = LABEL_CLEAN_NVRAM     ;      break;
-            case TAG_MEMTEST:          ToolName = LABEL_MEMTEST         ;      break;
-            case TAG_HIDDEN:           ToolName = LABEL_HIDDEN         ;      break;
-            case TAG_MOK_TOOL:         ToolName = L"MOK Protocol"       ;      break;
-            case TAG_NETBOOT:          ToolName = L"Net Boot"           ;      break;
-            case TAG_REBOOT:           ToolName = L"System Restart"     ;      break;
-            case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)"     ;      break;
-            case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)"     ;      break;
-            case TAG_SHELL:            ToolName = L"UEFI Shell"         ;      break;
-            case TAG_SHUTDOWN:         ToolName = L"System Shutdown"    ;      break;
-            default:                                                        continue;
+            case TAG_ABOUT:            ToolName = L"About RefindPlus"  ;    break;
+            case TAG_BOOTORDER:        ToolName = L"Manage BootOrder"  ;    break;
+            case TAG_CSR_ROTATE:       ToolName = L"Rotate CSR"        ;    break;
+            case TAG_EXIT:             ToolName = L"Exit RefindPlus"   ;    break;
+            case TAG_FIRMWARE:         ToolName = L"Firmware Reboot"   ;    break;
+            case TAG_FWUPDATE_TOOL:    ToolName = L"Firmware Update"   ;    break;
+            case TAG_INSTALL:          ToolName = L"Install RefindPlus";    break;
+            case TAG_GDISK:            ToolName = LABEL_GDISK          ;    break;
+            case TAG_GPTSYNC:          ToolName = LABEL_GPTSYNC        ;    break;
+            case TAG_INFO_NVRAMCLEAN:  ToolName = LABEL_CLEAN_NVRAM    ;    break;
+            case TAG_MEMTEST:          ToolName = LABEL_MEMTEST        ;    break;
+            case TAG_HIDDEN:           ToolName = LABEL_HIDDEN         ;    break;
+            case TAG_MOK_TOOL:         ToolName = L"MOK Protocol"      ;    break;
+            case TAG_NETBOOT:          ToolName = L"Net Boot"          ;    break;
+            case TAG_REBOOT:           ToolName = L"System Restart"    ;    break;
+            case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)"    ;    break;
+            case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)"    ;    break;
+            case TAG_SHELL:            ToolName = L"UEFI Shell"        ;    break;
+            case TAG_SHUTDOWN:         ToolName = L"System Shutdown"   ;    break;
+            default:                                                     continue;
         } // switch
+        ToolTotal++;
 
         #if REFIT_DEBUG > 0
-        ToolTotal++;
         LOG_MSG("%s  - List Item %02d ... ", OffsetNext, ToolTotal);
         #endif
 

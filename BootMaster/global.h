@@ -508,9 +508,9 @@ typedef struct {
     BOOLEAN                     NvramProtect;
     BOOLEAN                     ScanAllESP;
     BOOLEAN                     HelpIcon;
+    BOOLEAN                     HelpScan;
     BOOLEAN                     HelpTags;
     BOOLEAN                     HelpText;
-    BOOLEAN                     HelpScan;
     BOOLEAN                     NormaliseCSR;
     BOOLEAN                     ShutdownAfterTimeout;
     BOOLEAN                     Install;

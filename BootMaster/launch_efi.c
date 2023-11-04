@@ -184,8 +184,6 @@ BOOLEAN ConfirmReboot (
     ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
-
     RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
     if (!RetVal) {
         FreeMenuScreen (&ConfirmRebootMenu);
@@ -459,7 +457,7 @@ BOOLEAN IsValidLoader (
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
-            AbortReason = L":- 'File is *NOT* Readable'";
+            AbortReason = L":- 'File *IS NOT* Readable'";
             #endif
 
             //LoaderType = LOADER_TYPE_INVALID;
@@ -541,7 +539,7 @@ BOOLEAN IsValidLoader (
     //         Assume the same for plain binaries on Apple firmware
     //         Test variables are only ever true on Apple firmware
     ValidText = (!IsValid)
-        ? L"EFI File is *NOT* Valid"
+        ? L"EFI File *IS NOT* Valid"
         : (AppleFatBinary)
             ? L"Apple 'Fat' Binary is *ASSUMED* to be Valid on Apple Firmware"
             : (ApplePlainBinary)
@@ -709,12 +707,15 @@ EFI_STATUS StartEFIImage (
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
+        #if REFIT_DEBUG < 1
         // Stall to avoid unwanted flash of text when starting loaders
-        // Stall works best in smaller increments as per Specs
+        // Stall works best in smaller increments as per specs
+        // Stall appears to be only needed on REl builds
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
             // DA-TAG: 100 Loops = 1 Sec
             RefitStall (50);
         }
+        #endif
 
         ChildImageHandle = NULL;
         // DA-TAG: Investigate This

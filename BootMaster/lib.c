@@ -1942,7 +1942,8 @@ CHAR16 * GetVolumeName (
 
 BOOLEAN VolumeScanAllowed (
     IN REFIT_VOLUME *Volume,
-    IN BOOLEAN       SkipVentoy
+    IN BOOLEAN       SkipVentoy,
+    IN BOOLEAN       SkipRootDir
 ) {
     UINTN        i;
     CHAR16      *VolGuid;
@@ -1951,10 +1952,13 @@ BOOLEAN VolumeScanAllowed (
     BOOLEAN      ScanAllowed;
 
     if (!Volume          ||
-        !Volume->RootDir ||
         !Volume->VolName ||
         !Volume->IsReadable
     ) {
+        return FALSE;
+    }
+
+    if (!SkipRootDir && !Volume->RootDir) {
         return FALSE;
     }
 
@@ -2269,20 +2273,16 @@ VOID ScanVolume (
     Volume->VolName = GetVolumeName (Volume);
     SanitiseVolumeName (&Volume);
 
-    if (Volume->RootDir == NULL) {
-        Volume->IsReadable = FALSE;
-        return;
-    }
-
-    Volume->IsReadable = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC
-        && Volume->FSType == FS_TYPE_NTFS
-        && Volume->HasBootCode
+    if (Volume->HasBootCode                     &&
+        Volume->FSType == FS_TYPE_NTFS          &&
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC
     ) {
         // VBR boot code found on NTFS, but volume is not actually bootable
         // on Mac unless there are actual boot file, so check for them.
         Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
     }
+
+    Volume->IsReadable = (Volume->RootDir || Volume->HasBootCode) ? TRUE : FALSE;
 } // ScanVolume()
 
 static
@@ -2466,9 +2466,13 @@ VOID VetMultiInstanceAPFS (VOID) {
                 LOG_MSG("%s      * %s", OffsetNext, MsgStrB);
             }
 
-            // Log other warnings
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
-            LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
+            if (GlobalConfig.HiddenTags) {
+                // Log relevant warning if configured to hide tags
+                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
+                LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
+            }
+
+            // Final Spacing
             LOG_MSG("\n\n");
             #endif
 
@@ -3055,10 +3059,10 @@ VOID ScanVolumes (VOID) {
                 }
                 else if (Volume->FSType == FS_TYPE_NTFS) {
                     if (MyStriCmp (Volume->VolName, L"NTFS Volume")) {
-                        RoleStr = L" * Win Standard";
+                        RoleStr = L" * Win Other";
                     }
                     else {
-                        RoleStr = L" * Win Other";
+                        RoleStr = L" * Win GotLabel";
                     }
                 }
             }
@@ -3323,7 +3327,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     if (GlobalConfig.HelpIcon) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped 'VolumeBadge' Check ... Config Setting is *NOT* Active:- 'decline_help_icon'"
+            L"Skipped 'VolumeBadge' Check ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
         );
         #endif
 
@@ -3357,7 +3361,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         Volume = Volumes[VolumeIndex];
 
         // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume, FALSE)) {
+        if (!VolumeScanAllowed (Volume, FALSE, FALSE)) {
             continue;
         }
 
@@ -3442,7 +3446,7 @@ VOID SetVolumeIcons (VOID) {
     if (GlobalConfig.HelpIcon) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped '.VolumeIcon' Check ... Config Setting is *NOT* Active:- 'decline_help_icon'"
+            L"Skipped '.VolumeIcon' Check ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
         );
         #endif
 
@@ -3478,7 +3482,7 @@ VOID SetVolumeIcons (VOID) {
         Volume = Volumes[VolumeIndex];
 
         // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume, FALSE)) {
+        if (!VolumeScanAllowed (Volume, FALSE, FALSE)) {
             continue;
         }
 
@@ -3531,7 +3535,7 @@ VOID SetVolumeIcons (VOID) {
                 }
                 else {
                     ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Skipped External Volume: '%s' ... Config Setting is *NOT* Active:- 'hidden_icons_external'",
+                        L"Skipped External Volume: '%s' ... Config Setting *IS NOT* Active:- 'hidden_icons_external'",
                         Volume->VolName
                     );
                 }

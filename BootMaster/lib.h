@@ -176,9 +176,13 @@ BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);
 BOOLEAN FindVolume (IN REFIT_VOLUME **Volume, IN CHAR16 *Identifier);
-BOOLEAN VolumeScanAllowed (IN REFIT_VOLUME *Volume, IN BOOLEAN SkipVentoy);
 BOOLEAN FileExists (IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
+BOOLEAN VolumeScanAllowed (
+    IN REFIT_VOLUME *Volume,
+    IN BOOLEAN       SkipVentoy,
+    IN BOOLEAN       SkipRootDir
+);
 BOOLEAN VolumeMatchesDescription (
     IN REFIT_VOLUME *Volume,
     IN CHAR16       *Description

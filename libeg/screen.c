@@ -206,7 +206,7 @@ EFI_STATUS RP_ProvideGopPassThrough (
         gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
         NULL, (VOID *)&FramebufferInfo
     );
-    HasAppleFramebuffer = !EFI_ERROR (Status);
+    HasAppleFramebuffer = !EFI_ERROR(Status);
 
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
@@ -985,7 +985,7 @@ VOID egDetermineScreenSize (VOID) {
             &UgaDepth, &UgaRefreshRate
         );
         if (EFI_ERROR(Status)) {
-            // Graphics Not Available
+            // Graphics *IS NOT* Available
             UGADraw = NULL;
             egHasGraphics = FALSE;
         }
@@ -1659,20 +1659,16 @@ VOID egInitScreen (VOID) {
                 }
 
                 Status = EFI_NOT_STARTED;
-                if (FoundHandleUGA) {
-                    // DA-TAG: Limit to TianoCore
-                    #ifdef __MAKEWITH_TIANO
-                    if (GlobalConfig.PassUgaThrough) {
-                        // Run OcProvideUgaPassThrough from OpenCorePkg
-                        Status = OcProvideUgaPassThrough();
-                    }
-                    #endif
-
-                    if (EFI_ERROR(Status)) {
-                        // Prefer GOP ... Discard UGA
-                        UGADraw                  =  NULL;
-                        FoundHandleUGA = FlagUGA = FALSE;
-                    }
+                // DA-TAG: Limit to TianoCore
+                #ifdef __MAKEWITH_TIANO
+                if (GlobalConfig.PassUgaThrough) {
+                    Status = OcProvideUgaPassThrough();
+                }
+                #endif
+                if (EFI_ERROR(Status)) {
+                    // Prefer GOP ... Discard UGA
+                    UGADraw                  =  NULL;
+                    FoundHandleUGA = FlagUGA = FALSE;
                 }
             }
 
@@ -1699,13 +1695,13 @@ VOID egInitScreen (VOID) {
     }
 
     if (!thisValidGOP && UGADraw == NULL) {
-        // Graphics Not Available
+        // Graphics *IS NOT* Available
         // Fall Back on Text Mode
         egHasGraphics         = FlagUGA       = FALSE;
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Graphics Not Available ... Falling Back on Text Mode");
+        MsgStr = StrDuplicate (L"Graphics *NOT* Available ... Falling Back on Text Mode");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -1728,7 +1724,7 @@ VOID egInitScreen (VOID) {
         }
         else if (!thisValidGOP) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"GOP Not Available ... Falling Back on UGA");
+            MsgStr = StrDuplicate (L"GOP *NOT* Available ... Falling Back on UGA");
             #endif
         }
         else {
@@ -1819,14 +1815,10 @@ VOID egInitScreen (VOID) {
 // Limit to TianoCore ... END
 
     if (GOPDraw != NULL) {
-        // We have graphics from GOP
-        egHasGraphics = TRUE;
-
-        if (!GlobalConfig.PassUgaThrough) {
-            // No Pass Through ... Discard UGA
-            UGADraw  =  NULL;
-            FlagUGA  = FALSE;
-        }
+        // We have graphics from GOP ... Discard UGA
+        if (UGADraw) UGADraw  =  NULL;
+        egHasGraphics         =  TRUE;
+        FlagUGA               = FALSE;
 
         // Prime Status for Text Renderer
         Status = EFI_NOT_STARTED;
@@ -2721,7 +2713,7 @@ EG_IMAGE * egCopyScreenArea (
        return NULL;
    }
 
-   // allocate a buffer for the screen area
+   // Allocate a buffer for the screen area
    Image = egCreateImage (Width, Height, FALSE);
    if (Image == NULL) {
       return NULL;

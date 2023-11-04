@@ -121,10 +121,10 @@ REFIT_CONFIG GlobalConfig = {
     /* SyncAPFS = */ TRUE,
     /* NvramProtect = */ TRUE,
     /* ScanAllESP = */ TRUE,
-    /* HelpIcon = */ FALSE,
+    /* HelpIcon = */ TRUE,
+    /* HelpScan = */ TRUE,
     /* HelpTags = */ TRUE,
     /* HelpText = */ TRUE,
-    /* HelpScan = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
@@ -272,6 +272,7 @@ extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
 
+extern EFI_UGA_DRAW_PROTOCOL        *UGADraw;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 
@@ -285,6 +286,7 @@ EFI_STATUS CheckStatusOC (VOID){
   EFI_STATUS   Status;
   VOID        *Bootstrap;
   EFI_GUID     GuidBootstrapOC = OC_BOOTSTRAP_GUID_VALUE;
+
 
   RunningOC = FALSE;
   Bootstrap =  NULL;
@@ -304,9 +306,10 @@ EFI_STATUS CheckStatusOC (VOID){
 #if REFIT_DEBUG > 0
 static
 VOID UnexpectedReturn (
-    IN CHAR16 *ItemType
+    CHAR16 *ItemType
 ) {
     CHAR16 *MsgStr;
+
 
     MsgStr = PoolPrint (L"WARN: Unexpected Return From %s", ItemType);
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -318,7 +321,7 @@ VOID UnexpectedReturn (
 
 static
 BOOLEAN RebootSystem (
-    BOOLEAN Confirmed
+    BOOLEAN            Confirmed
 ) {
     CHAR16            *TypeStr;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
@@ -331,12 +334,11 @@ BOOLEAN RebootSystem (
 
     TypeStr = L"Running System Restart";
 
-    // If 'RunOurTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-    // Do not show confirmation menu in such cases
-    if (Confirmed == FALSE) {
-        // Now set 'RunOurTool' for this tool
+    // Do not show confirmation menu if already confirmed
+    if (!Confirmed) {
+        // Request confirmation
         Confirmed = ConfirmRestart();
-        if (Confirmed == FALSE) {
+        if (!Confirmed) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Aborted %s", TypeStr);
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -510,7 +512,7 @@ EFI_STATUS SetHardwareNvramVariable (
     );
 
     return Status;
-} // EFI_STATUS SetHardwareNvramVariable()
+} // static EFI_STATUS SetHardwareNvramVariable()
 
 
 static
@@ -700,7 +702,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     return Status;
-} // EFI_STATUS EFIAPI gRTSetVariableEx()
+} // static EFI_STATUS EFIAPI gRTSetVariableEx()
 
 static
 VOID FlagKernelActive (VOID ) {
@@ -809,21 +811,10 @@ static
 EFI_STATUS FilterCSR (VOID) {
     EFI_STATUS Status;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    #endif
-
     Status = (GlobalConfig.NormaliseCSR) ? NormaliseCSR() : EFI_NOT_STARTED;
     #if REFIT_DEBUG > 0
-    if (EFI_ERROR(Status)) {
-        MsgStr = PoolPrint (
-            L"Normalise CSR ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-    }
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Normalise CSR ... %r", Status);
+    LOG_MSG("%s    * Normalise CSR ... %r", OffsetNext, Status);
     #endif
 
     return Status;
@@ -1020,7 +1011,7 @@ VOID LogDisableCheck (
         L"%s ... %r",
         TypStr, Result
     );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
 } // static VOID LogDisableCheck()
@@ -1256,6 +1247,10 @@ EFI_STATUS NoCheckCompat (VOID) {
     const CHAR16 *NameNVRAM = L"boot-args";
     const CHAR16 *ArgData   = L"-no_compat_check";
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
 
     if (!GlobalConfig.DisableCompatCheck) {
         // Early Return ... Do Not Log
@@ -1299,10 +1294,16 @@ EFI_STATUS NoCheckCompat (VOID) {
             // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_SET;
+            #endif
             Status = EfivarSetRaw (
                 &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_OFF;
+            #endif
         }
     }
     MY_FREE_POOL(BootArg);
@@ -1480,7 +1481,7 @@ EFI_STATUS TrimCoerce (VOID) {
 } // static EFI_STATUS TrimCoerce()
 
 // Extended 'OpenProtocol'
-// Ensures GOP Interface for Boot Loading Screen
+// Ensures Interface for Boot Loading Screen
 static
 EFI_STATUS EFIAPI OpenProtocolEx (
     IN   EFI_HANDLE    Handle,
@@ -1490,66 +1491,47 @@ EFI_STATUS EFIAPI OpenProtocolEx (
     IN   EFI_HANDLE    ControllerHandle,
     IN   UINT32        Attributes
 ) {
-    EFI_STATUS   Status;
-    UINTN        i;
-    UINTN        HandleCount;
-    EFI_HANDLE  *HandleBuffer;
+    EFI_STATUS  Status;
 
     Status = REFIT_CALL_6_WRAPPER(
         OrigOpenProtocolBS, Handle,
         Protocol, Interface,
         AgentHandle, ControllerHandle, Attributes
     );
-    if (Status == EFI_UNSUPPORTED) {
-        // Early Return
-        return EFI_UNSUPPORTED;
+    if (EFI_ERROR (Status)) {
+        if (Status != EFI_UNSUPPORTED) {
+            return Status;
+        }
     }
 
-    if (!GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-        // Early Return
+    if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
+        if (GOPDraw != NULL) {
+            *Interface = GOPDraw;
+            Status     = EFI_SUCCESS;
+        }
+    }
+    if (!EFI_ERROR (Status)) {
         return Status;
     }
 
-    if (GOPDraw != NULL) {
-        *Interface = GOPDraw;
-
-        // Early Return
-        return EFI_SUCCESS;
-    }
-
-    HandleCount = 0;
-    HandleBuffer = NULL;
-    Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer, ByProtocol,
-        &gEfiGraphicsOutputProtocolGuid, NULL,
-        &HandleCount, &HandleBuffer
-    );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return EFI_UNSUPPORTED;
-    }
-
-    for (i = 0; i < HandleCount; i++) {
-        if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-            Status = REFIT_CALL_6_WRAPPER(
-                OrigOpenProtocolBS, HandleBuffer[i],
-                &gEfiGraphicsOutputProtocolGuid, *Interface,
-                AgentHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
-            );
-            if (!EFI_ERROR(Status) && *Interface != NULL) {
-                break;
-            }
+    if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
+        if (UGADraw != NULL) {
+            *Interface = GOPDraw;
+            Status     = EFI_SUCCESS;
         }
-    } // for
-
-    if (EFI_ERROR(Status) || *Interface == NULL) {
-        Status = EFI_UNSUPPORTED;
+        else {
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->LocateProtocol, &gEfiUgaDrawProtocolGuid,
+                NULL, Interface
+            );
+        }
+        if (!EFI_ERROR (Status)) {
+            return EFI_SUCCESS;
+        }
     }
 
-    MY_FREE_POOL(HandleBuffer);
-
-    return Status;
-} // EFI_STATUS OpenProtocolEx()
+    return EFI_UNSUPPORTED;
+} // EFI_STATUS EFIAPI OpenProtocolEx()
 
 
 // Extended 'HandleProtocol'
@@ -1780,7 +1762,7 @@ VOID AboutRefindPlus (VOID) {
         TRUE
     );
     if (!HasMacOS) {
-        TmpStr = StrDuplicate (L"Not Available");
+        TmpStr = StrDuplicate (L"Inactive");
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1808,7 +1790,7 @@ VOID AboutRefindPlus (VOID) {
 
         LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
     }
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for Mac   : %s", TmpStr),                   TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for macOS : %s", TmpStr),                   TRUE);
     AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Output : %s", egScreenDescription()),    TRUE);
     MY_FREE_POOL(TmpStr);
 
@@ -2333,7 +2315,7 @@ VOID LogBasicInfo (VOID) {
 
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: Irregular UEFI 2.x Implementation Detected");
-            LOG_MSG("%s         Program Behaviour is *NOT* Defined", OffsetNext);
+            LOG_MSG("%s         Program Behaviour *IS NOT* Defined", OffsetNext);
         }
         else {
             // Flag as 'TRUE' even on error to skip the "Skipped QVI Call" message later
@@ -2460,6 +2442,7 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN            MokProtocol;
     BOOLEAN            FoundVentoy;
     BOOLEAN            MainLoopRunning;
+    BOOLEAN            FoundInstallerMac;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
     LEGACY_ENTRY      *ourLegacyEntry;
@@ -3070,7 +3053,7 @@ EFI_STATUS EFIAPI efi_main (
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"            Program Behaviour is *NOT* Defined            ", NEXTLINE);
+        PrintUglyText (L"            Program Behaviour *IS NOT* Defined            ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PauseForKey();
@@ -3520,37 +3503,58 @@ EFI_STATUS EFIAPI efi_main (
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
-                if (
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_SET;
+                #endif
+                FoundInstallerMac = (
+                    FindSubStr (ourLoaderEntry->Title, L"Install OS X") ||
+                    FindSubStr (ourLoaderEntry->Title, L"OS X Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"Install macOS") ||
+                    FindSubStr (ourLoaderEntry->Title, L"macOS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"Install Mac OS") ||
+                    FindSubStr (ourLoaderEntry->Title, L"Mac OS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"com.apple.install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install OS X") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"OS X Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install macOS") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"macOS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install Mac OS") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Mac OS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.install")
+                ) || (
+                    EntryVol->VolName &&
                     (
-                        FindSubStr (ourLoaderEntry->Title, L"OS X Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"macOS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"Mac OS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"com.apple.install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"OS X Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"macOS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"Mac OS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.install")
-                    ) || (
-                        EntryVol->VolName &&
+                        FindSubStr (EntryVol->VolName, L"Install OS X") ||
                         FindSubStr (EntryVol->VolName, L"OS X Install")
-                    ) || (
-                        EntryVol->VolName &&
-                        FindSubStr (EntryVol->VolName, L"macOS Install")
-                    ) || (
-                        EntryVol->VolName &&
-                        FindSubStr (EntryVol->VolName, L"Mac OS Install")
-                    ) || (
-                        EntryVol->VolName &&
-                        FindSubStr (EntryVol->VolName, L"com.apple.install")
                     )
-                ) {
+                ) || (
+                    EntryVol->VolName &&
+                    (
+                        FindSubStr (EntryVol->VolName, L"Install macOS") ||
+                        FindSubStr (EntryVol->VolName, L"macOS Install")
+                    )
+                ) || (
+                    EntryVol->VolName &&
+                    (
+                        FindSubStr (EntryVol->VolName, L"Install Mac OS") ||
+                        FindSubStr (EntryVol->VolName, L"Mac OS Install")
+                    )
+                ) || (
+                    EntryVol->VolName &&
+                    FindSubStr (EntryVol->VolName, L"com.apple.install")
+                );
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
+
+                if (FoundInstallerMac) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");

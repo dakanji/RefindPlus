@@ -229,14 +229,14 @@ L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #endif
 
 #define BASE_LINUX_DISTROS \
-L"Arch,Artful,Bionic,CachyOS,Centos,Chakra,Crunchbang,Debian,Devuan,\
-Elementary,EndeavourOS,Fedora,Frugalware,Gentoo,Gummiboot,Kubuntu,\
-LinuxMint,Mageia,Mandriva,Manjaro,NixOS,Opensuse,Redhat,Slackware,\
-Suse,Trusty,Ubuntu,Void,Xenial,Xubuntu,Zesty"
+L"Alpine,Arch,Artful,Bionic,Cachy,Centos,Chakra,Crunchbang,Debian,Deepin,\
+Devuan,Elementary,Endeavour,Fedora,Frugalware,Gentoo,Gummiboot,LinuxMint,\
+Mageia,Mandriva,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,Suse,\
+Trusty,Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Xenial,Zesty"
 
 #define MAIN_LINUX_DISTROS \
-L"Arch,CachyOS,Debian,Deepin,Elementary,EndeavourOS,Fedora,\
-LinuxMint,Manjaro,NixOS,Opensuse,Redhat,Ubuntu,Zorin"
+L"Alpine,Arch,Cachy,Debian,Deepin,Elementary,Endeavour,Fedora,\
+LinuxMint,Manjaro,NixOS,OpenSUSE,Redhat,Ubuntu,Zorin"
 
 LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
 

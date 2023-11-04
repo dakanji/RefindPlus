@@ -3292,13 +3292,13 @@ VOID HideTag (
             if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
                 DisplaySimpleMessage (
                     L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token",
-                    L"Hide Entry Not Available on Synced APFS Loaders"
+                    L"Hide Entry *IS NOT* Available on Synced APFS Loaders"
                 );
             }
             else if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
                 DisplaySimpleMessage (
                     L"Amend Config File Instead ... Disable Stanza",
-                    L"Hide Entry Not Available on Manual Stanzas"
+                    L"Hide Entry *IS NOT* Available on Manual Stanzas"
                 );
             }
             else {
@@ -3351,7 +3351,7 @@ VOID HideTag (
         case TAG_INFO_NVRAMCLEAN:
             DisplaySimpleMessage (
                 L"Amend Config File Instead ... Update \"showtools\" Token",
-                L"Hide Entry Not Available on Internal Tools"
+                L"Hide Entry *IS NOT* Available on Internal Tools"
             );
 
         break;
@@ -3422,8 +3422,6 @@ BOOLEAN ConfirmRestart (VOID) {
     ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?", FALSE);
-
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryNo);
 
@@ -3478,8 +3476,6 @@ BOOLEAN ConfirmShutdown (VOID) {
     ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT        );
     ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT   );
 
-    AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?", FALSE);
-
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryNo);
 
@@ -3510,9 +3506,13 @@ UINTN RunMenu (
     IN  REFIT_MENU_SCREEN  *Screen,
     OUT REFIT_MENU_ENTRY  **ChosenEntry
 ) {
-    INTN DefaultEntry = -1;
-    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    UINTN MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
+    INTN            DefaultEntry;
+    UINTN           MenuExit;
+    MENU_STYLE_FUNC Style;
+
+    DefaultEntry = -1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,

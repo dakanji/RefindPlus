@@ -510,13 +510,13 @@ VOID StartLegacy (
     IN LEGACY_ENTRY *Entry,
     IN CHAR16       *SelectionName
 ) {
-    EFI_STATUS       Status;
-    EG_IMAGE        *BootLogoImage;
-    UINTN            ErrorInStep;
+    EFI_STATUS                Status;
+    UINTN                     ErrorInStep;
+    CHAR16                   *MsgStrA;
+    CHAR16                   *MsgStrB;
+    EG_IMAGE                 *BootLogoImage;
     EFI_DEVICE_PATH_PROTOCOL *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
-    CHAR16 *MsgStrA;
-    CHAR16 *MsgStrB;
 
     IsBoot = TRUE;
 
@@ -719,10 +719,6 @@ VOID AddLegacyEntry (
     UINTN              LogLineType;
     #endif
 
-    if (!VolumeScanAllowed (Volume, FALSE)) {
-        // Early Return on 'DontScan' Volume
-        return;
-    }
 
     ShortcutLetter = 0;
     if (LoaderTitle == NULL) {
@@ -1126,8 +1122,9 @@ VOID ScanLegacyVolume (
     ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning %s", TheVolName);
     #endif
 
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (!Volume->HasBootCode) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID - !HasBootCode", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 1 - END:- VOID - !HasBootCode", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1135,85 +1132,100 @@ VOID ScanLegacyVolume (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  2 - HasBootCode", FuncTag);
-    ShowVolume = TRUE;
-    if (Volume->OSName == NULL                   &&
-        Volume->BlockIOOffset == 0               &&
-        Volume->BlockIO == Volume->WholeDiskBlockIO
-    ) {
-        BREAD_CRUMB(L"%s:  2a 1 - MBR Entry Type = 'Whole Disk'", FuncTag);
-        HideIfOthersFound = TRUE;
+    BREAD_CRUMB(L"%s:  3", FuncTag);
+    if (!VolumeScanAllowed (Volume, FALSE, TRUE)) {
+        BREAD_CRUMB(L"%s:  3a 1 - END:- VOID - !VolumeScanAllowed", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
 
-        if (FoundVentoy) {
-            ShowVolume = FALSE;
-        }
+        // Early Exit
+        return;
+    }
+
+    BREAD_CRUMB(L"%s:  4 - HasBootCode and VolumeScanAllowed", FuncTag);
+    if (
+        (
+            Volume->FSType == FS_TYPE_WHOLEDISK
+        ) || (
+            Volume->OSName == NULL                   &&
+            Volume->BlockIOOffset == 0               &&
+            Volume->WholeDiskBlockIO == Volume->BlockIO
+        )
+    ) {
+        BREAD_CRUMB(L"%s:  4a 1 - MBR Entry Type = 'Whole Disk'", FuncTag);
+        HideIfOthersFound = TRUE;
     }
     else {
-        BREAD_CRUMB(L"%s:  2b 1 - MBR Entry Type = 'Partition/Volume'", FuncTag);
+        BREAD_CRUMB(L"%s:  4b 1 - MBR Entry Type = 'Partition/Volume'", FuncTag);
         HideIfOthersFound = FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  3 - Check for 'Potential Whole Disk Entry Hide' Flag", FuncTag);
-    if (ShowVolume && HideIfOthersFound) {
-        // Check for other bootable entries on the same disk
-        BREAD_CRUMB(L"%s:  3a 1 - Found Flag ... Check for Other Bootable Legacy Entries on *SAME* Disk or Ventoy Entry on *ANY* Disk", FuncTag);
+    BREAD_CRUMB(L"%s:  5", FuncTag);
+    ShowVolume = TRUE;
+    if (HideIfOthersFound) {
+        BREAD_CRUMB(L"%s:  5a 1 - Check for Ventoy or Bootable Legacy Instances on *SAME* Disk", FuncTag);
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             LOG_SEP(L"X");
-            BREAD_CRUMB(L"%s:  3a 1a 1 - FOR LOOP:- START", FuncTag);
+            BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START", FuncTag);
             if (VolumeIndex2 != VolumeIndex) {
-                BREAD_CRUMB(L"%s:  3a 1a 1a 1", FuncTag);
-                if (Volumes[VolumeIndex2]->HasBootCode &&
+                BREAD_CRUMB(L"%s:  5a 1a 1a 1", FuncTag);
+                if (Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->BlockIO       ||
                     Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
                 ) {
-                    BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - Found Other Bootable Legacy Entry", FuncTag);
-                    ShowVolume = FALSE;
-                }
+                    BREAD_CRUMB(L"%s:  5a 1a 1a 1a 1", FuncTag);
+                    if (Volumes[VolumeIndex2]->HasBootCode) {
+                        BREAD_CRUMB(L"%s:  5a 1a 1a 1a 1a 1 - Found Bootable Legacy Instance ... Set Whole Disk 'Skip' Flag", FuncTag);
+                        ShowVolume = FALSE;
+                    }
 
-                BREAD_CRUMB(L"%s:  3a 1a 1a 2", FuncTag);
-                if (ShowVolume) {
-                    BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1", FuncTag);
-                    i = 0;
-                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
-                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1 - WHILE LOOP:- START", FuncTag);
-                        if (MyStrBegins (VentoyName, Volumes[VolumeIndex2]->VolName)) {
-                            BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 1a 1 - Found Ventoy Entry", FuncTag);
-                            ShowVolume  = FALSE;
-                            FoundVentoy =  TRUE;
-                        }
-                        MY_FREE_POOL(VentoyName);
-                        BREAD_CRUMB(L"%s:  3a 1a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
-
-                        if (FoundVentoy) break;
-                    } // while
-                    BREAD_CRUMB(L"%s:  3a 1a 1a 2a 2", FuncTag);
-                }
-                BREAD_CRUMB(L"%s:  3a 1a 1a 3", FuncTag);
-            }
-            BREAD_CRUMB(L"%s:  3a 1a 2 - FOR LOOP:- END", FuncTag);
+                    BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2", FuncTag);
+                    if (!FoundVentoy) {
+                        BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 1", FuncTag);
+                        i = 0;
+                        while (
+                            ShowVolume &&
+                            (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                        ) {
+                            BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
+                            if (MyStrBegins (VentoyName, Volumes[VolumeIndex2]->VolName)) {
+                                BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 1a 1a 1 - Found ... Set Whole Disk 'Skip' Flag", FuncTag);
+                                ShowVolume = FALSE;
+                            }
+                            MY_FREE_POOL(VentoyName);
+                            BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                        } // while
+                        BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 2", FuncTag);
+                    } // if !FoundVentoy
+                    BREAD_CRUMB(L"%s:  5a 1a 1a 1a 3", FuncTag);
+                } // if Volumes[VolumeIndex2]->WholeDiskBlockIO
+                BREAD_CRUMB(L"%s:  5a 1a 1a 2", FuncTag);
+            } // if VolumeIndex2
+            BREAD_CRUMB(L"%s:  5a 1a 2 - FOR LOOP:- END", FuncTag);
             LOG_SEP(L"X");
+
             if (!ShowVolume) break;
         } // for
-        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
     }
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%s:  6", FuncTag);
     if (!ShowVolume) {
-        BREAD_CRUMB(L"%s:  4a 1 - Skipping Whole Disk MBR Entry", FuncTag);
+        BREAD_CRUMB(L"%s:  6a 1 - Skipping Whole Disk Instance", FuncTag);
     }
     else {
-        BREAD_CRUMB(L"%s:  4b 1 - Processing MBR Entry", FuncTag);
+        BREAD_CRUMB(L"%s:  6b 1 - Processing Legacy Boot Instance", FuncTag);
         if ((Volume->VolName == NULL) ||
             (StrLen (Volume->VolName) < 1)
         ) {
-            BREAD_CRUMB(L"%s:  4b 1a 1 - Getting MBR Entry Name", FuncTag);
+            BREAD_CRUMB(L"%s:  6b 1a 1 - Getting Legacy Boot Instance Name", FuncTag);
             Volume->VolName = GetVolumeName (Volume);
         }
-        BREAD_CRUMB(L"%s:  4b 2 - Add Legacy Boot Entry", FuncTag);
+        BREAD_CRUMB(L"%s:  6b 2 - Adding Legacy Boot Instance", FuncTag);
         AddLegacyEntry (NULL, Volume);
-        BREAD_CRUMB(L"%s:  4b 3", FuncTag);
+        BREAD_CRUMB(L"%s:  6b 3", FuncTag);
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  7 - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanLegacyVolume()
@@ -1427,7 +1439,7 @@ VOID WarnIfLegacyProblems (VOID) {
     #endif
 
     MsgStr = L"Your 'scanfor' config line specifies scanning for one or more \n"
-             L"legacy (BIOS) boot options but this is *NOT* possible as your \n"
+             L"legacy (BIOS) boot options but this *IS NOT* possible as your \n"
              L"computer lacks the required Compatibility Support Module (CSM)\n"
              L"or because CSM support has been disabled in your firmware.     ";
 

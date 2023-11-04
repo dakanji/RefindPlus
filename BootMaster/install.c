@@ -1393,7 +1393,7 @@ UINTN PickOneBootOption (
     REFIT_MENU_ENTRY  *ChosenOption;
 
     if (!Entries) {
-        DisplaySimpleMessage (L"Firmware BootOrder List is Not Available", NULL);
+        DisplaySimpleMessage (L"Firmware BootOrder List is Empty", NULL);
 
         // Early Return
         return EFI_BOOT_OPTION_DO_NOTHING;

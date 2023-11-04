@@ -1,6 +1,20 @@
 0.14.0.AC (PRE-RELEASE):
 -----------------------
-PENDING
+- Fixes `HelpIcon` Feature
+  * The feature had been switched off by default instead of being switched on
+  * This bug was introduced in v0.14.0.AB (Commit 9dcd45a)
+- Fixes `Legacy MBR`, including `Legacy Windows`, Handling
+  * Negatively impacted by `Volume->RootDir` filtering in the `DontScanVolumes` check consolidation
+  * This bug was introduced in v0.14.0.AB (Commit a92b376)
+- Improves Misc Linux Distro Handling
+  * Now better labelled
+- Improves `macOS Installer` Handling
+  * Now better identified and labelled
+- Amends `Ventoy` Handling
+  * `Whole Disk` volumes with `Legacy Bootcode` were previously hidden whenever `Ventoy` was present
+    - This was to avoid spurious/unbootable instances appearing
+      * This however affected legitimate instances without a way to override the behaviour
+      * Users can hide unwanted instances if required
 
 
 0.14.0.AB (03 Oct 2023):

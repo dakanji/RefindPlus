@@ -56,6 +56,16 @@
 #
 #decline_help_icon
 
+# The "HelpScan" feature always adds program defaults to 'dont_scan-xyz' lists.
+# This deviates from the upstream implementation where such program defaults are
+# overwritten unless a "+" item is added as the first item of user defined entries.
+# These program defaults ensure that certain items are not shown as first row icons.
+# Users that wish to disable the default "HelpScan" feature can activate this option.
+#
+# The "HelpScan" feature is enabled when commented out
+#
+#decline_help_scan
+
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
@@ -81,16 +91,6 @@
 # The "HelpText" feature is enabled when commented out
 #
 #decline_help_text
-
-# The "HelpScan" feature always adds program defaults to 'dont_scan-xyz' lists.
-# This deviates from the upstream implementation where such program defaults are
-# overwritten unless a "+" item is added as the first item of user defined entries.
-# These program defaults ensure that certain items are not shown as first row icons.
-# Users that wish to disable the default "HelpScan" feature can activate this option.
-#
-# The "HelpScan" feature is enabled when commented out
-#
-#decline_help_scan
 
 # RefindPlus defaults to mapping both 'F10' and '\' (forward slash) to
 # the inbuilt screenshot feature. When this option is active, the F10
@@ -363,8 +363,9 @@
 #nvram_variable_limit 2048
 
 # Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
-# display when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore builds.
+# display when using modern GPUs on units with only EFIBoot capability
+# or with "EFIBoot-Only" operating systems like MacOS v10.4 (Tiger).
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
@@ -1350,7 +1351,7 @@ menuentry "Windows via shell script" {
 #
 menuentry "My macOS" {
     disabled
-    volume "macOS boot"
+    volume "macOS Boot"
     icon \EFI\refindplus\icons\os_mac.png
     loader \System\Library\CoreServices\boot.efi
 }

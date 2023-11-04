@@ -880,7 +880,6 @@ LOADER_ENTRY * AddStanzaEntries (
     LOADER_ENTRY   *Entry;
 
     #if REFIT_DEBUG > 0
-    CHAR16         *MsgStr;
     static BOOLEAN  OtherCall = FALSE;
     #endif
 
@@ -912,8 +911,6 @@ LOADER_ENTRY * AddStanzaEntries (
         (!OtherCall) ? L"FIRST STANZA" : L"NEXT STANZA"
     );
     OtherCall = TRUE;
-
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Stanza:- '%s'", Entry->Title);
     #endif
 
     CurrentVolume   = Volume;
@@ -929,6 +926,10 @@ LOADER_ENTRY * AddStanzaEntries (
             Entry->Enabled = FALSE;
         }
         else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'loader'");
+            #endif
+
             HasPath = (TokenList[1] && StrLen (TokenList[1]) > 0);
             if (HasPath) {
                 if (!DoneIcon) {
@@ -957,6 +958,10 @@ LOADER_ENTRY * AddStanzaEntries (
             }
         }
         else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'volume'");
+            #endif
+
             PreviousVolume = CurrentVolume;
             if (!FindVolume (&CurrentVolume, TokenList[1])) {
                 #if REFIT_DEBUG > 0
@@ -971,10 +976,6 @@ LOADER_ENTRY * AddStanzaEntries (
                     (CurrentVolume->RootDir) &&
                     (CurrentVolume->IsReadable)
                 ) {
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
-                    #endif
-
                     Entry->Volume = CurrentVolume;
 
                     // DA-TAG: Avoid Memory Leak
@@ -995,6 +996,10 @@ LOADER_ENTRY * AddStanzaEntries (
             } // if/else !FindVolume
         }
         else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'icon'");
+            #endif
+
             if (!AllowGraphicsMode) {
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -1004,12 +1009,6 @@ LOADER_ENTRY * AddStanzaEntries (
                 #endif
             }
             else {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-
                 // DA-TAG: Avoid Memory Leak
                 MY_FREE_IMAGE(Entry->me.Image);
                 Entry->me.Image = egLoadIcon (
@@ -1028,7 +1027,7 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'initrd'");
             #endif
 
             // DA-TAG: Avoid Memory Leak
@@ -1037,7 +1036,7 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'options'");
             #endif
 
             // DA-TAG: Avoid Memory Leak
@@ -1047,7 +1046,7 @@ LOADER_ENTRY * AddStanzaEntries (
         else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
             if (TokenCount > 1) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'ostype'");
                 #endif
 
                 Entry->OSType = TokenList[1][0];
@@ -1055,17 +1054,14 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Adding Graphics Mode for '%s'",
-                (HasPath) ? Entry->LoaderPath : Entry->Title
-            );
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'graphics'");
             #endif
 
             Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
         }
         else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'firmware_bootnum'");
             #endif
 
             Entry->me.Tag        = TAG_FIRMWARE_LOADER;
@@ -1764,7 +1760,6 @@ VOID ScanUserConfigured (
     CountStr = (ValidEntryCount > 0) ? PoolPrint (L"%d", ValidEntryCount) : NULL;
 
     if (ManualInclude) {
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
@@ -3539,7 +3534,7 @@ VOID ReadConfig (
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "%s  - WARN: Defined Font File is *NOT* Valid ... Using Default Font",
+            "%s  - WARN: Defined Font File *IS NOT* Valid ... Using Default Font",
             OffsetNext
         );
         #endif

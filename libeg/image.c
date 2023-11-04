@@ -382,7 +382,8 @@ EFI_STATUS egLoadFile (
     }
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -540,7 +541,7 @@ EG_IMAGE * egLoadIcon (
         #if REFIT_DEBUG > 0
         // Set error status if unable to get to image
         Status = EFI_INVALID_PARAMETER;
-        ALT_LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In egLoadIcon ... '%r' When Trying to Load Icon!!",
             Status
         );
@@ -676,7 +677,9 @@ EG_IMAGE * egLoadIconAnyType (
 
     Image = NULL;
     i = 0;
-    while ((Image == NULL) && ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL)) {
+    while ((Image == NULL) &&
+        ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL)
+    ) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
 
@@ -685,10 +688,9 @@ EG_IMAGE * egLoadIconAnyType (
     } // while
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"In egLoadIconAnyType ... %s",
-        (Image != NULL) ? L"Loaded Icon" : L"Could *NOT* Load Icon!!"
-    );
+    if (Image == NULL) {
+        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadIconAnyType ... Could *NOT* Load Icon!");
+    }
     #endif
 
     return Image;
@@ -813,7 +815,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
     #if REFIT_DEBUG > 1
     CompStart  = 0;
     #endif
-    CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
+    CompData   = (UINT8 *) EmbeddedImage->Data;
     CompLen    = EmbeddedImage->DataLength;
     PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
@@ -919,9 +921,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
     //BREAD_CRUMB(L"%s:  8", FuncTag);
     if (
         WantAlpha && (
-            EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-            EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-            EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA        ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA   ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA  ||
             EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT
         )
     ) {
