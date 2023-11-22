@@ -127,13 +127,18 @@ EFI_STATUS EfivarSetRaw (
 VOID ScanVolumes (VOID);
 VOID ReinitVolumes (VOID);
 VOID UninitRefitLib (VOID);
-VOID SetVolumeIcons (VOID);
 VOID FreeSyncVolumes (VOID);
 VOID FreeVolume (REFIT_VOLUME **Volume);
 VOID SanitiseVolumeName (REFIT_VOLUME **Volume);
 VOID EraseUint32List (IN UINT32_LIST **TheList);
 VOID SetVolumeBadgeIcon (IN OUT REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
+VOID LoadVolumeBadgeIcon (
+    IN OUT REFIT_VOLUME  **Volume
+);
+VOID LoadVolumeIcon (
+    IN OUT REFIT_VOLUME  *Volume
+);
 VOID FreeList (
     IN OUT VOID ***ListPtr,
     IN OUT UINTN  *ElementCount

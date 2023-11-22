@@ -777,6 +777,8 @@ VOID AddLegacyEntry (
         return;
     }
 
+    SetVolumeBadgeIcon (Volume);
+
     Entry->me.Row            = 0;
     Entry->Enabled           = TRUE;
     Entry->me.Tag            = TAG_LEGACY;

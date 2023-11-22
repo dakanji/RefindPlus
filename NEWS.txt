@@ -8,6 +8,10 @@
   * This bug was introduced in v0.14.0.AB (Commit a92b376)
 - Improves Misc Linux Distro Handling
   * Now better labelled
+- Improves Icon File Scanning
+  * Optimises `VolumeIcon` and `VolumeBadges` searches
+  * These items are now only scanned for displayed volumes
+  * Improves loading speed by reducing disk I/O access
 - Improves `macOS Installer` Handling
   * Now better identified and labelled
 - Amends `Apple 'Fat' Binary` Handling

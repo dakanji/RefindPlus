@@ -748,6 +748,8 @@ VOID AddSubmenu (
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                     TitleVolume = TRUE;
                     MY_FREE_IMAGE(SubEntry->me.BadgeImage);
+
+                    SetVolumeBadgeIcon (Volume);
                     SubEntry->Volume        = Volume;
                     SubEntry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
                 }
@@ -901,7 +903,6 @@ LOADER_ENTRY * AddStanzaEntries (
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
     Entry->Volume          = Volume;
-    Entry->me.BadgeImage   = egCopyImage (Volume->VolBadgeImage);
     Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
     // Parse the config file to add options for a single stanza, terminating when the token

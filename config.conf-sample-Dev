@@ -49,8 +49,9 @@
 # is not found. This can result in significantly faster loading speeds on some units
 # and make no difference at worst. The default/generic loader icons loaded will be
 # those for the current active theme. That is, the current theme's default icons.
-# ".VolumeIcons" and "VolumeBadges" are disabled when this setting is active.
-# When active, generic "linux" icons are used for most linux flavours.
+# Generic "os_linux" icons are used for most flavours when "HelpIcon" is active.
+# Icons placed in bootloader directories are skipped when "HelpIcon" is active;
+# except ".VolumeXYZ" images when the "hidden_icons_prefer" setting is active.
 #
 # The "HelpIcon" feature is active when commented out
 #
@@ -291,7 +292,6 @@
 # NOTES:
 # 1. This token overrides the "hidden_icons_external" and
 #    the "hidden_icons_prefer" tokens when it is active.
-# 2. This token is overridden by "decline_help_icon"
 #
 # Scans for ".VolumeIcon" icons when commented out
 #
@@ -309,9 +309,6 @@
 # ICNS (*.icns), BMP (*.bmp), PNG (*.png), or JPG (*.jpg/jpeg).
 #
 # Does not prioritise ".VolumeIcon" images when commented out
-#
-# NOTE:
-# 1. This token is overridden by "decline_help_icon"
 #
 #hidden_icons_prefer
 

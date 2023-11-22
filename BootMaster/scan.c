@@ -811,6 +811,7 @@ VOID SetLoaderDefaults (
     BOOLEAN                 GotFlag;
     BOOLEAN                 MacFlag;
     BOOLEAN                 GetImage;
+    BOOLEAN                 VetVolIcon;
     BOOLEAN                 FoundVentoy;
     BOOLEAN                 MergeFsName;
 
@@ -847,34 +848,52 @@ VOID SetLoaderDefaults (
         #endif
     }
     else {
+        VetVolIcon = FALSE;
+
         BREAD_CRUMB(L"%s:  3b 1", FuncTag);
         if (Volume->DiskKind == DISK_KIND_NET) {
             BREAD_CRUMB(L"%s:  3b 1a 1", FuncTag);
             MergeStrings (&NameClues, Entry->me.Title, L' ');
         }
         else {
+            BREAD_CRUMB(L"%s:  3b 1b 0", FuncTag);
+            if (!Entry->me.BadgeImage) {
+                BREAD_CRUMB(L"%s:  3b 1b 0a 1", FuncTag);
+                LoadVolumeBadgeIcon (&Volume);
+                BREAD_CRUMB(L"%s:  3b 1b 0a 2", FuncTag);
+                if (Volume->VolBadgeImage) {
+                    BREAD_CRUMB(L"%s:  33b 1b 0a 2a 1", FuncTag);
+                    Entry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
+                }
+                BREAD_CRUMB(L"%s:  3b 1b 0a 3", FuncTag);
+            }
+
             BREAD_CRUMB(L"%s:  3b 1b 1", FuncTag);
-            if (!Entry->me.Image &&
-                !GlobalConfig.HelpIcon &&
+            if (AllowGraphicsMode && !Entry->me.Image &&
                 !GlobalConfig.HiddenIconsIgnore &&
                 GlobalConfig.HiddenIconsPrefer
             ) {
                 BREAD_CRUMB(L"%s:  3b 1b 1a 1", FuncTag);
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Checking for '.VolumeIcon' Image");
-                #endif
-
-                // Use a ".VolumeIcon" image icon for the loader
-                // Takes precedence all over options
-                Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                if (!Volume->VolIconImage) {
+                    BREAD_CRUMB(L"%s:  3b 1b 1a 1a 1", FuncTag);
+                    LoadVolumeIcon (Volume);
+                    VetVolIcon = TRUE;
+                }
+                BREAD_CRUMB(L"%s:  3b 1b 1a 2", FuncTag);
+                if (Volume->VolIconImage) {
+                    // Use ".VolumeIcon" image icon for loader
+                    // Takes precedence all over options
+                    BREAD_CRUMB(L"%s:  3b 1b 1a 2a 1", FuncTag);
+                    Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                }
+                BREAD_CRUMB(L"%s:  3b 1b 1a 3", FuncTag);
             }
 
             BREAD_CRUMB(L"%s:  3b 1b 2", FuncTag);
-            if (!Entry->me.Image) {
+            if (AllowGraphicsMode && !Entry->me.Image) {
                 BREAD_CRUMB(L"%s:  3b 1b 2a 1", FuncTag);
                 #if REFIT_DEBUG > 0
-                if (!GlobalConfig.HelpIcon &&
-                    !GlobalConfig.HiddenIconsIgnore &&
+                if (!GlobalConfig.HiddenIconsIgnore &&
                     GlobalConfig.HiddenIconsPrefer
                 ) {
                     ALT_LOG(1, LOG_LINE_NORMAL, L"Could *NOT* Find '.VolumeIcon' Image");
@@ -882,28 +901,40 @@ VOID SetLoaderDefaults (
                 #endif
 
                 BREAD_CRUMB(L"%s:  3b 1b 2a 2", FuncTag);
-                MacFlag = FALSE;
                 if (LoaderPath &&
                     FindSubStr (LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     BREAD_CRUMB(L"%s:  3b 1b 2a 2a 1", FuncTag);
                     MacFlag = TRUE;
                 }
+                else {
+                    BREAD_CRUMB(L"%s:  3b 1b 2a 2b 1", FuncTag);
+                    MacFlag = FALSE;
+                }
 
                 BREAD_CRUMB(L"%s:  3b 1b 2a 3", FuncTag);
-                if (!GlobalConfig.SyncAPFS || !MacFlag) {
+                if (GlobalConfig.HelpIcon) {
                     BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_THREE_STAR_MID,
+                        L"Skipped Bootloader Directory Icon Search ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
+                    );
+                    #endif
+                }
+                else {
                     NoExtension = StripEfiExtension (NameClues);
+
+                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
                     if (NoExtension != NULL) {
-                        // Locate a custom icon for the loader
-                        // Anything found here takes precedence over the "hints" in the OSIconName variable
+                        // Locate custom icon for loader
+                        // Takes precedence over the "hints" in OSIconName variable
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
                         #endif
 
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 1", FuncTag);
+                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 1", FuncTag);
                         if (!Entry->me.Image) {
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 1a 1", FuncTag);
+                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 1a 1", FuncTag);
                             Entry->me.Image = egLoadIconAnyType (
                                 Volume->RootDir,
                                 PathOnly,
@@ -912,24 +943,40 @@ VOID SetLoaderDefaults (
                             );
                         }
 
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 2", FuncTag);
+                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2", FuncTag);
                         if (!Entry->me.Image &&
                             !GlobalConfig.HiddenIconsIgnore
                         ) {
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 2a 1", FuncTag);
-                            Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1", FuncTag);
+                            if (!Volume->VolIconImage) {
+                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 1", FuncTag);
+                                if (!VetVolIcon) {
+                                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 1a 1", FuncTag);
+                                    LoadVolumeIcon (Volume);
+                                }
+                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 2", FuncTag);
+                            }
+                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 2", FuncTag);
+                            if (Volume->VolIconImage) {
+                                // Use ".VolumeIcon" image icon for loader
+                                // no other icon type in bootloader directory
+                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 2a 1", FuncTag);
+                                Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                            }
+                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 3", FuncTag);
                         }
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1a 2", FuncTag);
+                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 3", FuncTag);
+
                         MY_FREE_POOL(NoExtension);
+                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 4", FuncTag);
                     }  // if NoExtension != NULL
                     BREAD_CRUMB(L"%s:  3b 1b 2a 3a 2", FuncTag);
-                } // if !GlobalConfig.SyncAPFS || !MacFlag
+                } // if !GlobalConfig.HelpIcon
                 BREAD_CRUMB(L"%s:  3b 1b 2a 4", FuncTag);
             } // if !Entry->me.Image
 
+            // Begin creating icon "hints" from last part of loader dir path
             BREAD_CRUMB(L"%s:  3b 1b 3", FuncTag);
-            // Begin creating icon "hints" by using last part of directory path leading
-            // to the loader
             if (Entry->me.Image) {
                 BREAD_CRUMB(L"%s:  3b 1b 3a 1", FuncTag);
                 GotFlag = TRUE;
@@ -1091,7 +1138,7 @@ VOID SetLoaderDefaults (
             BREAD_CRUMB(L"%s:  3b 1b 7", FuncTag);
             if (Volume->PartName && Volume->PartName[0] != L'\0') {
                 BREAD_CRUMB(L"%s:  3b 1b 7a 1", FuncTag);
-                if (Entry->me.Image == NULL) {
+                if (AllowGraphicsMode && !Entry->me.Image) {
                     BREAD_CRUMB(L"%s:  3b 1b 7a 1a 1", FuncTag);
                     TargetName = Volume->PartName;
 
@@ -1633,6 +1680,8 @@ LOADER_ENTRY * AddLoaderEntry (
     ALT_LOG(1, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
     ALT_LOG(1, LOG_LINE_NORMAL, L"UEFI Loader File:- '%s'", LoaderPath);
     #endif
+
+    SetVolumeBadgeIcon (Volume);
 
     TmpName = (DisplayName) ? DisplayName : Volume->VolName;
     Entry->me.Title = (DisplayName || Volume->VolName)

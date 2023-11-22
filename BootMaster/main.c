@@ -1920,7 +1920,6 @@ VOID RescanAll (
         GlobalConfig.Timeout    = MainMenu->TimeoutSeconds =    0;
     }
 
-    SetVolumeIcons();
     ScanForBootloaders();
 
     #if REFIT_DEBUG > 0
@@ -3024,7 +3023,6 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     // Continue Bootstrap
-    SetVolumeIcons();
     ScanForBootloaders();
     ScanForTools();
 

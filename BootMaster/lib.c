@@ -1662,10 +1662,33 @@ VOID ScanVolumeBootcode (
     #endif
 } // static VOID ScanVolumeBootcode()
 
-// Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
+static
+VOID UpdateBadgeIcon (
+    IN OUT REFIT_VOLUME *Volume
+) {
+    Volume->VolBadgeImage = egLoadIconAnyType (
+        Volume->RootDir, L"", L".VolumeBadge",
+        GlobalConfig.IconSizes[ICON_SIZE_BADGE]
+    );
+} // static VOID UpdateBadgeIcon()
+
+// Set default volume badge icon based on '.VolumeBadge.{ext}' file or disk kind
 VOID SetVolumeBadgeIcon (
     IN OUT REFIT_VOLUME *Volume
 ) {
+    if (Volume->VolBadgeImage) {
+        // Early Return ... Do not log
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Setting VolumeBadge for '%s'",
+        Volume->VolName
+    );
+    #endif
+
+
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -1686,10 +1709,9 @@ VOID SetVolumeBadgeIcon (
         return;
     }
 
-    Volume->VolBadgeImage = egLoadIconAnyType (
-        Volume->RootDir, L"", L".VolumeBadge",
-        GlobalConfig.IconSizes[ICON_SIZE_BADGE]
-    );
+    if (Volume->VolBadgeImage == NULL && GlobalConfig.HiddenIconsPrefer) {
+        UpdateBadgeIcon (Volume);
+    }
 
     if (Volume->VolBadgeImage == NULL) {
         switch (Volume->DiskKind) {
@@ -1698,6 +1720,10 @@ VOID SetVolumeBadgeIcon (
             case DISK_KIND_OPTICAL:  SET_BADGE_IMAGE(BUILTIN_ICON_VOL_OPTICAL ); break;
             case DISK_KIND_NET:      SET_BADGE_IMAGE(BUILTIN_ICON_VOL_NET     ); break;
         } // switch
+    }
+
+    if (Volume->VolBadgeImage == NULL) {
+        UpdateBadgeIcon (Volume);
     }
 } // VOID SetVolumeBadgeIcon()
 
@@ -2301,6 +2327,11 @@ VOID ScanExtendedPartition (
     REFIT_VOLUME       *Volume;
     MBR_PARTITION_INFO *EMbrTable;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
+
+
     ExtBase = MbrEntry->StartLBA;
     for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
         // Read Current EMBR
@@ -2364,7 +2395,14 @@ VOID ScanExtendedPartition (
                 }
                 ScanMBR = FALSE;
 
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_SET;
+                #endif
                 SetVolumeBadgeIcon (Volume);
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
+
                 AddListElement (
                     (VOID ***) &Volumes,
                     &VolumesCount,
@@ -3286,21 +3324,15 @@ VOID ScanVolumes (VOID) {
     #endif
 } // VOID ScanVolumes()
 
-static
-VOID GetVolumeBadgeIcons (VOID) {
-    UINTN         VolumeIndex;
-    REFIT_VOLUME *Volume;
-
+VOID LoadVolumeBadgeIcon (
+    IN OUT REFIT_VOLUME  **Volume
+) {
     #if REFIT_DEBUG > 0
-    UINTN    LogLineType;
     CHAR16  *MsgStr;
-    BOOLEAN  LoopOnce;
-
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Seek Volume Badges for Internal Volumes");
     #endif
 
     #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"GetVolumeBadgeIcons";
+    const CHAR16 *FuncTag = L"LoadVolumeBadgeIcon";
     #endif
 
     LOG_SEP(L"X");
@@ -3324,29 +3356,14 @@ VOID GetVolumeBadgeIcons (VOID) {
         return;
     }
 
-    if (GlobalConfig.HelpIcon) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped 'VolumeBadge' Check ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
-        );
-        #endif
-
-        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (Skipped Check ... HelpIcon is Active)", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        // Early Return
-        return;
-    }
-
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"Skipped 'VolumeBadge' Check ... Config Setting is Active:- 'hideui - badges/all'"
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skipped Check ... 'HideUI Badges/All' is Active)", FuncTag);
+        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (Skipped Check ... 'HideUI Badges/All' is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3354,74 +3371,46 @@ VOID GetVolumeBadgeIcons (VOID) {
         return;
     }
 
-    #if REFIT_DEBUG > 0
-    LoopOnce = FALSE;
-    #endif
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
-
-        // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume, FALSE, FALSE)) {
-            continue;
-        }
-
-        // Skip APFS system volumes when SyncAPFS is active
-        if (GlobalConfig.SyncAPFS && IsSystemVolume (Volume)) {
-            continue;
-        }
-
+    if ((*Volume)->VolBadgeImage) {
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Setting VolumeBadge for '%s'",
-            Volume->VolName
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"Skipped Volume Badge Check ... Badge for Volume Already Set"
         );
-
-        LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
-        ALT_LOG(1, LogLineType, L"%s", MsgStr);
-        MY_FREE_POOL(MsgStr);
         #endif
 
-        // Set volume badge icon
-        SetVolumeBadgeIcon (Volume);
+        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skipped Check ... Image Already Set)", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
 
-        #if REFIT_DEBUG > 0
-        MsgStr = (Volume->VolBadgeImage == NULL)
-            ? StrDuplicate (L"VolumeBadge Not Found")
-            : StrDuplicate (L"VolumeBadge Found");
+        // Early Return
+        return;
+    }
+
+    // Set volume badge icon
+    SetVolumeBadgeIcon (*Volume);
+
+    #if REFIT_DEBUG > 0
+    if (!(*Volume)->VolBadgeImage) {
+        MsgStr = StrDuplicate (L"VolumeBadge *NOT* Found");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MY_FREE_POOL(MsgStr);
-
-        LoopOnce = TRUE;
-        #endif
-    } // for
+    }
+    #endif
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
-} // VOID GetVolumeBadgeIcons()
+} // VOID LoadVolumeBadgeIcon()
 
-VOID SetVolumeIcons (VOID) {
-    UINTN         VolumeIndex;
-    REFIT_VOLUME *Volume;
-
+VOID LoadVolumeIcon (
+    IN OUT REFIT_VOLUME  *Volume
+) {
     #if REFIT_DEBUG > 0
-    UINTN    LogLineType;
     CHAR16  *MsgStr;
-    BOOLEAN  LoopOnce;
-    #endif
-
-    // Set volume badge icon
-    GetVolumeBadgeIcons();
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Seek '.VolumeIcon' Icons for %s Volumes",
-        (GlobalConfig.HiddenIconsExternal) ? L"Internal/External" : L"Internal"
-    );
     #endif
 
     #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"SetVolumeIcons";
+    const CHAR16 *FuncTag = L"LoadVolumeIcon";
     #endif
 
     LOG_SEP(L"X");
@@ -3436,21 +3425,6 @@ VOID SetVolumeIcons (VOID) {
         #endif
 
         BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skipped Check ... HiddenIconsIgnore is Active)", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        // Early Return
-        return;
-    }
-
-    if (GlobalConfig.HelpIcon) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped '.VolumeIcon' Check ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
-        );
-        #endif
-
-        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (Skipped Check ... HelpIcon is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3475,83 +3449,59 @@ VOID SetVolumeIcons (VOID) {
         return;
     }
 
-    #if REFIT_DEBUG > 0
-    LoopOnce = FALSE;
-    #endif
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
+    // Skip APFS system volumes when SyncAPFS is active
+    if (GlobalConfig.SyncAPFS && IsSystemVolume (Volume)) {
+        // Early Return
+        return;
+    }
 
-        // Skip Volumes in 'DontScanVolumes' List
-        if (!VolumeScanAllowed (Volume, FALSE, FALSE)) {
-            continue;
-        }
-
-        // Skip APFS system volumes when SyncAPFS is active
-        if (GlobalConfig.SyncAPFS && IsSystemVolume (Volume)) {
-            continue;
-        }
-
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Setting '.VolumeIcon' Icon for '%s'",
-            Volume->VolName
-        );
-
-        LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
-        ALT_LOG(1, LogLineType, L"%s", MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        // Load custom volume icon for internal/external disks if present
-        if (Volume->VolIconImage) {
+    // Load custom volume icon for internal/external disks if present
+    if (!Volume->VolIconImage) {
+        if (Volume->DiskKind == DISK_KIND_INTERNAL ||
+            (
+                GlobalConfig.HiddenIconsExternal &&
+                Volume->DiskKind == DISK_KIND_EXTERNAL
+            )
+        ) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Skipped '%s' ... Icon Already Set",
+            MsgStr = PoolPrint (
+                L"Setting '.VolumeIcon' Icon for '%s'",
                 Volume->VolName
             );
+
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
+
+            Volume->VolIconImage = egLoadIconAnyType (
+                Volume->RootDir,
+                L"",
+                L".VolumeIcon",
+                GlobalConfig.IconSizes[ICON_SIZE_BIG]
+            );
         }
         else {
-            if (Volume->DiskKind == DISK_KIND_INTERNAL ||
-                (
-                    GlobalConfig.HiddenIconsExternal &&
-                    Volume->DiskKind == DISK_KIND_EXTERNAL
-                )
-            ) {
-                Volume->VolIconImage = egLoadIconAnyType (
-                    Volume->RootDir,
-                    L"",
-                    L".VolumeIcon",
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+            #if REFIT_DEBUG > 0
+            if (Volume->DiskKind != DISK_KIND_EXTERNAL) {
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"Skipped Setting '.VolumeIcon' Icon for '%s' ... Volume *IS NOT* 'Internal'",
+                    Volume->VolName
                 );
             }
             else {
-                #if REFIT_DEBUG > 0
-                if (Volume->DiskKind != DISK_KIND_EXTERNAL) {
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Skipped '%s' ... Not Internal Volume",
-                        Volume->VolName
-                    );
-                }
-                else {
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Skipped External Volume: '%s' ... Config Setting *IS NOT* Active:- 'hidden_icons_external'",
-                        Volume->VolName
-                    );
-                }
-                #endif
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"Skipped Setting '.VolumeIcon' Icon for External Volume: '%s' ... Config Setting *IS NOT* Active:- 'hidden_icons_external'",
+                    Volume->VolName
+                );
             }
+            #endif
         }
-
-        #if REFIT_DEBUG > 0
-        LoopOnce = TRUE;
-        #endif
-    } // for
+    }
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
-} // VOID SetVolumeIcons()
+} // VOID LoadVolumeIcon()
 
 //
 // file and dir functions
