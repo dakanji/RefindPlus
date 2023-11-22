@@ -24,7 +24,7 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 
   @retval EFI_SUCCESS if the device was connected.
 **/
-EFI_STATUS RP_ApfsConnectParentDevice (
+EFI_STATUS RefitApfsConnectParentDevice (
   VOID
   );
 
@@ -35,7 +35,7 @@ EFI_STATUS RP_ApfsConnectParentDevice (
 
   @retval EFI_SUCCESS if the device was connected.
 **/
-EFI_STATUS RP_ApfsConnectHandle (
+EFI_STATUS RefitApfsConnectHandle (
   IN EFI_HANDLE  Handle
   );
 
@@ -46,7 +46,7 @@ EFI_STATUS RP_ApfsConnectHandle (
 
   @retval EFI_SUCCESS if at least one device was connected.
 **/
-EFI_STATUS RP_ApfsConnectDevices (
+EFI_STATUS RefitApfsConnectDevices (
   VOID
   );
 

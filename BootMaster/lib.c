@@ -1199,7 +1199,7 @@ CHAR16 * FSTypeName (
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn )) retval = L"Mac Raid (ON)" ;
 
     return retval;
-} // CHAR16 *FSTypeName()
+} // static CHAR16 * FSTypeName()
 
 // Sets the FsName field of Volume, based on data recorded in the partition's
 // filesystem. This field may remain unchanged if there is no known filesystem
@@ -1227,7 +1227,7 @@ VOID SetFilesystemName (
     }
 
     MY_FREE_POOL(FileSystemInfoPtr);
-} // VOID *SetFilesystemName()
+} // static VOID SetFilesystemName()
 
 // Identify filesystem type and record filesystem's UUID/serial number,
 // if possible. Expects a Buffer containing the first few (normally 4096)
@@ -1390,7 +1390,7 @@ VOID SetFilesystemData (
     if (Volume->BlockIO->Media->BlockSize == 2048) {
         Volume->FSType = FS_TYPE_ISO9660;
     }
-} // VOID SetFilesystemData()
+} // static VOID SetFilesystemData()
 
 static
 VOID ScanVolumeBootcode (
@@ -1660,7 +1660,7 @@ VOID ScanVolumeBootcode (
         }
     }
     #endif
-} // VOID ScanVolumeBootcode()
+} // static VOID ScanVolumeBootcode()
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID SetVolumeBadgeIcon (
@@ -1668,7 +1668,7 @@ VOID SetVolumeBadgeIcon (
 ) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"Skipped ... Config Setting is Active:- 'hideui - badges or all'"
         );
         #endif
@@ -1678,7 +1678,7 @@ VOID SetVolumeBadgeIcon (
 
     if (Volume == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"Skipped ... NULL Volume!!"
         );
         #endif
@@ -2931,7 +2931,7 @@ VOID ScanVolumes (VOID) {
 #ifndef __MAKEWITH_TIANO
                 Status = EFI_NOT_STARTED;
 #else
-                Status = RP_GetApfsVolumeInfo (
+                Status = RefitGetApfsVolumeInfo (
                     Volume->DeviceHandle,
                     NULL,
                     &VolumeGuid,
@@ -3312,7 +3312,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         MsgStr = (GlobalConfig.DirectBoot)
             ? StrDuplicate (L"'DirectBoot' is Active")
             : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Volume Badge Check ... %s", MsgStr);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skipped Volume Badge Check ... %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -3342,11 +3342,11 @@ VOID GetVolumeBadgeIcons (VOID) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Skipped 'VolumeBadge' Check ... Config Setting is Active:- 'hideui - badges or all'"
+            L"Skipped 'VolumeBadge' Check ... Config Setting is Active:- 'hideui - badges/all'"
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skipped Check ... 'HideUI Badges or All' is Active)", FuncTag);
+        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skipped Check ... 'HideUI Badges/All' is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3430,7 +3430,7 @@ VOID SetVolumeIcons (VOID) {
 
     if (GlobalConfig.HiddenIconsIgnore) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"Skipped '.VolumeIcon' Check ... Config Setting is Active:- 'hidden_icons_ignore'"
         );
         #endif
@@ -3463,7 +3463,7 @@ VOID SetVolumeIcons (VOID) {
         MsgStr = (GlobalConfig.DirectBoot)
             ? StrDuplicate (L"'DirectBoot' is Active")
             : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped '.VolumeIcon' Check ... %s", MsgStr);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skipped '.VolumeIcon' Check ... %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -3578,7 +3578,7 @@ BOOLEAN FileExists (
     }
 
     return FALSE;
-}
+} // BOOLEAN FileExists()
 
 static
 EFI_STATUS DirNextEntry (
@@ -3830,7 +3830,7 @@ EFI_UNICODE_COLLATION_PROTOCOL * OcUnicodeCollationEngInstallProtocol (IN BOOLEA
 #endif
 
 static
-BOOLEAN RP_MetaiMatch (
+BOOLEAN RefitMetaiMatch (
     IN CHAR16 *String,
     IN CHAR16 *Pattern
 ) {
@@ -3861,7 +3861,7 @@ BOOLEAN RP_MetaiMatch (
 
     return FALSE;
 #endif
-} // static BOOLEAN RP_MetaiMatch()
+} // static BOOLEAN RefitMetaiMatch()
 
 BOOLEAN DirIterNext (
     IN  OUT REFIT_DIR_ITER  *DirIter,
@@ -3928,7 +3928,7 @@ BOOLEAN DirIterNext (
         Found = FALSE;
         while (!Found && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
             BREAD_CRUMB(L"%s:  3a 5a 1 - WHILE LOOP:- START ... Seek MetaiMatch Pattern", FuncTag);
-            if (RP_MetaiMatch (LastFileInfo->FileName, OnePattern)) {
+            if (RefitMetaiMatch (LastFileInfo->FileName, OnePattern)) {
                 BREAD_CRUMB(L"%s:  3a 5a 1a 1", FuncTag);
                 Found = TRUE;
             }

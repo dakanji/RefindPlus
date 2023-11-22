@@ -139,31 +139,39 @@ EG_IMAGE * BuiltinIcon (
     IN UINTN Id
 ) {
     if (Id >= BUILTIN_ICON_COUNT) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Invalid Builtin Icon Request");
+        #endif
+
         // Early Return
         return NULL;
     }
 
     if (BuiltinIconTable[Id].Image) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Using Cached Icon:- '%s'", BuiltinIconTable[Id].FileName);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Loaded Cached Builtin Icon:- '%s'", BuiltinIconTable[Id].FileName);
         #endif
-
-        // Early Return
-        return egCopyImage (BuiltinIconTable[Id].Image);
     }
-
-    BuiltinIconTable[Id].Image = egFindIcon (
-        BuiltinIconTable[Id].FileName,
-        GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
-    );
-    if (BuiltinIconTable[Id].Image == NULL) {
-        if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
-            BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
-        }
-
+    else {
+        BuiltinIconTable[Id].Image = egFindIcon (
+            BuiltinIconTable[Id].FileName,
+            GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
+        );
         if (BuiltinIconTable[Id].Image == NULL) {
-            BuiltinIconTable[Id].Image = DummyImageEx (GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+            if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
+                BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
+            }
+
+            if (BuiltinIconTable[Id].Image == NULL) {
+                BuiltinIconTable[Id].Image = DummyImageEx (GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+            }
         }
+
+        #if REFIT_DEBUG > 0
+        if (BuiltinIconTable[Id].Image) {
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Saved in Icon Cache:- '%s'", BuiltinIconTable[Id].FileName);
+        }
+        #endif
     }
 
     return egCopyImage (BuiltinIconTable[Id].Image);

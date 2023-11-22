@@ -62,6 +62,7 @@
 #include "../include/Handle.h"
 
 extern BOOLEAN            IsBoot;
+extern EG_PIXEL           StdBackgroundPixel;
 extern REFIT_MENU_SCREEN *MainMenu;
 
 

@@ -87,7 +87,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           since-days: 450
           filter-threshold: 0.51
-          comment-title: '### Similar Items'
+          comment-title: '### Similar Items:'
           comment-body: '${index}. [Similarity Rating: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
           show-footer: false
 

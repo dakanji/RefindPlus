@@ -105,7 +105,7 @@
     PerformanceLib
 # For Debug logging ... Jief_Machak (sf.net/u/jief7/profile) from Clover
     MemLogLib
-# From OpenCore for ProvideConsoleGOP
+# From OpenCore for SetConsoleGOP
     OcConsoleLib
     OcMiscLib
 # For AcquireGOP

@@ -69,9 +69,6 @@
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
-extern EFI_GUID GuidAPFS;
-extern EFI_GUID AppleVendorOsGuid;
-
 #if REFIT_DEBUG > 0
 static CHAR16  *Spacer   = L"                ";
 
@@ -131,13 +128,13 @@ VOID VetCSR (VOID) {
     #endif
     // Check the NVRAM for previously set values ... Expecting an error
     Status = EfivarGetRaw (
-        &AppleVendorOsGuid, L"csr-active-config",
+        &AppleBootGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
     );
     if (!EFI_ERROR(Status)) {
         // No Error ... Clear the Variable (Basically Enable SIP/SSV)
         EfivarSetRaw (
-            &AppleVendorOsGuid, L"csr-active-config",
+            &AppleBootGuid, L"csr-active-config",
             NULL, 0, TRUE
         );
     }
@@ -823,10 +820,7 @@ VOID SetLoaderDefaults (
     #endif
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Getting Default Setting for Loader:- '%s'",
-        (Entry->me.Title) ? Entry->me.Title : Entry->Title
-    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Loader Defaults");
     #endif
 
     LOG_SEP(L"X");
@@ -870,7 +864,7 @@ VOID SetLoaderDefaults (
                 ALT_LOG(1, LOG_LINE_NORMAL, L"Checking for '.VolumeIcon' Image");
                 #endif
 
-                // use a ".VolumeIcon" image icon for the loader
+                // Use a ".VolumeIcon" image icon for the loader
                 // Takes precedence all over options
                 Entry->me.Image = egCopyImage (Volume->VolIconImage);
             }
@@ -901,7 +895,7 @@ VOID SetLoaderDefaults (
                     BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
                     NoExtension = StripEfiExtension (NameClues);
                     if (NoExtension != NULL) {
-                        // locate a custom icon for the loader
+                        // Locate a custom icon for the loader
                         // Anything found here takes precedence over the "hints" in the OSIconName variable
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
@@ -1325,6 +1319,7 @@ VOID SetLoaderDefaults (
             MY_FREE_POOL(OSIconName);
             OSIconName = TmpIconName;
         }
+        BREAD_CRUMB(L"%s:  6a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  7", FuncTag);
@@ -1367,9 +1362,8 @@ VOID SetLoaderDefaults (
             } // while
             BREAD_CRUMB(L"%s:  8a 1a 2", FuncTag);
         }
-
-        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
+        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
@@ -3892,7 +3886,7 @@ VOID ScanForTools (VOID) {
     if (GlobalConfig.DirectBoot) {
         #if REFIT_DEBUG > 0
         LogSection = L"Skipped Loading Tool Options ... 'DirectBoot' is Active";
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
         LOG_MSG("%s", LogSection);
@@ -4525,7 +4519,7 @@ VOID ScanForTools (VOID) {
                             // Get a meaningful tag for the recovery tool
                             // DA-TAG: Limit to TianoCore
                             #ifdef __MAKEWITH_TIANO
-                            RecoverVol = RP_GetAppleDiskLabel (HfsRecovery[VolumeIndex]);
+                            RecoverVol = RefitGetAppleDiskLabel (HfsRecovery[VolumeIndex]);
                             #endif
 
                             VolumeTag = (RecoverVol)

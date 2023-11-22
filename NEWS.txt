@@ -10,11 +10,21 @@
   * Now better labelled
 - Improves `macOS Installer` Handling
   * Now better identified and labelled
+- Amends `Apple 'Fat' Binary` Handling
+  * Now also assumed valid on UEFI-PC
+  * Consistent with upstream implementation
+    - `'Plain' Binaries` are assumed valid on Apple firmware
+    - Upstream considers such invalid on all firmware types
 - Amends `Ventoy` Handling
   * `Whole Disk` volumes with `Legacy Bootcode` were previously hidden whenever `Ventoy` was present
     - This was to avoid spurious/unbootable instances appearing
       * This however affected legitimate instances without a way to override the behaviour
       * Users can hide unwanted instances if required
+- Amends `GOP Graphics` Handling
+  * GOP is now provided/replaced on the `ConsoleOut` handle by default when required
+  * Hence, the "Opt-In" `provide_console_gop` token is replaced by the "Opt-Out" `disable_set_consolegop`
+- Renames Configuration Token
+  * `decline_apple_fb` to `disable_set_applefb`
 
 
 0.14.0.AB (03 Oct 2023):
@@ -472,7 +482,7 @@
   * However, the RefindPlus screen was briefly loaded before the target option was run
     - This created an unwanted screen flash and also removed the BGRT logo
   * The default selection is now run without showing the screen at all instead (Based on an upstream update)
-  * The mode is now truly silent as there is no video output unless overriden (BGRT logos are maintained)
+  * The mode is now truly silent as there is no video output unless overridden (BGRT logos are maintained)
     - Override is initiated by holding down the `ESC` key immediately after starting RefindPlus
     - Shortcut keys can also be pressed
       * In such cases, the loader associated with the key will be run instead of the default

@@ -4,6 +4,9 @@
 # The `Acknowledged` label is added to issues
 Acknowledged:
   issues:
+    # Add labels
+    label:
+      - 'Not-Resolved'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -46,6 +49,9 @@ Accepted:
       - 'Incomplete'
       - 'Known-Issue'
       - 'Cannot-Replicate'
+    # Reopen issue and unlock thread
+    reopen: true
+    unlock: true
 
 # The `Declined` label is added to Pull Requests
 Declined:
@@ -100,6 +106,9 @@ Uncertain:
 # The `Bug` label is added to issues
 Bug:
   issues:
+    # Add labels
+    label:
+      - 'Not-Resolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -389,6 +398,9 @@ Invalid:
 # The `Known-Issue` label is added to issues
 Known-Issue:
   issues:
+    # Add labels
+    label:
+      - 'Not-Resolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -439,6 +451,7 @@ Upstream:
     # Add labels
     label:
       - 'Acknowledged'
+      - 'Not-Resolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -489,6 +502,7 @@ Resolved:
   issues:
     # Remove labels
     unlabel:
+      - 'Not-Resolved'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -506,11 +520,14 @@ Resolved:
     close: true
 
 # The `Resolved` label is removed from issues
--Resolved:
-  issues:
-    # Reopen issue and unlock thread
-    reopen: true
-    unlock: true
+#-Resolved:
+#   issues:
+#     # Add labels
+#     label:
+#       - 'Not-Resolved'
+#    # Reopen issue and unlock thread
+#    reopen: true
+#    unlock: true
 
 # The `Stale` label is added to issues
 Stale:

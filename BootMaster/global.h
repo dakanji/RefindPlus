@@ -487,7 +487,7 @@ typedef struct {
     BOOLEAN                     HiddenIconsPrefer;
     BOOLEAN                     UseTextRenderer;
     BOOLEAN                     PassUgaThrough;
-    BOOLEAN                     ProvideConsoleGOP;
+    BOOLEAN                     SetConsoleGOP;
     BOOLEAN                     ReloadGOP;
     BOOLEAN                     UseDirectGop;
     BOOLEAN                     ContinueOnWarning;
@@ -516,7 +516,7 @@ typedef struct {
     BOOLEAN                     Install;
     BOOLEAN                     WriteSystemdVars;
     BOOLEAN                     UnicodeCollation;
-    BOOLEAN                     SupplyAppleFB;
+    BOOLEAN                     SetAppleFB;
     BOOLEAN                     MitigatePrimedBuffer;
     UINTN                       RequestedScreenWidth;
     UINTN                       RequestedScreenHeight;
@@ -596,6 +596,7 @@ extern EFI_FILE_PROTOCOL       *SelfRootDir;
 
 extern EFI_GUID                 GlobalGuid;
 extern EFI_GUID                 RefindPlusGuid;
+extern EFI_GUID                 AppleBootGuid;
 extern EFI_GUID                 gEfiLegacyBootProtocolGuid;
 
 extern EFI_HANDLE               SelfImageHandle;

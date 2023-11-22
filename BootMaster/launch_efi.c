@@ -87,7 +87,6 @@ CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
 extern BOOLEAN  IsBoot;
-extern EFI_GUID AppleVendorOsGuid;
 
 static
 VOID WarnSecureBootError(
@@ -270,7 +269,7 @@ EFI_STATUS ApfsRecoveryBoot (
     DataNVRAM = NULL;
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
+        &AppleBootGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -283,7 +282,7 @@ EFI_STATUS ApfsRecoveryBoot (
     // Set Recovery Initiator
     NameNVRAM = L"RecoveryBootInitiator";
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
+        &AppleBootGuid, NameNVRAM,
         (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -385,8 +384,8 @@ BOOLEAN IsValidLoader (
 #else
     EFI_STATUS       Status;
     BOOLEAN          IsValid;
-    BOOLEAN          AppleFatBinary;
-    BOOLEAN          ApplePlainBinary;
+    BOOLEAN          AppleBinaryFat;
+    BOOLEAN          AppleBinaryPlain;
     UINTN            SignaturePosition;
     UINTN            Size;
     CHAR8           *Header;
@@ -416,7 +415,7 @@ BOOLEAN IsValidLoader (
     }
 
     do {
-        IsValid = AppleFatBinary = ApplePlainBinary = FALSE;
+        IsValid = AppleBinaryFat = AppleBinaryPlain = FALSE;
 
         #if REFIT_DEBUG > 0
         AbortReason = L"";
@@ -506,8 +505,7 @@ BOOLEAN IsValidLoader (
         }
 
         // Search for Apple's 'Fat' Binary signature
-        IsValid = AppleFatBinary = (
-            AppleFirmware &&
+        IsValid = AppleBinaryFat = (
             *((UINT32 *) &Header[0]) == APPLE_FAT_BINARY
         );
         if (IsValid) {
@@ -518,7 +516,7 @@ BOOLEAN IsValidLoader (
         }
 
         // Allow plain binaries on Apple Firmware
-        IsValid = ApplePlainBinary = AppleFirmware;
+        IsValid = AppleBinaryPlain = AppleFirmware;
         if (IsValid) {
             //LoaderType = LOADER_TYPE_EFI;
 
@@ -540,10 +538,10 @@ BOOLEAN IsValidLoader (
     //         Test variables are only ever true on Apple firmware
     ValidText = (!IsValid)
         ? L"EFI File *IS NOT* Valid"
-        : (AppleFatBinary)
-            ? L"Apple 'Fat' Binary is *ASSUMED* to be Valid on Apple Firmware"
-            : (ApplePlainBinary)
-                ? L"Plain Binary is *ASSUMED* to be Valid on Apple Firmware"
+        : (AppleBinaryFat)
+            ? L"EFI File (Apple 'Fat' Binary) is *ASSUMED* to be Valid"
+            : (AppleBinaryPlain)
+                ? L"EFI File ('Plain' Binary) is *ASSUMED* to be Valid on Apple Firmware"
                 : L"EFI File is Valid";
 
     #if REFIT_DEBUG > 0

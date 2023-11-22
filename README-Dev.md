@@ -15,7 +15,7 @@ However, the enhancements and fixes added to RefindPlus are not limited in scope
 
 ## Headline Features
 - Maintains feature and configuration parity with the base upstream version.
-- Protects against damage to Mac NVRAM when booting UEFI Windows.
+- Protects against damage to Mac nvRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
 - Provides UGADraw on modern GOP based GPUs to permit booting legacy EFI Boot operating systems.
 - Provides improved support for languages that use unicode text
@@ -67,24 +67,24 @@ disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 disable_apfs_mute     |Disables suppression of verbose APFS text on boot
 disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 disable_compat_check  |Disables Mac version compatibility checks if required
-disable_nvram_paniclog|Disables macOS kernel panic logging to NVRAM
-disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac NVRAM
-disable_provide_fb    |Disables provision under some circumstances of missing AppleFramebuffers
+disable_nvram_paniclog|Disables macOS kernel panic logging to nvRAM
+disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
 disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
+disable_set_applefb   |Disables provision, under some circumstances, of missing AppleFramebuffers
+disable_set_consolegop|Disables feature that fixes some issues with GOP graphics on legacy units
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
-hidden_icons_prefer   |Prioritises `.VolumeIcon` image icons when available
+hidden_icons_prefer   |Prioritises `.VolumeIcon` and `.VolumeBadge` image icons when available
 icon_row_move         |Repositions the main screen icon rows (vertically)
 icon_row_tune         |Fine tunes the resulting `icon_row_move` outcome
 mitigate_primed_buffer|Allows enhanced intervention to handle apparent primed keystroke buffers
 nvram_protect_ex      |Extends `NvramProtect`, if set, to macOS and `unknown` UEFI boots
-nvram_variable_limit  |Limits NVRAM write attempts to the specified variable size
+nvram_variable_limit  |Limits nvRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
 prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
-provide_console_gop   |Fixes issues with GOP on some legacy units
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
 renderer_text         |Provides a text renderer for text output when otherwise unavailable
@@ -101,12 +101,12 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
 - **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
-    - When run on Apple Firmware, RefindPlus will additionally trigger NVRAM garbage collection
+    - When run on Apple Firmware, RefindPlus will additionally trigger nvRAM garbage collection
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running macOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `csr_normalise` token.
 - **"timeout" Token:** The default is no timeout unless explicitly set.
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
-- **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
+- **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's nvRAM unless explicitly set to do so by activating this configuration token.
 - **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
   * Only active on `DEBUG` and `NOOPT` builds while `RELEASE` builds remain optimised for day-to-day use.
   * Level 0 does not switch logging off but activates the native summary format.
@@ -120,18 +120,18 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 
 ## Divergence
-Implementation differences with the upstream base are:
+Significant visible implementation differences vis-a-vis the upstream base are:
 - **GZipped Loaders:** RefindPlus only provides stub support for handling GZipped loaders as this is largely relevant for units on the ARM architecture. This stub support only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` configuration token as upstream.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
 - **Hidden Tag:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to use this feature can activate the RefindPlus-Specific `decline_help_tags` configuration token to switch it off.
 - **Loader Icons:** RefindPlus defaults to preferring generic icons for loaders ahead of custom icons where possible. The upstream icon search implementation involves only loading such icons after a search for custom icons has not turned anything up. Users can activate the RefindPlus-Specific `decline_help_icon` configuration token to use the upstream icon search implementation instead of the RefindPlus default.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_reload_gop` configuration token to switch it off.
-- **AppleFramebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using an inbuilt `SupplyAppleFB` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_provide_fb` configuration token to switch it off.
+- **AppleFramebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using an inbuilt `SetAppleFB` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_set_applefb` configuration token to switch it off.
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using an inbuilt `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_apfs_load` configuration token to switch it off.
 - **APFS Verbose Text Suppression:** RefindPlus defaults to always suppresses verbose text output associated with loading APFS functionality by the inbuilt `SupplyAPFS` feature. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_apfs_mute` configuration token to switch it off.
 - **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted macOS. Hence, a single option for booting macOS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_apfs_sync` configuration token to switch it off.
-- **Apple NVRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Apple NVRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Apple Macs. This filtering only happens when Apple firmware is detected and is not applied to other types of firmware. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_nvram_protect` configuration token to switch it off.
+- **Apple nvRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Apple nvRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Apple Macs. This filtering only happens when Apple firmware is detected and is not applied to other types of firmware. Users that prefer not to use this feature can activate the RefindPlus-Specific `disable_nvram_protect` configuration token to switch it off.
 - **Secondary Configuration Files:** While the upstream documentation prohibits including tertiary configuration files from secondary configuration files, there is no mechanism enforcing this prohibition. Hence, tertiary, quaternary, quinary, and more, configuration files can in fact be included. RefindPlus enforces a limitation to secondary configuration files.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted, and the `Entry` object immediately discarded, once a `Disabled` setting is encountered. The outcome is the same as upstream, which always continues to create and return a fully built object in such cases to be discarded later. The approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample-Dev](https://github.com/dakanji/RefindPlus/blob/9dcd45ae85255e46719143138514575fa9bc35e8/config.conf-sample-Dev#L1306-L1331) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
 - **Pointer Priority:** The upstream implementation of pointer priority is based on how the tokens appear in the configuration file(s) when both pointer control tokens, `enable_mouse` and `enable_touch`, are active. The last token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, the `enable_touch` token always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, the `enable_touch` token must be disabled (default) in addition to enabling the `enable_mouse` token.

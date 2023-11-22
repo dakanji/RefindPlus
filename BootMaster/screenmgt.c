@@ -501,7 +501,7 @@ VOID SetupScreen (VOID) {
             MsgStr = (GlobalConfig.DirectBoot)
                 ? StrDuplicate (L"'DirectBoot' is Active")
                 : StrDuplicate (L"Screen is in Text Only Mode");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
         }
         else {
@@ -1298,7 +1298,7 @@ BOOLEAN CheckError (
     PrintUglyText (Temp, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-    PauseSeconds (3);
+    PauseSeconds (6);
 
     // Defeat need to "Press a Key to Continue" in debug mode
     // Override this if volume is full

@@ -119,6 +119,7 @@ REFIT_MENU_ENTRY MenuEntryYes = {
 
 extern UINT64              GetCurrentMS (VOID);
 extern CHAR16             *VendorInfo;
+extern EG_PIXEL            MenuBackgroundPixel;
 extern BOOLEAN             FoundExternalDisk;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;

@@ -29,7 +29,7 @@ Modified 2021 - 2023, Dayo Akanji. (sf.net/u/dakanji/profile)
 
 extern BOOLEAN AppleFirmware;
 
-EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
+EFI_STATUS RefitApfsConnectParentDevice (VOID) {
     EFI_STATUS        Status;
     EFI_STATUS        XStatus;
     UINTN             HandleCount;
@@ -48,7 +48,7 @@ EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
 
     Status = EFI_NOT_FOUND;
     for (Index = 0; Index < HandleCount; ++Index) {
-        XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
+        XStatus = RefitApfsConnectHandle (HandleBuffer[Index]);
         if (XStatus == EFI_SUCCESS      ||
             XStatus == EFI_NO_MAPPING   ||
             XStatus == EFI_ALREADY_STARTED
@@ -63,7 +63,7 @@ EFI_STATUS RP_ApfsConnectParentDevice (VOID) {
     return Status;
 }
 
-EFI_STATUS RP_ApfsConnectDevices (VOID) {
+EFI_STATUS RefitApfsConnectDevices (VOID) {
     EFI_STATUS   Status;
     VOID        *PartitionInfoInterface;
 
@@ -72,7 +72,7 @@ EFI_STATUS RP_ApfsConnectDevices (VOID) {
         gBS->LocateProtocol, &gEfiPartitionInfoProtocolGuid,
         NULL, &PartitionInfoInterface
     );
-    Status = RP_ApfsConnectParentDevice();
+    Status = RefitApfsConnectParentDevice();
 
     return Status;
 }

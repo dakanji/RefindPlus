@@ -52,7 +52,7 @@
 # ".VolumeIcons" and "VolumeBadges" are disabled when this setting is active.
 # When active, generic "linux" icons are used for most linux flavours.
 #
-# The "HelpIcon" feature is enabled when commented out
+# The "HelpIcon" feature is active when commented out
 #
 #decline_help_icon
 
@@ -62,7 +62,7 @@
 # These program defaults ensure that certain items are not shown as first row icons.
 # Users that wish to disable the default "HelpScan" feature can activate this option.
 #
-# The "HelpScan" feature is enabled when commented out
+# The "HelpScan" feature is active when commented out
 #
 #decline_help_scan
 
@@ -88,7 +88,7 @@
 # title banners and complementary colours are always used for text when using the
 # default RefindPlus title banner, as this always has a single solid colour.
 #
-# The "HelpText" feature is enabled when commented out
+# The "HelpText" feature is active when commented out
 #
 #decline_help_text
 
@@ -170,39 +170,28 @@
 #
 #disable_compat_check
 
-# Disable kernel panic logging to the NVRAM. macOS may save kernel panic logs in
-# the NVRAM under certain conditions which can increase wear and tear on legacy
-# Mac NVRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
-# the boot arguments which disables panic log writes to the NVRAM for writes
+# Disable kernel panic logging to the nvRAM. macOS may save kernel panic logs in
+# the nvRAM under certain conditions which can increase wear and tear on legacy
+# Mac nvRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
+# the boot arguments which disables panic log writes to the nvRAM for writes
 # to the filesystem instead. Note that this token will create a macOS boot
 # argument the first time it is triggered which will remain active until
 # explicitly cleared, even if this setting is subsequently deactivated.
 #
-# Inactive when commented out (Does not stop macOS paniclog writes to NVRAM)
+# Inactive when commented out (Does not stop macOS panic log writes to nvRAM)
 #
 #disable_nvram_paniclog
 
-# Allow/Prevent saving various potentially harmful variables to the NVRAM on Macs.
+# Allow/Prevent saving various potentially harmful variables to the nvRAM on Macs.
 # By default, RefindPlus will prevent writes of certain items by processes such as
-# UEFI Windows Secure Boot (certificates) to the NVRAM on Legacy Macs as these may
-# result in an overrun that will damage the BootROM (also stored on the NVRAM) and
+# UEFI Windows Secure Boot (certificates) to the nvRAM on Legacy Macs as these may
+# result in an overrun that will damage the BootROM (also stored on the nvRAM) and
 # results in an inability to boot. This token is only activated on Apple firmware.
 # NB: This feature is always disabled when RefindPlus is loaded via OpenCore.
 #
-# The "NvramProtect" feature is enabled when commented out
+# The "NvramProtect" feature is active when commented out
 #
 #disable_nvram_protect
-
-# Replace the Apple FramebufferInfo protocol with a builtin version. By default,
-# RefindPlus is configured to always install the Apple FramebufferInfo protocol
-# when missing on Macs. This feature can be disabled by activating this token.
-# It is only active when the UGA protocol is available and is inactive when
-# running a GPU with the GOP protocol.
-# NB: This functionality is only available on TianoCore builds.
-#
-# Apple FramebufferInfo protocol is provided (if required) when commented out
-#
-#disable_provide_fb
 
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
@@ -218,7 +207,7 @@
 # is longer required to allow GPU activation except when the related
 # "supply_uefi" setting is activate, as this overrides this revert.
 #
-# GPU Option ROMs are reinstalled (if required) when commented out
+# GPU OptionROMs are reinstalled (if required) when commented out
 #
 #disable_reload_gop
 
@@ -235,6 +224,33 @@
 #
 #disable_rescan_dxe
 
+# Replace the Apple FramebufferInfo protocol with a builtin version. By default,
+# RefindPlus is configured to always install the Apple FramebufferInfo protocol
+# when missing on Macs. This feature can be disabled by activating this token.
+# It is only active when the UGA protocol is available and is inactive when
+# running a GPU with the GOP protocol.
+# NB: This functionality is only available on TianoCore builds.
+#
+# Apple FramebufferInfo protocol is provided (if required) when commented out
+#
+#disable_set_applefb
+
+# Some computers, such as some classic MacPros, may have multiple GOP instances:
+#     - One installed on the Console Out handle
+#     - Others installed on GPU handles.
+# GOP on the Console Out Handle is what everything uses and is provided by
+# the system firmware and others by GPU Option ROMs. The system firmware
+# should typically forward calls from the Console Out Handle GOP to the
+# others transparently. On such models, it only works in this way with
+# GPUs with system firmware support. This option replaces GOP on the
+# Console Out Handle with one from a GPU Handle on such models when
+# running capable GPUs that are not supported by system firmware.
+# NB: This functionality is only available on TianoCore builds.
+#
+# The "SetConsoleGOP" feature is active when commented out
+#
+#disable_set_consolegop
+
 # Allow scans of multiple ESPs. When this option is active, RefindPlus
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.
@@ -248,7 +264,7 @@
 # is active however, RefindPlus will enforce macOS "TRIM" for all types
 # of SSDs, including non-Apple SSDs. This setting only applies to macOS.
 #
-# Note that the setting will create a macOS NVRAM entry the first time it
+# Note that the setting will create a macOS nvRAM entry the first time it
 # is triggered and that it will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also, note that forcing TRIM
 # on may significantly increase boot times and that enabling TRIM on
@@ -282,7 +298,7 @@
 #hidden_icons_ignore
 
 # RefindPlus always defaults to scanning volumes for .VolumeIcon image icons but
-# any such files found are only used as last ditch display icons when all other
+# any such are only used as a last ditch option when other bootloader directory
 # display icon options fail. When this option is set, RefindPlus will instead
 # first try to display ".VolumeIcon" image files before attempting to load
 # other image icon files. This permits flexibility in theming loaders by
@@ -348,17 +364,17 @@
 #
 #nvram_protect_ex
 
-# Allow/Prevent saving NVRAM variables based on an allowable variable size limit.
-# NVRAM variables larger than the specified limit will be discard. This setting
+# Allow/Prevent saving nvRAM variables based on an allowable variable size limit.
+# nvRAM variables larger than the specified limit will be discard. This setting
 # should only be used on Legacy Apple Macs where the built in feature for this
 # may not be operational and should be set to match the specific allowed size
-# for such units. Given the dificulty involved in finding this allowed size,
+# for such units. Given the difficulty involved in finding the allowed size,
 # this setting should not be set by most users. Note that this setting is
 # only active on Apple firmware, requires the "NvramProtect" feature and
 # that it is disabled when it is set to a value lower than 1024 bytes.
 # Additionally, this option is only activated on direct macOS boots.
 #
-# Inactive when commented out (Does not filter NVRAM writes by size)
+# Inactive when commented out (Does not filter nvRAM writes by size)
 #
 #nvram_variable_limit 2048
 
@@ -380,22 +396,6 @@
 # Inactive when commented out (Does not prefer UGA over GOP for graphics)
 #
 #prefer_uga
-
-# Some computers, such as some classic MacPros, may have multiple GOP instances:
-#     - One installed on the Console Out handle
-#     - Others installed on GPU handles.
-# GOP on the Console Out Handle is what everything uses and is provided by
-# the system firmware and others by GPU Option ROMs. The system firmware
-# should typically forward calls from the Console Out Handle GOP to the
-# others transparently. On such models, it only works in this way with
-# GPUs with system firmware support. This option replaces GOP on the
-# Console Out Handle with one from a GPU Handle on such models when
-# running capable GPUs that are not supported by system firmware.
-# NB: This functionality is only available on TianoCore builds.
-#
-# Inactive when commented out (Does not provide GOP from GPU)
-#
-#provide_console_gop
 
 # Some types of firmware, typically supplied by HP, may effectively lock partitions
 # as their "DiskIo" protocols are opened "BY_DRIVER", or a "partition driver", but
@@ -497,9 +497,9 @@
 #supply_uefi
 
 # RefindPlus defaults to storing the name of the last booted loader in
-# the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
+# the "PreviousBoot" variable in the nvRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
-# is loaded. This can however increase wear and tear on the NVRAM and disabling
+# is loaded. This can however increase wear and tear on the nvRAM and disabling
 # the "use_nvram" token writes variables to the filesystem instead, limiting this.
 # On some setups however, such as when the "default_selection" token is set, such
 # writes are not required to start with. When the "transient_boot" setting is
@@ -542,7 +542,7 @@
 # As of macOS v11.x (Big Sur), the previous default setting of "10" (ON)
 # may leave Macs not able to receive "Over The Air" (OTA) updates from
 # Apple with the reliable setting being enabling SIP/SSV by clearing
-# the stored CSR value in the NVRAM. RefindPlus will clear the CSR
+# the stored CSR value in the nvRAM. RefindPlus will clear the CSR
 # setting when "0" is used in place of "10" for the "OFF" value.
 # This setting is also valid on earlier versions of macOS. It
 # is recommended however, to keep the default "OFF" setting
@@ -578,7 +578,8 @@
 # only active when running DEBUG builds and the logging process, particularly higher
 # levels, can noticeably slow RefindPlus operation and time must be given as needed.
 #
-# The native format is used when commented out (DEBUG builds only)
+# The native format is used when commented out (DEBUG and NOOPT builds only)
+# Logging *IS NOT* active on RELEASE builds
 #
 #log_level 1
 
@@ -621,7 +622,7 @@
 #  gdisk            - Disk Partitioning Utility.
 #                     NB: Requires external program
 #                         See documentation for details
-#  clean_nvram      - Enables NVRAM Reset from RefindPlus.
+#  clean_nvram      - Enables nvRAM Reset from RefindPlus.
 #                     NB: Needs External program.
 #  apple_recovery   - Loads Apple Mac Recovery partitions, if present
 #  windows_recovery - Boots an OEM Windows recovery tool, if present.
@@ -697,8 +698,8 @@
 #
 #use_graphics_for osx,linux
 
-# While using the NVRAM works with most computers, this can increase wear
-# and tear on the motherboard's NVRAM. Under conditions where the NVRAM is
+# While using the nvRAM works with most computers, this can increase wear
+# and tear on the motherboard's nvRAM. Under conditions where the nvRAM is
 # old and/or worn out, it may then fail and result in an inability to boot.
 # Storing variables on disk is a viable alternative and RefindPlus can save
 # its variables to a folder on the filesystem instead. This will however not
@@ -708,7 +709,7 @@
 # not be saved and this fact will be logged if running the debug version. NB: This
 # option only applies to RefindPlus variables such as the PreviousBoot, HiddenTags,
 # HiddenTools, and HiddenLegacy variables and does not apply to any variables from
-# other processes/libraries (These are always written to the motherboard's NVRAM).
+# other processes/libraries (These are always written to the motherboard's nvRAM).
 #
 # Stores RefindPlus-Specific variables on the filesystem when commented out
 #
@@ -828,7 +829,7 @@
 # pathname with volume, such as "SOMEDISK:/EFI/somedir/notme.efi"
 # or 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi".
 # OS tags hidden via the "Delete" or "-" key in the RefindPlus menu
-# are added to this list, but stored in NVRAM (Hardware or Emulated).
+# are added to this list, but stored in nvRAM (Hardware or Emulated).
 #
 # The default setting is L"shim-fedora.efi,shim-centos.efi,PreLoader.efi,
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi,shim.efi,fb.efi,
@@ -1069,7 +1070,7 @@
 #  biosexternal  - BIOS external boot loaders (USB, eSATA, etc.)
 #  cd            - BIOS optical-disc boot loaders
 #  manual        - use stanzas later in this configuration file
-#  firmware      - boot EFI programs set in the firmware's NVRAM
+#  firmware      - boot EFI programs set in the firmware's nvRAM
 # Note that the legacy BIOS options require firmware support, which is
 # not present on all computers.
 # The netboot option is experimental and relies on the ipxe.efi and
@@ -1177,7 +1178,7 @@
 # By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
 # devices. However, this does not always detect all available devices and
 # in such cases, this option triggers a forced scan and modification of
-# NVRAM variables on each boot. This option has no effect on Macs or
+# nvRAM variables on each boot. This option has no effect on Macs or
 # when no BIOS-mode options have been set via the "scanfor" option.
 #
 # Inactive when commented out (Does not result in a forced scan)

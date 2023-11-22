@@ -101,7 +101,7 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenIconsPrefer = */ FALSE,
     /* UseTextRenderer = */ FALSE,
     /* PassUgaThrough = */ FALSE,
-    /* ProvideConsoleGOP = */ FALSE,
+    /* SetConsoleGOP = */ TRUE,
     /* ReloadGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
@@ -130,7 +130,7 @@ REFIT_CONFIG GlobalConfig = {
     /* Install = */ FALSE,
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
-    /* SupplyAppleFB = */ TRUE,
+    /* SetAppleFB = */ TRUE,
     /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
@@ -244,12 +244,12 @@ EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
 #define BOOT_FIX_STR_01            L"Disable AMFI Check"
 #define BOOT_FIX_STR_02            L"Disable Compatibility Check"
-#define BOOT_FIX_STR_03            L"Disable Paniclog Writes to NVRAM"
+#define BOOT_FIX_STR_03            L"Disable nvRAM Panic Logging"
 
 extern VOID              InitBooterLog (VOID);
 
 extern EFI_STATUS        AmendSysTable (VOID);
-extern EFI_STATUS        RP_ApfsConnectDevices (VOID);
+extern EFI_STATUS        RefitApfsConnectDevices (VOID);
 extern EFI_STATUS EFIAPI NvmExpressLoad (
     IN EFI_HANDLE        ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
@@ -259,9 +259,9 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
-extern CHAR16                       *StrSelfUUID;
+extern INTN                          LogLevelConfig;
 
-extern EFI_GUID                      AppleVendorOsGuid;
+extern CHAR16                       *StrSelfUUID;
 
 extern EFI_FILE_PROTOCOL            *gVarsDir;
 
@@ -294,7 +294,7 @@ EFI_STATUS CheckStatusOC (VOID){
       gBS->LocateProtocol, &GuidBootstrapOC,
       NULL, &Bootstrap
   );
-  if (!EFI_ERROR (Status)) {
+  if (!EFI_ERROR(Status)) {
       RunningOC = TRUE;
       return EFI_ALREADY_STARTED;
   }
@@ -410,6 +410,7 @@ VOID InitMainMenu (VOID) {
     MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
 } // static VOID InitMainMenu()
 
+// DA-TAG: Caller responsible for returned buffer
 static
 EFI_STATUS GetHardwareNvramVariable (
     IN  CHAR16    *VariableName,
@@ -1008,8 +1009,8 @@ VOID LogDisableCheck (
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
-        L"%s ... %r",
-        TypStr, Result
+        L"Status:- '%r' ... %s",
+        Result, TypStr
     );
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
@@ -1032,6 +1033,7 @@ VOID SetBootArgs (VOID) {
     BOOLEAN  LogDisableCompatCheck;
     BOOLEAN  LogDisableNvramPanicLog;
     #endif
+
 
     if (!GlobalConfig.SetBootArgs || GlobalConfig.SetBootArgs[0] == L'\0') {
         #if REFIT_DEBUG > 0
@@ -1179,7 +1181,7 @@ VOID SetBootArgs (VOID) {
 
     VarData = NULL;
     GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleVendorOsGuid,
+        (CHAR16 *) NameNVRAM, &AppleBootGuid,
         &VarData, NULL
     );
 
@@ -1207,7 +1209,7 @@ VOID SetBootArgs (VOID) {
     UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
+        &AppleBootGuid, (CHAR16 *) NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
 
@@ -1233,6 +1235,7 @@ VOID SetBootArgs (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
+    MY_FREE_POOL(VarData);
     MY_FREE_POOL(BootArg);
     MY_FREE_POOL(DataNVRAM);
 } // static VOID SetBootArgs()
@@ -1259,7 +1262,7 @@ EFI_STATUS NoCheckCompat (VOID) {
 
     VarData = NULL;
     GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleVendorOsGuid,
+        (CHAR16 *) NameNVRAM, &AppleBootGuid,
         &VarData, NULL
     );
 
@@ -1298,7 +1301,7 @@ EFI_STATUS NoCheckCompat (VOID) {
             MY_MUTELOGGER_SET;
             #endif
             Status = EfivarSetRaw (
-                &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
+                &AppleBootGuid, (CHAR16 *) NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
             #if REFIT_DEBUG > 0
@@ -1333,7 +1336,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
 
     VarData = NULL;
     GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleVendorOsGuid,
+        (CHAR16 *) NameNVRAM, &AppleBootGuid,
         &VarData, NULL
     );
 
@@ -1365,7 +1368,7 @@ EFI_STATUS NoCheckAMFI (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
+                &AppleBootGuid, (CHAR16 *) NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -1397,7 +1400,7 @@ EFI_STATUS NoNvramPanicLog (VOID) {
 
     VarData = NULL;
     GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleVendorOsGuid,
+        (CHAR16 *) NameNVRAM, &AppleBootGuid,
         &VarData, NULL
     );
 
@@ -1433,7 +1436,7 @@ EFI_STATUS NoNvramPanicLog (VOID) {
             UnicodeStrToAsciiStr (BootArg, DataNVRAM);
 
             Status = EfivarSetRaw (
-                &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
+                &AppleBootGuid, (CHAR16 *) NameNVRAM,
                 DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
             );
         }
@@ -1457,13 +1460,14 @@ EFI_STATUS TrimCoerce (VOID) {
     CHAR16 *MsgStr;
     #endif
 
+
     if (!GlobalConfig.ForceTRIM) {
         // Early Return
         return EFI_NOT_STARTED;
     }
 
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, (CHAR16 *) NameNVRAM,
+        &AppleBootGuid, (CHAR16 *) NameNVRAM,
         DataNVRAM, sizeof (DataNVRAM), TRUE
     );
 
@@ -1498,7 +1502,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
         Protocol, Interface,
         AgentHandle, ControllerHandle, Attributes
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         if (Status != EFI_UNSUPPORTED) {
             return Status;
         }
@@ -1510,13 +1514,13 @@ EFI_STATUS EFIAPI OpenProtocolEx (
             Status     = EFI_SUCCESS;
         }
     }
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return Status;
     }
 
     if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
         if (UGADraw != NULL) {
-            *Interface = GOPDraw;
+            *Interface = UGADraw;
             Status     = EFI_SUCCESS;
         }
         else {
@@ -1525,7 +1529,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                 NULL, Interface
             );
         }
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             return EFI_SUCCESS;
         }
     }
@@ -2674,7 +2678,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("L I S T   M I S C   S E T T I N G S");
     LOG_MSG("\n");
     LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                              );
-    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel        ));
+    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(LogLevelConfig               ));
     LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay       ));
     LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA       ));
     LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
@@ -2704,6 +2708,13 @@ EFI_STATUS EFIAPI efi_main (
     else {
         LOG_MSG("'%s'", GlobalConfig.TextOnly ? L"Active" : L"Inactive"             );
     }
+    LOG_MSG("%s      SetAppleFB:- ",       OffsetNext                               );
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'"                                                        );
+    }
+    else {
+        LOG_MSG("'%s'", GlobalConfig.SetAppleFB ? L"Active" : L"Inactive"        );
+    }
 
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot      ));
@@ -2726,13 +2737,6 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                               );
-    if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                        );
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"        );
-    }
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
         LOG_MSG("'Disabled'"                                                        );
@@ -2800,7 +2804,7 @@ EFI_STATUS EFIAPI efi_main (
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
-        Status = RP_ApfsConnectDevices();
+        Status = RefitApfsConnectDevices();
     }
     #endif
 
@@ -3380,7 +3384,7 @@ EFI_STATUS EFIAPI efi_main (
                     ResetNVRam = 1;
                     REFIT_CALL_5_WRAPPER(
                         gRT->SetVariable, L"ResetNVRam",
-                        &AppleVendorOsGuid, AccessFlagsFull,
+                        &AppleBootGuid, AccessFlagsFull,
                         sizeof (ResetNVRam), &ResetNVRam
                     );
                 }

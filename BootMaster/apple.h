@@ -58,7 +58,7 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 
 // DA-TAG: Limit to TianoCore Builds
 #ifdef __MAKEWITH_TIANO
-APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (IN BOOLEAN Reinstall);
+APPLE_FRAMEBUFFER_INFO_PROTOCOL * RefitAppleFbInfoInstallProtocol (IN BOOLEAN Reinstall);
 #endif
 
 #endif // APPLE_FRAMEBUFFER_INFO_H
@@ -123,13 +123,13 @@ typedef struct {
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore - START
-EFI_STATUS RP_GetApfsVolumeInfo (
+EFI_STATUS RefitGetApfsVolumeInfo (
     IN  EFI_HANDLE         Device,
     OUT EFI_GUID          *ContainerGuid OPTIONAL,
     OUT EFI_GUID          *VolumeGuid    OPTIONAL,
     OUT APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 );
-CHAR16 * RP_GetAppleDiskLabel (
+CHAR16 * RefitGetAppleDiskLabel (
     IN  REFIT_VOLUME *Volume
 );
 // DA-TAG: Limit to TianoCore - END
@@ -145,10 +145,10 @@ CHAR16 * RP_GetAppleDiskLabel (
   0x40A0DDD2, 0x77F8, 0x4392, {0xB4, 0xA3, 0x1E, 0x73, 0x04, 0x20, 0x65, 0x16}  \
 }
 
-// Apple NVRAM Variable namespace (APPLE_VENDOR_OS_VARIABLE_GUID)
-// 7C436110-AB2A-4BBB-A880-FE41995C9F82
+// Apple NVRAM Variable namespace (APPLE_BOOT_VARIABLE_GUID) 7C436110-AB2A-4BBB-A880-FE41995C9F82
 // https://github.com/apple/darwin-xnu/blob/2ff845c2e033bd0ff64b5b6aa6063a1f8f65aa32/iokit/Kernel/IONVRAM.cpp#L161-L165
-#define APPLE_VENDOR_OS_VARIABLE_GUID \
+// NB: Not using 'APPLE_VENDOR_OS_VARIABLE_GUID' name in RefindPlus
+#define APPLE_BOOT_VARIABLE_GUID \
 { \
   0x7c436110, 0xab2a, 0x4bbb, {0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82}  \
 }

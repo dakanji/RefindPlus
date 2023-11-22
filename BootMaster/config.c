@@ -74,6 +74,8 @@ refindplus_linux.conf,refindplus-linux.conf"
 
 #define LAST_MINUTE                     (1439) /* Last minute of a day */
 
+INTN                   LogLevelConfig  = 0;
+
 UINTN                  TotalEntryCount = 0;
 UINTN                  ValidEntryCount = 0;
 
@@ -2228,7 +2230,9 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
             // DA-TAG: Signed integer as *MAY* have negative value input
-            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
+            HandleSignedInt (TokenList, TokenCount, &LogLevelConfig);
+            GlobalConfig.LogLevel = LogLevelConfig;
+
             // Sanitise levels
             if (0);
             else if (GlobalConfig.LogLevel < LOGLEVELOFF) GlobalConfig.LogLevel = LOGLEVELOFF;
@@ -2868,13 +2872,24 @@ VOID ReadConfig (
                 GlobalConfig.RescanDXE = TRUE;
             }
         }
-        else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
-            GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
+        else if (
+            MyStriCmp (TokenList[0], L"disable_set_consolegop") ||
+            MyStriCmp (TokenList[0], L"provide_console_gop")
+        ) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            if (MyStriCmp (TokenList[0], L"disable_set_consolegop")) {
+                GlobalConfig.SetConsoleGOP = (DeclineSetting) ? FALSE : TRUE;
+            }
+            else {
+                // DA_TAG: Duplication Purely to Accomodate Deprecation
+                //         Change top level 'substring' check when dropped
+                GlobalConfig.SetConsoleGOP = DeclineSetting;
+            }
 
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'provide_console_gop'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_set_consolegop'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -3068,18 +3083,19 @@ VOID ReadConfig (
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"disable_provide_fb") ||
-            MyStriCmp (TokenList[0], L"decline_apple_fb")   ||
+            MyStriCmp (TokenList[0], L"disable_set_applefb") ||
+            MyStriCmp (TokenList[0], L"disable_provide_fb")  ||
+            MyStriCmp (TokenList[0], L"decline_apple_fb")    ||
             MyStriCmp (TokenList[0], L"decline_applefb")
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyAppleFB = (DeclineSetting) ? FALSE : TRUE;
+            GlobalConfig.SetAppleFB = (DeclineSetting) ? FALSE : TRUE;
 
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'disable_provide_fb'", OffsetNext);
+                LOG_MSG("%s  - Updated:- 'disable_set_applefb'", OffsetNext);
                 MuteLogger = TRUE;
             }
             #endif
@@ -3457,7 +3473,7 @@ VOID ReadConfig (
     if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
     if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
     if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
-    if (!AppleFirmware) GlobalConfig.SupplyAppleFB  = FALSE;
+    if (!AppleFirmware) GlobalConfig.SetAppleFB     = FALSE;
 
     // Prioritise EnableTouch
     if (GlobalConfig.EnableTouch) {

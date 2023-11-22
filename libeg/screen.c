@@ -112,7 +112,7 @@ VOID DisableGOP (VOID) {
 } // static VOID DisableGOP()
 
 static
-EFI_STATUS EFIAPI RP_GopDrawQueryMode (
+EFI_STATUS EFIAPI RefitGopDrawQueryMode (
     IN  EFI_GRAPHICS_OUTPUT_PROTOCOL           *This,
     IN  UINT32                                  ModeNumber,
     OUT UINTN                                  *SizeOfInfo,
@@ -133,7 +133,7 @@ EFI_STATUS EFIAPI RP_GopDrawQueryMode (
     }
 
     return EFI_SUCCESS;
-} // static EFI_STATUS EFIAPI RP_GopDrawQueryMode()
+} // static EFI_STATUS EFIAPI RefitGopDrawQueryMode()
 
 static
 EFI_STATUS EFIAPI OcGopDrawSetMode (
@@ -149,7 +149,7 @@ EFI_STATUS EFIAPI OcGopDrawSetMode (
 } // static EFI_STATUS EFIAPI OcGopDrawSetMode()
 
 static
-EFI_STATUS EFIAPI RP_GopDrawBlt (
+EFI_STATUS EFIAPI RefitGopDrawBlt (
     IN  EFI_GRAPHICS_OUTPUT_PROTOCOL       *This,
     IN  EFI_GRAPHICS_OUTPUT_BLT_PIXEL      *BltBuffer    OPTIONAL,
     IN  EFI_GRAPHICS_OUTPUT_BLT_OPERATION   BltOperation,
@@ -172,10 +172,10 @@ EFI_STATUS EFIAPI RP_GopDrawBlt (
         DestinationX, DestinationY,
         Width, Height, Delta
     );
-} // static EFI_STATUS EFIAPI RP_GopDrawBlt()
+} // static EFI_STATUS EFIAPI RefitGopDrawBlt()
 
 static
-EFI_STATUS RP_ProvideGopPassThrough (
+EFI_STATUS RefitProvideGopPassThrough (
     IN BOOLEAN  ForAll
 ) {
     EFI_STATUS                        Status;
@@ -280,9 +280,9 @@ EFI_STATUS RP_ProvideGopPassThrough (
         }
 
         OcGopDraw->Uga                      = UgaDraw;
-        OcGopDraw->GraphicsOutput.QueryMode = RP_GopDrawQueryMode;
+        OcGopDraw->GraphicsOutput.QueryMode = RefitGopDrawQueryMode;
         OcGopDraw->GraphicsOutput.SetMode   = OcGopDrawSetMode;
-        OcGopDraw->GraphicsOutput.Blt       = RP_GopDrawBlt;
+        OcGopDraw->GraphicsOutput.Blt       = RefitGopDrawBlt;
         OcGopDraw->GraphicsOutput.Mode      = AllocateZeroPool (sizeof (*OcGopDraw->GraphicsOutput.Mode));
         if (OcGopDraw->GraphicsOutput.Mode == NULL) {
             MY_FREE_POOL(OcGopDraw);
@@ -332,7 +332,7 @@ EFI_STATUS RP_ProvideGopPassThrough (
     MY_FREE_POOL(HandleBuffer);
 
     return Status;
-} // static EFI_STATUS RP_ProvideGopPassThrough()
+} // static EFI_STATUS RefitProvideGopPassThrough()
 // DA-TAG: Limit to TianoCore - END
 #endif
 
@@ -553,7 +553,7 @@ BOOLEAN SupplyConsoleGop (
     ValueValidGOP = FALSE;
 #else
     ValueValidGOP = GotGoodGOP = FALSE;
-    if (GlobalConfig.ProvideConsoleGOP) {
+    if (GlobalConfig.SetConsoleGOP) {
         Status = RefitCheckGOP (FixGOP);
         if (Status == EFI_ALREADY_STARTED) {
             GotGoodGOP = TRUE;
@@ -575,7 +575,7 @@ BOOLEAN SupplyConsoleGop (
             Status = OcProvideConsoleGop (TRUE);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Status:- '%r' ... OcProvideConsoleGop", OffsetNext, Status);
+            LOG_MSG("%s  - Status:- '%r' ... SetConsoleOutGOP", OffsetNext, Status);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -585,7 +585,7 @@ BOOLEAN SupplyConsoleGop (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s  - Status:- '%r' ... HandleProtocol", OffsetNext, Status);
+                LOG_MSG("%s  - Status:- '%r' ... HandleProtocolGOP", OffsetNext, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -1311,9 +1311,9 @@ VOID egInitScreen (VOID) {
         }
     }
 
-    // Set 'ObtainHandleGOP', if false, to 'ProvideConsoleGOP' value
+    // Set 'ObtainHandleGOP', if false, to 'SetConsoleGOP' value
     if (!ObtainHandleGOP) {
-        ObtainHandleGOP = GlobalConfig.ProvideConsoleGOP;
+        ObtainHandleGOP = GlobalConfig.SetConsoleGOP;
     }
 
     // Get GOPDraw Protocol
@@ -1469,7 +1469,7 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                if (!GlobalConfig.ProvideConsoleGOP) {
+                if (!GlobalConfig.SetConsoleGOP) {
                     GOPDraw = OldGop;
                     thisValidGOP = TRUE;
 
@@ -1522,7 +1522,7 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                if (!GlobalConfig.ProvideConsoleGOP) {
+                if (!GlobalConfig.SetConsoleGOP) {
                     #if REFIT_DEBUG > 0
                     LOG_MSG("\n\n");
                     #endif
@@ -1761,13 +1761,13 @@ VOID egInitScreen (VOID) {
             break;
         }
 
-        if (!GlobalConfig.SupplyAppleFB || AppleFramebuffers > 0) {
+        if (!GlobalConfig.SetAppleFB || AppleFramebuffers > 0) {
             // Break Loop
             break;
         }
 
         // Install AppleFramebuffers and Update AppleFramebuffer Count
-        RP_AppleFbInfoInstallProtocol (TRUE);
+        RefitAppleFbInfoInstallProtocol (TRUE);
         AppleFramebuffers = egCountAppleFramebuffers();
         if (AppleFramebuffers == 0) {
             // Break Loop
@@ -1798,7 +1798,7 @@ VOID egInitScreen (VOID) {
             break;
         }
 
-        Status = RP_ProvideGopPassThrough (FALSE);
+        Status = RefitProvideGopPassThrough (FALSE);
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Implement GOP Pass Through ... %r", Status);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

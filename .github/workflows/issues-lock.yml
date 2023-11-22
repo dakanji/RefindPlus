@@ -34,7 +34,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '0'
           include-any-issue-labels: 'Resolved'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -43,7 +43,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Invalid/Not-Planned Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -52,7 +52,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Not-Planned'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Misc Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -70,7 +70,26 @@ jobs:
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Duplicate, Cannot-Replicate, Known-Issue, Cancelled'
+          include-any-issue-labels: 'Duplicate, Cannot-Replicate, Cancelled'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          issue-comment: |-
+            This thread is being locked.
+
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
+          process-only: 'issues'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 48s
+
+      - name: Lock Acknowledged/Known Issues
+        uses: dakanji/lock-threads@v4.0.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-lock-reason: ''
+          add-issue-labels: ''
+          issue-inactive-days: '2'
+          include-any-issue-labels: 'Acknowledged, Known-Issue'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
@@ -80,7 +99,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -98,7 +117,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Unclear Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -116,7 +135,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Inactive Issues
         uses: dakanji/lock-threads@v4.0.0.1
@@ -126,8 +145,8 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '3'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Unclear, Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          exclude-any-issue-labels: 'Acknowledged, Known-Issue, Unclear, Parked, Prorogued, Help-Wanted'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -136,7 +155,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 64s
+          sleep 48s
 
       - name: Lock Declined Pull Requests
         uses: dakanji/lock-threads@v4.0.0.1

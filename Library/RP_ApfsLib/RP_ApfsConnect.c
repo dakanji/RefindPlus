@@ -206,7 +206,7 @@ EFI_STATUS ApfsConnectDevice (
     return Status;
 }
 
-EFI_STATUS RP_ApfsConnectHandle (
+EFI_STATUS RefitApfsConnectHandle (
     IN EFI_HANDLE  Handle
 ) {
     EFI_STATUS              Status;
