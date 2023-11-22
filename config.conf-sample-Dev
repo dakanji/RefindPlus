@@ -566,6 +566,29 @@
 #
 #csr_values 10,77
 
+# Hide user interface elements for personal preference or for security:
+#  banner      - the RefindPlus title banner (built-in or loaded via "banner")
+#  label       - boot option text label in the menu
+#  singleuser  - remove the submenu options to boot macOS in single-user
+#                or verbose modes (macOS only)
+#  safemode    - remove the submenu option to boot macOS in "safe mode"
+#  hwtest      - the submenu option to run Apple's hardware test
+#  arrows      - scroll arrows on the OS selection tag line
+#  hints       - brief command summary in the menu
+#  editor      - the options editor (+, F2, or Insert on boot options menu)
+#  badges      - device-type badges for boot options
+#  all         - all of the above
+#  none        - none of the above (default)
+#
+# NOTES:
+# 1. The 'all' option takes precedence over others apart from 'none'
+# 2. The 'none' option takes precedence over every other setting
+#
+# All elements are active when commented out or set to 'none'
+#
+#hideui singleuser
+#hideui all
+
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about
 # what RefindPlus is doing. When set to "1" or above, the logging is in the upstream
@@ -968,24 +991,6 @@
 # Uses the built-in font, Luxi Mono Regular 12 point, when commented out
 #
 #font myfont.png
-
-# Hide user interface elements for personal preference or for security:
-#  banner      - the RefindPlus title banner (built-in or loaded via "banner")
-#  label       - boot option text label in the menu
-#  singleuser  - remove the submenu options to boot macOS in single-user
-#                or verbose modes (macOS only)
-#  safemode    - remove the submenu option to boot macOS in "safe mode"
-#  hwtest      - the submenu option to run Apple's hardware test
-#  arrows      - scroll arrows on the OS selection tag line
-#  hints       - brief command summary in the menu
-#  editor      - the options editor (+, F2, or Insert on boot options menu)
-#  badges      - device-type badges for boot options
-#  all         - all of the above
-#
-# All elements are active when commented out
-#
-#hideui singleuser
-#hideui all
 
 # Set the name of a subdirectory in which icons are stored. All icons must
 # have the same names as in the standard directory. The subdirectory name

@@ -1964,6 +1964,7 @@ VOID ReadConfig (
     BOOLEAN           DoneManual;
     BOOLEAN           CheckManual;
     BOOLEAN           HiddenTagsFlag;
+    BOOLEAN           GotHideuiAll;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
     CHAR16           *MsgStr;
@@ -2097,36 +2098,52 @@ VOID ReadConfig (
             #endif
         }
         else if (MyStriCmp (TokenList[0], L"hideui")) {
+            GotHideuiAll = FALSE;
+
+            // DA-TAG: This allows reset/override in 'included' config files
+            GlobalConfig.HideUIFlags = 0;
+
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                if (0);
-                else if (MyStriCmp (Flag, L"all")       ) GlobalConfig.HideUIFlags  = HIDEUI_FLAG_ALL;
-                else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
-                else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
-                else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
-                else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
-                else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
-                else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
-                else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
-                else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
-                else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
-                else {
-                    SwitchToText (FALSE);
+                if (MyStriCmp (Flag, L"none")) {
+                    // DA-TAG: Required despite earlier reset
+                    //         This will always be used if in token list
+                    GlobalConfig.HideUIFlags = 0;
+                    break;
+                }
+                else if (MyStriCmp (Flag, L"all")) {
+                    GotHideuiAll = TRUE;
+                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
+                }
+                else if (!GotHideuiAll) {
+                    if (0);
+                    else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
+                    else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
+                    else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
+                    else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
+                    else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
+                    else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
+                    else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
+                    else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
+                    else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
+                    else {
+                        SwitchToText (FALSE);
 
-                    MsgStr = PoolPrint (
-                        L"  - WARN: Invalid 'hideui' Flag:- '%s'",
-                        Flag
-                    );
-                    PrintUglyText (MsgStr, NEXTLINE);
+                        MsgStr = PoolPrint (
+                            L"  - WARN: Invalid 'hideui' Flag:- '%s'",
+                            Flag
+                        );
+                        PrintUglyText (MsgStr, NEXTLINE);
 
-                    #if REFIT_DEBUG > 0
-                    MuteLogger = FALSE;
-                    LOG_MSG("%s%s", OffsetNext, MsgStr);
-                    MuteLogger = TRUE;
-                    #endif
+                        #if REFIT_DEBUG > 0
+                        MuteLogger = FALSE;
+                        LOG_MSG("%s%s", OffsetNext, MsgStr);
+                        MuteLogger = TRUE;
+                        #endif
 
-                    PauseForKey();
-                    MY_FREE_POOL(MsgStr);
+                        PauseForKey();
+                        MY_FREE_POOL(MsgStr);
+                    }
                 }
             } // for
 

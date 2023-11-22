@@ -19,6 +19,13 @@
   * Consistent with upstream implementation
     - `'Plain' Binaries` are assumed valid on Apple firmware
     - Upstream considers such invalid on all firmware types
+ - Amends `HideUIFlags` Handling
+  * Now aligned with behaviour of other configuration tokens
+    - Existing settings are now overridden by settings in supplementary/theme config files
+    - Settings in supplementary/theme config files were previously added to existing ones
+  * A new flag, `none`, was added
+    - Allows reseting the token in supplementary/theme config files
+    - Takes priority over all other settings whenever present
 - Amends `Ventoy` Handling
   * `Whole Disk` volumes with `Legacy Bootcode` were previously hidden whenever `Ventoy` was present
     - This was to avoid spurious/unbootable instances appearing
