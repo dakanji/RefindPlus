@@ -1196,8 +1196,8 @@ VOID SetLoaderDefaults (
     TmpIconName = NULL;
     if (FindSubStr (LoaderPath, MACOSX_LOADER_PATH)) {
         BREAD_CRUMB(L"%s:  5a 1", FuncTag);
-        if (FileExists (Volume->RootDir, L"EFI\\refindplus\\config.conf") ||
-            FileExists (Volume->RootDir, L"EFI\\refindplus\\refind.conf") ||
+        if (FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf") ||
             FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
@@ -2529,7 +2529,9 @@ BOOLEAN ScanMacOsLoader (
     if (FileExists (Volume->RootDir, FullFileName) &&
         !FilenameIn (Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)
     ) {
-        if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
+        if (FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
             AddLoaderEntry (FullFileName, L"Instance: RefindPlus", Volume, TRUE, FALSE);

@@ -625,7 +625,7 @@ EFI_STATUS FindVarsDir (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Locate/Create Emulated Memory for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+        L"Locate/Create Emulated Variable Memory for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
         Status
     );
     #endif
@@ -643,13 +643,13 @@ EFI_STATUS FindVarsDir (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated Memory for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
+            L"Locate/Create Emulated Variable Memory for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
             Status
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID,
-                L"Activate The 'use_nvram' Config Token to Use Hardware Memory Instead"
+                L"Activate The 'use_nvram' Config Token to Use Hardware Variable Memory Instead"
             );
         }
         #endif
@@ -702,7 +702,7 @@ EFI_STATUS EfivarGetRaw (
             }
 
             MsgStr = PoolPrint (
-                L"In Emulated Memory ... Could *NOT* Read UEFI Variable:- '%s'",
+                L"In Variable Memory (Emulated) ... Could *NOT* Read UEFI Variable:- '%s'",
                 VariableName
             );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
@@ -722,7 +722,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated Memory ... %r %s:- '%s'",
+            L"In Variable Memory (Emulated) ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
         );
         #endif
@@ -769,7 +769,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware Memory ... %r %s:- '%s'",
+            L"In Variable Memory (Hardware) ... %r %s:- '%s'",
             Status, NVRAM_LOG_GET, VariableName
         );
         #endif
@@ -890,14 +890,14 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated Memory ... %r %s:- '%s'",
+            L"In Variable Memory (Emulated) ... %r %s:- '%s'",
             Status, NVRAM_LOG_SET, VariableName
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
-            LOG_MSG("** WARN: Could *NOT* Save to Emulated Memory:- '%s'", VariableName);
+            LOG_MSG("** WARN: Could *NOT* Save to Emulated Variable Memory:- '%s'", VariableName);
             LOG_MSG("\n");
             LOG_MSG("         %s", MsgStr);
             LOG_MSG("\n\n");
@@ -918,7 +918,7 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware Memory ... %r %s:- '%s'",
+            L"In Variable Memory (Hardware) ... %r %s:- '%s'",
             Status, NVRAM_LOG_SET, VariableName
         );
         #endif

@@ -644,7 +644,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         LimitStringLength (LogNameFull, 32);
 
         MsgStr = PoolPrint (
-            L"In Hardware Memory ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
+            L"In Variable Memory (Hardware) ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
             LogStatus,
             NVRAM_LOG_SET,
             (BlockUEFI)
@@ -1502,39 +1502,22 @@ EFI_STATUS EFIAPI OpenProtocolEx (
         Protocol, Interface,
         AgentHandle, ControllerHandle, Attributes
     );
-    if (EFI_ERROR(Status)) {
-        if (Status != EFI_UNSUPPORTED) {
-            return Status;
-        }
-    }
-
-    if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-        if (GOPDraw != NULL) {
-            *Interface = GOPDraw;
-            Status     = EFI_SUCCESS;
-        }
-    }
     if (!EFI_ERROR(Status)) {
-        return Status;
-    }
-
-    if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
-        if (UGADraw != NULL) {
-            *Interface = UGADraw;
-            Status     = EFI_SUCCESS;
+        if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->LocateProtocol, &gEfiGraphicsOutputProtocolGuid,
+                NULL, Interface
+            );
         }
-        else {
+        else if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
             Status = REFIT_CALL_3_WRAPPER(
                 gBS->LocateProtocol, &gEfiUgaDrawProtocolGuid,
                 NULL, Interface
             );
         }
-        if (!EFI_ERROR(Status)) {
-            return EFI_SUCCESS;
-        }
     }
 
-    return EFI_UNSUPPORTED;
+    return Status;
 } // EFI_STATUS EFIAPI OpenProtocolEx()
 
 
@@ -1559,8 +1542,8 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 
 static
 VOID ReMapOpenProtocol (VOID) {
-    if (!GOPDraw) {
-        // Early Return if GOP is Absent
+    if (!GOPDraw && !UGADraw) {
+        // Early Return if GOP and UGA are Absent
         return;
     }
 
@@ -1569,7 +1552,7 @@ VOID ReMapOpenProtocol (VOID) {
             // Early Return on Compact Macs
             return;
         }
-        if (AppleFramebuffers == 0) {
+        if (AppleFramebuffers < 1) {
             // Early Return on Macs without AppleFramebuffers
             return;
         }
@@ -1677,7 +1660,7 @@ BOOLEAN ShowCleanNvramInfo (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
+        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     LOG_MSG("Received User Input:");
@@ -1766,7 +1749,7 @@ VOID AboutRefindPlus (VOID) {
         TRUE
     );
     if (!HasMacOS) {
-        TmpStr = StrDuplicate (L"Inactive");
+        TmpStr = StrDuplicate (L"Absent");
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1795,7 +1778,10 @@ VOID AboutRefindPlus (VOID) {
         LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
     }
     AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for macOS : %s", TmpStr),                   TRUE);
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Output : %s", egScreenDescription()),    TRUE);
+    MY_FREE_POOL(TmpStr);
+
+    TmpStr = egScreenDescription();
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Output : %s", TmpStr),                   TRUE);
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
@@ -3354,7 +3340,7 @@ EFI_STATUS EFIAPI efi_main (
                 while ((VarNVRAM = FindCommaDelimited (
                     RP_NVRAM_VARIABLES, i++
                 )) != NULL) {
-                    // Clear Emulated Memory
+                    // Clear Emulated Variable Memory
                     if (!EFI_ERROR(Status)) {
                         egSaveFile (
                             gVarsDir, VarNVRAM,
@@ -3362,13 +3348,13 @@ EFI_STATUS EFIAPI efi_main (
                         );
                     }
 
-                    // Clear Hardware Memory (RefindPlusGuid)
+                    // Clear Hardware Variable Memory (RefindPlusGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusGuid,
                         AccessFlagsFull, 0, NULL
                     );
 
-                    // Clear Hardware Memory (RefindPlusOldGuid)
+                    // Clear Hardware Variable Memory (RefindPlusOldGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusOldGuid,
                         AccessFlagsFull, 0, NULL

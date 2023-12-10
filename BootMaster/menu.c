@@ -2752,8 +2752,8 @@ VOID DisplaySimpleMessage (
     TypeMenuExit = (MenuExit < 0) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
 
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call in 'DisplaySimpleMessage'",
-        MenuExit, TypeMenuExit
+        L"Returned '%d' (%s) in 'DisplaySimpleMessage' From RunGenericMenu Call on '%s'",
+        MenuExit, TypeMenuExit, Title
     );
     #endif
 
@@ -2952,7 +2952,7 @@ VOID ManageHiddenTags (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
+            L"Returned '%d' (%s) in 'ManageHiddenTags' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -3113,7 +3113,7 @@ BOOLEAN HideEfiTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideEfiTag'",
+        L"Returned '%d' (%s) in 'HideEfiTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3168,7 +3168,7 @@ BOOLEAN HideFirmwareTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
+        L"Returned '%d' (%s) in 'HideFirmwareTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3221,7 +3221,7 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideLegacyTag'",
+        L"Returned '%d' (%s) in 'HideLegacyTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3432,7 +3432,7 @@ BOOLEAN ConfirmRestart (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmRestart'",
+        L"Returned '%d' (%s) in 'ConfirmRestart' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3486,7 +3486,7 @@ BOOLEAN ConfirmShutdown (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmShutdown'",
+        L"Returned '%d' (%s) in 'ConfirmShutdown' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3517,7 +3517,7 @@ UINTN RunMenu (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMenu'",
+        L"Returned '%d' (%s) in 'RunMenu' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
     #endif
@@ -3664,7 +3664,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMainMenu'",
+            L"Returned '%d' (%s) in 'RunMainMenu' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
@@ -3695,7 +3695,7 @@ UINTN RunMainMenu (
                 BREAD_CRUMB(L"%s:  9a 3a 1b 2", FuncTag);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Returned '%d' (%s) From RunGenericMenu Call on SubScreen in 'RunMainMenu'",
+                    L"Returned '%d' (%s) in 'RunMainMenu' From RunGenericMenu Call on SubScreen",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif

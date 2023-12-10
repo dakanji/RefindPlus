@@ -716,10 +716,6 @@ VOID AddLegacyEntry (
     CHAR16            *LegacyTitle;
     CHAR16             ShortcutLetter;
 
-    #if REFIT_DEBUG > 0
-    UINTN              LogLineType;
-    #endif
-
 
     ShortcutLetter = 0;
     if (LoaderTitle == NULL) {
@@ -754,17 +750,6 @@ VOID AddLegacyEntry (
        // Early Return
        return;
     }
-
-    #if REFIT_DEBUG > 0
-    LogLineType = (FirstLegacyScan)
-        ? LOG_STAR_HEAD_SEP
-        : LOG_THREE_STAR_SEP;
-
-    ALT_LOG(1, LogLineType,
-        L"Adding Legacy Boot Entry for '%s'",
-        LegacyTitle
-    );
-    #endif
 
     FirstLegacyScan = FALSE;
 
@@ -851,6 +836,13 @@ VOID AddLegacyEntry (
     Entry->me.SubScreen = SubScreen;
 
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_THREE_STAR_END,
+        L"Successfully Created Menu Entry for %s",
+        LoaderTitle
+    );
+    #endif
 } // static VOID AddLegacyEntry()
 
 
@@ -962,7 +954,10 @@ VOID AddLegacyEntryUEFI (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s  - Found 'UEFI-Style' Legacy Bootcode on '%s'", OffsetNext, BdsOption->Description);
+    ALT_LOG(1, LOG_THREE_STAR_END,
+        L"Successfully Created Menu Entry for Legacy Bootcode for %s",
+        BdsOption->Description
+    );
     #endif
 } // static VOID AddLegacyEntryUEFI()
 
@@ -1279,8 +1274,10 @@ VOID ScanLegacyInternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
+    #if REFIT_DEBUG > 0
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ScanLegacyInternal";
+    #endif
 
     ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"

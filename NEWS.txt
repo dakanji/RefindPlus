@@ -202,7 +202,7 @@
   * Log file handling tweaks
 - Amends `ScanAllESP` Feature
   * Now aligned with upstream implementation and scans all ESPs by default
-  * Hence, the "Opt-Out" `decline_esp_filter` token is replaced by the "Opt-In `enable_esp_filter`
+  * Hence, the "Opt-Out" `decline_esp_filter` token is replaced by the "Opt-In" `enable_esp_filter`
   * A previous issue where the token operated the wrong way round has been fixed
 
 
@@ -237,8 +237,8 @@
   * Ensures correct icon scales are maintained on `RescanAll` calls
 - Amends `SupplyNVME` and `SupplyUEFI` Features
   * No longer supplied by default but when specifically activated
-  * Hence, the "Opt-Out" `decline_nvme_load` token has been replaced by an "Opt-In `supply_nvme` token
-  * The "Opt-Out" `decline_uefi_emulate` token has also been replaced by an "Opt-In `supply_uefi` token
+  * Hence, the "Opt-Out" `decline_nvme_load` token has been replaced by an "Opt-In" `supply_nvme` token
+  * The "Opt-Out" `decline_uefi_emulate` token has also been replaced by an "Opt-In" `supply_uefi` token
   * A previous failure to be activated when NVME support was absent has been fixed
 - Renames Misc Configuration Tokens
   * `decline_tags_help` to `decline_help_tags`

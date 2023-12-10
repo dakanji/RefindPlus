@@ -2005,54 +2005,37 @@ VOID ReadConfig (
         LOG_MSG("R E A D   C O N F I G U R A T I O N   T O K E N S");
         MuteLogger = TRUE;
         #endif
-    } // if OuterLoop
+    }
 
-    if (!FileExists (SelfDir, FileName)) {
-        SwitchToText (FALSE);
+    if (FileExists (SelfDir, FileName)) {
+        Status = RefitReadFile (SelfDir, FileName, &File, &i);
+    }
+    else {
+        Status = EFI_NOT_FOUND;
 
-        MsgStr = StrDuplicate (
-            L"  - WARN: Cannot Find Configuration File ... Loading Defaults!!"
-        );
-        #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
-        LOG_MSG("%s%s", OffsetNext, MsgStr);
-        MuteLogger = TRUE;
-        #endif
-        PrintUglyText (MsgStr, NEXTLINE);
-        MY_FREE_POOL(MsgStr);
-
-        if (!FileExists (SelfDir, L"icons")) {
-            MsgStr = StrDuplicate (
-                L"  - WARN: Cannot Find Icons Directory ... Switching to Text Mode!!"
-            );
+        if (OuterLoop) {
             #if REFIT_DEBUG > 0
             MuteLogger = FALSE;
-            LOG_MSG("%s%s", OffsetNext, MsgStr);
+            LOG_MSG("%s  - WARN: Cannot Find Configuration File ... Using Default Settings!!", OffsetNext);
             MuteLogger = TRUE;
             #endif
-            PrintUglyText (MsgStr, NEXTLINE);
-            MY_FREE_POOL(MsgStr);
 
-            GlobalConfig.TextOnly = TRUE;
+            if (!FileExists (SelfDir, L"icons")) {
+                #if REFIT_DEBUG > 0
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - WARN: Cannot Find Icons Directory ... Using Text Mode!!", OffsetNext);
+                MuteLogger = TRUE;
+                #endif
+
+                GlobalConfig.TextOnly = TRUE;
+            }
         }
-
-        #if REFIT_DEBUG > 0
-        MuteLogger = FALSE;
-        LOG_MSG("\n");
-        MuteLogger = TRUE; /* Explicit For FB Infer */
-        #endif
-
-        PauseForKey();
-        SwitchToGraphics();
-
-        return;
-    } // if !FileExists
-
-    Status = RefitReadFile (SelfDir, FileName, &File, &i);
+    }
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
-        LOG_MSG("\n");
+        LOG_MSG("Invalid Configuration File ... Aborting File Load");
+        LOG_MSG("\n\n");
         MuteLogger = TRUE; /* Explicit For FB Infer */
         #endif
 
@@ -2111,38 +2094,41 @@ VOID ReadConfig (
                     GlobalConfig.HideUIFlags = 0;
                     break;
                 }
-                else if (MyStriCmp (Flag, L"all")) {
-                    GotHideuiAll = TRUE;
-                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
-                }
                 else if (!GotHideuiAll) {
-                    if (0);
-                    else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
-                    else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
-                    else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
-                    else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
-                    else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
-                    else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
-                    else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
-                    else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
-                    else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
+                    // DA-TAG: Arranged as so to prioritise 'none' above
+                    if (MyStriCmp (Flag, L"all")) {
+                        GotHideuiAll = TRUE;
+                        GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
+                    }
                     else {
-                        SwitchToText (FALSE);
+                        if (0);
+                        else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
+                        else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
+                        else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
+                        else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
+                        else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
+                        else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
+                        else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
+                        else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
+                        else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
+                        else {
+                            SwitchToText (FALSE);
 
-                        MsgStr = PoolPrint (
-                            L"  - WARN: Invalid 'hideui' Flag:- '%s'",
-                            Flag
-                        );
-                        PrintUglyText (MsgStr, NEXTLINE);
+                            MsgStr = PoolPrint (
+                                L"  - WARN: Invalid 'hideui' Flag:- '%s'",
+                                Flag
+                            );
+                            PrintUglyText (MsgStr, NEXTLINE);
 
-                        #if REFIT_DEBUG > 0
-                        MuteLogger = FALSE;
-                        LOG_MSG("%s%s", OffsetNext, MsgStr);
-                        MuteLogger = TRUE;
-                        #endif
+                            #if REFIT_DEBUG > 0
+                            MuteLogger = FALSE;
+                            LOG_MSG("%s%s", OffsetNext, MsgStr);
+                            MuteLogger = TRUE;
+                            #endif
 
-                        PauseForKey();
-                        MY_FREE_POOL(MsgStr);
+                            PauseForKey();
+                            MY_FREE_POOL(MsgStr);
+                        }
                     }
                 }
             } // for
@@ -3550,7 +3536,8 @@ VOID ReadConfig (
     MuteLogger = FALSE;
     #endif
 
-    if (!FileExists (SelfDir, L"icons") &&
+    if (!GlobalConfig.TextOnly                   &&
+        !FileExists (SelfDir, L"icons")          &&
         !FileExists (SelfDir, GlobalConfig.IconsDir)
     ) {
         #if REFIT_DEBUG > 0
