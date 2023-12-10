@@ -41,6 +41,9 @@
 - Amends `GOP Graphics` Handling
   * GOP is now provided/replaced on the `ConsoleOut` handle by default when required
   * Hence, the "Opt-In" `provide_console_gop` token is replaced by the "Opt-Out" `disable_set_consolegop`
+- Removes `HelpTags` Feature
+  * The issue the feature was meant to fix does not actually exist
+  * The associated `decline_help_tags` configuration token is now removed and ignored if set
 - Renames Configuration Token
   * `decline_apple_fb` to `disable_set_applefb`
 

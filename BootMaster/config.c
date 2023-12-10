@@ -1963,7 +1963,6 @@ VOID ReadConfig (
     BOOLEAN           DoneTool;
     BOOLEAN           DoneManual;
     BOOLEAN           CheckManual;
-    BOOLEAN           HiddenTagsFlag;
     BOOLEAN           GotHideuiAll;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
@@ -3149,23 +3148,6 @@ VOID ReadConfig (
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"decline_help_tags") ||
-            MyStriCmp (TokenList[0], L"decline_tags_help") ||
-            MyStriCmp (TokenList[0], L"decline_tagshelp")
-        ) {
-            // DA_TAG: Accomodate Deprecation
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.HelpTags = (DeclineSetting) ? FALSE : TRUE;
-
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'decline_help_tags'", OffsetNext);
-                MuteLogger = TRUE;
-            }
-            #endif
-        }
-        else if (
             MyStriCmp (TokenList[0], L"decline_help_text") ||
             MyStriCmp (TokenList[0], L"decline_text_help") ||
             MyStriCmp (TokenList[0], L"decline_texthelp")
@@ -3498,54 +3480,6 @@ VOID ReadConfig (
     if (GlobalConfig.EnableTouch) {
         GlobalConfig.EnableMouse = FALSE;
     }
-
-    if (GlobalConfig.HelpTags) {
-        // "TagHelp" feature is active ... Set "found" flag to false
-        HiddenTagsFlag = FALSE;
-        // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
-        for (i = 0; i < NUM_TOOLS; i++) {
-            switch (GlobalConfig.ShowTools[i]) {
-                case TAG_EXIT:
-                case TAG_ABOUT:
-                case TAG_SHELL:
-                case TAG_GDISK:
-                case TAG_REBOOT:
-                case TAG_MEMTEST:
-                case TAG_GPTSYNC:
-                case TAG_NETBOOT:
-                case TAG_INSTALL:
-                case TAG_MOK_TOOL:
-                case TAG_FIRMWARE:
-                case TAG_SHUTDOWN:
-                case TAG_BOOTORDER:
-                case TAG_CSR_ROTATE:
-                case TAG_FWUPDATE_TOOL:
-                case TAG_INFO_NVRAMCLEAN:
-                case TAG_RECOVERY_WINDOWS:
-                case TAG_RECOVERY_APPLE:
-                    // Continue checking
-
-                break;
-                case TAG_HIDDEN:
-                    // Tag to end search ... "hidden_tags" tool is already set
-                    HiddenTagsFlag = TRUE;
-
-                break;
-                default:
-                    // Setup help needed ... "hidden_tags" tool is not set
-                    GlobalConfig.ShowTools[i] = TAG_HIDDEN;
-                    GlobalConfig.HiddenTags   = TRUE;
-
-                    // Tag to end search ... "hidden_tags" tool is now set
-                    HiddenTagsFlag = TRUE;
-            } // switch
-
-            if (HiddenTagsFlag) {
-                // Halt search loop
-                break;
-            }
-        } // for
-    } // if GlobalConfig.HelpTags
 
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE;

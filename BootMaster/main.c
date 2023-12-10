@@ -124,7 +124,6 @@ REFIT_CONFIG GlobalConfig = {
     /* ScanAllESP = */ TRUE,
     /* HelpIcon = */ TRUE,
     /* HelpScan = */ TRUE,
-    /* HelpTags = */ TRUE,
     /* HelpText = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
@@ -2746,7 +2745,6 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
     LOG_MSG("%s      HelpScan:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpScan        ));
-    LOG_MSG("%s      HelpTags:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpTags        ));
     LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon        ));
     LOG_MSG("%s      AlignCSR:- ",         OffsetNext                               );
     if (GlobalConfig.DynamicCSR == 1) {

@@ -3533,6 +3533,7 @@ UINTN RunMainMenu (
     REFIT_MENU_ENTRY   *TempChosenEntry;
     MENU_STYLE_FUNC     Style;
     MENU_STYLE_FUNC     MainStyle;
+    EG_PIXEL            BGColor = COLOR_LIGHTBLUE;
     BOOLEAN             KeyStrokeFound;
     UINTN               MenuExit;
     INTN                DefaultEntryIndex;
@@ -3541,6 +3542,7 @@ UINTN RunMainMenu (
     #if REFIT_DEBUG > 0
     CHAR16         *MsgStr;
     BOOLEAN         SetSelection;
+    BOOLEAN         CheckMute    = FALSE;
     static BOOLEAN  ShowLoaded   =  TRUE;
     #endif
 
@@ -3726,6 +3728,19 @@ UINTN RunMainMenu (
             if (GlobalConfig.HiddenTags) {
                 BREAD_CRUMB(L"%s:  9a 4a 1a 1", FuncTag);
                 HideTag (TempChosenEntry);
+            }
+            else {
+                BREAD_CRUMB(L"%s:  9a 4a 1b 1", FuncTag);
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_SET;
+                #endif
+                egDisplayMessage (
+                    L"Enable 'hidden_tags' in 'showtools' config to hide tag", &BGColor,
+                    CENTER, 3, L"PauseSeconds"
+                );
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
             }
 
             BREAD_CRUMB(L"%s:  9a 4a 2", FuncTag);

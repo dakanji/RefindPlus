@@ -67,17 +67,6 @@
 #
 #decline_help_scan
 
-# Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
-# by default (even when the tool is not specified in the "showtools" list). This is done
-# to ensure that items hidden (always possible) can also be unhidden (only possible if
-# the "hidden_tags" tool is available). When this option is enabled, this "help" with
-# setup will be deactivated, and the ability to unhide items will be solely based on
-# whether "hidden_tags" has been explicitly defined in the "showtools" list or not.
-#
-# The "hidden_tags" tool is always made available when commented out
-#
-#decline_help_tags
-
 # The "HelpText" feature uses complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
 # colour of first pixel in the pixel array (top left pixel). This may not always embody
