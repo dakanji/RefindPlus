@@ -479,6 +479,7 @@ typedef struct {
     BOOLEAN                     FoldLinuxKernels;
     BOOLEAN                     EnableMouse;
     BOOLEAN                     EnableTouch;
+    BOOLEAN                     PersistBootArgs;
     BOOLEAN                     HiddenTags;
     BOOLEAN                     UseNvram;
     BOOLEAN                     TransientBoot;

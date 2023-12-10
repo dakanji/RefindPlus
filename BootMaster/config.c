@@ -2155,6 +2155,10 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"set_boot_args")) {
             HandleString (TokenList, TokenCount, &(GlobalConfig.SetBootArgs));
 
+            if (MyStriCmp (GlobalConfig.SetBootArgs, L"-none")) {
+                MY_FREE_POOL(GlobalConfig.SetBootArgs);
+            }
+
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 MuteLogger = FALSE;
@@ -2875,6 +2879,17 @@ VOID ReadConfig (
             if (GlobalConfig.EnableTouch) {
                 GlobalConfig.RescanDXE = TRUE;
             }
+        }
+        else if (MyStriCmp (TokenList[0], L"persist_boot_args")) {
+            GlobalConfig.PersistBootArgs = HandleBoolean (TokenList, TokenCount);
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'persist_boot_args'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_set_consolegop") ||

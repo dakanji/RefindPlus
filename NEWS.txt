@@ -1,11 +1,18 @@
 0.14.0.AC (PRE-RELEASE):
 -----------------------
+- Adds `PersistBootArgs` Feature
+  * Outputs of macOS Boot argument related settings are now written to vRAM instead of to nvRAM
+    - This is to reduce wear and tear on the nvRAM storage chip
+  * Enabled by default but can be disabled using a new `persist_boot_args` configuration token
 - Fixes `HelpIcon` Feature
   * The feature had been switched off by default instead of being switched on
   * This bug was introduced in v0.14.0.AB (Commit 9dcd45a)
 - Fixes `Legacy MBR`, including `Legacy Windows`, Handling
   * Negatively impacted by `Volume->RootDir` filtering in the `DontScanVolumes` check consolidation
   * This bug was introduced in v0.14.0.AB (Commit a92b376)
+- Improves `SetBootArgs` Handling
+  * The `set_boot_args` configuration token can now take a `-none` setting
+  * This permits disabling previous settings in supplementary/theme config files
 - Improves Misc Linux Distro Handling
   * Now better labelled
 - Improves Icon File Scanning

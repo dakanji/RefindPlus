@@ -93,6 +93,7 @@ REFIT_CONFIG GlobalConfig = {
     /* FoldLinuxKernels = */ TRUE,
     /* EnableMouse = */ FALSE,
     /* EnableTouch = */ FALSE,
+    /* PersistBootArgs = */ FALSE,
     /* HiddenTags = */ TRUE,
     /* UseNvram = */ FALSE,
     /* TransientBoot = */ FALSE,
@@ -234,6 +235,9 @@ BOOLEAN                WarnVersionEFI       = FALSE;
 BOOLEAN                WarnRevisionUEFI     = FALSE;
 BOOLEAN                WarnMissingQVInfo    = FALSE;
 BOOLEAN                SecureBootFailure    = FALSE;
+BOOLEAN                VarDisableAMFI       = FALSE;
+BOOLEAN                VarNoCompatCheck     = FALSE;
+BOOLEAN                VarDisablePanicLog   = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_GUID               RefindPlusOldGuid    = REFINDPLUS_OLD_GUID;
 EFI_GUID               OpenCoreVendorGuid   = OPENCORE_VENDOR_GUID;
@@ -436,7 +440,7 @@ EFI_STATUS GetHardwareNvramVariable (
         return EFI_NOT_FOUND;
     }
 
-    TmpBuffer = AllocateZeroPool (BufferSize);
+    TmpBuffer = AllocatePool (BufferSize);
     if (!TmpBuffer) {
         return EFI_OUT_OF_RESOURCES;
     }
@@ -515,6 +519,71 @@ EFI_STATUS SetHardwareNvramVariable (
     return Status;
 } // static EFI_STATUS SetHardwareNvramVariable()
 
+static
+EFI_STATUS StoreBootArgsNvram (
+    IN  VOID      *VariableData OPTIONAL
+) {
+    EFI_STATUS   Status;
+    UINTN        VariableSize;
+    UINTN        OldSize;
+    VOID        *OldBuf;
+    UINT32       Attributes;
+    BOOLEAN      SettingMatch;
+
+    OldSize = 0;
+    OldBuf  = NULL;
+    Status  = EFI_LOAD_ERROR;
+
+    if (!VariableData) {
+        VariableSize = 0;
+    }
+    else {
+        VariableSize = AsciiStrSize ((CHAR8 *) VariableData);
+        if (VariableSize == 0) {
+            VariableData = NULL;
+        }
+    }
+
+    if (VariableSize != 0) {
+        Status = GetHardwareNvramVariable (
+            L"boot-args", &AppleBootGuid,
+            &OldBuf, &OldSize
+        );
+        if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
+            // Early Return
+            return Status;
+        }
+    }
+
+    SettingMatch = FALSE;
+    if (!EFI_ERROR(Status)) {
+        if (VariableSize != 0) {
+            // Check for match
+            SettingMatch = (
+                VariableSize == OldSize &&
+                CompareMem (VariableData, OldBuf, VariableSize) == 0
+            );
+        }
+        MY_FREE_POOL(OldBuf);
+
+        if (SettingMatch) {
+            // Early Return
+            return EFI_ALREADY_STARTED;
+        }
+    }
+
+    // Store the new value
+    Attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+    if (GlobalConfig.PersistBootArgs) {
+        Attributes |= EFI_VARIABLE_NON_VOLATILE;
+    }
+    Status = OrigSetVariableRT (
+        L"boot-args", &AppleBootGuid,
+        Attributes, VariableSize, VariableData
+    );
+
+    return Status;
+} // static EFI_STATUS StoreBootArgsNvram()
 
 static
 EFI_STATUS EFIAPI gRTSetVariableEx (
@@ -1019,13 +1088,45 @@ VOID LogDisableCheck (
 #endif
 
 static
+VOID HandleArgs (
+    IN EFI_STATUS  Result
+) {
+    #if REFIT_DEBUG > 0
+    if (VarDisableAMFI    ) LogDisableCheck (BOOT_FIX_STR_01, Result);
+    if (VarNoCompatCheck  ) LogDisableCheck (BOOT_FIX_STR_02, Result);
+    if (VarDisablePanicLog) LogDisableCheck (BOOT_FIX_STR_03, Result);
+    #endif
+
+    VarDisableAMFI     = FALSE;
+    VarNoCompatCheck   = FALSE;
+    VarDisablePanicLog = FALSE;
+} // static VOID HandleArgs()
+
+static
+EFI_STATUS StoreArgs (
+    IN CHAR16       *BootArg
+) {
+    CHAR8           *DataNVRAM;
+
+    DataNVRAM = AllocatePool (
+        (StrLen (BootArg) + 1) * sizeof (CHAR8)
+    );
+    if (!DataNVRAM) {
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+    UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+
+    return StoreBootArgsNvram (DataNVRAM);
+} // static EFI_STATUS StoreArgs()
+
+static
 VOID SetBootArgs (VOID) {
     EFI_STATUS    Status;
     CHAR16       *BootArg;
     CHAR8        *DataNVRAM;
     VOID         *VarData;
-    const CHAR16 *NameNVRAM = L"boot-args";
-
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
@@ -1052,46 +1153,37 @@ VOID SetBootArgs (VOID) {
         return;
     }
 
-    #if REFIT_DEBUG > 0
-    LogDisableAMFI          = FALSE;
-    LogDisableCompatCheck   = FALSE;
-    LogDisableNvramPanicLog = FALSE;
-    #endif
-
     if (MyStrStr (GlobalConfig.SetBootArgs, L"nvram_paniclog")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableNvramPanicLog) {
-            // Ensure Logging
-            LogDisableNvramPanicLog = TRUE;
-        }
-        #endif
-
         // Do not duplicate 'nvram_paniclog=0'
-        GlobalConfig.DisableNvramPanicLog = FALSE;
+        VarDisablePanicLog  = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableNvramPanicLog = GlobalConfig.DisableNvramPanicLog;
+    }
+    else {
+        LogDisableNvramPanicLog = FALSE;
+#endif
     }
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableAMFI) {
-            // Ensure Logging
-            LogDisableAMFI = TRUE;
-        }
-        #endif
-
         // Do not duplicate 'amfi_get_out_of_my_way=1'
-        GlobalConfig.DisableAMFI = FALSE;
+        VarDisableAMFI = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableAMFI = GlobalConfig.DisableAMFI;
+    }
+    else {
+        LogDisableAMFI = FALSE;
+#endif
     }
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableCompatCheck) {
-            // Ensure Logging
-            LogDisableCompatCheck = TRUE;
-        }
-        #endif
-
         // Do not duplicate '-no_compat_check'
-        GlobalConfig.DisableCompatCheck = FALSE;
+        VarNoCompatCheck = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableCompatCheck = GlobalConfig.DisableCompatCheck;
+    }
+    else {
+        LogDisableCompatCheck = FALSE;
+#endif
     }
 
     if (GlobalConfig.DisableAMFI &&
@@ -1157,81 +1249,36 @@ VOID SetBootArgs (VOID) {
         BootArg = StrDuplicate (GlobalConfig.SetBootArgs);
     }
 
-    DataNVRAM = AllocatePool (
-        (StrLen (BootArg) + 1) * sizeof (CHAR8)
-    );
-    if (!DataNVRAM) {
-        MY_FREE_POOL(BootArg);
-
-        #if REFIT_DEBUG > 0
-        Status = EFI_OUT_OF_RESOURCES;
-
-        MsgStr = PoolPrint (
-            L"Reset Boot Args ... %r",
-            Status
+    DataNVRAM = AllocatePool ((StrLen (BootArg) + 1) * sizeof (CHAR8));
+    Status = (DataNVRAM) ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES;
+    if (!EFI_ERROR(Status)) {
+        VarData = NULL;
+        GetHardwareNvramVariable (
+            L"boot-args", &AppleBootGuid,
+            &VarData, NULL
         );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
 
-        // Early Return
-        return;
+        if (VarData && MyStrStr (VarData, BootArg)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+            Status = StoreBootArgsNvram (DataNVRAM);
+        }
     }
-
-    VarData = NULL;
-    GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleBootGuid,
-        &VarData, NULL
-    );
-
-    if (VarData && MyStriCmp (BootArg, VarData)) {
-        #if REFIT_DEBUG > 0
-        Status = EFI_ALREADY_STARTED;
-
-        MsgStr = PoolPrint (
-            L"%r When Setting Boot Args:- '%s'",
-            Status, BootArg
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        MY_FREE_POOL(VarData);
-        MY_FREE_POOL(BootArg);
-
-        // Early Return
-        return;
-    }
-
-    // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-    UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-    Status = EfivarSetRaw (
-        &AppleBootGuid, (CHAR16 *) NameNVRAM,
-        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-    );
 
     #if REFIT_DEBUG > 0
-    if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
-        LogDisableCheck (BOOT_FIX_STR_01, Status);
-    }
-
-    if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
-        LogDisableCheck (BOOT_FIX_STR_02, Status);
-    }
-
-    if (LogDisableNvramPanicLog || GlobalConfig.DisableNvramPanicLog) {
-        LogDisableCheck (BOOT_FIX_STR_03, Status);
-    }
+    if (LogDisableAMFI         ) LogDisableCheck (BOOT_FIX_STR_01, Status);
+    if (LogDisableCompatCheck  ) LogDisableCheck (BOOT_FIX_STR_02, Status);
+    if (LogDisableNvramPanicLog) LogDisableCheck (BOOT_FIX_STR_03, Status);
 
     MsgStr = PoolPrint (
-        L"%r When Setting Boot Args:- '%s'",
+        L"Status:- '%r' ... Set Boot Arguments: '%s'",
         Status, GlobalConfig.SetBootArgs
     );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -1241,42 +1288,134 @@ VOID SetBootArgs (VOID) {
 } // static VOID SetBootArgs()
 
 static
-EFI_STATUS NoCheckCompat (VOID) {
+EFI_STATUS NoCheckAMFI (VOID) {
     EFI_STATUS    Status;
     CHAR16       *BootArg;
     CHAR16       *CurArgs;
-    CHAR8        *DataNVRAM;
+    CHAR16       *ArgData;
     VOID         *VarData;
-    const CHAR16 *NameNVRAM = L"boot-args";
-    const CHAR16 *ArgData   = L"-no_compat_check";
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN  CheckMute = FALSE;
-    #endif
 
 
-    if (!GlobalConfig.DisableCompatCheck) {
+    if (!VarDisableAMFI) {
         // Early Return ... Do Not Log
         return EFI_NOT_STARTED;
     }
 
     VarData = NULL;
-    GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleBootGuid,
+    BootArg = NULL;
+    ArgData = L"amfi_get_out_of_my_way";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
         &VarData, NULL
     );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    if (!VarData) {
-        BootArg = StrDuplicate ((CHAR16 *) ArgData);
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = PoolPrint (L"%s=1", ArgData);
+        }
     }
     else {
         CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        if (FindSubStr (CurArgs, (CHAR16 *) ArgData)) {
+        if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
+            if (VarNoCompatCheck) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"-no_compat_check amfi_get_out_of_my_way";
+                }
+            }
+
+            if (VarDisablePanicLog) {
+                if (!FindSubStr (CurArgs, L"nvram_paniclog")) {
+                    if (VarNoCompatCheck) {
+                        ArgData = L"nvram_paniclog=0 -no_compat_check amfi_get_out_of_my_way";
+                    }
+                    else {
+                        ArgData = L"nvram_paniclog=0 amfi_get_out_of_my_way";
+                    }
+                }
+            }
+
+            BootArg = PoolPrint (
+                L"%s %s=1",
+                CurArgs, ArgData
+            );
+        }
+        MY_FREE_POOL(CurArgs);
+    }
+
+    if (!EFI_ERROR(Status)) {
+        Status = StoreArgs (BootArg);
+    }
+    MY_FREE_POOL(BootArg);
+
+    if (!EFI_ERROR(Status)) {
+        HandleArgs (Status);
+    }
+    else {
+        VarDisableAMFI = FALSE;
+
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_01, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
+
+    return Status;
+} // static EFI_STATUS NoCheckAMFI()
+
+static
+EFI_STATUS NoCheckCompat (VOID) {
+    EFI_STATUS    Status;
+    CHAR16       *BootArg;
+    CHAR16       *CurArgs;
+    CHAR16       *ArgData;
+    VOID         *VarData;
+
+
+    if (!VarNoCompatCheck) {
+        // Early Return ... Do Not Log
+        return EFI_NOT_STARTED;
+    }
+
+    VarData = NULL;
+    BootArg = NULL;
+    ArgData = L"-no_compat_check";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
+        &VarData, NULL
+    );
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = StrDuplicate (ArgData);
+        }
+    }
+    else {
+        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
+        if (FindSubStr (CurArgs, ArgData)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            if (VarDisableAMFI) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"amfi_get_out_of_my_way=1 -no_compat_check";
+                }
+            }
+
+            if (VarDisablePanicLog) {
+                if (!FindSubStr (CurArgs, L"nvram_paniclog")) {
+                    if (VarDisableAMFI) {
+                        ArgData = L"nvram_paniclog=0 amfi_get_out_of_my_way=1 -no_compat_check";
+                    }
+                    else {
+                        ArgData = L"nvram_paniclog=0 -no_compat_check";
+                    }
+                }
+            }
+
             BootArg = PoolPrint (
                 L"%s %s",
                 CurArgs, ArgData
@@ -1286,137 +1425,78 @@ EFI_STATUS NoCheckCompat (VOID) {
     }
 
     if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
-            Status = EfivarSetRaw (
-                &AppleBootGuid, (CHAR16 *) NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
-        }
+        Status = StoreArgs (BootArg);
     }
     MY_FREE_POOL(BootArg);
 
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_02, Status);
-    #endif
+    if (!EFI_ERROR(Status)) {
+        HandleArgs (Status);
+    }
+    else {
+        VarNoCompatCheck = FALSE;
+
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_02, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
 
     return Status;
 } // static EFI_STATUS NoCheckCompat()
-
-static
-EFI_STATUS NoCheckAMFI (VOID) {
-    EFI_STATUS    Status;
-    CHAR16       *BootArg;
-    CHAR16       *CurArgs;
-    CHAR8        *DataNVRAM;
-    VOID         *VarData;
-    const CHAR16 *NameNVRAM = L"boot-args";
-    const CHAR16 *ArgData   = L"amfi_get_out_of_my_way";
-
-
-    if (!GlobalConfig.DisableAMFI) {
-        // Early Return ... Do Not Log
-        return EFI_NOT_STARTED;
-    }
-
-    VarData = NULL;
-    GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleBootGuid,
-        &VarData, NULL
-    );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    if (!VarData) {
-        BootArg = PoolPrint (L"%s=1", ArgData);
-    }
-    else {
-        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        BootArg = PoolPrint (L"%s %s=1", CurArgs, ArgData);
-
-        if (FindSubStr (CurArgs, (CHAR16 *) ArgData)) {
-            Status = EFI_ALREADY_STARTED;
-        }
-        MY_FREE_POOL(CurArgs);
-    }
-
-    if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            Status = EfivarSetRaw (
-                &AppleBootGuid, (CHAR16 *) NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-        }
-    }
-    MY_FREE_POOL(BootArg);
-
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_01, Status);
-    #endif
-
-    return Status;
-} // static EFI_STATUS NoCheckAMFI()
 
 static
 EFI_STATUS NoNvramPanicLog (VOID) {
     EFI_STATUS    Status;
     CHAR16       *BootArg;
     CHAR16       *CurArgs;
-    CHAR8        *DataNVRAM;
+    CHAR16       *ArgData;
     VOID         *VarData;
-    const CHAR16 *NameNVRAM = L"boot-args";
-    const CHAR16 *ArgData   = L"nvram_paniclog=0";
 
 
-    if (!GlobalConfig.DisableNvramPanicLog) {
+    if (!VarDisablePanicLog ) {
         // Early Return ... Do Not Log
         return EFI_NOT_STARTED;
     }
 
     VarData = NULL;
-    GetHardwareNvramVariable (
-        (CHAR16 *) NameNVRAM, &AppleBootGuid,
+    BootArg = NULL;
+    ArgData = L"nvram_paniclog";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
         &VarData, NULL
     );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    if (!VarData) {
-        BootArg = StrDuplicate ((CHAR16 *) ArgData);
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = PoolPrint (L"%s=0", ArgData);
+        }
     }
     else {
         CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        if (FindSubStr (CurArgs, (CHAR16 *) ArgData)) {
+        if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
+            if (VarDisableAMFI) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"amfi_get_out_of_my_way=1 nvram_paniclog";
+                }
+            }
+
+            if (VarNoCompatCheck) {
+                if (!FindSubStr (CurArgs, L"-no_compat_check")) {
+                    if (VarDisableAMFI) {
+                        ArgData = L"-no_compat_check amfi_get_out_of_my_way=1 nvram_paniclog";
+                    }
+                    else {
+                        ArgData = L"-no_compat_check nvram_paniclog";
+                    }
+                }
+            }
+
             BootArg = PoolPrint (
-                L"%s %s",
+                L"%s %s=0",
                 CurArgs, ArgData
             );
         }
@@ -1424,28 +1504,22 @@ EFI_STATUS NoNvramPanicLog (VOID) {
     }
 
     if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            Status = EfivarSetRaw (
-                &AppleBootGuid, (CHAR16 *) NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-        }
+        Status = StoreArgs (BootArg);
     }
     MY_FREE_POOL(BootArg);
 
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_03, Status);
-    #endif
+    if (!EFI_ERROR(Status)) {
+        HandleArgs (Status);
+    }
+    else {
+        VarDisablePanicLog = FALSE;
+
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_03, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
 
     return Status;
 } // static EFI_STATUS NoNvramPanicLog()
@@ -1454,7 +1528,6 @@ static
 EFI_STATUS TrimCoerce (VOID) {
     EFI_STATUS    Status;
     CHAR8         DataNVRAM[1] = {0x01};
-    const CHAR16 *NameNVRAM = L"EnableTRIM";
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -1466,9 +1539,9 @@ EFI_STATUS TrimCoerce (VOID) {
         return EFI_NOT_STARTED;
     }
 
-    Status = EfivarSetRaw (
-        &AppleBootGuid, (CHAR16 *) NameNVRAM,
-        DataNVRAM, sizeof (DataNVRAM), TRUE
+    Status = SetHardwareNvramVariable (
+        L"EnableTRIM", &AppleBootGuid,
+        AccessFlagsFull, AsciiStrSize (DataNVRAM), DataNVRAM
     );
 
     #if REFIT_DEBUG > 0
@@ -2629,6 +2702,9 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Load config tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
+    VarDisableAMFI     = GlobalConfig.DisableAMFI         ;
+    VarNoCompatCheck   = GlobalConfig.DisableCompatCheck  ;
+    VarDisablePanicLog = GlobalConfig.DisableNvramPanicLog;
 
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO

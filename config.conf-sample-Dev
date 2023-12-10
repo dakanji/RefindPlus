@@ -108,10 +108,10 @@
 # this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
 # argument which along with System Integrity Protection (SIP), restricts
 # application access to OS entitlements. Note that this setting will
-# create a macOS boot argument the first time it is triggered
-# and that this boot argument will remain active until
-# it is explicitly cleared, even if this setting
-# is subsequently deactivated.
+# create a macOS boot argument the first time it is triggered when
+# "persist_boot_args" is also set, and that this boot argument
+# will remain active until it is explicitly cleared, even
+# if this setting is subsequently deactivated.
 #
 # Inactive when commented out (Does not stop AMFI checks)
 #
@@ -163,9 +163,10 @@
 # the current macOS version is supported on the machine when booting, and halt
 # if not. When this option is active, RefindPlus will add "-no_compat_check" to
 # the boot arguments to disable this check, which allows macOS boot on otherwise
-# unsupported Macs. Note that this setting will create a macOS boot argument the
-# first time it is triggered and that this boot argument will remain active until
-# it is explicitly cleared, even if this setting is subsequently deactivated.
+# unsupported Macs. Note that when "persist_boot_args" is also set, this setting
+# will create a macOS boot argument the first time it is triggered and that the
+# boot argument will remain active until it is explicitly cleared, even if
+# this setting is subsequently deactivated.
 #
 # Inactive when commented out (Does not stop macOS compatibility checks)
 #
@@ -175,9 +176,10 @@
 # the nvRAM under certain conditions which can increase wear and tear on legacy
 # Mac nvRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
 # the boot arguments which disables panic log writes to the nvRAM for writes
-# to the filesystem instead. Note that this token will create a macOS boot
-# argument the first time it is triggered which will remain active until
-# explicitly cleared, even if this setting is subsequently deactivated.
+# to the filesystem instead. Note that when "persist_boot_args" is also
+# set, this token will create a macOS boot argument the first time it
+# is triggered which will remain active until explicitly cleared,
+# even if this setting is subsequently deactivated.
 #
 # Inactive when commented out (Does not stop macOS panic log writes to nvRAM)
 #
@@ -384,6 +386,21 @@
 #
 #pass_uga_through
 
+# To minimise nvRAM wear and tear, RefindPlus
+# defaults to saving the outputs of these macOS
+# boot argument related settings to vRAM instead:
+#     - disable_amfi
+#     - disable_compat_check
+#     - disable_nvram_paniclog
+#     - set_boot_args
+# This token can be activated in cases where writing
+# such to the nvRAM flash chip is preferred instead.
+# NB: This is only relevant when booting into macOS.
+#
+# macOS boot argument items are not persisted when commented out
+#
+#persist_boot_args
+
 # RefindPlus defaults to using the Graphic Output Protocol (GOP) for graphics
 # output if available and only falls backs on the Universal Graphics Adapter
 # (UGA) when this is available and GOP is not. When this setting is active,
@@ -464,12 +481,13 @@
 # Set arbitrary boot arguments on macOS boot. When this option is active,
 # RefindPlus will change the macOS boot arguments to the specified string.
 # This setting only applies to macOS and it accounts for arguments injected
-# by the "disable_amfi" and "disable_compat_check" settings. Note that this
-# will create a macOS boot argument the first time it is triggered and
-# that the boot argument will remain active until it is explicitly
-# cleared, even if this setting is subsequently deactivated.
+# by the "disable_amfi" and "disable_compat_check" settings. Note that when
+# "persist_boot_args" is also set, this setting will create a macOS boot
+# argument the first time it is triggered and that the boot argument
+# will remain active until it is explicitly cleared, even if this
+# setting is subsequently deactivated.
 #
-# Inactive when commented out (Does not change boot arguments)
+# Inactive when commented out or set to "-none" (Does not change boot arguments)
 #
 #set_boot_args "-v"
 
