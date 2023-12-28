@@ -93,10 +93,10 @@ UINTN   egScreenWidth  = 800;
 UINTN   egScreenHeight = 600;
 
 // DA-TAG: Investigate This
-//         The code block within the 'MAKEWITH_TIANO' bock below is directly from OpenCore
+//         Code within 'MAKEWITH_TIANO' block below is directly from OpenCore
 //         Licensed under the BSD 3 license
 //         Added directly as missing in OpenCorePkg version in RefindPlusUDK
-//         Hook directly if/when OpenCorePkg is updated
+//         Potentially hook directly if/when OpenCorePkg is updated
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore - START
 typedef struct {
@@ -619,7 +619,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     CHAR16 *PixelFormatDesc;
     #endif
 
-    if (GOPDraw == NULL) {
+    if (!GOPDraw) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could *NOT* Find GOP Instance");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
@@ -746,7 +746,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     CHAR16 *MsgStr;
     #endif
 
-    if (GOPDraw == NULL) {
+    if (!GOPDraw) {
         return EFI_UNSUPPORTED;
     }
 
@@ -780,7 +780,7 @@ EFI_STATUS egSetGopMode (
     LOG_MSG("Set GOP Mode:");
     #endif
 
-    if (GOPDraw == NULL) {
+    if (!GOPDraw) {
         #if REFIT_DEBUG > 0
         MsgStr = L"Could *NOT* Set GOP Mode";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
@@ -864,7 +864,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     CHAR16 *MsgStr;
     #endif
 
-    if (GOPDraw == NULL) {
+    if (!GOPDraw) {
         // Cannot do this in text mode or with UGA.
         // So get and set basic data and ignore.
         UINT32 Depth, RefreshRate;
@@ -882,7 +882,9 @@ EFI_STATUS egSetMaxResolution (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Set Screen Resolution:");
+    MsgStr = L"Sync Screen Resolution";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
     #endif
 
     MaxMode = GOPDraw->Mode->MaxMode;
@@ -908,7 +910,8 @@ EFI_STATUS egSetMaxResolution (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"BestMode:- 'GOP Mode[%02d] on GPU Handle[%02d] @ %d x %d'",
+    MsgStr = PoolPrint (
+        L"BestMode:- 'GOP Mode[%02d] on GPU Handle[%02d] @ %d x %d'",
         BestMode, SelectedGOP,
         Width, Height
     );
@@ -943,7 +946,9 @@ EFI_STATUS egSetMaxResolution (VOID) {
             Status = egSetGopMode (1);
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Could *NOT* Set BestMode ... Try First Useable Mode");
+            MsgStr = StrDuplicate (
+                L"Could *NOT* Set BestMode ... Try First Useable Mode"
+            );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -973,12 +978,12 @@ VOID egDetermineScreenSize (VOID) {
     UINT32     UgaRefreshRate;
 
     // Get screen size
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         egHasGraphics  = TRUE;
         egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
         egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
     }
-    else if (UGADraw != NULL) {
+    else if (UGADraw) {
         Status = REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &ScreenW, &ScreenH,
@@ -1000,7 +1005,7 @@ VOID egDetermineScreenSize (VOID) {
 UINTN egCountAppleFramebuffers (VOID) {
     EFI_STATUS                       Status;
     UINTN                            HandleCount;
-    EFI_GUID                         AppleFramebufferInfoProtocolGuid  = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
+    EFI_GUID                         AppleFramebufferInfoProtocolGuid = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
     EFI_HANDLE                      *HandleBuffer;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
 
@@ -1189,7 +1194,9 @@ BOOLEAN egInitUGADraw (
         for (i = 0; i < HandleCount; i++) {
             if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s    ** Skipped Handle[%02d] ... ConsoleOut Handle", OffsetNext, i);
+                LOG_MSG("%s    ** Skipped Handle[%02d] ... ConsoleOut Handle",
+                    OffsetNext, i
+                );
                 #endif
 
                 // Restart Loop
@@ -1197,7 +1204,9 @@ BOOLEAN egInitUGADraw (
             }
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    ** Examine Handle[%02d] ... %r", OffsetNext, i, Status);
+            LOG_MSG("%s    ** Examine Handle[%02d] ... %r",
+                OffsetNext, i, Status
+            );
             #endif
 
             Status = REFIT_CALL_3_WRAPPER(
@@ -1325,7 +1334,9 @@ VOID egInitScreen (VOID) {
         LOG_MSG("\n\n");
         LOG_MSG(
             "INFO: Skip GOP Search ... %s",
-            (SetPreferUGA) ? L"Enforced 'UGA-Only' Mode" : L"Apparent 'UGA-Only' Graphics"
+            (SetPreferUGA)
+                ? L"Enforced 'UGA-Only' Mode"
+                : L"Apparent 'UGA-Only' Graphics"
         );
         PrevFlag = TRUE;
         #endif
@@ -1380,7 +1391,9 @@ VOID egInitScreen (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s    ** Evaluate on GPU Handle[%02d] ... %r", OffsetNext, i, Status);
+                LOG_MSG("%s    ** Evaluate on GPU Handle[%02d] ... %r",
+                    OffsetNext, i, Status
+                );
                 #endif
 
                 Status = REFIT_CALL_3_WRAPPER(
@@ -1393,10 +1406,13 @@ VOID egInitScreen (VOID) {
                     #endif
                     MaxMode = TmpGop->Mode->MaxMode;
                     for (GopMode = 0; GopMode < MaxMode; GopMode++) {
-                        Status = TmpGop->QueryMode (TmpGop, GopMode, &SizeOfInfo, &Info);
+                        Status = TmpGop->QueryMode (
+                            TmpGop, GopMode, &SizeOfInfo, &Info
+                        );
                         if (EFI_ERROR(Status)) {
                             #if REFIT_DEBUG > 0
-                            LOG_MSG("%s        Ignore GPU Handle[%02d][%02d] ... QueryMode Failure",
+                            LOG_MSG(
+                                "%s        Ignore GPU Handle[%02d][%02d] ... QueryMode Failure",
                                 OffsetNext, i, GopMode
                             );
                             #endif
@@ -1482,7 +1498,10 @@ VOID egInitScreen (VOID) {
                     XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
-                        MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", XFlag);
+                        MsgStr = PoolPrint (
+                            L"Provide GOP on ConsoleOut Handle ... %r",
+                            XFlag
+                        );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
                         LOG_MSG("INFO: %s", MsgStr);
                     }
@@ -1516,7 +1535,9 @@ VOID egInitScreen (VOID) {
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
+                MsgStr = StrDuplicate (
+                    L"Assess Graphics Output Protocol ... NOT OK!!"
+                );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -1536,7 +1557,10 @@ VOID egInitScreen (VOID) {
                     XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
-                        MsgStr = PoolPrint (L"Replace GOP on ConsoleOut Handle ... %r", XFlag);
+                        MsgStr = PoolPrint (
+                            L"Replace GOP on ConsoleOut Handle ... %r",
+                            XFlag
+                        );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
                         LOG_MSG("INFO: %s", MsgStr);
                     }
@@ -1566,7 +1590,7 @@ VOID egInitScreen (VOID) {
         } // if/else Status == EFI_NOT_FOUND
 
         if (XFlag == EFI_SUCCESS && GlobalConfig.UseDirectGop) {
-            if (GOPDraw == NULL) {
+            if (!GOPDraw) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Cannot Implement Direct GOP Renderer");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1603,18 +1627,20 @@ VOID egInitScreen (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Implement Direct GOP Renderer ... %r", Status);
+                MsgStr = PoolPrint (
+                    L"Implement Direct GOP Renderer ... %r",
+                    Status
+                );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("INFO: %s", MsgStr);
                 LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
-            } // if/else GOPDraw == NULL
+            } // if/else !GOPDraw
         } // if XFlag == (EFI_SUCCESS && GlobalConfig.UseDirectGop)
     } // if/else FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)
 
-    // Get Screen Size
-    if (thisValidGOP && GOPDraw != NULL) {
+    if (thisValidGOP && GOPDraw) {
         do {
             if (FoundHandleUGA && SetPreferUGA) {
                 // Disable GOP
@@ -1683,7 +1709,7 @@ VOID egInitScreen (VOID) {
     } // if GOPDraw != NULL
 
     Height = Width = 0; // DA-TAG: Redundant for Infer
-    if (UGADraw != NULL) {
+    if (UGADraw) {
         Status = REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &Width, &Height,
@@ -1694,14 +1720,16 @@ VOID egInitScreen (VOID) {
         }
     }
 
-    if (!thisValidGOP && UGADraw == NULL) {
+    if (!thisValidGOP && !UGADraw) {
         // Graphics *IS NOT* Available
         // Fall Back on Text Mode
         egHasGraphics         = FlagUGA       = FALSE;
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Graphics *NOT* Available ... Falling Back on Text Mode");
+        MsgStr = StrDuplicate (
+            L"Graphics *NOT* Available ... Falling Back on Text Mode"
+        );
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -1709,7 +1737,7 @@ VOID egInitScreen (VOID) {
         PrevFlag = TRUE;
         #endif
     }
-    else if (UGADraw != NULL) {
+    else if (UGADraw) {
         // UGA Graphics Available
         egHasGraphics = FlagUGA = TRUE;
 
@@ -1814,7 +1842,7 @@ VOID egInitScreen (VOID) {
 #endif
 // Limit to TianoCore ... END
 
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         // We have graphics from GOP ... Discard UGA
         if (UGADraw) UGADraw  =  NULL;
         egHasGraphics         =  TRUE;
@@ -1825,7 +1853,9 @@ VOID egInitScreen (VOID) {
 
         #ifdef __MAKEWITH_TIANO
         // DA-TAG: Limit to TianoCore
-        if (GlobalConfig.UseTextRenderer || (AppleFirmware && GlobalConfig.TextOnly)) {
+        if ((GlobalConfig.UseTextRenderer) ||
+            (AppleFirmware && GlobalConfig.TextOnly)
+        ) {
             // Implement Text Renderer
             Status = OcUseBuiltinTextOutput (
                 (egHasGraphics)
@@ -1848,26 +1878,26 @@ VOID egInitScreen (VOID) {
         LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
-    } // if GOPDraw != NULL
+    } // if GOPDraw
 
     if (!egHasGraphics) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"No");
+        MsgStr = StrDuplicate (L"NO");
         #endif
     }
     else if (NewAppleFramebuffers) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Yes (Potentially Without Display%s)",
+            L"YES (Potentially Without Display%s)",
             (GlobalConfig.TextOnly)
                 ? L""
-                : L" ... Try \"TextOnly\" if so"
+                : L" ... Try 'textonly' config setting if so"
         );
         #endif
     }
     else if (!FlagUGA || !AppleFirmware || AppleFramebuffers > 0) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Yes");
+        MsgStr = StrDuplicate (L"YES");
         #endif
     }
     else {
@@ -1879,7 +1909,7 @@ VOID egInitScreen (VOID) {
         GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Yes (Without Display ... Forcing Text Mode)");
+        MsgStr = StrDuplicate (L"YES (Without Display ... Forcing Text Mode)");
         #endif
     }
 
@@ -1947,7 +1977,10 @@ BOOLEAN egSetScreenSize (
     UINT32       CurrentModeNum;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Set Screen Size Manually ... H = %d and W = %d", ScreenHeight, ScreenWidth);
+    LOG_MSG(
+        "Set Screen Size Manually ... H = %d and W = %d",
+        ScreenHeight, ScreenWidth
+    );
     LOG_MSG("\n");
     #endif
 
@@ -1966,7 +1999,7 @@ BOOLEAN egSetScreenSize (
     }
 
     ModeSet = FALSE;
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         // GOP mode (UEFI)
         CurrentModeNum = GOPDraw->Mode->Mode;
 
@@ -1986,7 +2019,9 @@ BOOLEAN egSetScreenSize (
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"GOP Mode Set from Configured Screen Width");
+                MsgStr = StrDuplicate (
+                    L"GOP Mode Set from Configured Screen Width"
+                );
                 #endif
 
                 ModeSet = TRUE;
@@ -2125,7 +2160,7 @@ BOOLEAN egSetScreenSize (
             #endif
         } // if GOP mode (UEFI)
     }
-    else if ((UGADraw != NULL) && (*ScreenHeight > 0)) {
+    else if (UGADraw && (*ScreenHeight > 0)) {
         // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I do not know how to probe for alternatives.
@@ -2135,7 +2170,10 @@ BOOLEAN egSetScreenSize (
             &UgaDepth, &UgaRefreshRate
         );
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Setting UGADraw Mode to %d x %d", *ScreenWidth, *ScreenHeight);
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Setting UGADraw Mode to %d x %d",
+            *ScreenWidth, *ScreenHeight
+        );
         #endif
 
         Status = REFIT_CALL_5_WRAPPER(
@@ -2170,7 +2208,7 @@ BOOLEAN egSetScreenSize (
 
             MY_FREE_POOL(MsgStr);
         }
-    } // if/else if UGADraw != NULL
+    } // if/else if UGADraw
 
     return (ModeSet);
 } // BOOLEAN egSetScreenSize()
@@ -2278,13 +2316,13 @@ CHAR16 * egScreenDescription (VOID) {
         );
     }
     else {
-        if (GOPDraw != NULL) {
+        if (GOPDraw) {
             GraphicsInfo = PoolPrint (
                 L"Graphics Output Protocol @ %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
-        else if (UGADraw != NULL) {
+        else if (UGADraw) {
             GraphicsInfo = PoolPrint (
                 L"Universal Graphics Adapter @ %d x %d",
                 egScreenWidth, egScreenHeight
@@ -2427,7 +2465,7 @@ VOID egClearScreen (
     FillColor.Reserved = 0;
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         BREAD_CRUMB(L"%s:  3a 1 - (Apply Fill via GOP)", FuncTag);
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout and the TianoCore header file actually defines them
@@ -2440,7 +2478,7 @@ VOID egClearScreen (
              egScreenWidth, egScreenHeight, 0
          );
     }
-    else if (UGADraw != NULL) {
+    else if (UGADraw) {
         BREAD_CRUMB(L"%s:  3b 1 - (Apply Fill via UGA)", FuncTag);
         REFIT_CALL_10_WRAPPER(
             UGADraw->Blt, UGADraw,
@@ -2480,7 +2518,8 @@ VOID egDrawImage (
     SetImage = FALSE;
     if (GlobalConfig.ScreenBackground == NULL ||
         (
-            (Image->Width == egScreenWidth) && (Image->Height == egScreenHeight)
+            (Image->Width  == egScreenWidth) &&
+            (Image->Height == egScreenHeight)
         )
     ) {
         CompImage = Image;
@@ -2507,7 +2546,7 @@ VOID egDrawImage (
         SetImage = TRUE;
     }
 
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         REFIT_CALL_10_WRAPPER(
             GOPDraw->Blt, GOPDraw,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) CompImage->PixelData, EfiBltBufferToVideo,
@@ -2516,7 +2555,7 @@ VOID egDrawImage (
             CompImage->Width, CompImage->Height, 0
         );
     }
-    else if (UGADraw != NULL) {
+    else if (UGADraw) {
         REFIT_CALL_10_WRAPPER(
             UGADraw->Blt, UGADraw,
             (EFI_UGA_PIXEL *) CompImage->PixelData, EfiUgaBltBufferToVideo,
@@ -2583,7 +2622,7 @@ VOID egDrawImageArea (
         return;
     }
 
-    if (GOPDraw != NULL) {
+    if (GOPDraw) {
         REFIT_CALL_10_WRAPPER(
             GOPDraw->Blt, GOPDraw,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData, EfiBltBufferToVideo,
@@ -2592,7 +2631,7 @@ VOID egDrawImageArea (
             AreaWidth, AreaHeight, Image->Width * 4
         );
     }
-    else if (UGADraw != NULL) {
+    else if (UGADraw) {
         REFIT_CALL_10_WRAPPER(
             UGADraw->Blt, UGADraw,
             (EFI_UGA_PIXEL *) Image->PixelData, EfiUgaBltBufferToVideo,
@@ -2652,7 +2691,10 @@ VOID egDisplayMessageEx (
     } // switch
 
     if (ResetPosition) {
-        if (PositionCode != TOP && PositionCode != CENTER && PositionCode != BOTTOM) {
+        if (PositionCode != TOP    &&
+            PositionCode != CENTER &&
+            PositionCode != BOTTOM
+        ) {
             Position -= (BoxHeight + (BoxHeight / 10));
         }
     }
@@ -2720,7 +2762,7 @@ EG_IMAGE * egCopyScreenArea (
    }
 
    // Get full screen image
-   if (GOPDraw != NULL) {
+   if (GOPDraw) {
        REFIT_CALL_10_WRAPPER(
            GOPDraw->Blt, GOPDraw,
            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData, EfiBltVideoToBltBuffer,
@@ -2729,7 +2771,7 @@ EG_IMAGE * egCopyScreenArea (
            Image->Width, Image->Height, 0
        );
    }
-   else if (UGADraw != NULL) {
+   else if (UGADraw) {
        REFIT_CALL_10_WRAPPER(
            UGADraw->Blt, UGADraw,
            (EFI_UGA_PIXEL *) Image->PixelData, EfiUgaVideoToBltBuffer,
@@ -2761,11 +2803,13 @@ VOID egScreenShot (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
 
+    MY_MUTELOGGER_SET;
+    #endif
     // Clear the Keystroke Buffer (Silently)
     ReadAllKeyStrokes();
-    #endif
-
     #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
     LOG_MSG("Received User Input:");
     LOG_MSG("%s  - Take Screenshot", OffsetNext);
     #endif
@@ -2923,31 +2967,23 @@ VOID egScreenShot (VOID) {
         }
     }
 
-    FileName = NULL;
-
     // Search for existing screen shot files ... Increment index to an unused value
     i = 0;
+    FileName = NULL;
     do {
         MY_FREE_POOL(FileName);
-        FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
-
-        // Exit if is ndex is greater than 999
-        if (i > 999) {
-            MsgStr = L"Excessive Number of Saved Screenshot Files Found";
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
+        if (i < 1000) {
+            FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
+        }
+        else {
+            MsgStr = L"Aborting Screenshot ... Excessive Number of Saved Files Found";
             egDisplayMessage (
-                MsgStr, &BGColorWarn, CENTER,
-                4, L"HaltSeconds"
+                MsgStr, &BGColorWarn,
+                CENTER, 4, L"HaltSeconds"
             );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             #endif
 

@@ -232,11 +232,11 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     if ((PciRead16( PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
         // Intel ICH device was not found
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device Not Found");
+        AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device *NOT* Found");
     }
     else if ((PciRead8 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space Not Enabled");
+        AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space *NOT* Enabled");
     }
     else {
         TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) +
@@ -244,7 +244,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
         if (TimerAddr < 9) {
             TimerAddr = 0;
-            AsciiSPrint (InitError, sizeof (InitError), "Timer Address Not Obtained");
+            AsciiSPrint (InitError, sizeof (InitError), "Timer Address *NOT* Obtained");
         }
         else {
             // Check that Timer is advancing
@@ -254,7 +254,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
             if (AcpiTick0 == AcpiTick1) {
                 TimerAddr = 0;
-                AsciiSPrint (InitError, sizeof (InitError), "Timer Not Advancing");
+                AsciiSPrint (InitError, sizeof (InitError), "Timer *NOT* Advancing");
             }
         }
     }

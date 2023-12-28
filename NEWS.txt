@@ -1,7 +1,7 @@
 0.14.0.AC (PRE-RELEASE):
 -----------------------
 - Adds `PersistBootArgs` Feature
-  * Outputs of macOS Boot argument related settings are now written to vRAM instead of to nvRAM
+  * Outputs of macOS boot argument related settings are now written to vRAM instead of to nvRAM
     - This is to reduce wear and tear on the nvRAM storage chip
   * Enabled by default but can be disabled using a new `persist_boot_args` configuration token
 - Fixes `HelpIcon` Feature
@@ -26,7 +26,7 @@
   * Consistent with upstream implementation
     - `'Plain' Binaries` are assumed valid on Apple firmware
     - Upstream considers such invalid on all firmware types
- - Amends `HideUIFlags` Handling
+- Amends `HideUIFlags` Handling
   * Now aligned with behaviour of other configuration tokens
     - Existing settings are now overridden by settings in supplementary/theme config files
     - Settings in supplementary/theme config files were previously added to existing ones

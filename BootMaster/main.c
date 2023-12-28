@@ -274,6 +274,7 @@ extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
+extern BOOLEAN                       NormaliseCall;
 
 extern EFI_UGA_DRAW_PROTOCOL        *UGADraw;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
@@ -1248,10 +1249,11 @@ VOID SetBootArgs (VOID) {
         BootArg = StrDuplicate (GlobalConfig.SetBootArgs);
     }
 
+    VarData = NULL;
     DataNVRAM = AllocatePool ((StrLen (BootArg) + 1) * sizeof (CHAR8));
     Status = (DataNVRAM) ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES;
     if (!EFI_ERROR(Status)) {
-        VarData = NULL;
+        /* coverity[check_return: SUPPRESS] */
         GetHardwareNvramVariable (
             L"boot-args", &AppleBootGuid,
             &VarData, NULL
@@ -1637,7 +1639,7 @@ VOID ReMapOpenProtocol (VOID) {
         gBS->CalculateCrc32, gBS,
         gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
     );
-} // ReMapOpenProtocol()
+} // static VOID ReMapOpenProtocol()
 
 static
 VOID RunMacBootSupportFuncs (VOID) {
@@ -1820,7 +1822,7 @@ VOID AboutRefindPlus (VOID) {
         ),
         TRUE
     );
-    if (!HasMacOS) {
+    if (!AppleFirmware && !HasMacOS) {
         TmpStr = StrDuplicate (L"Absent");
     }
     else {
@@ -1864,14 +1866,9 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license",    FALSE);
 
     RetVal = GetReturnMenuEntry (&AboutMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&AboutMenu);
-
-        // Early Return
-        return;
+    if (RetVal) {
+        RunMenu (AboutMenu, NULL);
     }
-
-    RunMenu (AboutMenu, NULL);
 
     FreeMenuScreen (&AboutMenu);
 } // static VOID AboutRefindPlus()
@@ -2136,7 +2133,7 @@ VOID SetConfigFilename (
                 #endif
             }
             else {
-                MsgStr = StrDuplicate (L"** WARN: Specified Config File Not Found");
+                MsgStr = StrDuplicate (L"** WARN: Specified Config File *NOT* Found");
                 #if REFIT_DEBUG > 0
                 LOG_MSG("%s", MsgStr);
                 LOG_MSG("\n");
@@ -2571,26 +2568,12 @@ EFI_STATUS EFIAPI efi_main (
         ? CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS)
         : CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
 
-
     /* Init Logging */
     // DA-TAG: Also on RELEASE builds as we need the timer
     //         - Without logging output on RELEASE builds
     InitBooterLog();
 
     #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_SET;
-    #endif
-
-    // Clear 'BootNext' if present
-    // Just in case ... Should have been cleared by the firmware
-    EfivarSetRaw (
-        &GlobalGuid, L"BootNext",
-        NULL, 0, TRUE
-    );
-
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
 
@@ -3547,11 +3530,12 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 EntryVol       = ourLoaderEntry->Volume;
+                FoundVentoy    = FALSE;
 
                 // Fix undetected macOS
-                if (!FindSubStr (ourLoaderEntry->Title, L"macOS")                          &&
-                    !FindSubStr (ourLoaderEntry->Title, L"Mac OS")                         &&
-                    !FindSubStr (ourLoaderEntry->Title, L"Install")                        &&
+                if (!FindSubStr (ourLoaderEntry->Title, L"macOS"  )                       &&
+                    !FindSubStr (ourLoaderEntry->Title, L"Mac OS" )                       &&
+                    !FindSubStr (ourLoaderEntry->Title, L"Install")                       &&
                     FindSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     ourLoaderEntry->Title = (FindSubStr (EntryVol->VolName, L"PreBoot"))
@@ -3640,9 +3624,9 @@ EFI_STATUS EFIAPI efi_main (
                     (
                         SubScreenBoot && FindSubStr (SelectionName, L"OpenCore")
                     )
-                    || FindSubStr (ourLoaderEntry->Title, L"OpenCore")
-                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC_")
-                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
+                    || FindSubStr (ourLoaderEntry->Title,      L"OpenCore"  )
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC_"     )
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\"    )
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
                     if (RunningOC) {
@@ -3663,11 +3647,11 @@ EFI_STATUS EFIAPI efi_main (
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG(
                         "Received %sUser Input:",
-                        (RunningOC) ? L"*Invalid* " : L""
+                        (RunningOC) ? L"*INVALID* " : L""
                     );
                     MsgStr = PoolPrint (
                         L"Load %sInstance: OpenCore",
-                        (RunningOC) ? L"*Invalid* " : L""
+                        (RunningOC) ? L"*INVALID* " : L""
                     );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -3681,6 +3665,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     if (RunningOC) {
                         #if REFIT_DEBUG > 0
+                        LOG_MSG("%sRejected *INVALID* User Input", OffsetNext);
                         LOG_MSG("\n\n");
                         #endif
 
@@ -3920,7 +3905,6 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     i = 0;
-                    FoundVentoy = FALSE;
                     while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
                         if (MyStrBegins (VentoyName, EntryVol->VolName)) {
                             FoundVentoy = TRUE;

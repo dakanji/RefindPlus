@@ -606,7 +606,7 @@ EFI_STATUS StartEFIImage (
     CHAR16                              *FullLoadOptions;
     BOOLEAN                              LoaderValid;
     EFI_HANDLE                           ChildImageHandle;
-    EFI_HANDLE                           ChildImageHandle2;
+    EFI_HANDLE                           TempImageHandle;
     EFI_DEVICE_PATH_PROTOCOL            *DevicePath;
     EFI_LOADED_IMAGE_PROTOCOL           *ChildLoadedImage;
 
@@ -761,11 +761,11 @@ EFI_STATUS StartEFIImage (
             #endif
 
             // Ignore return status here
-            ChildImageHandle2 = NULL;
+            TempImageHandle = NULL;
             REFIT_CALL_6_WRAPPER(
                 gBS->LoadImage, FALSE,
                 SelfImageHandle, GlobalConfig.SelfDevicePath,
-                NULL, 0, &ChildImageHandle2
+                NULL, 0, &TempImageHandle
             );
         }
 
@@ -897,14 +897,14 @@ EFI_STATUS StartEFIImage (
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_SET;
                     #endif
-                    PauseSeconds (4);
                     SwitchToText (FALSE);
-                    PrintUglyText (L"                                ", NEXTLINE);
-                    PrintUglyText (L"                                ", NEXTLINE);
-                    PrintUglyText (L"  Applicable Disks *NOT* Found  ", NEXTLINE);
-                    PrintUglyText (L"     Returning to Main Menu     ", NEXTLINE);
-                    PrintUglyText (L"                                ", NEXTLINE);
-                    PrintUglyText (L"                                ", NEXTLINE);
+                    PauseSeconds (4);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"  Applicable Disks *NOT* Found for GPTSync  ", NEXTLINE);
+                    PrintUglyText (L"           Returning to Main Menu           ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
                     PauseSeconds (4);
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_OFF;
@@ -993,8 +993,9 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications Not Found");
-        LOG_MSG("%s    ** Aborted ... OsIndications Not Found", OffsetNext);
+        TmpStr = L"Aborted ... OsIndications *NOT* Found";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TmpStr);
+        LOG_MSG("%s    ** %s", OffsetNext, TmpStr);
         LOG_MSG("\n\n");
         #endif
 

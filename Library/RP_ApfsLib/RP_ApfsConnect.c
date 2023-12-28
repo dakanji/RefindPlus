@@ -1,7 +1,7 @@
 /** @file
   Copyright (C) 2020, vit9696. All rights reserved.
 
-  Modified 2021-2022, Dayo Akanji. (sf.net/u/dakanji/profile)
+  Modified 2021-2023, Dayo Akanji. (sf.net/u/dakanji/profile)
 
   All rights reserved.
 
@@ -141,9 +141,8 @@ EFI_STATUS ApfsStartDriver (
         return Status;
     }
 
-    // Unblock handles as some types of firmware, such as that on the HP EliteBook 840 G2,
-    // may automatically lock all volumes without filesystem drivers upon
-    // any attempt to connect them.
+    // Unblock handles as some types of firmware, such as on HP NoteBooks, may
+    // lock all volumes without filesystem drivers upon any connection attempt.
     // REF: https://github.com/acidanthera/bugtracker/issues/1128
     OcDisconnectDriversOnHandle (PrivateData->LocationInfo.ControllerHandle);
 
@@ -176,7 +175,7 @@ EFI_STATUS ApfsConnectDevice (
     VOID                 *DriverBuffer;
     UINTN                 DriverSize;
 
-    // This may yet not be APFS but some other file system ... verify
+    // This may yet not be APFS but some other file system ... Verify
     Status = InternalApfsReadSuperBlock (BlockIo, &SuperBlock);
     if (EFI_ERROR(Status)) {
         return Status;
@@ -189,8 +188,8 @@ EFI_STATUS ApfsConnectDevice (
         return Status;
     }
 
-    // We cannot load drivers if we have no fusion drive pair as they are not
-    // guarantied to be located on each drive.
+    // We cannot load drivers if we have no fusion drive pair
+    // as they are not guaranteed to be located on each drive.
     if (!PrivateData->CanLoadDriver) {
         return EFI_NOT_READY;
     }

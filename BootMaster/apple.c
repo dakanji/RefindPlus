@@ -179,14 +179,10 @@ VOID RecordgCsrStatus (
 
     #if REFIT_DEBUG > 0
     LOG_MSG(
-        "%s    * %s%s",
-        (NormaliseCall) ? OffsetNext : L"",
-        MsgStr,
-        L"\n\n"
-        // DA-TAG: Investigate This
-        //         Disabled for the above ... Seems not needed
-        //(NormaliseCall) ? L"" : L"\n\n"
+        "%s    * %s",
+        OffsetNext, MsgStr
     );
+    LOG_MSG("\n\n");
     #endif
 
     #if REFIT_DEBUG > 0
@@ -206,7 +202,7 @@ VOID RecordgCsrStatus (
 
 EFI_STATUS FlagNoCSR (VOID) {
     MY_FREE_POOL(gCsrStatus);
-    gCsrStatus = StrDuplicate (L"CSR Values Not Configured");
+    gCsrStatus = StrDuplicate (L"CSR Values *NOT* Configured");
 
     return EFI_NOT_READY;
 } // EFI_STATUS FlagNoCSR()

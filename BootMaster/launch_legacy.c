@@ -632,7 +632,7 @@ VOID StartLegacy (
                 LOG_MSG("\n");
                 #endif
                 BREAD_CRUMB(L"%s:  10a 1b 2a 1", FuncTag);
-                MsgStrB = L"Legacy External Drive Boot Is Not Well Supported by Apple Firmware";
+                MsgStrB = L"Legacy External Drive Boot *IS NOT* Well Supported by Apple Firmware";
                 PrintUglyText (MsgStrB, NEXTLINE);
                 #if REFIT_DEBUG > 0
                 LOG_MSG("         %s", MsgStrB);
@@ -1167,6 +1167,7 @@ VOID ScanLegacyVolume (
             BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START", FuncTag);
             if (VolumeIndex2 != VolumeIndex) {
                 BREAD_CRUMB(L"%s:  5a 1a 1a 1", FuncTag);
+                /* coverity[copy_paste_error: SUPPRESS] */
                 if (Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->BlockIO       ||
                     Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
                 ) {

@@ -291,14 +291,14 @@ EFI_STATUS FinishInitRefitLib (VOID) {
         SelfLoadedImage->DeviceHandle = SelfVolume->DeviceHandle;
     }
 
-    Status = EFI_SUCCESS;
     if (SelfRootDir == NULL) {
         SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
-        if (SelfRootDir == NULL) {
-            Status = EFI_NOT_FOUND;
-        }
     }
-    if (!EFI_ERROR(Status)) {
+
+    if (SelfRootDir == NULL) {
+        Status = EFI_INVALID_PARAMETER;
+    }
+    else {
         Status = REFIT_CALL_5_WRAPPER(
             SelfRootDir->Open, SelfRootDir,
             &SelfDir, SelfDirPath,
@@ -824,8 +824,8 @@ EFI_STATUS EfivarSetRaw (
     MY_HYBRIDLOGGER_SET;
     #endif
 
-    if (VariableSize > 0 &&
-        VariableData != NULL &&
+    if (VariableSize > 0                       &&
+        VariableData != NULL                    &&
         !MyStriCmp (VariableName, L"HiddenTags") &&
         !MyStriCmp (VariableName, L"HiddenTools") &&
         !MyStriCmp (VariableName, L"HiddenLegacy") &&
@@ -1247,10 +1247,10 @@ VOID SetFilesystemData (
     IN OUT REFIT_VOLUME *Volume
 ) {
     EFI_GUID *GuidPathAPFS;
-    UINT32   *Ext2Compat;
     UINT32   *Ext2Incompat;
+    UINT32   *Ext2Compat;
     UINT16   *Magic16;
-    char     *MagicString;
+    CHAR8    *MagicString;
 
     if (Buffer == NULL || Volume == NULL) {
         return;
@@ -1287,7 +1287,7 @@ VOID SetFilesystemData (
     } // Search for Ext2/3/4 magic
 
     if (BufferSize >= (65536 + 100)) {
-        MagicString = (char *)(Buffer + 65536 + 52);
+        MagicString = (CHAR8 *)(Buffer + 65536 + 52);
         if ((CompareMem (MagicString, REISERFS_SUPER_MAGIC_STRING,     8) == 0) ||
             (CompareMem (MagicString, REISER2FS_SUPER_MAGIC_STRING,    9) == 0) ||
             (CompareMem (MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
@@ -1299,7 +1299,7 @@ VOID SetFilesystemData (
     } // Search for ReiserFS magic
 
     if (BufferSize >= (65536 + 64 + 8)) {
-        MagicString = (char *)(Buffer + 65536 + 64);
+        MagicString = (CHAR8 *)(Buffer + 65536 + 64);
         if (CompareMem (MagicString, BTRFS_SIGNATURE, 8) == 0) {
             Volume->FSType = FS_TYPE_BTRFS;
             return;
@@ -1307,7 +1307,7 @@ VOID SetFilesystemData (
     } // Search for BtrFS magic
 
     if (BufferSize >= 512) {
-        MagicString = (char *) Buffer;
+        MagicString = (CHAR8 *) Buffer;
         if (CompareMem (MagicString, XFS_SIGNATURE, 4) == 0) {
             Volume->FSType = FS_TYPE_XFS;
             return;
@@ -1315,7 +1315,7 @@ VOID SetFilesystemData (
     } // Search for XFS magic
 
     if (BufferSize >= (32768 + 4)) {
-        MagicString = (char *)(Buffer + 32768);
+        MagicString = (CHAR8 *)(Buffer + 32768);
         if (CompareMem (MagicString, JFS_SIGNATURE, 4) == 0) {
             Volume->FSType = FS_TYPE_JFS;
             return;
@@ -1337,7 +1337,7 @@ VOID SetFilesystemData (
         // figure out where to look for the filesystem serial numbers.
         Magic16 = (UINT16 *)(Buffer + 510);
         if (*Magic16 == FAT_MAGIC) {
-            MagicString = (char *) Buffer;
+            MagicString = (CHAR8 *) Buffer;
             if (CompareMem (MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
                 Volume->FSType = FS_TYPE_NTFS;
                 CopyMem (&(Volume->VolUuid), Buffer + 0x48, sizeof (UINT64));
@@ -1365,12 +1365,6 @@ VOID SetFilesystemData (
         }
     } // Search for FAT and NTFS magic
 
-    // DA-TAG: Assume APFS if on partition with APFS GUID
-    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-        Volume->FSType = FS_TYPE_APFS;
-        return;
-    }
-
     // DA-TAG: Assume APFS if DevicePath has APFS signature
     //         Adated from Clover 'ApfsSignatureUUID' check
     if (DevicePathType (Volume->DevicePath) == MEDIA_DEVICE_PATH &&
@@ -1384,6 +1378,12 @@ VOID SetFilesystemData (
             }
             return;
         }
+    }
+
+    // DA-TAG: Assume APFS if on partition with APFS GUID
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+        Volume->FSType = FS_TYPE_APFS;
+        return;
     }
 
     // DA-TAG: Assume ISO-9660 if block size is right
@@ -1676,6 +1676,17 @@ VOID UpdateBadgeIcon (
 VOID SetVolumeBadgeIcon (
     IN OUT REFIT_VOLUME *Volume
 ) {
+    if (Volume == NULL) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"Skipped ... NULL Volume!!"
+        );
+        #endif
+
+        // Early Return
+        return;
+    }
+
     if (Volume->VolBadgeImage) {
         // Early Return ... Do not log
         return;
@@ -1699,17 +1710,7 @@ VOID SetVolumeBadgeIcon (
         return;
     }
 
-    if (Volume == NULL) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped ... NULL Volume!!"
-        );
-        #endif
-
-        return;
-    }
-
-    if (Volume->VolBadgeImage == NULL && GlobalConfig.HiddenIconsPrefer) {
+    if (GlobalConfig.HiddenIconsPrefer) {
         UpdateBadgeIcon (Volume);
     }
 
@@ -2535,7 +2536,7 @@ VOID VetSyncAPFS (VOID) {
     if (PreBootVolumesCount == 0) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Could *NOT* Positively Identify APFS Partitions ... Disabling SyncAFPS"
+            L"Could *NOT* Positively Identify APFS Partitions ... Activating 'disable_apfs_sync' Setting"
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);

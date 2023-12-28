@@ -429,9 +429,9 @@ VOID ParseReleaseFile (
 
             FreeTokenLine (&TokenList, &TokenCount);
         } while (TokenCount > 0);
-        MY_FREE_POOL(File.Buffer);
 
-    } // if
+        MY_FREE_POOL(File.Buffer);
+    }
 } // VOID ParseReleaseFile()
 
 // Try to guess the name of the Linux distribution & add that name to

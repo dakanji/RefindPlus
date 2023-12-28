@@ -173,7 +173,7 @@ CHAR16 * MyStrStr (
         return Src;
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring Not Found)", FuncTag);
+    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring *NOT* Found)", FuncTag);
     LOG_DECREMENT();
     if (!NestedStrStr) LOG_SEP(L"X");
 
@@ -1185,7 +1185,7 @@ BOOLEAN ReplaceSubstring (
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     if (!FoundSearchString) {
-        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString Not Found!!", FuncTag);
+        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString *NOT* Found!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;

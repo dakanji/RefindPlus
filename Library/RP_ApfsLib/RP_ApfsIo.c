@@ -113,16 +113,19 @@ EFI_STATUS ApfsReadJumpStart (
 
   // No jump start driver, ignore.
   if (PrivateData->EfiJumpStart == 0) {
-    return EFI_UNSUPPORTED;
+      return EFI_UNSUPPORTED;
   }
 
   // Allocate memory for jump start.
   JumpStart = AllocateZeroPool (PrivateData->ApfsBlockSize);
   if (JumpStart == NULL) {
-    return EFI_OUT_OF_RESOURCES;
+      return EFI_OUT_OF_RESOURCES;
   }
 
   BlockIo = InternalApfsTranslateBlock (PrivateData, PrivateData->EfiJumpStart, &Lba);
+  if (BlockIo == NULL) {
+      return EFI_UNSUPPORTED;
+  }
 
   // Read jump start and abort on failure.
   Status = REFIT_CALL_5_WRAPPER(

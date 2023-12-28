@@ -899,7 +899,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
     Entry->Title = (Title != NULL)
         ? PoolPrint (L"Manual Stanza: %s", Title)
-        : StrDuplicate (L"Manual Stanza: Title Not Found");
+        : StrDuplicate (L"Manual Stanza: Title *NOT* Found");
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
     Entry->Volume          = Volume;
@@ -1227,7 +1227,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
     if (!FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' Does Not Exist", FuncTag);
+        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' *DOES NOT* Exist", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1253,7 +1253,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
-        MY_FREE_POOL(Options);
+        MY_FREE_FILE(Options);
 
         // Early Return
         return NULL;
@@ -1269,8 +1269,8 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
-        MY_FREE_POOL(Options);
-        MY_FREE_POOL(Fstab);
+        MY_FREE_FILE(Options);
+        MY_FREE_FILE(Fstab);
 
         // Early Return
         return NULL;
@@ -1366,12 +1366,11 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     }
     else {
         BREAD_CRUMB(L"%s:  8b 1", FuncTag);
-        MY_FREE_POOL(Options);
+        MY_FREE_FILE(Options);
     }
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
-    MY_FREE_POOL(Fstab->Buffer);
-    MY_FREE_POOL(Fstab);
+    MY_FREE_FILE(Fstab);
 
     BREAD_CRUMB(L"%s:  10 - END:- return REFIT_FILE *Options", FuncTag);
     LOG_DECREMENT();
@@ -1757,6 +1756,8 @@ VOID ScanUserConfigured (
 
             FreeTokenLine (&TokenList, &TokenCount);
         }
+
+        MY_FREE_POOL(File.Buffer);
     } // if FileExists
 
     #if REFIT_DEBUG > 0
@@ -1843,7 +1844,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
         BaseFilename = StrDuplicate (FullFilename);
         MergeStrings (&BaseFilename, OptionsFilename, '\\');
         if (!FileExists (Volume->RootDir, BaseFilename)) {
-            BREAD_CRUMB(L"%s:  2a 1a 1 - Seek OptionsFile ... Not Found", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 1a 1 - OptionsFile *NOT* Found", FuncTag);
         }
         else {
             BREAD_CRUMB(L"%s:  2a 1b 1 - Seek OptionsFile ... Success", FuncTag);
@@ -1967,17 +1968,16 @@ VOID ReadConfig (
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
     CHAR16           *MsgStr;
-    CHAR16           *Flag;
+    CHAR16           *Flag; // Do Not Free
     UINTN             i, j;
     UINTN             TokenCount;
     UINTN             InvalidEntries;
     INTN              MaxLogLevel;
 
-    static UINTN      ReadLoops   =     0;
-    static BOOLEAN    HasTertiary = FALSE;
-
+    static UINTN      ReadLoops = 0;
 
     #if REFIT_DEBUG > 0
+    static BOOLEAN   ValidInclude = TRUE;
     INTN             RealLogLevel;
     INTN             HighLogLevel;
     #endif
@@ -1985,10 +1985,12 @@ VOID ReadConfig (
     // Control 'Include' Depth
     if (ReadLoops > 1) {
         #if REFIT_DEBUG > 0
+        MuteLogger = FALSE;
         LOG_MSG("%s  ** Ignoring Tertiary Config ... %s", OffsetNext, FileName);
+        ValidInclude = FALSE;
+        // DA-TAG: No 'TRUE' Flag
         #endif
 
-        HasTertiary = TRUE;
         ReadLoops = ReadLoops - 1;
         return;
     }
@@ -2006,37 +2008,66 @@ VOID ReadConfig (
         #endif
     }
 
-    if (FileExists (SelfDir, FileName)) {
-        Status = RefitReadFile (SelfDir, FileName, &File, &i);
-    }
-    else {
-        Status = EFI_NOT_FOUND;
-
-        if (OuterLoop) {
-            #if REFIT_DEBUG > 0
-            MuteLogger = FALSE;
-            LOG_MSG("%s  - WARN: Cannot Find Configuration File ... Using Default Settings!!", OffsetNext);
-            MuteLogger = TRUE;
-            #endif
-
-            if (!FileExists (SelfDir, L"icons")) {
-                #if REFIT_DEBUG > 0
-                MuteLogger = FALSE;
-                LOG_MSG("%s  - WARN: Cannot Find Icons Directory ... Using Text Mode!!", OffsetNext);
-                MuteLogger = TRUE;
-                #endif
-
-                GlobalConfig.TextOnly = TRUE;
-            }
+    if (!FileExists (SelfDir, FileName)) {
+        #if REFIT_DEBUG > 0
+        MuteLogger = FALSE;
+        LOG_MSG("%s", OffsetNext);
+        if (!OuterLoop) {
+            ValidInclude = FALSE;
+            LOG_MSG("  - ");
+            Flag = L"";
         }
+        else {
+            LOG_MSG("*** ");
+            Flag = L"Configuration";
+        }
+        LOG_MSG("WARN: %sFile *NOT* Found", Flag);
+        // DA-TAG: No 'TRUE' Flag
+        #endif
+
+        if (!OuterLoop) {
+            ReadLoops = ReadLoops - 1;
+        }
+#if REFIT_DEBUG > 0
+        else {
+            LOG_MSG(" ... Using Default Settings ***");
+            MuteLogger = TRUE;
+        }
+#endif
+
+        return;
     }
+
+    Status = RefitReadFile (SelfDir, FileName, &File, &i);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
-        LOG_MSG("Invalid Configuration File ... Aborting File Load");
-        LOG_MSG("\n\n");
-        MuteLogger = TRUE; /* Explicit For FB Infer */
+        LOG_MSG("%s", OffsetNext);
+        if (!OuterLoop) {
+            ValidInclude = FALSE;
+            LOG_MSG("  - ");
+        }
+        else {
+            LOG_MSG("*** ");
+        }
+        LOG_MSG("WARN: Invalid Configuration File ... Aborting File Load", OffsetNext);
+        if (!OuterLoop) {
+            LOG_MSG("!!");
+        }
+        else {
+            LOG_MSG(" ***");
+            LOG_MSG("\n\n");
+        }
+        MuteLogger = TRUE;
         #endif
+
+        if (!OuterLoop) {
+            ReadLoops = ReadLoops - 1;
+
+            #if REFIT_DEBUG > 0
+            MuteLogger = FALSE;
+            #endif
+        }
 
         return;
     }
@@ -3439,6 +3470,8 @@ VOID ReadConfig (
     if (!OuterLoop) {
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
+        LOG_MSG("%s*** Handled Included File ***", OffsetNext);
+        // DA-TAG: No 'TRUE' Flag
         #endif
 
         return;
@@ -3513,11 +3546,11 @@ VOID ReadConfig (
     #if REFIT_DEBUG > 0
     // Log formating on exiting outer loop
     LOG_MSG("\n");
-    Status = (!HasTertiary) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
+    Status = (ValidInclude) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
     LOG_MSG("Process Configuration Options ... %r", Status);
     LOG_MSG("\n\n");
-    #endif
 
-    // Reset Tertiary Flag
-    HasTertiary = FALSE;
+    // Reset 'ValidInclude' Flag
+    ValidInclude = TRUE;
+    #endif
 } // VOID ReadConfig()

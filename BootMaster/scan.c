@@ -833,9 +833,11 @@ VOID SetLoaderDefaults (
     PathOnly = FindPath (LoaderPath);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    ShortcutLetter = 0;
-    OSIconName     = NULL;
+    ShortcutLetter =     0;
+    ThisIconName   =  NULL;
+    OSIconName     =  NULL;
     GotFlag        = FALSE;
+    MacFlag        = FALSE;
     if (!AllowGraphicsMode) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         #if REFIT_DEBUG > 0
@@ -906,10 +908,6 @@ VOID SetLoaderDefaults (
                 ) {
                     BREAD_CRUMB(L"%s:  3b 1b 2a 2a 1", FuncTag);
                     MacFlag = TRUE;
-                }
-                else {
-                    BREAD_CRUMB(L"%s:  3b 1b 2a 2b 1", FuncTag);
-                    MacFlag = FALSE;
                 }
 
                 BREAD_CRUMB(L"%s:  3b 1b 2a 3", FuncTag);
@@ -1056,7 +1054,6 @@ VOID SetLoaderDefaults (
                         if (!FoundVentoy) {
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 4a 1", FuncTag);
                             MergeUniqueWords (&OSIconName, TargetName, L',');
-                            FoundVentoy = FALSE; // Important Reset
                         }
                         else {
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 4b 1", FuncTag);
@@ -1117,7 +1114,6 @@ VOID SetLoaderDefaults (
                             if (!FoundVentoy) {
                                 BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 4a 1", FuncTag);
                                 MergeUniqueWords (&OSIconName, TargetName, L',');
-                                FoundVentoy = FALSE; // Important Reset
                             }
                             else {
                                 BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 4b 1", FuncTag);
@@ -1170,7 +1166,6 @@ VOID SetLoaderDefaults (
                     if (!FoundVentoy) {
                         BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4a 1", FuncTag);
                         MergeUniqueWords (&OSIconName, TargetName, L',');
-                        FoundVentoy = FALSE; // Important Reset
                     }
                     else {
                         BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4b 1", FuncTag);
@@ -1358,11 +1353,11 @@ VOID SetLoaderDefaults (
         BREAD_CRUMB(L"%s:  6a 1", FuncTag);
         if (!GlobalConfig.HelpIcon) {
             BREAD_CRUMB(L"%s:  6a 1a 1", FuncTag);
-            MergeStrings (&OSIconName, TmpIconName, L',');
+            MergeUniqueStrings (&OSIconName, TmpIconName, L',');
         }
         else {
             BREAD_CRUMB(L"%s:  6a 1b 1", FuncTag);
-            MergeStrings (&TmpIconName, OSIconName, L',');
+            MergeUniqueStrings (&TmpIconName, OSIconName, L',');
             MY_FREE_POOL(OSIconName);
             OSIconName = TmpIconName;
         }
@@ -1399,7 +1394,7 @@ VOID SetLoaderDefaults (
                 if (IsListItem (Temp, BASE_LINUX_DISTROS)) {
                     BREAD_CRUMB(L"%s:  8a 1a 1a 1a 1", FuncTag);
                     GotFlag = TRUE;
-                    MergeStrings (&OSIconName, L"linux", L',');
+                    MergeUniqueStrings (&OSIconName, L"linux", L',');
                     BREAD_CRUMB(L"%s:  8a 1a 1a 1a 1", FuncTag);
                 }
                 MY_FREE_POOL(Temp);
@@ -1707,7 +1702,7 @@ LOADER_ENTRY * AddLoaderEntry (
         Entry->LoaderPath = NULL;
     }
 
-    MergeStrings (&(Entry->LoaderPath), LoaderPath, 0);
+    MergeUniqueStrings (&(Entry->LoaderPath), LoaderPath, 0);
     Entry->Volume = Volume;
     SetLoaderDefaults (Entry, LoaderPath, Volume);
     GenerateSubScreen (Entry, Volume, SubScreenReturn);
@@ -2714,9 +2709,9 @@ VOID ScanEfiFiles (
 
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     MatchPatterns = StrDuplicate (LOADER_MATCH_PATTERNS);
-    if (GlobalConfig.ScanAllLinux) {
+    if (GlobalConfig.ScanAllLinux && GlobalConfig.LinuxMatchPatterns) {
         //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
-        MergeStrings (&MatchPatterns, GlobalConfig.LinuxMatchPatterns, L',');
+        MergeUniqueStrings (&MatchPatterns, GlobalConfig.LinuxMatchPatterns, L',');
     }
 
     //BREAD_CRUMB(L"%s:  6", FuncTag);
@@ -2752,7 +2747,7 @@ VOID ScanEfiFiles (
                     //BREAD_CRUMB(L"%s:  6a 4a 1a 4a 1", FuncTag);
                     if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
                         //BREAD_CRUMB(L"%s:  6a 4a 1a 4a 1a 1", FuncTag);
-                        MergeStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
+                        MergeUniqueStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
                     }
                     //BREAD_CRUMB(L"%s:  6a 4a 1a 4a 2", FuncTag);
                 }
@@ -2812,7 +2807,10 @@ VOID ScanEfiFiles (
         ) {
             //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
             // Boot Repair Backup
-            AddLoaderEntry (FileName, L"Instance: UEFI Windows (BRBackup)", Volume, TRUE, FALSE);
+            AddLoaderEntry (
+                FileName, L"Instance: UEFI Windows (BRBackup)",
+                Volume, TRUE, FALSE
+            );
 
             //BREAD_CRUMB(L"%s:  7a 2a 2", FuncTag);
             FoundBRBackup = TRUE;
@@ -2865,14 +2863,14 @@ VOID ScanEfiFiles (
 
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  10a 1 - WHILE LOOP:- START", FuncTag);
-        if (EfiDirEntry->FileName[0] == '.'          ||
-            MyStriCmp (Extension, L".log")           ||
-            MyStriCmp (Extension, L".txt")           ||
-            MyStriCmp (Extension, L".png")           ||
-            MyStriCmp (Extension, L".bmp")           ||
-            MyStriCmp (Extension, L".jpg")           ||
-            MyStriCmp (Extension, L".jpeg")          ||
-            MyStriCmp (Extension, L".icns")          ||
+        if (EfiDirEntry->FileName[0] == '.'             ||
+            MyStriCmp (Extension,             L".log" ) ||
+            MyStriCmp (Extension,             L".txt" ) ||
+            MyStriCmp (Extension,             L".png" ) ||
+            MyStriCmp (Extension,             L".bmp" ) ||
+            MyStriCmp (Extension,             L".jpg" ) ||
+            MyStriCmp (Extension,             L".jpeg") ||
+            MyStriCmp (Extension,             L".icns") ||
             MyStriCmp (EfiDirEntry->FileName, L"tools")
         ) {
             //BREAD_CRUMB(L"%s:  10a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
@@ -2973,31 +2971,31 @@ VOID ScanEfiFiles (
         //LOG_SEP(L"X");
     } // while
 
-VentoyJump:
     //BREAD_CRUMB(L"%s:  15", FuncTag);
+    MY_FREE_POOL(MatchPatterns);
+
+VentoyJump:
+    //BREAD_CRUMB(L"%s:  16", FuncTag);
     // Create an entry for fallback loaders
     if (ScanFallbackLoader &&
         FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&
         ShouldScan (Volume, L"EFI\\BOOT") &&
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
-        //BREAD_CRUMB(L"%s:  15a 1", FuncTag);
+        //BREAD_CRUMB(L"%s:  16a 1", FuncTag);
         if (FoundVentoy) {
-            //BREAD_CRUMB(L"%s:  15a 1a 1", FuncTag);
+            //BREAD_CRUMB(L"%s:  16a 1a 1", FuncTag);
             TmpMsg = L"Instance: Ventoy";
         }
         else {
-            //BREAD_CRUMB(L"%s:  15a 1b 1", FuncTag);
+            //BREAD_CRUMB(L"%s:  16a 1b 1", FuncTag);
             TmpMsg = L"Fallback Loader";
         }
 
-        //BREAD_CRUMB(L"%s:  15a 2", FuncTag);
+        //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
         AddLoaderEntry (FALLBACK_FULLNAME, TmpMsg, Volume, TRUE, FALSE);
-        //BREAD_CRUMB(L"%s:  15a 2", FuncTag);
+        //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
     }
-
-    //BREAD_CRUMB(L"%s:  16", FuncTag);
-    MY_FREE_POOL(MatchPatterns);
 
     //BREAD_CRUMB(L"%s:  17 - END:- VOID", FuncTag);
     //LOG_DECREMENT();
@@ -3119,9 +3117,9 @@ VOID ScanFirmwareDefined (
     CHAR16          *OneElement;
     CHAR16          *DontScanFirmware;
     BOOLEAN          ScanIt;
-    BOOLEAN          FoundItem;
+    BOOLEAN          FoundIt;
+    BOOT_ENTRY_LIST *ThisEntry;
     BOOT_ENTRY_LIST *BootEntries;
-    BOOT_ENTRY_LIST *CurrentEntry;
 
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ScanFirmwareDefined";
@@ -3156,9 +3154,14 @@ VOID ScanFirmwareDefined (
     }
     #endif
 
-    if (GlobalConfig.DontScanFirmware && *GlobalConfig.DontScanFirmware) {
-        // Only merge GlobalConfig.DontScanFirmware if not empty
-        MergeStrings (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
+    if (GlobalConfig.DontScanFirmware) {
+        // Only merge 'GlobalConfig.DontScanFirmware' is not empty
+        if (DontScanFirmware) {
+            MergeUniqueItems (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
+        }
+        else {
+            DontScanFirmware = StrDuplicate (GlobalConfig.DontScanFirmware);
+        }
     }
 
     if (Row == 0) {
@@ -3166,7 +3169,12 @@ VOID ScanFirmwareDefined (
         ALT_LOG(1, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell From Scan");
         #endif
 
-        MergeStrings(&DontScanFirmware, L"shell", L',');
+        if (DontScanFirmware) {
+            MergeUniqueStrings (&DontScanFirmware, L"shell", L',');
+        }
+        else {
+            DontScanFirmware = StrDuplicate (L"shell");
+        }
     }
 
     #if REFIT_DEBUG > 0
@@ -3178,49 +3186,51 @@ VOID ScanFirmwareDefined (
     }
     #endif
 
-    BootEntries  = FindBootOrderEntries();
-    CurrentEntry = BootEntries;
-    FoundItem    = FALSE;
-    ScanIt       = TRUE;
+    BootEntries = FindBootOrderEntries();
+    ThisEntry   = BootEntries;
+    FoundIt     = FALSE;
 
-    while (CurrentEntry != NULL) {
-        if (MatchThis) {
-            OneElement  =  NULL;
-            ScanIt      = FALSE;
+    while (ThisEntry) {
+        ScanIt = FALSE;
+
+        if (!DontScanFirmware) {
+            ScanIt = TRUE;
+        }
+        else if (!MatchThis) {
+            if (!IsListItemSubstringIn (ThisEntry->BootEntry.Label, DontScanFirmware)) {
+                ScanIt = TRUE;
+            }
+        }
+        else {
             i = 0;
             while (!ScanIt && (OneElement = FindCommaDelimited (MatchThis, i++))) {
-                if (StriSubCmp (OneElement, CurrentEntry->BootEntry.Label) &&
-                    !IsListItemSubstringIn (CurrentEntry->BootEntry.Label, DontScanFirmware)
+                if (StriSubCmp (OneElement, ThisEntry->BootEntry.Label) &&
+                    !IsListItemSubstringIn (ThisEntry->BootEntry.Label, DontScanFirmware)
                 ) {
                     ScanIt = TRUE;
                 }
                 MY_FREE_POOL(OneElement);
             } // while
         }
-        else {
-            if (IsListItemSubstringIn (CurrentEntry->BootEntry.Label, DontScanFirmware)) {
-                ScanIt = FALSE;
-            }
-        }
 
         if (ScanIt) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Adding UEFI Loader Entry for '%s'",
-                CurrentEntry->BootEntry.Label
+                ThisEntry->BootEntry.Label
             );
             #endif
 
-            FoundItem = TRUE;
+            FoundIt = TRUE;
             AddEfiLoaderEntry (
-                CurrentEntry->BootEntry.DevPath,
-                CurrentEntry->BootEntry.Label,
-                CurrentEntry->BootEntry.BootNum,
+                ThisEntry->BootEntry.DevPath,
+                ThisEntry->BootEntry.Label,
+                ThisEntry->BootEntry.BootNum,
                 Row, Icon
             );
         }
 
-        CurrentEntry = CurrentEntry->NextBootEntry;
+        ThisEntry = ThisEntry->NextBootEntry;
     } // while
 
     MY_FREE_POOL(DontScanFirmware);
@@ -3229,7 +3239,7 @@ VOID ScanFirmwareDefined (
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"Evaluate Firmware Defined Options ... Relevant Options:- '%s'",
-        (FoundItem) ? L"Added" : L"None"
+        (FoundIt) ? L"Added" : L"None"
     );
     #endif
 
@@ -3238,7 +3248,7 @@ VOID ScanFirmwareDefined (
     LOG_SEP(L"X");
 } // static VOID ScanFirmwareDefined()
 
-// default volume badge icon based on disk kind
+// Default volume badge icon based on disk kind
 EG_IMAGE * GetDiskBadge (
     IN UINTN DiskType
 ) {
@@ -3280,6 +3290,8 @@ LOADER_ENTRY * AddToolEntry (
     LOADER_ENTRY *Entry;
 
     Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+    if (!Entry) return NULL;
+
     Entry->me.Title          = (LoaderTitle) ? LoaderTitle : StrDuplicate (L"Unknown Tool");
     Entry->me.Tag            = TAG_TOOL;
     Entry->me.Row            = 1;
@@ -3378,7 +3390,7 @@ VOID ScanForBootloaders (VOID) {
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
-            MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
+            MergeUniqueStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
         }
         MY_FREE_POOL(HiddenTags);
 
@@ -3392,7 +3404,7 @@ VOID ScanForBootloaders (VOID) {
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
-            MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
+            MergeUniqueStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
         }
 
         MY_FREE_POOL(HiddenLegacy);
@@ -3467,7 +3479,7 @@ VOID ScanForBootloaders (VOID) {
         #if REFIT_DEBUG > 0
         if (AmendedDontScan) {
             ALT_LOG(1, LOG_STAR_SEPARATOR,
-                L"Ignored PreBoot Volumes in 'Dont Scan' List ... SyncAPFS is Active"
+                L"Ignored PreBoot Volumes in 'Dont Scan' List ... disable_apfs_sync is *NOT* Active"
             );
         }
         #endif
@@ -3765,7 +3777,7 @@ BOOLEAN IsValidTool (
 
     retval       = TRUE;
     TestVolName  = TestPathName = TestFileName = NULL;
-    DontScanThis = DontPathName = DontFileName = DontVolName = NULL;
+    DontPathName = DontFileName = DontVolName  = NULL;
     SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
     i = 0;
@@ -3773,8 +3785,13 @@ BOOLEAN IsValidTool (
         SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
 
         if (MyStriCmp (TestFileName, DontFileName) &&
-            ((DontPathName == NULL) || (MyStriCmp (TestPathName, DontPathName))) &&
-            ((DontVolName  == NULL) || (VolumeMatchesDescription (BaseVolume, DontVolName)))
+            (
+                !DontPathName ||
+                MyStriCmp (TestPathName, DontPathName)
+            ) && (
+                !DontVolName  ||
+                VolumeMatchesDescription (BaseVolume, DontVolName)
+            )
         ) {
             retval = FALSE;
         }
@@ -4006,7 +4023,7 @@ VOID ScanForTools (VOID) {
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);
     if (MokLocations != NULL) {
-        MergeStrings (&MokLocations, SelfDirPath, L',');
+        MergeUniqueStrings (&MokLocations, SelfDirPath, L',');
     }
 
     ToolTotal = 0;
@@ -4205,7 +4222,7 @@ VOID ScanForTools (VOID) {
             case TAG_HIDDEN:
                 if (!GlobalConfig.HiddenTags) {
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Did *NOT* Enable Tool:- '%s'", ToolName);
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG(" * NOTE *     %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -4253,7 +4270,7 @@ VOID ScanForTools (VOID) {
                 ) != EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
-                        L"Did Not Enable Tool:- '%s' ... 'OsIndicationsSupported' Flag Was Not Found",
+                        L"Did *NOT* Enable Tool:- '%s' ... 'OsIndicationsSupported' Flag Was *NOT* Found",
                         ToolName
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4715,7 +4732,7 @@ VOID ScanForTools (VOID) {
                     FlagAPFS = (!SingleAPFS && SystemVolumesCount > 0);
                     ToolStr = PoolPrint (
                         L"%s:- '%s'",
-                        (FlagAPFS) ? L"Did Not Enable Tool" : L"Could *NOT* Find Tool",
+                        (FlagAPFS) ? L"Did *NOT* Enable Tool" : L"Could *NOT* Find Tool",
                         ToolName
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4874,7 +4891,7 @@ VOID ScanForTools (VOID) {
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
-                        L"Did Not Enable Tool:- '%s' ... %r (%s)",
+                        L"Did *NOT* Enable Tool:- '%s' ... %r (%s)",
                         ToolName, Status, gCsrStatus
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
