@@ -2721,6 +2721,10 @@ VOID egDisplayMessage (
         return;
     }
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    MY_MUTELOGGER_SET;
+    #endif
     // Display the message
     egDisplayMessageEx (Text, BGColor, PositionCode, FALSE);
 
@@ -2735,6 +2739,9 @@ VOID egDisplayMessage (
         // Erase the message
         egDisplayMessageEx (Text, &MenuBackgroundPixel, PositionCode, TRUE);
     }
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 } // VOID egDisplayMessage()
 
 // Copy the current contents of the display into an EG_IMAGE.
@@ -2818,16 +2825,10 @@ VOID egScreenShot (VOID) {
     if (Image == NULL) {
         MsgStr = L"Unable to Take Screenshot ... Image is NULL";
 
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
         egDisplayMessage (
-            MsgStr, &BGColorWarn, CENTER,
-            4, L"HaltSeconds"
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
         );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2859,17 +2860,10 @@ VOID egScreenShot (VOID) {
     MY_FREE_IMAGE(Image);
     if (EFI_ERROR(Status)) {
         MsgStr = L"Could *NOT* Encode PNG";
-
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
         egDisplayMessage (
-            MsgStr, &BGColorWarn, CENTER,
-            4, L"HaltSeconds"
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
         );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2885,16 +2879,10 @@ VOID egScreenShot (VOID) {
     if (!FileData) {
         MsgStr = L"No FileData!";
 
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
         egDisplayMessage (
-            MsgStr, &BGColorWarn, CENTER,
-            4, L"HaltSeconds"
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
         );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2912,17 +2900,10 @@ VOID egScreenShot (VOID) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
             MsgStr = L"Could *NOT* Save Screenshot";
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
             egDisplayMessage (
-                MsgStr, &BGColorWarn, CENTER,
-                4, L"HaltSeconds"
+                MsgStr, &BGColorWarn,
+                CENTER, 4, L"HaltSeconds"
             );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
@@ -2944,17 +2925,10 @@ VOID egScreenShot (VOID) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
             MsgStr = L"Could *NOT* Find ESP for Screenshot";
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
             egDisplayMessage (
-                MsgStr, &BGColorWarn, CENTER,
-                4, L"HaltSeconds"
+                MsgStr, &BGColorWarn,
+                CENTER, 4, L"HaltSeconds"
             );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
@@ -3011,16 +2985,10 @@ VOID egScreenShot (VOID) {
     LOG_MSG("\n\n");
     #endif
 
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_SET;
-    #endif
     egDisplayMessage (
-        MsgStr, &BGColorGood, CENTER,
-        2, L"HaltSeconds"
+        MsgStr, &BGColorGood,
+        CENTER, 2, L"HaltSeconds"
     );
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
 
     MY_FREE_POOL(FileName);
     MY_FREE_POOL(FileData);

@@ -332,7 +332,6 @@ BOOLEAN RebootSystem (
 
     #if REFIT_DEBUG > 0
     CHAR16            *MsgStr;
-    BOOLEAN            CheckMute = FALSE;
     #endif
 
 
@@ -358,21 +357,6 @@ BOOLEAN RebootSystem (
         }
     }
 
-    // If 'FoundTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-    // Only display 'TypeStr' message in such cases
-    if (Confirmed == TRUE) {
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-        egDisplayMessage (
-            TypeStr, &BGColor, CENTER,
-            3, L"PauseSeconds"
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
-    }
-
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -387,9 +371,11 @@ BOOLEAN RebootSystem (
     END_TAG();
     #endif
 
-    // Terminate Screen
+    egDisplayMessage (
+        TypeStr, &BGColor,
+        CENTER, 3, L"PauseSeconds"
+    );
     TerminateScreen();
-
     REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem, EfiResetCold,
         EFI_SUCCESS, 0, NULL
@@ -3026,8 +3012,8 @@ EFI_STATUS EFIAPI efi_main (
         if (GlobalConfig.ScanDelay > Trigger) {
             PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (
-                PartMsg, &BGColor, CENTER,
-                0, NULL
+                PartMsg, &BGColor,
+                CENTER, 0, NULL
             );
 
             MY_FREE_POOL(PartMsg);
@@ -3269,17 +3255,10 @@ EFI_STATUS EFIAPI efi_main (
             #endif
 
             TypeStr = L"Aborted Invalid System Reset Call ... Please Try Again";
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
             egDisplayMessage (
-                TypeStr, &BGColor, CENTER,
-                4, L"PauseSeconds"
+                TypeStr, &BGColor,
+                CENTER, 4, L"PauseSeconds"
             );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             continue;
         }
@@ -3629,20 +3608,6 @@ EFI_STATUS EFIAPI efi_main (
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\"    )
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
-                    if (RunningOC) {
-                        #if REFIT_DEBUG > 0
-                        MY_MUTELOGGER_SET;
-                        #endif
-                        egDisplayMessage (
-                            L"Invalid OpenCore Load Attempt ... Already Started",
-                            &BGColor, CENTER,
-                            3, L"PauseSeconds"
-                        );
-                        #if REFIT_DEBUG > 0
-                        MY_MUTELOGGER_OFF;
-                        #endif
-                    }
-
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG(
@@ -3669,6 +3634,10 @@ EFI_STATUS EFIAPI efi_main (
                         LOG_MSG("\n\n");
                         #endif
 
+                        egDisplayMessage (
+                            L"Invalid OpenCore Load Attempt ... Already Started",
+                            &BGColor, CENTER, 4, L"PauseSeconds"
+                        );
                         break;
                     }
 

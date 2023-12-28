@@ -215,6 +215,7 @@ VOID RotateCsrValue (
 ) {
     EFI_STATUS    Status;
     BOOLEAN       ShowMessage;
+    EG_PIXEL      BGColor         = COLOR_LIGHTBLUE;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
     UINT32        CurrentValue;
@@ -231,10 +232,9 @@ VOID RotateCsrValue (
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return
@@ -250,10 +250,9 @@ VOID RotateCsrValue (
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return
@@ -308,10 +307,9 @@ VOID RotateCsrValue (
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return

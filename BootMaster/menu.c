@@ -3542,7 +3542,6 @@ UINTN RunMainMenu (
     #if REFIT_DEBUG > 0
     CHAR16         *MsgStr;
     BOOLEAN         SetSelection;
-    BOOLEAN         CheckMute    = FALSE;
     static BOOLEAN  ShowLoaded   =  TRUE;
     #endif
 
@@ -3731,16 +3730,10 @@ UINTN RunMainMenu (
             }
             else {
                 BREAD_CRUMB(L"%s:  9a 4a 1b 1", FuncTag);
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
                 egDisplayMessage (
                     L"Enable 'hidden_tags' in 'showtools' config to hide tag", &BGColor,
                     CENTER, 3, L"PauseSeconds"
                 );
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
             }
 
             BREAD_CRUMB(L"%s:  9a 4a 2", FuncTag);
