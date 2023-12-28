@@ -324,6 +324,34 @@ VOID UnexpectedReturn (
 #endif
 
 static
+VOID InitRotateCSR (VOID) {
+    BOOLEAN            Confirmed;
+
+    #if REFIT_DEBUG > 0
+    CHAR16            *MsgStr;
+    #endif
+
+
+    Confirmed = ConfirmRotate();
+    if (!Confirmed) {
+        #if REFIT_DEBUG > 0
+        MsgStr = L"Aborted CSR Rotation";
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("%s  *** %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
+        // Early Exit
+        return;
+    }
+
+    // Rotate CSR and Unset DynamicCSR if active
+    RotateCsrValue (TRUE);
+} // static VOID InitRotateCSR()
+
+static
 BOOLEAN RebootSystem (
     BOOLEAN            Confirmed
 ) {
@@ -907,22 +935,31 @@ BOOLEAN CheckToggle (
 } // static BOOLEAN CheckToggle()
 
 static
+BOOLEAN CheckCurrentCSR (VOID) {
+    BOOLEAN CsrEnabled;
+
+    CsrEnabled = CheckEnabledCSR();
+
+    return CheckToggle (CsrEnabled);
+} // static BOOLEAN CheckCurrentCSR()
+
+static
 VOID AlignCSR (VOID) {
     EFI_STATUS Status;
     UINT32     CsrStatus;
-    BOOLEAN    CsrEnabled;
+    BOOLEAN    HandledCSR;
+    BOOLEAN    RotatedCSR;
     BOOLEAN    FlipCSR;
 
     #if REFIT_DEBUG > 0
     CHAR16    *TmpStr;
     CHAR16    *MsgStr;
-    BOOLEAN    HandledCSR;
-    BOOLEAN    RotatedCSR;
     #endif
 
+
     if (!GlobalConfig.CsrValues) {
-        // Early Exit ... CsrValues not configured
-        return;
+        // Set for early exit ... CsrValues not configured
+        GlobalConfig.DynamicCSR = 0;
     }
 
     if (GlobalConfig.DynamicCSR == 0) {
@@ -939,113 +976,87 @@ VOID AlignCSR (VOID) {
     #endif
 
     do {
-        #if REFIT_DEBUG > 0
-        // For accurate logging
-        HandledCSR = FALSE;
-        RotatedCSR =  TRUE;
-        #endif
+        RotatedCSR = HandledCSR = FALSE;
 
         if (!HasMacOS) {
             #if REFIT_DEBUG > 0
             Status = EFI_NOT_STARTED;
             #endif
 
-            // Break Early ... No macOS Instance
+            // Abort ... No macOS Instance
             break;
         }
 
-        if (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1) {
+        if (GlobalConfig.DynamicCSR !=  1 &&
+            GlobalConfig.DynamicCSR != -1
+        ) {
             #if REFIT_DEBUG > 0
             Status = EFI_INVALID_PARAMETER;
             #endif
 
-            // Break Early ... Improperly configured
+            // Abort ... Improperly configured
             break;
         }
 
-        // Try to get current CSR status
+        // Try to get and record current CSR status
         Status = GetCsrStatus (&CsrStatus);
         if (EFI_ERROR(Status)) {
-            // Break Early ... Invalid CSR Status
+            // Abort ... Invalid CSR Status
             break;
         }
-
-        #if REFIT_DEBUG > 0
-        HandledCSR =  TRUE;
-        RotatedCSR = FALSE;
-        #endif
-
-        // Record CSR status in the 'gCsrStatus' variable
         RecordgCsrStatus (CsrStatus, FALSE);
-        // Check 'gCsrStatus' variable for 'Enabled' string
-        CsrEnabled = CheckEnabledCSR();
+        HandledCSR = TRUE;
+
         // Check whether CSR should be rotated
-        FlipCSR = CheckToggle (CsrEnabled);
+        FlipCSR = CheckCurrentCSR();
         if (!FlipCSR) {
             #if REFIT_DEBUG > 0
             Status = EFI_ALREADY_STARTED;
-            RotatedCSR = TRUE;
             #endif
 
-            // Break Early ...No Need to Rotate
+            // Break Early ... Do *NOT* Rotate
+            RotatedCSR = TRUE;
             break;
         }
 
         // Rotate SIP/SSV from current setting
-        // Do not Unset DynamicCSR
         RotateCsrValue (FALSE);
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            #if REFIT_DEBUG > 0
-            RotatedCSR = TRUE;
-            #endif
+        RotatedCSR = CheckCurrentCSR();
 
-            // Break Early ... Sucessfully Rotated
-            break;
+        if (!RotatedCSR) {
+            // Try again if not set
+            // Some may have more than one value
+            RotateCsrValue (FALSE);
+            RotatedCSR = CheckCurrentCSR();
+
+            if (!RotatedCSR) {
+                // Try a third and final time if not set
+                RotateCsrValue (FALSE);
+                RotatedCSR = CheckCurrentCSR();
+            }
         }
-
-        // Try again if not set
-        // Some may have more than one value
-        RotateCsrValue (FALSE);
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            #if REFIT_DEBUG > 0
-            RotatedCSR = TRUE;
-            #endif
-
-            // Break Early ... Sucessfully Rotated
-            break;
-        }
-
-        // Try a third and final time
-        RotateCsrValue (FALSE);
-        // Only check outcome in DBG
-        #if REFIT_DEBUG > 0
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            RotatedCSR = TRUE;
-        }
-        #endif
     } while (0); // This 'loop' only runs once
 
-    #if REFIT_DEBUG > 0
-    if (!RotatedCSR) {
-        // Failed to Definitively Rotate CSR
-        Status = EFI_NOT_READY;
+    if (!RotatedCSR || !HandledCSR) {
         GlobalConfig.DynamicCSR = 0;
+    }
 
-        TmpStr = L"WARN: Could *NOT* Definitively Rotate";
-    }
-    else if (!HandledCSR) {
-        TmpStr = L"WARN: Did Not Update";
-    }
-    else {
+    #if REFIT_DEBUG > 0
+    if (RotatedCSR && HandledCSR) {
         TmpStr = (GlobalConfig.DynamicCSR == -1)
             ? L"Disable" : L"Enable";
     }
+    else if (!HandledCSR) {
+        // Aborted
+        TmpStr = L"Did Not Update";
+    }
+    else {
+        // Failed to Definitively Rotate CSR
+        // That is, !RotatedCSR
+        Status = EFI_NOT_READY;
+        TmpStr = L"Could *NOT* Definitively Rotate";
+    }
+
     MsgStr = PoolPrint (L"%s SIP/SSV ... %r", TmpStr, Status);
     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
     LOG_MSG("\n");
@@ -4079,8 +4090,7 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 // No end dash line ... Expected to return
-                // Unset DynamicCSR if active
-                RotateCsrValue (TRUE);
+                InitRotateCSR();
 
             break;
             case TAG_INSTALL:

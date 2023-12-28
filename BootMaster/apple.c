@@ -107,13 +107,16 @@ VOID RecordgCsrStatus (
     switch (CsrStatus) {
         // SIP "Cleared" Setting
         case SIP_ENABLED_EX:
-            gCsrStatus = StrDuplicate (L"SIP Enabled (Cleared/Empty)");
-            break;
+            gCsrStatus = StrDuplicate (
+                L"0x0000 - SIP/SSV Enabled (Cleared/Empty)"
+            );
+
+        break;
 
         // SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L"SIP Enabled (0x%04x)",
+                L"0x%04x - SIP Enabled",
                 CsrStatus
             );
 
@@ -126,7 +129,7 @@ VOID RecordgCsrStatus (
         case SIP_DISABLED_KEXT:
         case SIP_DISABLED_EXTRA:
             gCsrStatus = PoolPrint (
-                L"SIP Disabled (0x%04x)",
+                L"0x%04x - SIP Disabled",
                 CsrStatus
             );
 
@@ -136,7 +139,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_B:
         case SSV_DISABLED_EX:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x)",
+                L"0x%04x - SIP/SSV Disabled",
                 CsrStatus
             );
 
@@ -146,7 +149,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_KEXT:
         case SSV_DISABLED_ANY_EX:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Known Custom Setting)",
+                L"0x%04x - SIP/SSV Disabled (Known Custom Setting)",
                 CsrStatus
             );
 
@@ -155,7 +158,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Inactive)",
+                L"0x%04x - SIP/SSV Disabled (Inactive)",
                 CsrStatus
             );
 
@@ -163,41 +166,31 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Unknown Custom Setting)",
+                L"0x%04x - SIP/SSV Disabled (Unknown Custom Setting)",
                 CsrStatus
             );
     } // switch
 
-    if (!DisplayMessage) {
-        // Early Exit if not displaying maessage
-        return;
+    if (DisplayMessage) {
+        MsgStr = (NormaliseCall)
+            ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
+            : PoolPrint (L"%s", gCsrStatus);
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG(
+            "%s    * %s",
+            OffsetNext, MsgStr
+        );
+        LOG_MSG("\n\n");
+        #endif
+
+        egDisplayMessage (
+            MsgStr, &BGColor,
+            CENTER, 2, L"PauseSeconds"
+        );
+
+        MY_FREE_POOL(MsgStr);
     }
-
-    MsgStr = (NormaliseCall)
-        ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
-        : PoolPrint (L"%s", gCsrStatus);
-
-    #if REFIT_DEBUG > 0
-    LOG_MSG(
-        "%s    * %s",
-        OffsetNext, MsgStr
-    );
-    LOG_MSG("\n\n");
-    #endif
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    MY_MUTELOGGER_SET;
-    #endif
-    egDisplayMessage (
-        MsgStr, &BGColor, CENTER,
-        2, L"PauseSeconds"
-    );
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
-
-    MY_FREE_POOL(MsgStr);
 } // VOID RecordgCsrStatus()
 
 EFI_STATUS FlagNoCSR (VOID) {

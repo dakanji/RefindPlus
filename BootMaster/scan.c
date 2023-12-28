@@ -3028,11 +3028,6 @@ VOID ScanInternal (VOID) {
 
     FirstLoaderScan = FALSE;
 
-    if (!HasMacOS) {
-        // Disable DynamicCSR ... macOS not detected
-        GlobalConfig.DynamicCSR = 0;
-    }
-
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
@@ -4859,7 +4854,7 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_CSR_ROTATE:
-                if (!HasMacOS) {
+                if (!AppleFirmware && !HasMacOS) {
                     VetCSR();
 
                     MY_FREE_POOL(gCsrStatus);

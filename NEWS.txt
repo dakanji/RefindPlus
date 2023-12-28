@@ -21,6 +21,9 @@
   * Improves loading speed by reducing disk I/O access
 - Improves `macOS Installer` Handling
   * Now better identified and labelled
+- Improves `RotateCSR` Handling
+  * Now displays a confirmation input screen before execution
+  * The `NormaliseCSR` feature was always applied when rotating
 - Amends `Apple 'Fat' Binary` Handling
   * Now also assumed valid on UEFI-PC
   * Consistent with upstream implementation

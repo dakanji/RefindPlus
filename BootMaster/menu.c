@@ -3395,6 +3395,109 @@ VOID HideTag (
     FreeMenuScreen (&HideTagMenu);
 } // VOID HideTag()
 
+// Present a menu for the user to confirm CSR rotatation
+BOOLEAN ConfirmRotate (VOID) {
+    UINT32             CurrentCsr;
+    UINT32             TargetCsr;
+    UINT32             TempCsr;
+    CHAR16            *TmpStrA;
+    CHAR16            *TmpStrB;
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            EmptySIP;
+    BOOLEAN            RetVal;
+    UINT32_LIST       *ListItem;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmRotateMenu;
+
+
+    if (GlobalConfig.CsrValues == NULL) {
+        // Early Exit
+        return FALSE;
+    }
+
+    ConfirmRotateMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ConfirmRotateMenu == NULL) {
+        // Resource Exhaustion ... Early Exit
+        return FALSE;
+    }
+
+    /* coverity[check_return: SUPPRESS] */
+    GetCsrStatus (&CurrentCsr);
+    RecordgCsrStatus (CurrentCsr, FALSE);
+    TmpStrA = PoolPrint (L"From : %s", gCsrStatus);
+    EmptySIP = (CurrentCsr == SIP_ENABLED_EX) ? TRUE : FALSE;
+
+    ListItem = GlobalConfig.CsrValues;
+    if (EmptySIP) {
+        // Store first config CsrValue when SIP is not set (for later use)
+        TempCsr = GlobalConfig.CsrValues->Value;
+    }
+    else {
+        while ((ListItem != NULL) && (ListItem->Value != CurrentCsr)) {
+            ListItem = ListItem->Next;
+        } // while
+    }
+    TargetCsr = (ListItem == NULL || ListItem->Next == NULL)
+        ? GlobalConfig.CsrValues->Value
+        : ListItem->Next->Value;
+
+    // Set recorded Human Readable String to Target CSR
+    RecordgCsrStatus (TargetCsr, FALSE);
+    // Save recorded Human Readable String for display later
+    TmpStrB = PoolPrint (L"To   : %s", gCsrStatus);
+    // Revert recorded Human Readable String to Current CSR
+    RecordgCsrStatus (CurrentCsr, FALSE);
+
+    // Build the menu page
+    ConfirmRotateMenu->Title      = StrDuplicate (L"Confirm CSR Rotation"    );
+    ConfirmRotateMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
+    ConfirmRotateMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT         );
+    ConfirmRotateMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
+
+    AddMenuInfoLine (ConfirmRotateMenu, TmpStrA,                        FALSE);
+    AddMenuInfoLine (ConfirmRotateMenu, TmpStrB,                        FALSE);
+    AddMenuInfoLine (ConfirmRotateMenu, L"",                            FALSE);
+
+    AddMenuEntryCopy (ConfirmRotateMenu, &MenuEntryYes);
+    AddMenuEntryCopy (ConfirmRotateMenu, &MenuEntryNo);
+
+    MY_FREE_POOL(TmpStrA);
+    MY_FREE_POOL(TmpStrB);
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmRotateMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmRotate'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        if (EmptySIP) {
+            // Save first config CsrValue when SIP is not set
+            // To allow rotation to the second value, usually "Disabled" setting
+            EfivarSetRaw (
+                &AppleBootGuid, L"csr-active-config",
+                &TempCsr, sizeof (UINT32), TRUE
+            );
+        }
+
+        RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
+    }
+
+    FreeMenuScreen (&ConfirmRotateMenu);
+
+    return RetVal;
+} // BOOLEAN ConfirmRotate()
+
 // Present a menu for the user to confirm restart
 BOOLEAN ConfirmRestart (VOID) {
     INTN               DefaultEntry;

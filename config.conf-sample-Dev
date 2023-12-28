@@ -27,6 +27,12 @@
 #   0    - Take no Action
 #  -1    - Always Disable SIP (and SSV on macOS 11.x or later when configured in "csr_values")
 #
+# NOTES:
+# 1. This rotates the values defined under the 'csr_values' configuration token.
+# 2. Thus, the first matching value defined under the 'csr_values' token is used.
+# 3. That token must therefore contain values to both 'Enable' and 'Disable' CSR.
+# 4. This token is essentially disabled whenever 'csr_values' is not active/set.
+#
 # Inactive when commented out (Takes no action on SIP and/or SSV)
 #
 #csr_dynamic 1
