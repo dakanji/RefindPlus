@@ -1964,6 +1964,8 @@ VOID ReadConfig (
     BOOLEAN           DoneManual;
     BOOLEAN           CheckManual;
     BOOLEAN           GotHideuiAll;
+    BOOLEAN           GotNoneHideui;
+    BOOLEAN           OutLoopHideui;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
     CHAR16           *MsgStr;
@@ -2008,7 +2010,7 @@ VOID ReadConfig (
     }
 
     if (!FileExists (SelfDir, FileName)) {
-        #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
         MuteLogger = FALSE;
         LOG_MSG("%s", OffsetNext);
         if (!OuterLoop) {
@@ -2022,7 +2024,7 @@ VOID ReadConfig (
         }
         LOG_MSG("WARN: %sFile *NOT* Found", Flag);
         // DA-TAG: No 'TRUE' Flag
-        #endif
+#endif
 
         if (!OuterLoop) {
             ReadLoops = ReadLoops - 1;
@@ -2030,6 +2032,7 @@ VOID ReadConfig (
 #if REFIT_DEBUG > 0
         else {
             LOG_MSG(" ... Using Default Settings ***");
+            LOG_MSG("\n\n");
             MuteLogger = TRUE;
         }
 #endif
@@ -2039,7 +2042,7 @@ VOID ReadConfig (
 
     Status = RefitReadFile (SelfDir, FileName, &File, &i);
     if (EFI_ERROR(Status)) {
-        #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
         MuteLogger = FALSE;
         LOG_MSG("%s", OffsetNext);
         if (!OuterLoop) {
@@ -2050,28 +2053,25 @@ VOID ReadConfig (
             LOG_MSG("*** ");
         }
         LOG_MSG("WARN: Invalid Configuration File ... Aborting File Load", OffsetNext);
-        if (!OuterLoop) {
-            LOG_MSG("!!");
-        }
-        else {
-            LOG_MSG(" ***");
-            LOG_MSG("\n\n");
-        }
-        MuteLogger = TRUE;
-        #endif
+        // DA-TAG: No 'TRUE' Flag
+#endif
 
         if (!OuterLoop) {
             ReadLoops = ReadLoops - 1;
-
-            #if REFIT_DEBUG > 0
-            MuteLogger = FALSE;
-            #endif
         }
+#if REFIT_DEBUG > 0
+        else {
+            LOG_MSG(" ***");
+            LOG_MSG("\n\n");
+            MuteLogger = TRUE;
+        }
+#endif
 
         return;
     }
 
-    CheckManual = DoneManual = FALSE;
+    CheckManual   = DoneManual    = FALSE;
+    GotNoneHideui = OutLoopHideui = FALSE;
     #if REFIT_DEBUG > 0
     if (!OuterLoop) {
         CheckManual = TRUE;
@@ -2109,17 +2109,21 @@ VOID ReadConfig (
             }
             #endif
         }
-        else if (MyStriCmp (TokenList[0], L"hideui")) {
+        else if (!GotNoneHideui && MyStriCmp (TokenList[0], L"hideui")) {
             GotHideuiAll = FALSE;
 
-            // DA-TAG: This allows reset/override in 'included' config files
-            GlobalConfig.HideUIFlags = 0;
+            if (!OuterLoop && !OutLoopHideui) {
+                // DA-TAG: Allows reset/override in 'included' config files
+                OutLoopHideui = TRUE;
+                GlobalConfig.HideUIFlags = 0;
+            }
 
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
                 if (MyStriCmp (Flag, L"none")) {
                     // DA-TAG: Required despite earlier reset
                     //         This will always be used if in token list
+                    GotNoneHideui = TRUE;
                     GlobalConfig.HideUIFlags = 0;
                     break;
                 }
@@ -2131,14 +2135,14 @@ VOID ReadConfig (
                     }
                     else {
                         if (0);
-                        else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
-                        else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
-                        else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
-                        else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
-                        else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
-                        else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
-                        else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
-                        else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
+                        else if (MyStriCmp (Flag, L"label"     )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
+                        else if (MyStriCmp (Flag, L"hints"     )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
+                        else if (MyStriCmp (Flag, L"banner"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
+                        else if (MyStriCmp (Flag, L"hwtest"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
+                        else if (MyStriCmp (Flag, L"arrows"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
+                        else if (MyStriCmp (Flag, L"editor"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
+                        else if (MyStriCmp (Flag, L"badges"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
+                        else if (MyStriCmp (Flag, L"safemode"  )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
                         else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
                         else {
                             SwitchToText (FALSE);
@@ -3032,6 +3036,18 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (MyStriCmp (TokenList[0], L"disable_pass_gop_thru")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.PassGopThrough = (DeclineSetting) ? FALSE : TRUE;
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'disable_pass_gop_thru'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
         else if (
             MyStriCmp (TokenList[0], L"renderer_direct_gop") ||
             MyStriCmp (TokenList[0], L"direct_gop_renderer")
@@ -3500,7 +3516,6 @@ VOID ReadConfig (
     if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
     if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
     if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
-    if (!AppleFirmware) GlobalConfig.SetAppleFB     = FALSE;
 
     // Prioritise EnableTouch
     if (GlobalConfig.EnableTouch) {

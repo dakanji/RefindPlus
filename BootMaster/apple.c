@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -847,6 +847,8 @@ EFI_STATUS RefitGetApfsVolumeInfo (
     return EFI_SUCCESS;
 } // EFI_STATUS RefitGetApfsVolumeInfo()
 
+// DA-TAG: Currently Disabled by '#if 0'
+#if 0
 static
 EFI_STATUS RefitUninstallAllProtocolInstances (
     EFI_GUID  *Protocol
@@ -856,6 +858,7 @@ EFI_STATUS RefitUninstallAllProtocolInstances (
     UINTN           Index;
     UINTN           NoHandles;
     VOID           *OriginalProto;
+
 
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
@@ -888,6 +891,7 @@ EFI_STATUS RefitUninstallAllProtocolInstances (
 
     return Status;
 } // static EFI_STATUS RefitUninstallAllProtocolInstances()
+#endif
 
 static
 EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
@@ -904,13 +908,18 @@ EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
     EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE     *Mode;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    if (NULL == This            ||
-        NULL == FramebufferBase ||
-        NULL == FramebufferSize ||
-        NULL == ScreenRowBytes  ||
-        NULL == ScreenWidth     ||
-        NULL == ScreenHeight    ||
-        NULL == ScreenDepth
+
+    if (!AppleFirmware) {
+        return EFI_UNSUPPORTED;
+    }
+
+    if (!This            ||
+        !FramebufferBase ||
+        !FramebufferSize ||
+        !ScreenRowBytes  ||
+        !ScreenWidth     ||
+        !ScreenHeight    ||
+        !ScreenDepth
     ) {
         return EFI_INVALID_PARAMETER;
     }
@@ -940,21 +949,9 @@ EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
     return EFI_SUCCESS;
 } // static EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo()
 
-#if REFIT_DEBUG > 0
-static
-VOID LogInstallStatusFB (
-    EFI_STATUS Status
-) {
-    const CHAR16 *MsgStr = L"AppleFramebuffer Install Status";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-    LOG_MSG("%s      %s:- '%r'", OffsetNext, MsgStr, Status);
-} // static VOID LogInstallStatusFB()
-#endif
-
-APPLE_FRAMEBUFFER_INFO_PROTOCOL * RefitAppleFbInfoInstallProtocol (
-    IN BOOLEAN  Reinstall
-) {
+VOID RefitAppleFbInfoInstallProtocol (VOID) {
     EFI_STATUS                       Status;
+    BOOLEAN                          ProcessThis;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
 
     #if REFIT_DEBUG > 0
@@ -967,61 +964,53 @@ APPLE_FRAMEBUFFER_INFO_PROTOCOL * RefitAppleFbInfoInstallProtocol (
       RefitAppleFramebufferGetInfo
     };
 
+
+    ProcessThis = (
+        AppleFirmware        &&
+        GlobalConfig.SetAppleFB
+    );
+
     #if REFIT_DEBUG > 0
-    MsgStr = L"Attempt AppleFramebuffer Install";
+    MsgStr = L"Sync Source AppleFramebuffers";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s      %s", OffsetNext, MsgStr);
+    LOG_MSG("%s:", MsgStr);
     #endif
 
-    if (Reinstall) {
-        Status = RefitUninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
-        if (EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgStr = L"Uninstall Existing AppleFramebuffer";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG(" ... %s:- '%r'", MsgStr, Status);
-            #endif
-
-            if (Status != EFI_NOT_FOUND) {
-                #if REFIT_DEBUG > 0
-                LogInstallStatusFB (Status);
-                #endif
-
-                return NULL;
-            }
-        }
+    if (!ProcessThis) {
+        Status = EFI_NOT_STARTED;
     }
     else {
         Status = REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
             NULL, (VOID *) &Protocol
         );
-        if (!EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgStr = L"Locate Existing AppleFramebuffer";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG(" ... %s:- '%r'", MsgStr, Status);
-
-            LogInstallStatusFB (Status);
-            #endif
-
-            return Protocol;
-        }
     }
 
-    Status = REFIT_CALL_4_WRAPPER(
-        gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
-        &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
-    );
     #if REFIT_DEBUG > 0
-    LogInstallStatusFB (Status);
+    MsgStr = L"Get Old AppleFramebuffers";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
     #endif
-    if (EFI_ERROR (Status)) {
-        return NULL;
+
+    if (!EFI_ERROR (Status)) {
+        Status = EFI_ALREADY_STARTED;
+    }
+    else if (ProcessThis) {
+        UninitRefitLib();
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+            &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
+        );
+        ReinitRefitLib();
     }
 
-    return &OurAppleFramebufferInfo;
-} // APPLE_FRAMEBUFFER_INFO_PROTOCOL * RefitAppleFbInfoInstallProtocol()
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Set New AppleFramebuffers";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
+    LOG_MSG("\n\n");
+    #endif
+} // VOID RefitAppleFbInfoInstallProtocol()
 
 // DA-TAG: Limit to TianoCore - END
 #endif

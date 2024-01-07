@@ -108,12 +108,10 @@ EG_IMAGE * egCreateImage (
     EG_IMAGE   *NewImage;
 
     NewImage = (EG_IMAGE *) AllocatePool (sizeof (EG_IMAGE));
-    if (NewImage == NULL) {
-        return NULL;
-    }
-    NewImage->PixelData = (EG_PIXEL *) AllocatePool (Width * Height * sizeof (EG_PIXEL));
+    if (!NewImage) return NULL;
 
-    if (NewImage->PixelData == NULL) {
+    NewImage->PixelData = (EG_PIXEL *) AllocatePool (Width * Height * sizeof (EG_PIXEL));
+    if (!NewImage->PixelData) {
         MY_FREE_IMAGE(NewImage);
         return NULL;
     }
@@ -134,9 +132,7 @@ EG_IMAGE * egCreateFilledImage (
     EG_IMAGE  *NewImage;
 
     NewImage = egCreateImage (Width, Height, HasAlpha);
-    if (NewImage == NULL) {
-        return NULL;
-    }
+    if (!NewImage) return NULL;
 
     egFillImage (NewImage, Color);
 
@@ -148,12 +144,10 @@ EG_IMAGE * egCopyImage (
 ) {
     EG_IMAGE  *NewImage = NULL;
 
-    if (Image != NULL) {
+    if (Image) {
         NewImage = egCreateImage (Image->Width, Image->Height, Image->HasAlpha);
     }
-    if (NewImage == NULL) {
-        return NULL;
-    }
+    if (!NewImage) return NULL;
 
     CopyMem (NewImage->PixelData, Image->PixelData, Image->Width * Image->Height * sizeof (EG_PIXEL));
 
@@ -177,9 +171,7 @@ EG_IMAGE * egCropImage (
     }
 
     NewImage = egCreateImage (Width, Height, Image->HasAlpha);
-    if (NewImage == NULL) {
-        return NULL;
-    }
+    if (!NewImage) return NULL;
 
     for (y = 0; y < Height; y++) {
         for (x = 0; x < Width; x++) {
@@ -232,7 +224,7 @@ EG_IMAGE * egScaleImage (
     #endif
 
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
-    if (NewImage == NULL) {
+    if (!NewImage) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_END, L"In egScaleImage ... Could *NOT* Create New Image!!");
         #endif
@@ -293,9 +285,7 @@ EG_IMAGE * egScaleImage (
 VOID egFreeImage (
     IN EG_IMAGE *Image
 ) {
-    if (Image == NULL) {
-        return;
-    }
+    if (!Image) return;
 
     MY_FREE_POOL(Image->PixelData);
     MY_FREE_POOL(Image);
@@ -319,7 +309,7 @@ EFI_STATUS egLoadFile (
     EFI_FILE_INFO      *FileInfo;
     EFI_FILE_HANDLE     FileHandle;
 
-    if ((BaseDir == NULL) || (FileName == NULL)) {
+    if (!BaseDir || !FileName) {
         // Early Return
         return EFI_INVALID_PARAMETER;
     }
@@ -335,7 +325,7 @@ EFI_STATUS egLoadFile (
     }
 
     FileInfo = LibFileInfo (FileHandle);
-    if (FileInfo == NULL) {
+    if (!FileInfo) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
         // Early Return
@@ -352,7 +342,7 @@ EFI_STATUS egLoadFile (
 
     BufferSize = (UINTN) ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
-    if (Buffer == NULL) {
+    if (!Buffer) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
         // Early Return
@@ -382,7 +372,6 @@ EFI_STATUS egLoadFile (
     }
 
     #if REFIT_DEBUG > 0
-
     ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
@@ -394,24 +383,28 @@ EFI_STATUS egFindESP (
 ) {
     EFI_STATUS   Status;
     EFI_HANDLE  *Handles;
-    UINTN        HandleCount;
+    UINTN        i, HandleCount;
     EFI_GUID     ESPGuid = ESP_GUID_VALUE;
 
     HandleCount = 0;
+    *RootDir = NULL;
     Status = LibLocateHandle (
         ByProtocol,
         &ESPGuid, NULL,
         &HandleCount, &Handles
     );
-    if (!EFI_ERROR(Status) && HandleCount > 0) {
-        *RootDir = LibOpenRoot (Handles[0]);
-
-        if (*RootDir == NULL) {
-            Status = EFI_NOT_FOUND;
-        }
-
-        MY_FREE_POOL(Handles);
+    if (!EFI_ERROR(Status)) {
+        Status = EFI_NOT_FOUND;
+        for (i = 0; i < HandleCount; i++) {
+            *RootDir = LibOpenRoot (Handles[i]);
+            if (*RootDir) {
+                Status = EFI_SUCCESS;
+                break;
+            }
+        } // for
     }
+
+    MY_FREE_POOL(Handles);
 
     return Status;
 } // EFI_STATUS egFindESP()
@@ -426,12 +419,9 @@ EFI_STATUS egSaveFile (
     UINTN            BufferSize;
     EFI_FILE_HANDLE  FileHandle;
 
-    if (BaseDir == NULL) {
+    if (!BaseDir) {
         Status = egFindESP (&BaseDir);
-        if (EFI_ERROR(Status)) {
-            // Early Return
-            return Status;
-        }
+        if (EFI_ERROR(Status)) return Status;
     }
 
     Status = REFIT_CALL_5_WRAPPER(
@@ -439,10 +429,7 @@ EFI_STATUS egSaveFile (
         &FileHandle, FileName,
         ReadWriteCreate, 0
     );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
+    if (EFI_ERROR(Status)) return Status;
 
     if (FileDataLength == 0) {
         Status = REFIT_CALL_1_WRAPPER(FileHandle->Delete, FileHandle);
@@ -491,7 +478,7 @@ EG_IMAGE * egLoadImage (
     UINT8       *FileData;
     EG_IMAGE    *NewImage;
 
-    if (BaseDir == NULL || FileName == NULL) {
+    if (!BaseDir || !FileName) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements *NOT* Met!!");
         #endif
@@ -533,11 +520,10 @@ EG_IMAGE * egLoadIcon (
     UINTN           w, h;
     UINTN           FileDataLength;
     UINT8          *FileData;
-    CHAR16         *MsgStr;
     EG_IMAGE       *NewImage;
     EG_IMAGE       *Image;
 
-    if ((BaseDir == NULL) || (Path == NULL)) {
+    if (!BaseDir || !Path) {
         #if REFIT_DEBUG > 0
         // Set error status if unable to get to image
         Status = EFI_INVALID_PARAMETER;
@@ -547,7 +533,7 @@ EG_IMAGE * egLoadIcon (
         );
         #endif
 
-        // Return null if error
+        // Early Return
         return NULL;
     }
     else if (!AllowGraphicsMode) {
@@ -575,19 +561,17 @@ EG_IMAGE * egLoadIcon (
         );
         #endif
 
-        // Return null if error
+        // Early Return
         return NULL;
     }
 
     // Decode it
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
     MY_FREE_POOL(FileData);
-
-    // Return null if unable to decode
-    if (Image == NULL) {
+    if (!Image) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"In egLoadIcon ... Could *NOT* Decode File Data!!"
+            L"In egLoadIcon ... Could *NOT* Decode Image Data!!"
         );
         #endif
 
@@ -596,7 +580,7 @@ EG_IMAGE * egLoadIcon (
     }
 
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
-        // Do proportional scaling
+        // Proportional scaling from Joe van Tunen (joevt@shaw.ca)
         w = Image->Width;
         h = Image->Height;
         if (h < w) {
@@ -611,26 +595,11 @@ EG_IMAGE * egLoadIcon (
             w = IconSize;
             h = IconSize;
         }
-        NewImage = egScaleImage (Image, w, h);
 
-        // Use scaled image if available
+        NewImage = egScaleImage (Image, w, h);
         if (NewImage) {
             MY_FREE_IMAGE(Image);
             Image = NewImage;
-        }
-        else {
-            MsgStr = PoolPrint (
-                L"Could *NOT* Scale Icon in '%s' From %d x %d to %d x %d!!",
-                Path, Image->Width, Image->Height, IconSize, IconSize
-            );
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
-            #endif
-
-            Print(MsgStr);
-
-            MY_FREE_POOL(MsgStr);
         }
     }
 
@@ -669,15 +638,15 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"Trying to Load Icon From '%s' with Base Name:- '%s'",
+        L"In egLoadIconAnyType ... Trying to Load Icon From '%s' with Base Name:- '%s'",
         (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
         BaseName
     );
     #endif
 
-    Image = NULL;
     i = 0;
-    while ((Image == NULL) &&
+    Image = NULL;
+    while (!Image &&
         ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL)
     ) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
@@ -688,7 +657,7 @@ EG_IMAGE * egLoadIconAnyType (
     } // while
 
     #if REFIT_DEBUG > 0
-    if (Image == NULL) {
+    if (!Image) {
         ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadIconAnyType ... Could *NOT* Load Icon!");
     }
     #endif
@@ -708,16 +677,19 @@ EG_IMAGE * egFindIcon (
     IN CHAR16 *BaseName,
     IN UINTN   IconSize
 ) {
-    EG_IMAGE *Image = NULL;
+    EG_IMAGE *Image;
 
-    if (GlobalConfig.IconsDir != NULL) {
+    if (!GlobalConfig.IconsDir) {
+        Image = NULL;
+    }
+    else {
         Image = egLoadIconAnyType (
             SelfDir, GlobalConfig.IconsDir,
             BaseName, IconSize
         );
     }
 
-    if (Image == NULL) {
+    if (!Image) {
         Image = egLoadIconAnyType (
             SelfDir, DEFAULT_ICONS_DIR,
             BaseName, IconSize

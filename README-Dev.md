@@ -65,6 +65,7 @@ disable_amfi          |Disables AMFI Checks on macOS if required
 disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 disable_compat_check  |Disables Mac version compatibility checks if required
+disable_pass_gop_thru |Disables feature that provides GOP instance on UGA for some loading screens
 disable_nvram_paniclog|Disables macOS kernel panic logging to nvRAM
 disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
 disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units

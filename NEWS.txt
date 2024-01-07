@@ -10,6 +10,16 @@
 - Fixes `Legacy MBR`, including `Legacy Windows`, Handling
   * Negatively impacted by `Volume->RootDir` filtering in the `DontScanVolumes` check consolidation
   * This bug was introduced in v0.14.0.AB (Commit a92b376)
+- Improves Graphics Handling
+  * Improvements to handling `Appleframebuffer`
+  * Improvements to handling `Graphics Pass Through`
+    - Misc optimisation
+    - The `PassGopThrough` feature added in `0.13.3.AD` is now user configurable
+      * Enabled by default but can now be disabled using a new `disable_pass_gop_thru` configuration token
+  * Improvements to handling misc graphics items
+  * Amendments to `GOP Graphics` Handling
+    - GOP is now provided/replaced on the `ConsoleOut` handle by default when required
+    - Hence, the "Opt-In" `provide_console_gop` token is replaced by the "Opt-Out" `disable_set_consolegop`
 - Improves `SetBootArgs` Handling
   * The `set_boot_args` configuration token can now take a `-none` setting
   * This permits disabling previous settings in supplementary/theme config files
@@ -48,9 +58,6 @@
 - Amends `SilenceAPFS` Feature
   * No longer separately user configurable and subsumed into the `SupplyAPFS` feature
   * The associated `disable_apfs_mute` configuration token is now removed and ignored if set
-- Amends `GOP Graphics` Handling
-  * GOP is now provided/replaced on the `ConsoleOut` handle by default when required
-  * Hence, the "Opt-In" `provide_console_gop` token is replaced by the "Opt-Out" `disable_set_consolegop`
 - Removes `HelpTags` Feature
   * The issue the feature was meant to fix does not actually exist
   * The associated `decline_help_tags` configuration token is now removed and ignored if set

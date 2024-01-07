@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -75,7 +75,7 @@ extern EG_PIXEL MenuBackgroundPixel;
 
 
 // Console defines and variables
-EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
+EFI_GUID UgaDrawProtocolGuid        =        EFI_UGA_DRAW_PROTOCOL_GUID;
 EFI_GUID GOPDrawProtocolGuid        = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 
@@ -88,9 +88,288 @@ BOOLEAN egHasGraphics     = FALSE;
 BOOLEAN SetPreferUGA      = FALSE;
 BOOLEAN GotGoodGOP        = FALSE;
 
-UINTN   SelectedGOP    = 0;
+UINTN   SelectedGOP    =   0;
 UINTN   egScreenWidth  = 800;
 UINTN   egScreenHeight = 600;
+
+// DA-TAG: Code within 'MAKEWITH_TIANO' block below is directly from OpenCore
+//         Licensed under the BSD 3 license
+//         Added directly for control
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore - START
+typedef struct {
+  EFI_GRAPHICS_OUTPUT_PROTOCOL  *GraphicsOutput;
+  EFI_UGA_DRAW_PROTOCOL          Uga;
+} RP_UGA_PROTOCOL;
+
+
+static
+EFI_STATUS RefitSetConsoleResolutionForProtocol (
+    IN  EFI_GRAPHICS_OUTPUT_PROTOCOL      *GraphicsOutput,
+    IN  UINT32                             Width  OPTIONAL,
+    IN  UINT32                             Height OPTIONAL,
+    IN  UINT32                             Bpp    OPTIONAL
+) {
+    EFI_STATUS                             Status;
+
+    UINT32                                 MaxMode;
+    UINT32                                 ModeIndex;
+    INT64                                  ModeNumber;
+    UINTN                                  SizeOfInfo;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
+    BOOLEAN                                SetMax;
+
+    SetMax = (Width == 0 && Height == 0);
+
+    // Find required resolution
+    ModeNumber = -1;
+    MaxMode    = GraphicsOutput->Mode->MaxMode;
+    for (ModeIndex = 0; ModeIndex < MaxMode; ++ModeIndex) {
+        Status = GraphicsOutput->QueryMode (
+            GraphicsOutput,
+            ModeIndex,
+            &SizeOfInfo,
+            &Info
+        );
+        if (EFI_ERROR (Status)) {
+            continue;
+        }
+
+        if (!SetMax) {
+            // Custom resolution requested
+            if (Info->HorizontalResolution == Width &&
+                Info->VerticalResolution   == Height
+                && (
+                    Bpp == 0 || Bpp == 24 || Bpp == 32
+                ) && (
+                    Info->PixelFormat == PixelRedGreenBlueReserved8BitPerColor ||
+                    Info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor ||
+                    (
+                        Info->PixelFormat == PixelBitMask &&
+                        (
+                            Info->PixelInformation.RedMask == 0xFF000000U ||
+                            Info->PixelInformation.RedMask == 0xFF0000U   ||
+                            Info->PixelInformation.RedMask == 0xFF00U     ||
+                            Info->PixelInformation.RedMask == 0xFFU
+                        )
+                    ) || Info->PixelFormat == PixelBltOnly
+                )
+            ) {
+                ModeNumber = ModeIndex;
+                MY_FREE_POOL(Info);
+                break;
+            }
+        }
+        else if (Info->HorizontalResolution > Width ||
+            (
+                Info->HorizontalResolution == Width  &&
+                Info->VerticalResolution    > Height
+            )
+        ) {
+            Width      = Info->HorizontalResolution;
+            Height     = Info->VerticalResolution;
+            ModeNumber = ModeIndex;
+        } // if !SetMax elseif Info->HorizontalResolution > Width
+
+        MY_FREE_POOL(Info);
+    }
+
+    if (ModeNumber < 0) {
+        return EFI_NOT_FOUND;
+    }
+
+    if (ModeNumber == GraphicsOutput->Mode->Mode) {
+        return EFI_ALREADY_STARTED;
+    }
+
+    // Current graphics mode not set, or not set to mode found above.
+    // Set new graphics mode.
+    Status = GraphicsOutput->SetMode (GraphicsOutput, (UINT32) ModeNumber);
+    if (!EFI_ERROR(Status)) {
+        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+        egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
+    }
+
+    return Status;
+} // static EFI_STATUS RefitSetConsoleResolutionForProtocol()
+
+static
+EFI_STATUS EFIAPI RefitUGADrawGetMode (
+    IN  EFI_UGA_DRAW_PROTOCOL *This,
+    OUT UINT32                *HorizontalResolution,
+    OUT UINT32                *VerticalResolution,
+    OUT UINT32                *ColorDepth,
+    OUT UINT32                *RefreshRate
+) {
+    RP_UGA_PROTOCOL                       *Refit_UGA;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
+
+    if (This                 == NULL ||
+        ColorDepth           == NULL ||
+        RefreshRate          == NULL ||
+        VerticalResolution   == NULL ||
+        HorizontalResolution == NULL
+    ) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    Refit_UGA = BASE_CR (This, RP_UGA_PROTOCOL, Uga);
+    Info      = Refit_UGA->GraphicsOutput->Mode->Info;
+
+    if (Info->HorizontalResolution == 0 ||
+        Info->VerticalResolution   == 0
+    ) {
+        return EFI_NOT_STARTED;
+    }
+
+    *HorizontalResolution = Info->HorizontalResolution;
+    *VerticalResolution   = Info->VerticalResolution;
+    *ColorDepth           = DEFAULT_COLOUR_DEPTH;
+    *RefreshRate          = DEFAULT_REFRESH_RATE;
+
+    return EFI_SUCCESS;
+} // static EFI_STATUS EFIAPI RefitUGADrawGetMode()
+
+static
+EFI_STATUS EFIAPI RefitUGADrawSetMode (
+    IN  EFI_UGA_DRAW_PROTOCOL *This,
+    IN  UINT32                 HorizontalResolution,
+    IN  UINT32                 VerticalResolution,
+    IN  UINT32                 ColorDepth,
+    IN  UINT32                 RefreshRate
+) {
+    EFI_STATUS        Status;
+    RP_UGA_PROTOCOL   *Refit_UGA;
+
+    Refit_UGA = BASE_CR (This, RP_UGA_PROTOCOL, Uga);
+
+    Status = RefitSetConsoleResolutionForProtocol (
+        Refit_UGA->GraphicsOutput,
+        HorizontalResolution,
+        VerticalResolution,
+        ColorDepth
+    );
+    if (EFI_ERROR (Status)) {
+        Status = RefitSetConsoleResolutionForProtocol (
+            Refit_UGA->GraphicsOutput,
+            0, 0, 0
+        );
+    }
+
+    return Status;
+} // static EFI_STATUS EFIAPI RefitUGADrawSetMode()
+
+static
+EFI_STATUS EFIAPI RefitUGADrawBlt (
+    IN  EFI_UGA_DRAW_PROTOCOL                   *This,
+    IN  EFI_UGA_PIXEL                           *BltBuffer OPTIONAL,
+    IN  EFI_UGA_BLT_OPERATION                    BltOperation,
+    IN  UINTN                                    SourceX,
+    IN  UINTN                                    SourceY,
+    IN  UINTN                                    DestinationX,
+    IN  UINTN                                    DestinationY,
+    IN  UINTN                                    Width,
+    IN  UINTN                                    Height,
+    IN  UINTN                                    Delta      OPTIONAL
+) {
+    RP_UGA_PROTOCOL   *Refit_UGA;
+
+    Refit_UGA = BASE_CR (This, RP_UGA_PROTOCOL, Uga);
+
+    return Refit_UGA->GraphicsOutput->Blt (
+        Refit_UGA->GraphicsOutput,
+        (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) BltBuffer,
+        (EFI_GRAPHICS_OUTPUT_BLT_OPERATION) BltOperation,
+        SourceX, SourceY,
+        DestinationX, DestinationY,
+        Width, Height,
+        Delta
+    );
+} // static EFI_STATUS EFIAPI RefitUGADrawBlt()
+
+static
+EFI_STATUS RefitPassUgaThrough (VOID) {
+    EFI_STATUS                      Status;
+    EFI_STATUS                      ReturnStatus;
+    UINTN                           HandleCount;
+    UINTN                           Index;
+    EFI_HANDLE                     *HandleBuffer;
+    RP_UGA_PROTOCOL                *Refit_UGA;
+    EFI_UGA_DRAW_PROTOCOL          *UgaDraw;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL   *GraphicsOutput;
+
+    // DA-TAG: UGAPassThru is currently only for macOS 10.4
+    //         As a side note from OpenCore notes...
+    //         MacPro5,1 has 2 GOP protocols:
+    //           - for the GPU
+    //           - for ConsoleOutput
+    //         and 1 UGA protocol:
+    //           - for an as yet unknown handle
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiGraphicsOutputProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (EFI_ERROR (Status)) {
+        // Early Return ... No GOP handles to process
+        return EFI_NOT_READY;
+    }
+
+    ReturnStatus = EFI_LOAD_ERROR;
+    for (Index = 0; Index < HandleCount; ++Index) {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[Index],
+            &gEfiGraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput
+        );
+        if (EFI_ERROR (Status)) {
+            if (ReturnStatus == EFI_LOAD_ERROR) {
+                ReturnStatus = EFI_NOT_FOUND;
+            }
+
+            continue;
+        }
+
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[Index],
+            &gEfiUgaDrawProtocolGuid, (VOID **) &UgaDraw
+        );
+        if (!EFI_ERROR (Status)) {
+            if (ReturnStatus == EFI_LOAD_ERROR ||
+                ReturnStatus == EFI_NOT_FOUND
+            ) {
+                ReturnStatus = EFI_UNSUPPORTED;
+            }
+
+            continue;
+        }
+
+        Refit_UGA = AllocateZeroPool (sizeof (RP_UGA_PROTOCOL));
+        if (Refit_UGA == NULL) {
+            ReturnStatus = EFI_OUT_OF_RESOURCES;
+            break;
+        }
+
+        Refit_UGA->GraphicsOutput = GraphicsOutput;
+        Refit_UGA->Uga.GetMode    = RefitUGADrawGetMode;
+        Refit_UGA->Uga.SetMode    = RefitUGADrawSetMode;
+        Refit_UGA->Uga.Blt        = RefitUGADrawBlt;
+
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallMultipleProtocolInterfaces, &HandleBuffer[Index],
+            &gEfiUgaDrawProtocolGuid, &Refit_UGA->Uga,
+            NULL
+        );
+        if (EFI_ERROR (ReturnStatus)) {
+            ReturnStatus = Status;
+        }
+    } // for
+
+    MY_FREE_POOL(HandleBuffer);
+
+    return ReturnStatus;
+} // static EFI_STATUS RefitPassUgaThrough()
+// DA-TAG: Limit to TianoCore - END
+#endif
 
 // DA-TAG: Investigate This
 //         Code within 'MAKEWITH_TIANO' block below is directly from OpenCore
@@ -612,6 +891,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
     BOOLEAN    OurValidGOP;
+    BOOLEAN    IncrementLoop;
 
     #if REFIT_DEBUG > 0
     UINT32  ModeLog;
@@ -631,92 +911,104 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         return EFI_UNSUPPORTED;
     }
 
-    OurValidGOP = FALSE;
-
     // Get dump
     MaxMode = GOPDraw->Mode->MaxMode;
-    if (MaxMode > 0) {
+    if (MaxMode < 1) {
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Analyse GOP Modes on GPU Handle[%02d]", SelectedGOP);
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("%s:", MsgStr);
-        MY_FREE_POOL(MsgStr);
-
-        MsgStr = PoolPrint (
-            L"%02d GOP Mode%s ... 0x%lx <-> 0x%lx Framebuffer",
-            MaxMode,
-            (MaxMode != 1) ? L"s" : L"",
-            GOPDraw->Mode->FrameBufferBase,
-            GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s  - Summary:- '%s'", OffsetNext, MsgStr);
+        MsgStr = StrDuplicate (L"Could *NOT* Find Valid GOP Modes");
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
+        LOG_MSG("INFO: %s:", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
-        LoopCount = -1;
-        for (Mode = 0; Mode <= MaxMode; Mode++) {
+        return EFI_UNSUPPORTED;
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"Analyse GOP Modes on GPU Handle[%02d]", SelectedGOP);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
+    MY_FREE_POOL(MsgStr);
+
+    MsgStr = PoolPrint (
+        L"%02d GOP Mode%s ... 0x%lx <-> 0x%lx Framebuffer",
+        MaxMode,
+        (MaxMode != 1) ? L"s" : L"",
+        GOPDraw->Mode->FrameBufferBase,
+        GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
+    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s  - Summary:- '%s'", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
+    LoopCount = 0;
+    IncrementLoop = OurValidGOP = FALSE;
+    for (Mode = 0; Mode <= MaxMode; Mode++) {
+        if (IncrementLoop) {
             LoopCount++;
             if (LoopCount == MaxMode) {
                 break;
             }
+        }
+        IncrementLoop = TRUE;
+
+        #if REFIT_DEBUG > 0
+        // Limit logged value to 99
+        ModeLog = (Mode > 99) ? 99 : Mode;
+
+        LOG_MSG("%s    * Mode[%02d]", OffsetNext, ModeLog);
+        #endif
+
+        Status = REFIT_CALL_4_WRAPPER(
+            GOPDraw->QueryMode, GOPDraw,
+            Mode, &SizeOfInfo, &Info
+        );
+        if (!EFI_ERROR(Status)) {
+            OurValidGOP = TRUE;
 
             #if REFIT_DEBUG > 0
-            // Limit logged value to 99
-            ModeLog = (Mode > 99) ? 99 : Mode;
+            switch (Info->PixelFormat) {
+                case PixelRedGreenBlueReserved8BitPerColor: PixelFormatDesc = L"8bit RGB";  break;
+                case PixelBlueGreenRedReserved8BitPerColor: PixelFormatDesc = L"8bit BGR";  break;
+                case PixelBitMask:                          PixelFormatDesc = L"BIT MASK";  break;
+                case PixelBltOnly:                          PixelFormatDesc = L"!FBuffer";  break;
+                default:                                    PixelFormatDesc = L"Invalid!";  break;
+            } // switch
 
-            LOG_MSG("%s    * Mode[%02d]", OffsetNext, ModeLog);
-            #endif
-
-            Status = REFIT_CALL_4_WRAPPER(
-                GOPDraw->QueryMode, GOPDraw,
-                Mode, &SizeOfInfo, &Info
+            LOG_MSG(
+                " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
+                Info->HorizontalResolution,
+                Info->VerticalResolution,
+                Info->PixelsPerScanLine,
+                PixelFormatDesc, Status
             );
-            if (!EFI_ERROR(Status)) {
-                OurValidGOP = TRUE;
+            if (LoopCount >= (MaxMode - 1)) {
+                LOG_MSG("\n\n");
+            }
+            #endif
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Mode[%02d]: %r", ModeLog, Status);
+            LOG_MSG(" ... %r", Status);
 
-                #if REFIT_DEBUG > 0
-                switch (Info->PixelFormat) {
-                    case PixelRedGreenBlueReserved8BitPerColor: PixelFormatDesc = L"8bit RGB";  break;
-                    case PixelBlueGreenRedReserved8BitPerColor: PixelFormatDesc = L"8bit BGR";  break;
-                    case PixelBitMask:                          PixelFormatDesc = L"BIT MASK";  break;
-                    case PixelBltOnly:                          PixelFormatDesc = L"!FBuffer";  break;
-                    default:                                    PixelFormatDesc = L"Invalid!";  break;
-                } // switch
+            if (Mode > 99) {
+                LOG_MSG( ". NB: Real Mode = %02d", Mode);
+            }
 
-                LOG_MSG(
-                    " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
-                    Info->HorizontalResolution,
-                    Info->VerticalResolution,
-                    Info->PixelsPerScanLine,
-                    PixelFormatDesc, Status
-                );
-                if (LoopCount >= (MaxMode - 1)) {
-                    LOG_MSG("\n\n");
-                }
-                #endif
+            if (LoopCount >= (MaxMode - 1)) {
+                LOG_MSG("\n\n");
             }
             else {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"Mode[%02d]: %r", ModeLog, Status);
-                LOG_MSG(" ... %r", Status);
+                LOG_MSG("\n");
+            }
+            #endif
+        } // if/else !EFI_ERROR(Status)
 
-                if (Mode > 99) {
-                    LOG_MSG( ". NB: Real Mode = %02d", Mode);
-                }
-
-                if (LoopCount >= (MaxMode - 1)) {
-                    LOG_MSG("\n\n");
-                }
-                else {
-                    LOG_MSG("\n");
-                }
-                #endif
-            } // if/else !EFI_ERROR(Status)
-
-            MY_FREE_POOL(Info);
-        } // for (Mode = 0; Mode <= MaxMode; Mode++)
-    } // if MaxMode > 0
+        MY_FREE_POOL(Info);
+    } // for
 
     if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
@@ -1009,6 +1301,11 @@ UINTN egCountAppleFramebuffers (VOID) {
     EFI_HANDLE                      *HandleBuffer;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
 
+
+    if (!AppleFirmware) {
+        return 0;
+    }
+
     Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
     if (EFI_ERROR(Status)) {
         return 0;
@@ -1295,8 +1592,6 @@ VOID egInitScreen (VOID) {
     BOOLEAN     SelectedOnce;
 
     LOG_MSG("Check for Graphics:");
-
-    PrevFlag = FALSE;
     #endif
 
     // Get ConsoleControl Protocol
@@ -1338,7 +1633,7 @@ VOID egInitScreen (VOID) {
                 ? L"Enforced 'UGA-Only' Mode"
                 : L"Apparent 'UGA-Only' Graphics"
         );
-        PrevFlag = TRUE;
+        LOG_MSG("\n\n");
         #endif
     }
     else {
@@ -1669,44 +1964,64 @@ VOID egInitScreen (VOID) {
                 break;
             }
 
-            Status = EFI_NOT_STARTED;
-            if (thisValidGOP) {
-                // GOP Graphics Available
-                egHasGraphics = TRUE;
+            // GOP Graphics Available
+            egHasGraphics = TRUE;
 
-                Status = egSetMaxResolution();
-                if (!EFI_ERROR(Status)) {
-                    egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
-                    egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
-                }
-                else {
-                    egScreenWidth  = GlobalConfig.RequestedScreenWidth;
-                    egScreenHeight = GlobalConfig.RequestedScreenHeight;
-                }
-
-                Status = EFI_NOT_STARTED;
-                // DA-TAG: Limit to TianoCore
-                #ifdef __MAKEWITH_TIANO
-                if (GlobalConfig.PassUgaThrough) {
-                    Status = OcProvideUgaPassThrough();
-                }
-                #endif
-                if (EFI_ERROR(Status)) {
-                    // Prefer GOP ... Discard UGA
-                    UGADraw                  =  NULL;
-                    FoundHandleUGA = FlagUGA = FALSE;
-                }
+            Status = egSetMaxResolution();
+            if (!EFI_ERROR(Status)) {
+                egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+                egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
             }
-
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            MY_FREE_POOL(MsgStr);
-            PrevFlag = TRUE;
-            #endif
+            else {
+                egScreenWidth  = GlobalConfig.RequestedScreenWidth;
+                egScreenHeight = GlobalConfig.RequestedScreenHeight;
+            }
         } while (0); // This 'loop' only runs once
-    } // if GOPDraw != NULL
+    } // if GOPDraw
+
+    NewAppleFramebuffers = FALSE;
+
+// DA-TAG: Limit to TianoCore
+#ifdef __MAKEWITH_TIANO
+    #if REFIT_DEBUG > 0
+    PrevFlag = FALSE;
+    #endif
+
+    // Install AppleFramebuffers and Update AppleFramebuffer Count
+    RefitAppleFbInfoInstallProtocol();
+    if (AppleFramebuffers < 1) {
+        AppleFramebuffers = egCountAppleFramebuffers();
+        if (AppleFramebuffers > 0) {
+            NewAppleFramebuffers = TRUE;
+        }
+    }
+#endif
+// Limit to TianoCore ... END
+
+    if (thisValidGOP && GOPDraw) {
+        Status = EFI_NOT_STARTED;
+        if (thisValidGOP) {
+            // DA-TAG: Limit to TianoCore
+            #ifdef __MAKEWITH_TIANO
+            if (GlobalConfig.PassUgaThrough) {
+                Status = RefitPassUgaThrough();
+            }
+            #endif
+            if (EFI_ERROR(Status)) {
+                // Prefer GOP ... Discard UGA
+                UGADraw =  NULL;
+                FlagUGA = FALSE;
+            }
+        }
+
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Implement Pass UGA Thru ... %r", Status);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        PrevFlag = TRUE;
+        #endif
+    } // if GOPDraw
 
     Height = Width = 0; // DA-TAG: Redundant for Infer
     if (UGADraw) {
@@ -1731,10 +2046,15 @@ VOID egInitScreen (VOID) {
             L"Graphics *NOT* Available ... Falling Back on Text Mode"
         );
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
+        if (PrevFlag) {
+            LOG_MSG("%s      ", OffsetNext);
+        }
+        else {
+            LOG_MSG("INFO: ");
+            PrevFlag = TRUE;
+        }
+        LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
-
-        PrevFlag = TRUE;
         #endif
     }
     else if (UGADraw) {
@@ -1746,18 +2066,19 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (L"Forcing Universal Graphics Adapter");
             #endif
 
-            // Disable GOP
-            // NB: No need to 'thisValidGOP' as no longer used
+            // Infer: Do not flag 'thisValidGOP' as no longer used
             DisableGOP();
         }
-        else if (!thisValidGOP) {
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"GOP *NOT* Available ... Falling Back on UGA");
-            #endif
-        }
-        else {
+        else if (thisValidGOP) {
             // Prefer GOP ... Ignore UGA
             FlagUGA = FALSE;
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (
+                L"GOP *NOT* Available ... Falling Back on UGA"
+            );
+            #endif
         }
 
         if (FlagUGA) {
@@ -1777,70 +2098,35 @@ VOID egInitScreen (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
         }
-    } // if (GOPDraw == NULL && UGADraw == NULL)
+    } // if !thisValidGOP && !UGADraw
 
-    NewAppleFramebuffers = FALSE;
-
-// DA-TAG: Limit to TianoCore
-#ifdef __MAKEWITH_TIANO
-    do {
-        if (UGADraw == NULL || GOPDraw != NULL) {
-            // Break Loop
-            break;
+    // DA-TAG: Limit to TianoCore
+    #ifdef __MAKEWITH_TIANO
+    if (UGADraw && !GOPDraw) {
+        if (!GlobalConfig.PassGopThrough) {
+            Status = EFI_NOT_STARTED;
+        }
+        else {
+            Status = RefitProvideGopPassThrough (FALSE);
         }
 
-        if (!GlobalConfig.SetAppleFB || AppleFramebuffers > 0) {
-            // Break Loop
-            break;
-        }
-
-        // Install AppleFramebuffers and Update AppleFramebuffer Count
-        RefitAppleFbInfoInstallProtocol (TRUE);
-        AppleFramebuffers = egCountAppleFramebuffers();
-        if (AppleFramebuffers == 0) {
-            // Break Loop
-            break;
-        }
-
-        NewAppleFramebuffers = TRUE;
-        if (SetPreferUGA) {
-            // Break Loop
-            break;
-        }
-
-        // Run OpenCore Functions
-        OcProvideConsoleGop (TRUE);
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol, gST->ConsoleOutHandle,
-            &GOPDrawProtocolGuid, (VOID **) &GOPDraw
-        );
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Create GOP on ConsoleOut Handle ... %r", Status);
+        MsgStr = PoolPrint (L"Implement Pass GOP Thru ... %r", Status);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("\n\n");
-        LOG_MSG("INFO: %s", MsgStr);
+        if (PrevFlag) {
+            LOG_MSG("%s      ", OffsetNext);
+        }
+        else {
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: ");
+            PrevFlag = TRUE;
+        }
+        LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
-        if (EFI_ERROR(Status)) {
-            // Break Loop
-            break;
-        }
-
-        Status = RefitProvideGopPassThrough (FALSE);
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Implement GOP Pass Through ... %r", Status);
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s      %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        PrevFlag = TRUE;
-        #endif
-        if (EFI_ERROR(Status)) {
-            // Break Loop
-            break;
-        }
-    } while (0); // This 'loop' only runs once
-#endif
-// Limit to TianoCore ... END
+    }
+    #endif
+    // Limit to TianoCore ... END
 
     if (GOPDraw) {
         // We have graphics from GOP ... Discard UGA
@@ -1873,7 +2159,9 @@ VOID egInitScreen (VOID) {
             LOG_MSG("%s      ", OffsetNext);
         }
         else {
+            LOG_MSG("\n\n");
             LOG_MSG("INFO: ");
+            PrevFlag = TRUE;
         }
         LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -1885,7 +2173,7 @@ VOID egInitScreen (VOID) {
         MsgStr = StrDuplicate (L"NO");
         #endif
     }
-    else if (NewAppleFramebuffers) {
+    else if (!GOPDraw && NewAppleFramebuffers) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
             L"YES (Potentially Without Display%s)",
@@ -1914,7 +2202,14 @@ VOID egInitScreen (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s      Graphics Available:- '%s'", OffsetNext, MsgStr);
+    if (PrevFlag) {
+        LOG_MSG("%s      ", OffsetNext);
+    }
+    else {
+        LOG_MSG("\n\n");
+        LOG_MSG("INFO: ");
+    }
+    LOG_MSG("Graphical View Possible ... %s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
@@ -2756,7 +3051,7 @@ EG_IMAGE * egCopyScreenArea (
     UINTN XPos,  UINTN YPos,
     UINTN Width, UINTN Height
 ) {
-    EG_IMAGE *Image = NULL;
+    EG_IMAGE *Image;
 
    if (!egHasGraphics) {
        return NULL;
@@ -2786,6 +3081,9 @@ EG_IMAGE * egCopyScreenArea (
            0, 0,
            Image->Width, Image->Height, 0
        );
+   }
+   else {
+       MY_FREE_IMAGE(Image);
    }
 
    return Image;
@@ -2822,7 +3120,7 @@ VOID egScreenShot (VOID) {
     #endif
 
     Image = egCopyScreen();
-    if (Image == NULL) {
+    if (!Image) {
         MsgStr = L"Unable to Take Screenshot ... Image is NULL";
 
         egDisplayMessage (
@@ -2836,7 +3134,7 @@ VOID egScreenShot (VOID) {
         LOG_MSG("\n\n");
         #endif
 
-        goto bailout_wait;
+        return;
     }
 
     // Fix pixels
@@ -2856,25 +3154,7 @@ VOID egScreenShot (VOID) {
         (VOID **) &FileData,
         &FileDataSize
     );
-
     MY_FREE_IMAGE(Image);
-    if (EFI_ERROR(Status)) {
-        MsgStr = L"Could *NOT* Encode PNG";
-        egDisplayMessage (
-            MsgStr, &BGColorWarn,
-            CENTER, 4, L"HaltSeconds"
-        );
-
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
-        LOG_MSG("\n\n");
-        #endif
-
-        MY_FREE_POOL(FileData);
-
-        return;
-    }
 
     if (!FileData) {
         MsgStr = L"No FileData!";
@@ -2893,52 +3173,56 @@ VOID egScreenShot (VOID) {
         return;
     }
 
-    // Save to first available ESP if not running from ESP
-    if (!MyStriCmp (SelfVolume->VolName, L"EFI") &&
-        !MyStriCmp (SelfVolume->VolName, L"ESP")
+    if (EFI_ERROR(Status)) {
+        MsgStr = L"Could *NOT* Encode PNG";
+        egDisplayMessage (
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
+        );
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
+        MY_FREE_POOL(FileData);
+
+        return;
+    }
+
+    Status = EFI_NOT_STARTED;
+    if (SelfVolume->FSType == FS_TYPE_FAT32 ||
+        SelfVolume->FSType == FS_TYPE_FAT16 ||
+        SelfVolume->FSType == FS_TYPE_FAT12
     ) {
-        Status = egFindESP (&BaseDir);
-        if (EFI_ERROR(Status)) {
-            MsgStr = L"Could *NOT* Save Screenshot";
-            egDisplayMessage (
-                MsgStr, &BGColorWarn,
-                CENTER, 4, L"HaltSeconds"
-            );
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
-            #endif
-
-            MY_FREE_POOL(FileData);
-
-            return;
+        SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
+        if (SelfRootDir) {
+            BaseDir = SelfRootDir;
+            Status  = EFI_SUCCESS;
         }
     }
 
-    SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
-    if (SelfRootDir != NULL) {
-        BaseDir = SelfRootDir;
-    }
-    else {
-        // Try to save to first available ESP
+    if (EFI_ERROR(Status)) {
+        // Try to set to use first available ESP
         Status = egFindESP (&BaseDir);
-        if (EFI_ERROR(Status)) {
-            MsgStr = L"Could *NOT* Find ESP for Screenshot";
-            egDisplayMessage (
-                MsgStr, &BGColorWarn,
-                CENTER, 4, L"HaltSeconds"
-            );
+    }
 
-            #if REFIT_DEBUG > 0
-            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
-            #endif
+    if (EFI_ERROR(Status)) {
+        MsgStr = L"Could *NOT* Find an ESP to Save Screenshot";
+        egDisplayMessage (
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
+        );
 
-            MY_FREE_POOL(FileData);
+        #if REFIT_DEBUG > 0
+        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
 
-            return;
-        }
+        MY_FREE_POOL(FileData);
+
+        return;
     }
 
     // Search for existing screen shot files ... Increment index to an unused value
@@ -2946,11 +3230,31 @@ VOID egScreenShot (VOID) {
     FileName = NULL;
     do {
         MY_FREE_POOL(FileName);
-        if (i < 1000) {
-            FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
+        if (i > 999) {
+            Status = EFI_INVALID_PARAMETER;
+            break;
         }
-        else {
-            MsgStr = L"Aborting Screenshot ... Excessive Number of Saved Files Found";
+
+        FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
+    } while (FileExists (BaseDir, FileName));
+
+    if (EFI_ERROR(Status)) {
+        MsgStr = L"Aborting Screenshot ... Excessive Number of Saved Files Found";
+        egDisplayMessage (
+            MsgStr, &BGColorWarn,
+            CENTER, 4, L"HaltSeconds"
+        );
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
+        #endif
+    }
+    else {
+        // Save to file on the ESP
+        Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
+        if (EFI_ERROR(Status)) {
+            CheckError (Status, L"on 'egSaveFile' call in 'egScreenShot'");
+            MsgStr = L"Error on 'egSaveFile' call in 'egScreenShot'";
             egDisplayMessage (
                 MsgStr, &BGColorWarn,
                 CENTER, 4, L"HaltSeconds"
@@ -2958,51 +3262,27 @@ VOID egScreenShot (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
-            LOG_MSG("\n\n");
             #endif
-
-            MY_FREE_POOL(FileData);
-
-            return;
         }
-    } while (FileExists (BaseDir, FileName));
+        else {
+            MsgStr = L"Saved Screenshot";
+            egDisplayMessage (
+                MsgStr, &BGColorGood,
+                CENTER, 2, L"HaltSeconds"
+            );
 
-    // Save to file on the ESP
-    Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
-    if (EFI_ERROR(Status)) {
-        CheckError (Status, L"in egSaveFile");
-
-        MY_FREE_POOL(FileName);
-        MY_FREE_POOL(FileData);
-
-        goto bailout_wait;
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);
+            #endif
+        }
     }
 
-    MsgStr = L"Saved Screenshot";
-
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);
     LOG_MSG("\n\n");
     #endif
 
-    egDisplayMessage (
-        MsgStr, &BGColorGood,
-        CENTER, 2, L"HaltSeconds"
-    );
-
     MY_FREE_POOL(FileName);
     MY_FREE_POOL(FileData);
-
-    return;
-
-    // DEBUG: Switch to Text Mode
-bailout_wait:
-    i = 0;
-    egSetGraphicsModeEnabled (FALSE);
-    REFIT_CALL_3_WRAPPER(
-        gBS->WaitForEvent, 1,
-        &gST->ConIn->WaitForKey, &i
-    );
 } // VOID egScreenShot()
 
 /* EOF */

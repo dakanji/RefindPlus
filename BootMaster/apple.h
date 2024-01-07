@@ -19,7 +19,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -58,7 +58,7 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 
 // DA-TAG: Limit to TianoCore Builds
 #ifdef __MAKEWITH_TIANO
-APPLE_FRAMEBUFFER_INFO_PROTOCOL * RefitAppleFbInfoInstallProtocol (IN BOOLEAN Reinstall);
+VOID RefitAppleFbInfoInstallProtocol (VOID);
 #endif
 
 #endif // APPLE_FRAMEBUFFER_INFO_H
@@ -173,17 +173,22 @@ CHAR16 * RefitGetAppleDiskLabel (
 #define SIP_ENABLED_EX (CSR_CLEAR_SETTING)                                                 // 0x000
 
 // SIP/SSV "Enabled" Setting
-#define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010
+#define SIP_ENABLED (CSR_ALLOW_APPLE_INTERNAL)                                             // 0x010
+#define SIP_ENABLED_A01 (CSR_ALLOW_UNRESTRICTED_NVRAM)                                     // 0x040
+#define SIP_ENABLED_A02 (SIP_ENABLED_A01 | CSR_ALLOW_APPLE_INTERNAL)                       // 0x050
+#define SIP_ENABLED_B01 (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNAPPROVED_KEXTS)           // 0x201
+#define SIP_ENABLED_B02 (SIP_ENABLED_B01 | CSR_ALLOW_APPLE_INTERNAL)                       // 0x211
 
 // SIP "Disabled" Setting (macOS 10.11+)
 #define SIP_DISABLED (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
     CSR_ALLOW_TASK_FOR_PID | CSR_ALLOW_APPLE_INTERNAL |                       \
     CSR_ALLOW_UNRESTRICTED_DTRACE | CSR_ALLOW_UNRESTRICTED_NVRAM)                          // 0x077
 
-// SIP "Disabled" Setting (macOS 11.00+)
 #define SIP_DISABLED_B (SIP_DISABLED | CSR_ALLOW_KERNEL_DEBUGGER)                          // 0x07F
 #define SIP_DISABLED_EX (SIP_DISABLED & ~CSR_ALLOW_APPLE_INTERNAL)                         // 0x067
 #define SIP_DISABLED_DBG (SIP_DISABLED_EX | CSR_ALLOW_KERNEL_DEBUGGER)                     // 0x06F
+
+// SIP "Disabled" Setting (macOS 10.13+)
 #define SIP_DISABLED_KEXT (SIP_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                   // 0x267
 #define SIP_DISABLED_EXTRA (SIP_DISABLED_KEXT | CSR_ALLOW_KERNEL_DEBUGGER)                 // 0x26F
 
@@ -201,7 +206,7 @@ CHAR16 * RefitGetAppleDiskLabel (
     CSR_ALLOW_KERNEL_DEBUGGER | CSR_ALLOW_UNRESTRICTED_DTRACE |     \
     CSR_ALLOW_UNRESTRICTED_NVRAM | CSR_ALLOW_DEVICE_CONFIGURATION | \
     CSR_ALLOW_ANY_RECOVERY_OS | CSR_ALLOW_UNAPPROVED_KEXTS |        \
-    CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | CSR_ALLOW_UNAUTHENTICATED_ROOT)                  // 0xFEF
+    CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | CSR_ALLOW_UNAUTHENTICATED_ROOT)                 // 0xFEF
 
 // Max Legal CSR "Disabled" Setting
 #define CSR_MAX_LEGAL_VALUE (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
@@ -209,7 +214,7 @@ CHAR16 * RefitGetAppleDiskLabel (
     CSR_ALLOW_APPLE_INTERNAL | CSR_ALLOW_UNRESTRICTED_DTRACE |                       \
     CSR_ALLOW_UNRESTRICTED_NVRAM | CSR_ALLOW_DEVICE_CONFIGURATION |                  \
     CSR_ALLOW_ANY_RECOVERY_OS | CSR_ALLOW_UNAPPROVED_KEXTS |                         \
-    CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | CSR_ALLOW_UNAUTHENTICATED_ROOT)                  // 0xFFF
+    CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | CSR_ALLOW_UNAUTHENTICATED_ROOT)                 // 0xFFF
 
 extern CHAR16 *gCsrStatus;
 

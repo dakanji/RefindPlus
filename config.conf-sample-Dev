@@ -180,13 +180,21 @@
 #
 #disable_nvram_protect
 
+# Disables adding the GOP protocol to UGA, done by default when absent, that
+# allow some graphics displays on newer operating systems with legacy GPUs
+# NB: This functionality is only available on TianoCore Builds.
+#
+# GOP is added to UGA (if required) when commented out
+#
+#disable_pass_gop_thru
+
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
 # mandate that on installation, compliant GOP drivers should confirm devices are
 # UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
 # do not activate on classic MacPros for instance, as these are not actually
 # UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. RefindPlus is configured by default to
+# all of, the UEFI 2.x capability. By default, RefindPlus is configured to
 # amend a device's EFI Revision to v2.x, and then try to reinstall a copy
 # of the GPU's Option ROM whenever it detects that GOP is not available.
 # This permits running modern GPUs on some legacy units when they would
@@ -214,8 +222,6 @@
 # Replace the Apple FramebufferInfo protocol with a builtin version. By default,
 # RefindPlus is configured to always install the Apple FramebufferInfo protocol
 # when missing on Macs. This feature can be disabled by activating this token.
-# It is only active when the UGA protocol is available and is inactive when
-# running a GPU with the GOP protocol.
 # NB: This functionality is only available on TianoCore builds.
 #
 # Apple FramebufferInfo protocol is provided (if required) when commented out
@@ -596,11 +602,12 @@
 # NOTES:
 # 1. The 'all' option takes precedence over others apart from 'none'
 # 2. The 'none' option takes precedence over every other setting
+# 3. The options need to be set one at a time on single lines
 #
-# All elements are active when commented out or set to 'none'
+# Inactive when commented out or set to 'none' (Does not hide UI elements)
 #
-#hideui singleuser
-#hideui all
+#hideui label
+#hideui badges
 
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about

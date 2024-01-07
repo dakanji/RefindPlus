@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -355,14 +355,14 @@ VOID SetupScreen (VOID) {
             MsgStr = StrDuplicate (
                 (!gotGraphics)
                     ? L"Text Screen Mode Active ... Prepare Graphics Mode Switch"
-                    : L"Graphics Screen Mode Active ... Prepare Title Banner Display"
+                    : L"Graphics FX Mode Active ... Prepare Title Banner Display"
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
             MY_FREE_POOL(MsgStr);
 
             MsgStr = PoolPrint (
-                L"Graphics Mode Resolution:- '%d x %d'",
+                L"Display Mode Resolution:- '%d x %d'",
                 ScreenLongest, ScreenShortest
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -387,14 +387,14 @@ VOID SetupScreen (VOID) {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
                             ? L"LoRez Flag ... Maintain UI Scale"
-                            : L"BaseRez Flag ... Maintain UI Scale"
+                            : L"Basic Flag ... Maintain UI Scale"
                     );
                 }
                 else {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
                             ? L"LoRez Flag ... Scale UI Elements Down"
-                            : L"BaseRez Flag ... Scale UI Elements Down"
+                            : L"Basic Flag ... Scale UI Elements Down"
                     );
                 }
             }
@@ -420,8 +420,8 @@ VOID SetupScreen (VOID) {
                     else {
                         MsgStr = StrDuplicate (
                             (IconScaleSet)
-                                ? L"BaseRez Mode ... Maintain UI Scale"
-                                : L"BaseRez Mode ... Scale UI Elements Down"
+                                ? L"Basic Mode ... Maintain UI Scale"
+                                : L"Basic Mode ... Scale UI Elements Down"
                         );
                     }
                 }
@@ -1439,14 +1439,17 @@ EG_PIXEL FontComplement (VOID) {
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
+    EG_IMAGE         *CompImage;
     EG_IMAGE         *NewBanner;
+    EG_PIXEL          BannerFont;
+    UINTN             BannerType;
     INTN              BannerPosX;
     INTN              BannerPosY;
     BOOLEAN           BannerPass;
 
-    static EG_IMAGE  *Banner     = NULL;
+    static EG_IMAGE  *Banner = NULL;
 
-    #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
     CHAR16         *MsgStr;
     CHAR16         *StrSpacer;
 
@@ -1455,7 +1458,7 @@ VOID BltClearScreen (
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"BltClearScreen";
     #endif
-    #endif
+#endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -1468,6 +1471,7 @@ VOID BltClearScreen (
     }
     #endif
 
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     BannerPass = (
         !IsBoot ||
         (
@@ -1475,7 +1479,6 @@ VOID BltClearScreen (
             !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)
         )
     );
-    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (!BannerPass) {
         BREAD_CRUMB(L"%s:  2a 1 - (Set Screen to Menu Background Colour)", FuncTag);
         #if REFIT_DEBUG > 0
@@ -1495,7 +1498,7 @@ VOID BltClearScreen (
     else {
         BREAD_CRUMB(L"%s:  2b 1", FuncTag);
         // Load banner on first call
-        if (Banner == NULL) {
+        if (!Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Fetch Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1508,20 +1511,9 @@ VOID BltClearScreen (
                 Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
 
-            if (GlobalConfig.CustomScreenBG) {
-                // Override Default Values
-                MenuBackgroundPixel.r = GlobalConfig.ScreenR;
-                MenuBackgroundPixel.g = GlobalConfig.ScreenG;
-                MenuBackgroundPixel.b = GlobalConfig.ScreenB;
-            }
-            else if (Banner) {
+            if (Banner) {
                 MenuBackgroundPixel = Banner->PixelData[0];
-            }
-            else {
-                MenuBackgroundPixel = GrayPixel;
-            }
 
-            if (Banner != NULL) {
                 // Using Custom Title Banner
                 DefaultBanner = FALSE;
 
@@ -1536,6 +1528,16 @@ VOID BltClearScreen (
                 #endif
             }
             else {
+                if (!GlobalConfig.CustomScreenBG) {
+                    MenuBackgroundPixel = GrayPixel;
+                }
+                else {
+                    // Override Default Values
+                    MenuBackgroundPixel.r = GlobalConfig.ScreenR;
+                    MenuBackgroundPixel.g = GlobalConfig.ScreenG;
+                    MenuBackgroundPixel.b = GlobalConfig.ScreenB;
+                }
+
                 #if REFIT_DEBUG > 0
                 StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
@@ -1571,10 +1573,10 @@ VOID BltClearScreen (
                 #endif
 
                 // Get complementary font colour if needed
-                EG_PIXEL BannerFont = FontComplement();
+                BannerFont = FontComplement();
 
                 // Get default banner type
-                UINTN BannerType = 0;
+                BannerType = 0;
                 if (0);
                 else if (GlobalConfig.ScaleUI == 99) BannerType = 0;
                 else if (GlobalConfig.ScaleUI == -1) BannerType = 2;
@@ -1598,12 +1600,10 @@ VOID BltClearScreen (
                 else {
                     Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner,       TRUE, &BannerFont);
                 }
-            } // if/else Banner != NULL
+            } // if/else Banner
 
-            if (Banner != NULL) {
-                EG_IMAGE *CompImage;
-
-                // compose on background
+            if (Banner) {
+                // Compose on background
                 CompImage = egCreateFilledImage (
                     Banner->Width,
                     Banner->Height,
@@ -1615,12 +1615,11 @@ VOID BltClearScreen (
                     egComposeImage (CompImage, Banner, 0, 0);
                     MY_FREE_IMAGE(Banner);
                     Banner = CompImage;
-                    CompImage = NULL;
                 }
             }
-        } // if Banner == NULL
+        } // if !Banner
 
-        if (Banner != NULL) {
+        if (Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Scale Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1644,7 +1643,7 @@ VOID BltClearScreen (
                 NewBanner = NULL;
             }
 
-            if (NewBanner != NULL) {
+            if (NewBanner) {
                 // DA-TAG: See notes in 'egFreeImageQEMU'
                 MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
@@ -1671,7 +1670,7 @@ VOID BltClearScreen (
         }
 
         BREAD_CRUMB(L"%s:  2b 3", FuncTag);
-        if (Banner != NULL) {
+        if (Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Show  Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)

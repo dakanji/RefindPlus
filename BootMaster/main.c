@@ -102,6 +102,7 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenIconsPrefer = */ FALSE,
     /* UseTextRenderer = */ FALSE,
     /* PassUgaThrough = */ FALSE,
+    /* PassGopThrough = */ TRUE,
     /* SetConsoleGOP = */ TRUE,
     /* ReloadGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
@@ -2746,13 +2747,6 @@ EFI_STATUS EFIAPI efi_main (
     }
     else {
         LOG_MSG("'%s'", GlobalConfig.TextOnly ? L"Active" : L"Inactive"             );
-    }
-    LOG_MSG("%s      SetAppleFB:- ",       OffsetNext                               );
-    if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                        );
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.SetAppleFB ? L"Active" : L"Inactive"        );
     }
 
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
