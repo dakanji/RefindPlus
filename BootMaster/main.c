@@ -130,6 +130,7 @@ REFIT_CONFIG GlobalConfig = {
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
     /* SetAppleFB = */ TRUE,
+    /* HandleVentoy = */ FALSE,
     /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
@@ -2775,6 +2776,11 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
+    LOG_MSG(
+        "%s      HandleVentoy:- '%s'",
+        OffsetNext,
+        GlobalConfig.HandleVentoy ? L"Active" : L"Inactive"
+    );
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
         LOG_MSG("'Disabled'"                                                        );
@@ -3884,7 +3890,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     i = 0;
-                    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                    while (
+                        GlobalConfig.HandleVentoy &&
+                        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                    ) {
                         if (MyStrBegins (VentoyName, EntryVol->VolName)) {
                             FoundVentoy = TRUE;
                         }

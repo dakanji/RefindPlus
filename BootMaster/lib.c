@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -2038,7 +2038,10 @@ BOOLEAN VolumeScanAllowed (
         if (!SkipVentoy) {
             i = 0;
             FoundVentoy = FALSE;
-            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+            while (
+                GlobalConfig.HandleVentoy &&
+                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+            ) {
                 if (MyStrBegins (VentoyName, Volume->VolName) ||
                     MyStrBegins (VentoyName, Volume->FsName)  ||
                     MyStrBegins (VentoyName, Volume->PartName)
@@ -3109,7 +3112,10 @@ VOID ScanVolumes (VOID) {
             if (!RoleStr) {
                 j = 0;
                 FoundVentoy = FALSE;
-                while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, j++))) {
+                while (
+                    GlobalConfig.HandleVentoy &&
+                    (VentoyName = FindCommaDelimited (VENTOY_NAMES, j++))
+                ) {
                     if (MyStrBegins (VentoyName, Volume->VolName)) {
                         FoundVentoy = TRUE;
                         RoleStr = L" * Part Ventoy";

@@ -73,6 +73,7 @@ disable_set_applefb   |Disables provision, under some circumstances, of missing 
 disable_set_consolegop|Disables feature that fixes some issues with GOP graphics on legacy units
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
+handle_ventoy         |Rationalises the binaries displayed for `Ventoy` instances
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
 hidden_icons_prefer   |Prioritises `.VolumeIcon` and `.VolumeBadge` image icons when available

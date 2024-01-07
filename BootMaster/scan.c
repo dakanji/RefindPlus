@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -1030,6 +1030,7 @@ VOID SetLoaderDefaults (
                         FoundVentoy = FALSE;
                         while (
                             !FoundVentoy &&
+                            GlobalConfig.HandleVentoy &&
                             (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
                         ) {
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
@@ -1089,7 +1090,10 @@ VOID SetLoaderDefaults (
                             BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2", FuncTag);
                             i = 0;
                             FoundVentoy = FALSE;
-                            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+                            while (
+                                GlobalConfig.HandleVentoy &&
+                                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                            ) {
                                 BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Volume", FuncTag);
                                 if (MyStrBegins (VentoyName, TargetName)) {
                                     BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 1 - Found Ventoy Volume ... Set Ventoy Icon", FuncTag);
@@ -1143,6 +1147,7 @@ VOID SetLoaderDefaults (
                     FoundVentoy = FALSE;
                     while (
                         !FoundVentoy &&
+                        GlobalConfig.HandleVentoy &&
                         (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
                     ) {
                         BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
@@ -1989,7 +1994,10 @@ BOOLEAN ShouldScan (
             FileExists (Volume->RootDir, FALLBACK_FULLNAME)
         ) {
             i = 0;
-            while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+            while (
+                GlobalConfig.HandleVentoy &&
+                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+            ) {
                 if (MyStrBegins (VentoyName, Volume->VolName) ||
                     MyStrBegins (VentoyName, Volume->FsName)  ||
                     MyStrBegins (VentoyName, Volume->PartName)
@@ -2600,7 +2608,10 @@ VOID ScanEfiFiles (
 
     i = 0;
     FoundVentoy = FALSE;
-    while ((VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))) {
+    while (
+        GlobalConfig.HandleVentoy &&
+        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+    ) {
         if (MyStrBegins (VentoyName, Volume->VolName) ||
             MyStrBegins (VentoyName, Volume->FsName)  ||
             MyStrBegins (VentoyName, Volume->PartName)

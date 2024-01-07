@@ -37,9 +37,13 @@
     - Allows reseting the token in supplementary/theme config files
     - Takes priority over all other settings whenever present
 - Amends `Ventoy` Handling
+  * Specific `Ventoy` handling is now disabled unless enabled via a new `handle_ventoy` configuration token
+    - This eliminates time on spent on unnecessary searches
+    - Also eliminates a default divergence from upstream
   * `Whole Disk` volumes with `Legacy Bootcode` were previously hidden whenever `Ventoy` was present
     - This was to avoid spurious/unbootable instances appearing
       * This however affected legitimate instances without a way to override the behaviour
+    -  Now attempts to target this when `handle_ventoy` is set or lets them appear instead
       * Users can hide unwanted instances if required
 - Amends `SilenceAPFS` Feature
   * No longer separately user configurable and subsumed into the `SupplyAPFS` feature

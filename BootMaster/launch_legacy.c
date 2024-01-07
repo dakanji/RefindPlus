@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -1161,7 +1161,14 @@ VOID ScanLegacyVolume (
     BREAD_CRUMB(L"%s:  5", FuncTag);
     ShowVolume = TRUE;
     if (HideIfOthersFound) {
-        BREAD_CRUMB(L"%s:  5a 1 - Check for Ventoy or Bootable Legacy Instances on *SAME* Disk", FuncTag);
+        #if REFIT_DEBUG > 1
+        if (GlobalConfig.HandleVentoy) {
+            BREAD_CRUMB(L"%s:  5a 1 - Check for Ventoy or Bootable Legacy Instances on *SAME* Disk", FuncTag);
+        }
+        else {
+            BREAD_CRUMB(L"%s:  5a 1 - Check for Bootable Legacy Instances on *SAME* Disk", FuncTag);
+        }
+        #endif
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             LOG_SEP(L"X");
             BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START", FuncTag);
@@ -1183,6 +1190,7 @@ VOID ScanLegacyVolume (
                         i = 0;
                         while (
                             ShowVolume &&
+                            GlobalConfig.HandleVentoy &&
                             (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
                         ) {
                             BREAD_CRUMB(L"%s:  5a 1a 1a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
