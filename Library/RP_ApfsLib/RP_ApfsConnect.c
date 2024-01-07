@@ -1,7 +1,7 @@
 /** @file
   Copyright (C) 2020, vit9696. All rights reserved.
 
-  Modified 2021-2023, Dayo Akanji. (sf.net/u/dakanji/profile)
+  Modified 2021-2024, Dayo Akanji. (sf.net/u/dakanji/profile)
 
   All rights reserved.
 
@@ -33,7 +33,6 @@
 
 #include "../../include/refit_call_wrapper.h"
 
-extern BOOLEAN SilenceAPFS;
 extern BOOLEAN AppleFirmware;
 
 extern CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
@@ -115,19 +114,17 @@ EFI_STATUS ApfsStartDriver (
         return Status;
     }
 
-    // Disable APFS verbose mode.
-    if (SilenceAPFS) {
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol, ImageHandle,
-            &gEfiLoadedImageProtocolGuid, (VOID *) &LoadedImage
-        );
-        if (!EFI_ERROR(Status)) {
-            if (mNullSystemTable == NULL) {
-                mNullSystemTable = AllocateNullTextOutSystemTable (gST);
-            }
-            if (mNullSystemTable != NULL) {
-                LoadedImage->SystemTable = mNullSystemTable;
-            }
+    // Always disable verbose mode
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, ImageHandle,
+        &gEfiLoadedImageProtocolGuid, (VOID *) &LoadedImage
+    );
+    if (!EFI_ERROR(Status)) {
+        if (mNullSystemTable == NULL) {
+            mNullSystemTable = AllocateNullTextOutSystemTable (gST);
+        }
+        if (mNullSystemTable != NULL) {
+            LoadedImage->SystemTable = mNullSystemTable;
         }
     }
 

@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -80,7 +80,6 @@ UINTN                  TotalEntryCount = 0;
 UINTN                  ValidEntryCount = 0;
 
 BOOLEAN                OuterLoop       =  TRUE;
-BOOLEAN                SilenceAPFS     =  TRUE;
 BOOLEAN                FirstInclude    =  TRUE;
 BOOLEAN                ManualInclude   = FALSE;
 BOOLEAN                FoundFontImage  =  TRUE;
@@ -3098,23 +3097,6 @@ VOID ReadConfig (
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"disable_apfs_mute") ||
-            MyStriCmp (TokenList[0], L"decline_apfs_mute") ||
-            MyStriCmp (TokenList[0], L"decline_apfsmute")
-        ) {
-            // DA_TAG: Accomodate Deprecation
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SilenceAPFS = (DeclineSetting) ? FALSE : TRUE;
-
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                MuteLogger = FALSE;
-                LOG_MSG("%s  - Updated:- 'disable_apfs_mute'", OffsetNext);
-                MuteLogger = TRUE;
-            }
-            #endif
-        }
-        else if (
             MyStriCmp (TokenList[0], L"disable_apfs_sync") ||
             MyStriCmp (TokenList[0], L"decline_apfs_sync") ||
             MyStriCmp (TokenList[0], L"decline_apfssync")
@@ -3478,7 +3460,6 @@ VOID ReadConfig (
     }
 
     // Set a few defaults if required
-    SilenceAPFS = GlobalConfig.SilenceAPFS;
     if (!GlobalConfig.DontScanVolumes) {
         GlobalConfig.DontScanVolumes = StrDuplicate (
             DONT_SCAN_VOLUMES

@@ -41,6 +41,9 @@
     - This was to avoid spurious/unbootable instances appearing
       * This however affected legitimate instances without a way to override the behaviour
       * Users can hide unwanted instances if required
+- Amends `SilenceAPFS` Feature
+  * No longer separately user configurable and subsumed into the `SupplyAPFS` feature
+  * The associated `disable_apfs_mute` configuration token is now removed and ignored if set
 - Amends `GOP Graphics` Handling
   * GOP is now provided/replaced on the `ConsoleOut` handle by default when required
   * Hence, the "Opt-In" `provide_console_gop` token is replaced by the "Opt-Out" `disable_set_consolegop`

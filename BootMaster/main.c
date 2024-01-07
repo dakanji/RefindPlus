@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -118,7 +118,6 @@ REFIT_CONFIG GlobalConfig = {
     /* SupplyNVME = */ FALSE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ FALSE,
-    /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* NvramProtect = */ TRUE,
     /* ScanAllESP = */ TRUE,
@@ -1856,7 +1855,7 @@ VOID AboutRefindPlus (VOID) {
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
-    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others",          FALSE);
+    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2024 Dayo Akanji and Others",          FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2023 Roderick W. Smith",      FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer",    FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others", FALSE);

@@ -124,17 +124,6 @@
 #
 #disable_apfs_load
 
-# Suppress verbose APFS loading text output. By default, RefindPlus is configured to always
-# suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
-# This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
-# This feature may impact other text output however, and should be disabled by activating
-# this option if such negative effects are observed. This setting only applies to macOS.
-# NB: This functionality is only available on TianoCore builds.
-#
-# Verbose APFS text is suppressed (if generated) when commented out
-#
-#disable_apfs_mute
-
 # Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partition
 # of APFS volumes by requiring this to run the Mac Boot Loader, starting with macOS v11.0, when
 # SIP is enabled. Attempts to run such macOS Boot Loaders directly when SIP is enabled result
