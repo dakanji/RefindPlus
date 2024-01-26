@@ -34,14 +34,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -58,9 +58,9 @@
 #include "global.h"
 
 // Return values for IsValidLoader()
-#define LOADER_TYPE_INVALID 0
-#define LOADER_TYPE_EFI     1
-#define LOADER_TYPE_GZIP    2
+//#define LOADER_TYPE_INVALID 0
+//#define LOADER_TYPE_EFI     1
+//#define LOADER_TYPE_GZIP    2
 
 EFI_STATUS StartEFIImage (
     IN   REFIT_VOLUME  *Volume,

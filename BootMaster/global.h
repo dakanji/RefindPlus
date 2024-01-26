@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -132,7 +132,7 @@
 #define DEVICE_TYPE_BIOS       (0x05) /* returned by Legacy Boot loaders */
 #define DEVICE_TYPE_END        (0x75) /* end of path */
 
-// Filesystem type identifiers ... Not all are used.
+// Filesystem type identifiers ... Not all used.
 #define FS_TYPE_UNKNOWN           (0)
 #define FS_TYPE_WHOLEDISK         (1)
 #define FS_TYPE_FAT12             (2)
@@ -185,13 +185,21 @@
 
 // Names of binaries that can manage MOKs
 #if defined (EFIX64)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmx64.efi"
 #elif defined(EFI32)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mmaa64.efi"
 #else
-#   define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+#   define MOK_NAMES \
+L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+KeyTool.efi,KeyTool-signed.efi,mm.efi"
 #endif
 
 // Names of binaries that can update firmware
@@ -269,12 +277,12 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 // Default Ventoy Partitions
 #define VENTOY_NAMES          L"VTOYEFI,Ventoy"
 
-// Misc MacOS Paths/Files
+// Misc macOS Paths/Files
 #define MACOSX_LOADER_DIR     L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH    ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #define MACOSX_DIAGNOSTICS    ( MACOSX_LOADER_DIR L"\\.diagnostics\\diags.efi" )
 
-// Files that may be MacOS recovery files
+// Files that may be macOS recovery files
 #define MACOS_RECOVERY_FILES  L"com.apple.recovery.boot\\boot.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
@@ -324,6 +332,7 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define ESP_GUID_VALUE               {0xC12A7328, 0xF81F, 0x11D2, {0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B}};
 #define HFS_GUID_VALUE               {0x48465300, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
 #define APFS_GUID_VALUE              {0x7C3457EF, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
+#define APFS_FINGER_PRINT_GUID       {0xBE74FCF7, 0x0B7C, 0x49F3, {0x91, 0x47, 0x01, 0xF4, 0x04, 0x2E, 0x68, 0x42}};
 #define APPLE_TV_RECOVERY_GUID       {0x5265636F, 0x7665, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
 #define MAC_RAID_ON_GUID_VALUE       {0x52414944, 0x0000, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
 #define MAC_RAID_OFF_GUID_VALUE      {0x52414944, 0x5F4F, 0x11AA, {0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC}};
@@ -348,7 +357,6 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 // DA-TAG: Forward Declaration for OpenCore Integration
 //         Limit to TianoCore Builds
 EFI_STATUS OcProvideConsoleGop (IN BOOLEAN Route);
-EFI_STATUS OcProvideUgaPassThrough (VOID);
 EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE Mode);
 #endif
@@ -388,7 +396,8 @@ typedef struct {
     EFI_FILE_PROTOCOL         *RootDir;
     CHAR16                    *PartName;
     CHAR16                    *FsName;   // Filesystem name
-    CHAR16                    *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
+    CHAR16                    *VolName;  // One of two above OR fs desc (e.g., "2 GiB FAT volume")
+    UINT32                     VolRole;  // APFS_VOLUME_ROLE
     EFI_GUID                   VolUuid;
     EFI_GUID                   PartGuid;
     EFI_GUID                   PartTypeGuid;
@@ -469,6 +478,7 @@ typedef struct {
     BOOLEAN                     FoldLinuxKernels;
     BOOLEAN                     EnableMouse;
     BOOLEAN                     EnableTouch;
+    BOOLEAN                     PersistBootArgs;
     BOOLEAN                     HiddenTags;
     BOOLEAN                     UseNvram;
     BOOLEAN                     TransientBoot;
@@ -477,7 +487,8 @@ typedef struct {
     BOOLEAN                     HiddenIconsPrefer;
     BOOLEAN                     UseTextRenderer;
     BOOLEAN                     PassUgaThrough;
-    BOOLEAN                     ProvideConsoleGOP;
+    BOOLEAN                     PassGopThrough;
+    BOOLEAN                     SetConsoleGOP;
     BOOLEAN                     ReloadGOP;
     BOOLEAN                     UseDirectGop;
     BOOLEAN                     ContinueOnWarning;
@@ -493,19 +504,18 @@ typedef struct {
     BOOLEAN                     SupplyNVME;
     BOOLEAN                     SupplyAPFS;
     BOOLEAN                     SupplyUEFI;
-    BOOLEAN                     SilenceAPFS;
     BOOLEAN                     SyncAPFS;
     BOOLEAN                     NvramProtect;
     BOOLEAN                     ScanAllESP;
     BOOLEAN                     HelpIcon;
-    BOOLEAN                     HelpTags;
+    BOOLEAN                     HelpScan;
     BOOLEAN                     HelpText;
     BOOLEAN                     NormaliseCSR;
     BOOLEAN                     ShutdownAfterTimeout;
     BOOLEAN                     Install;
     BOOLEAN                     WriteSystemdVars;
     BOOLEAN                     UnicodeCollation;
-    BOOLEAN                     SupplyAppleFB;
+    BOOLEAN                     SetAppleFB;
     BOOLEAN                     HandleVentoy;
     BOOLEAN                     MitigatePrimedBuffer;
     UINTN                       RequestedScreenWidth;
@@ -586,6 +596,7 @@ extern EFI_FILE_PROTOCOL       *SelfRootDir;
 
 extern EFI_GUID                 GlobalGuid;
 extern EFI_GUID                 RefindPlusGuid;
+extern EFI_GUID                 AppleBootGuid;
 extern EFI_GUID                 gEfiLegacyBootProtocolGuid;
 
 extern EFI_HANDLE               SelfImageHandle;
@@ -682,18 +693,11 @@ extern VOID EFIAPI DebugLog (
 #   define LOG_SEP(...)
 #   define BRK_MAX(...)
 #   define BRK_MOD(...)
-#   define BRK_MEG(...)
 #   define BRK_MIN(...)
 #elif REFIT_DEBUG < 2
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
-                DebugLog (__VA_ARGS__);                                     \
-            }                                                               \
-        } while (0)
-#   define BRK_MEG(...)                                                     \
-        do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
@@ -709,8 +713,18 @@ extern VOID EFIAPI DebugLog (
 #   define LOG_DECREMENT(...)
 #   define LOG_INCREMENT(...)
 #else
-#   define LOG_INCREMENT(...) LogPadding (TRUE);
-#   define LOG_DECREMENT(...) LogPadding (FALSE);
+#   define LOG_INCREMENT(...)                                               \
+        do {                                                                \
+            if (!gKernelStarted) {                                          \
+                LogPadding (TRUE);                                          \
+            }                                                               \
+        } while (0)
+#   define LOG_DECREMENT(...)                                               \
+        do {                                                                \
+            if (!gKernelStarted) {                                          \
+                LogPadding (FALSE);                                         \
+            }                                                               \
+        } while (0)
 #   define BREAD_CRUMB(...)                                                 \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
@@ -734,12 +748,6 @@ extern VOID EFIAPI DebugLog (
 #   define BRK_MOD(...)                                                     \
         do {                                                                \
             if (!gKernelStarted && GlobalConfig.LogLevel <= MAXLOGLEVEL) {  \
-                DebugLog (__VA_ARGS__);                                     \
-            }                                                               \
-        } while (0)
-#   define BRK_MEG(...)                                                     \
-        do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MINLOGLEVEL) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)

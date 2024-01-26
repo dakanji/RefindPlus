@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -165,7 +165,7 @@ VOID PrepareBlankLine (VOID) {
 
 VOID InitScreen (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"InitScreen";
+    const CHAR16 *FuncTag = L"InitScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -246,7 +246,7 @@ VOID SetupScreen (VOID) {
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SetupScreen";
+    const CHAR16 *FuncTag = L"SetupScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -355,14 +355,14 @@ VOID SetupScreen (VOID) {
             MsgStr = StrDuplicate (
                 (!gotGraphics)
                     ? L"Text Screen Mode Active ... Prepare Graphics Mode Switch"
-                    : L"Graphics Screen Mode Active ... Prepare Title Banner Display"
+                    : L"Graphics FX Mode Active ... Prepare Title Banner Display"
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
             MY_FREE_POOL(MsgStr);
 
             MsgStr = PoolPrint (
-                L"Graphics Mode Resolution:- '%d x %d'",
+                L"Display Mode Resolution:- '%d x %d'",
                 ScreenLongest, ScreenShortest
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -387,14 +387,14 @@ VOID SetupScreen (VOID) {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
                             ? L"LoRez Flag ... Maintain UI Scale"
-                            : L"BaseRez Flag ... Maintain UI Scale"
+                            : L"Basic Flag ... Maintain UI Scale"
                     );
                 }
                 else {
                     MsgStr = StrDuplicate (
                         (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
                             ? L"LoRez Flag ... Scale UI Elements Down"
-                            : L"BaseRez Flag ... Scale UI Elements Down"
+                            : L"Basic Flag ... Scale UI Elements Down"
                     );
                 }
             }
@@ -420,8 +420,8 @@ VOID SetupScreen (VOID) {
                     else {
                         MsgStr = StrDuplicate (
                             (IconScaleSet)
-                                ? L"BaseRez Mode ... Maintain UI Scale"
-                                : L"BaseRez Mode ... Scale UI Elements Down"
+                                ? L"Basic Mode ... Maintain UI Scale"
+                                : L"Basic Mode ... Scale UI Elements Down"
                         );
                     }
                 }
@@ -501,7 +501,7 @@ VOID SetupScreen (VOID) {
             MsgStr = (GlobalConfig.DirectBoot)
                 ? StrDuplicate (L"'DirectBoot' is Active")
                 : StrDuplicate (L"Screen is in Text Only Mode");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
         }
         else {
@@ -532,7 +532,7 @@ VOID SwitchToText (
     BOOLEAN TextModeOnEntry;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToText";
+    const CHAR16 *FuncTag = L"SwitchToText";
     #endif
     #endif
 
@@ -555,9 +555,7 @@ VOID SwitchToText (
             GlobalConfig.UseTextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("    ** Config Setting Forced On:- 'renderer_text'");
-            LOG_MSG("\n");
+            LOG_MSG("%s    ** Config Setting Forced On:- 'renderer_text'", OffsetNext);
             #endif
         }
     }
@@ -574,6 +572,7 @@ VOID SwitchToText (
     );
 
     if (TextModeOnEntry) {
+        LOG_MSG("\n");
         LOG_MSG("Determine Text Console Size:");
         LOG_MSG("\n");
     }
@@ -592,7 +591,7 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "Could Not Get Text Console Size ... Using Default:- '%d x %d'",
+                "Could *NOT* Get Text Console Size ... Using Default:- '%d x %d'",
                 ConHeight, ConWidth
             );
         }
@@ -631,7 +630,7 @@ VOID SwitchToText (
 
 EFI_STATUS SwitchToGraphics (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToGraphics";
+    const CHAR16 *FuncTag = L"SwitchToGraphics";
     #endif
 
     LOG_SEP(L"X");
@@ -670,7 +669,7 @@ VOID BeginTextScreen (
     IN CHAR16 *Title
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BeginTextScreen";
+    const CHAR16 *FuncTag = L"BeginTextScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -692,7 +691,7 @@ VOID FinishTextScreen (
     IN BOOLEAN WaitAlways
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FinishTextScreen";
+    const CHAR16 *FuncTag = L"FinishTextScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -719,7 +718,7 @@ VOID BeginExternalScreen (
     IN CHAR16  *Title
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BeginExternalScreen";
+    const CHAR16 *FuncTag = L"BeginExternalScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -798,7 +797,7 @@ VOID BeginExternalScreen (
 
 VOID FinishExternalScreen (VOID) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FinishExternalScreen";
+    const CHAR16 *FuncTag = L"FinishExternalScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -939,10 +938,12 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     return GotKeyStrokes;
 } // BOOLEAN ReadAllKeyStrokes()
 
-// Displays *Text without regard to appearances. Used mainly for debugging
-// and rare error messages.
-// Position code is used only in graphics mode.
-// TODO: Improve to handle multi-line text.
+// Displays 'Text' without regard to appearance.
+// Mainly for debugging and rare error messages.
+// 'PositionCode' is only used in graphics mode.
+//
+// DA-TAG: Investigate This
+//         Handle multi-line text.
 VOID PrintUglyText (
     IN CHAR16 *Text,
     IN UINTN    PositionCode
@@ -950,18 +951,19 @@ VOID PrintUglyText (
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
-        if (AllowGraphicsMode &&
-            AppleFirmware &&
+        if (AppleFirmware &&
+            AllowGraphicsMode &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (
-                Text, &BGColor, PositionCode,
-                0, NULL
+                Text, &BGColor,
+                PositionCode, 0, NULL
             );
             GraphicsScreenDirty = TRUE;
         }
         else {
-            // Non-Mac or in Text Mode ... Print statement will work
+            // Non-Mac or in Text Mode
+            // Print statement will work
             Print (Text);
             Print (L"\n");
         }
@@ -1296,7 +1298,7 @@ BOOLEAN CheckError (
     PrintUglyText (Temp, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-    PauseSeconds (3);
+    PauseSeconds (6);
 
     // Defeat need to "Press a Key to Continue" in debug mode
     // Override this if volume is full
@@ -1319,7 +1321,7 @@ VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"SwitchToGraphicsAndClear";
+    const CHAR16 *FuncTag = L"SwitchToGraphicsAndClear";
     #endif
 
     LOG_SEP(L"X");
@@ -1344,7 +1346,11 @@ VOID SwitchToGraphicsAndClear (
 // DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
 //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-//         Temporary ... Eliminate when no longer required
+//         Temporary ... Eliminate when no longer required.
+//
+//         Probable 'El Gordo' manifestation.
+//         See notes in 'HideTag' for more.
+//
 // UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
 static
 VOID egFreeImageQEMU (
@@ -1433,23 +1439,26 @@ EG_PIXEL FontComplement (VOID) {
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
+    EG_IMAGE         *CompImage;
     EG_IMAGE         *NewBanner;
+    EG_PIXEL          BannerFont;
+    UINTN             BannerType;
     INTN              BannerPosX;
     INTN              BannerPosY;
     BOOLEAN           BannerPass;
 
-    static EG_IMAGE  *Banner     = NULL;
+    static EG_IMAGE  *Banner = NULL;
 
-    #if REFIT_DEBUG > 0
+#if REFIT_DEBUG > 0
     CHAR16         *MsgStr;
     CHAR16         *StrSpacer;
 
     static BOOLEAN  LoggedBanner = FALSE;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"BltClearScreen";
+    const CHAR16 *FuncTag = L"BltClearScreen";
     #endif
-    #endif
+#endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -1462,6 +1471,7 @@ VOID BltClearScreen (
     }
     #endif
 
+    BREAD_CRUMB(L"%s:  2", FuncTag);
     BannerPass = (
         !IsBoot ||
         (
@@ -1469,7 +1479,6 @@ VOID BltClearScreen (
             !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)
         )
     );
-    BREAD_CRUMB(L"%s:  2", FuncTag);
     if (!BannerPass) {
         BREAD_CRUMB(L"%s:  2a 1 - (Set Screen to Menu Background Colour)", FuncTag);
         #if REFIT_DEBUG > 0
@@ -1489,7 +1498,7 @@ VOID BltClearScreen (
     else {
         BREAD_CRUMB(L"%s:  2b 1", FuncTag);
         // Load banner on first call
-        if (Banner == NULL) {
+        if (!Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Fetch Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1502,20 +1511,9 @@ VOID BltClearScreen (
                 Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
 
-            if (GlobalConfig.CustomScreenBG) {
-                // Override Default Values
-                MenuBackgroundPixel.r = GlobalConfig.ScreenR;
-                MenuBackgroundPixel.g = GlobalConfig.ScreenG;
-                MenuBackgroundPixel.b = GlobalConfig.ScreenB;
-            }
-            else if (Banner) {
+            if (Banner) {
                 MenuBackgroundPixel = Banner->PixelData[0];
-            }
-            else {
-                MenuBackgroundPixel = GrayPixel;
-            }
 
-            if (Banner != NULL) {
                 // Using Custom Title Banner
                 DefaultBanner = FALSE;
 
@@ -1530,6 +1528,16 @@ VOID BltClearScreen (
                 #endif
             }
             else {
+                if (!GlobalConfig.CustomScreenBG) {
+                    MenuBackgroundPixel = GrayPixel;
+                }
+                else {
+                    // Override Default Values
+                    MenuBackgroundPixel.r = GlobalConfig.ScreenR;
+                    MenuBackgroundPixel.g = GlobalConfig.ScreenG;
+                    MenuBackgroundPixel.b = GlobalConfig.ScreenB;
+                }
+
                 #if REFIT_DEBUG > 0
                 StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
@@ -1565,10 +1573,10 @@ VOID BltClearScreen (
                 #endif
 
                 // Get complementary font colour if needed
-                EG_PIXEL BannerFont = FontComplement();
+                BannerFont = FontComplement();
 
                 // Get default banner type
-                UINTN BannerType = 0;
+                BannerType = 0;
                 if (0);
                 else if (GlobalConfig.ScaleUI == 99) BannerType = 0;
                 else if (GlobalConfig.ScaleUI == -1) BannerType = 2;
@@ -1592,12 +1600,10 @@ VOID BltClearScreen (
                 else {
                     Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner,       TRUE, &BannerFont);
                 }
-            } // if/else Banner != NULL
+            } // if/else Banner
 
-            if (Banner != NULL) {
-                EG_IMAGE *CompImage;
-
-                // compose on background
+            if (Banner) {
+                // Compose on background
                 CompImage = egCreateFilledImage (
                     Banner->Width,
                     Banner->Height,
@@ -1609,12 +1615,11 @@ VOID BltClearScreen (
                     egComposeImage (CompImage, Banner, 0, 0);
                     MY_FREE_IMAGE(Banner);
                     Banner = CompImage;
-                    CompImage = NULL;
                 }
             }
-        } // if Banner == NULL
+        } // if !Banner
 
-        if (Banner != NULL) {
+        if (Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Scale Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1638,7 +1643,7 @@ VOID BltClearScreen (
                 NewBanner = NULL;
             }
 
-            if (NewBanner != NULL) {
+            if (NewBanner) {
                 // DA-TAG: See notes in 'egFreeImageQEMU'
                 MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
@@ -1665,7 +1670,7 @@ VOID BltClearScreen (
         }
 
         BREAD_CRUMB(L"%s:  2b 3", FuncTag);
-        if (Banner != NULL) {
+        if (Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Show  Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)

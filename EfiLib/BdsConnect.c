@@ -706,7 +706,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                LOG_MSG("INFO: Could Not Identify Path to GOP on Device Handles");
+                LOG_MSG("INFO: Could *NOT* Identify Path to GOP on Device Handles");
             }
         }
         else {
@@ -757,7 +757,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"Status:- '%r' ... Acquire OptionROM on Volatile Storage", Status);
+    MsgStr = PoolPrint (L"Status:- '%r' ... Acquire OptionROM From Volatile Memory", Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
@@ -841,7 +841,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
-                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM From Volatile Storage", Status);
+                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM From Volatile Memory", Status);
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);

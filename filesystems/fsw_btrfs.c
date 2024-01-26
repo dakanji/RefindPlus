@@ -740,6 +740,7 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     struct fsw_btrfs_volume *vol = (struct fsw_btrfs_volume *)volg;
     struct btrfs_superblock sb;
     fsw_status_t err;
+    btrfs_uuid_t u;
 
     if(vol->n_devices_attached >= vol->n_devices_allocated)
         return FSW_UNSUPPORTED;
@@ -748,14 +749,12 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     if(err)
         return FSW_UNSUPPORTED;
 
-/*
-	btrfs_uuid_t u;
     u[0] = sb.uuid[0];
     u[1] = sb.uuid[1];
     u[2] = sb.uuid[2];
     u[3] = sb.uuid[3];
-*/
-    if(!uuid_eq(vol->uuid, sb.uuid))
+
+    if(!uuid_eq(vol->uuid, u))
         return FSW_UNSUPPORTED;
 
     return btrfs_add_multi_device(vol, slave, &sb);

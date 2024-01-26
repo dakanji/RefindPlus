@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -33,15 +33,15 @@
 #include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16    *gCsrStatus         = NULL;
-BOOLEAN    MuteLogger         = FALSE;
-BOOLEAN    NormaliseCall      = FALSE;
-EFI_GUID   AppleVendorOsGuid  = APPLE_VENDOR_OS_VARIABLE_GUID;
+CHAR16    *gCsrStatus     =                     NULL;
+BOOLEAN    MuteLogger     =                    FALSE;
+BOOLEAN    NormaliseCall  =                    FALSE;
+EFI_GUID   AppleBootGuid  = APPLE_BOOT_VARIABLE_GUID;
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
 // present and the firmware is Apple, fake it and claim it is enabled, since
-// that is how MacOS 10.11 treats a system with the variable absent.
+// that is how macOS 10.11 treats a system with the variable absent.
 EFI_STATUS GetCsrStatus (
     IN OUT UINT32 *CsrStatus
 ) {
@@ -53,7 +53,7 @@ EFI_STATUS GetCsrStatus (
 
     ReturnValue  = NULL;
     Status = EfivarGetRaw (
-        &AppleVendorOsGuid, L"csr-active-config",
+        &AppleBootGuid, L"csr-active-config",
         (VOID **) &ReturnValue, &CsrLength
     );
     if (EFI_ERROR(Status)) {
@@ -107,13 +107,16 @@ VOID RecordgCsrStatus (
     switch (CsrStatus) {
         // SIP "Cleared" Setting
         case SIP_ENABLED_EX:
-            gCsrStatus = StrDuplicate (L"SIP Enabled (Cleared/Empty)");
-            break;
+            gCsrStatus = StrDuplicate (
+                L"0x0000 - SIP/SSV Enabled (Cleared/Empty)"
+            );
+
+        break;
 
         // SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L"SIP Enabled (0x%04x)",
+                L"0x%04x - SIP Enabled",
                 CsrStatus
             );
 
@@ -126,7 +129,7 @@ VOID RecordgCsrStatus (
         case SIP_DISABLED_KEXT:
         case SIP_DISABLED_EXTRA:
             gCsrStatus = PoolPrint (
-                L"SIP Disabled (0x%04x)",
+                L"0x%04x - SIP Disabled",
                 CsrStatus
             );
 
@@ -136,7 +139,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_B:
         case SSV_DISABLED_EX:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x)",
+                L"0x%04x - SIP/SSV Disabled",
                 CsrStatus
             );
 
@@ -146,7 +149,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_KEXT:
         case SSV_DISABLED_ANY_EX:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Known Custom Setting)",
+                L"0x%04x - SIP/SSV Disabled (Known Custom Setting)",
                 CsrStatus
             );
 
@@ -155,7 +158,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Inactive)",
+                L"0x%04x - SIP/SSV Disabled (Inactive)",
                 CsrStatus
             );
 
@@ -163,50 +166,36 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Disabled (0x%04x - Unknown Custom Setting)",
+                L"0x%04x - SIP/SSV Disabled (Unknown Custom Setting)",
                 CsrStatus
             );
     } // switch
 
-    if (!DisplayMessage) {
-        // Early Exit if not displaying maessage
-        return;
+    if (DisplayMessage) {
+        MsgStr = (NormaliseCall)
+            ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
+            : PoolPrint (L"%s", gCsrStatus);
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG(
+            "%s    * %s",
+            OffsetNext, MsgStr
+        );
+        LOG_MSG("\n\n");
+        #endif
+
+        egDisplayMessage (
+            MsgStr, &BGColor,
+            CENTER, 2, L"PauseSeconds"
+        );
+
+        MY_FREE_POOL(MsgStr);
     }
-
-    MsgStr = (NormaliseCall)
-        ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
-        : PoolPrint (L"%s", gCsrStatus);
-
-    #if REFIT_DEBUG > 0
-    LOG_MSG(
-        "%s    * %s%s",
-        (NormaliseCall) ? OffsetNext : L"",
-        MsgStr,
-        L"\n\n"
-        // DA-TAG: Investigate This
-        //         Disabled for the above ... Seems not needed
-        //(NormaliseCall) ? L"" : L"\n\n"
-    );
-    #endif
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    MY_MUTELOGGER_SET;
-    #endif
-    egDisplayMessage (
-        MsgStr, &BGColor, CENTER,
-        2, L"PauseSeconds"
-    );
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
-
-    MY_FREE_POOL(MsgStr);
 } // VOID RecordgCsrStatus()
 
 EFI_STATUS FlagNoCSR (VOID) {
     MY_FREE_POOL(gCsrStatus);
-    gCsrStatus = StrDuplicate (L"CSR Values Not Configured");
+    gCsrStatus = StrDuplicate (L"CSR Values *NOT* Configured");
 
     return EFI_NOT_READY;
 } // EFI_STATUS FlagNoCSR()
@@ -218,6 +207,8 @@ VOID RotateCsrValue (
     BOOLEAN UnsetDynamic
 ) {
     EFI_STATUS    Status;
+    BOOLEAN       ShowMessage;
+    EG_PIXEL      BGColor         = COLOR_LIGHTBLUE;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
     UINT32        CurrentValue;
@@ -227,17 +218,16 @@ VOID RotateCsrValue (
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
     #endif
 
-    if (!GlobalConfig.CsrValues) {
+    if (GlobalConfig.CsrValues == NULL) {
         FlagNoCSR();
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return
@@ -245,18 +235,17 @@ VOID RotateCsrValue (
     }
 
     Status = GetCsrStatus (&CurrentValue);
-    if (EFI_ERROR(Status) || !GlobalConfig.CsrValues) {
+    if (EFI_ERROR(Status)) {
         MY_FREE_POOL(gCsrStatus);
-        gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
+        gCsrStatus = StrDuplicate (L"Could *NOT* Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return
@@ -296,12 +285,12 @@ VOID RotateCsrValue (
 
     Status = (TargetCsr != 0)
         ? EfivarSetRaw (
-            &AppleVendorOsGuid, L"csr-active-config",
+            &AppleBootGuid, L"csr-active-config",
             &TargetCsr, sizeof (UINT32), TRUE
         )
         : REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, L"csr-active-config",
-            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
+            &AppleBootGuid, AccessFlagsFull, 0, NULL
         );
     if (EFI_ERROR(Status)) {
         MY_FREE_POOL(gCsrStatus);
@@ -311,26 +300,31 @@ VOID RotateCsrValue (
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", gCsrStatus);
         #endif
 
-        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
         egDisplayMessage (
-            gCsrStatus, &BGColor, CENTER,
-            4, L"PauseSeconds"
+            gCsrStatus, &BGColor,
+            CENTER, 4, L"PauseSeconds"
         );
 
         // Early Return
         return;
     }
 
-    if ((TargetCsr & CSR_ALLOW_APPLE_INTERNAL) != 0) {
+    if (!GlobalConfig.NormaliseCSR) {
+        NormaliseCall = FALSE;
+    }
+    else if ((TargetCsr & CSR_ALLOW_APPLE_INTERNAL) != 0) {
         TargetCsr &= ~CSR_ALLOW_APPLE_INTERNAL;
         NormaliseCall = TRUE;
     }
 
-    RecordgCsrStatus (TargetCsr, TRUE);
+    #if REFIT_DEBUG > 0
+    ShowMessage = TRUE;
+    #else
+    ShowMessage = UnsetDynamic;
+    #endif
+    RecordgCsrStatus (TargetCsr, ShowMessage);
 
-    if (NormaliseCall) {
-        NormaliseCall = FALSE;
-    }
+    NormaliseCall = FALSE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -382,7 +376,7 @@ EFI_STATUS NormaliseCSR (VOID) {
     RecordgCsrStatus (OurCSR, FALSE);
 
     EfivarSetRaw (
-        &AppleVendorOsGuid, L"csr-active-config",
+        &AppleBootGuid, L"csr-active-config",
         &OurCSR, sizeof (UINT32), TRUE
     );
 
@@ -407,7 +401,7 @@ typedef struct EfiAppleSetOsInterface {
     EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
 } EfiAppleSetOsInterface;
 
-// Function to tell the firmware that MacOS is being launched. This is
+// Function to tell the firmware that macOS is being launched. This is
 // required to work around problems on some Macs that do not fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
@@ -430,7 +424,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     if (EFI_ERROR(Status) || SetOs == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Not a Mac ... Not Setting MacOS Information"
+            L"Not a Mac ... Not Setting macOS Information"
         );
         #endif
 
@@ -463,7 +457,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Set MacOS Information:- '%s'",
+        L"Set macOS Information:- '%s'",
         AppleVersionOS
     );
     #endif
@@ -534,7 +528,7 @@ UINTN OcFileDevicePathNameSize (
 );
 
 static
-CHAR16 * RP_GetBootPathName (
+CHAR16 * RefitGetBootPathName (
     IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
 ) {
     UINTN                            Len;
@@ -585,10 +579,10 @@ CHAR16 * RP_GetBootPathName (
     } // while
 
     return PathName;
-} // static EFI_STATUS RP_GetBootPathName
+} // static EFI_STATUS RefitGetBootPathName
 
 static
-CHAR16 * RP_GetAppleDiskLabelEx (
+CHAR16 * RefitGetAppleDiskLabelEx (
     IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem,
     IN  CHAR16                           *BootDirectoryName,
     IN  CONST CHAR16                     *LabelFilename
@@ -635,9 +629,9 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
 
     return UnicodeDiskLabel;
-} // static CHAR16 * RP_GetAppleDiskLabelEx()
+} // static CHAR16 * RefitGetAppleDiskLabelEx()
 
-CHAR16 * RP_GetAppleDiskLabel (
+CHAR16 * RefitGetAppleDiskLabel (
     IN  REFIT_VOLUME *Volume
 ) {
     EFI_STATUS                        Status;
@@ -645,7 +639,7 @@ CHAR16 * RP_GetAppleDiskLabel (
     CHAR16                           *AppleDiskLabel;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
 
-    BootDirectoryName = RP_GetBootPathName (Volume->DevicePath);
+    BootDirectoryName = RefitGetBootPathName (Volume->DevicePath);
     if (BootDirectoryName == NULL) {
         // Early Return ... Return NULL
         return NULL;
@@ -662,14 +656,14 @@ CHAR16 * RP_GetAppleDiskLabel (
         return NULL;
     }
 
-    AppleDiskLabel = RP_GetAppleDiskLabelEx (
+    AppleDiskLabel = RefitGetAppleDiskLabelEx (
         FileSystem,
         BootDirectoryName,
         L".contentDetails"
     );
 
     if (AppleDiskLabel == NULL) {
-        AppleDiskLabel = RP_GetAppleDiskLabelEx (
+        AppleDiskLabel = RefitGetAppleDiskLabelEx (
             FileSystem,
             BootDirectoryName,
             L".disk_label.contentDetails"
@@ -678,10 +672,10 @@ CHAR16 * RP_GetAppleDiskLabel (
     MY_FREE_POOL(BootDirectoryName);
 
     return AppleDiskLabel;
-} // CHAR16 * RP_GetAppleDiskLabel()
+} // CHAR16 * RefitGetAppleDiskLabel()
 
 static
-VOID * RP_GetFileInfo (
+VOID * RefitGetFileInfo (
     IN  EFI_FILE_PROTOCOL  *File,
     IN  EFI_GUID           *InformationType,
     IN  UINTN               MinFileInfoSize,
@@ -740,16 +734,16 @@ VOID * RP_GetFileInfo (
     }
 
     return FileInfoBuffer;
-} // static VOID * RP_GetFileInfo()
+} // static VOID * RefitGetFileInfo()
 
 static
-EFI_STATUS RP_GetApfsSpecialFileInfo (
-    IN     EFI_FILE_PROTOCOL           *Root,
-    IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo    OPTIONAL,
-    IN OUT APPLE_APFS_CONTAINER_INFO  **ContainerInfo OPTIONAL
+EFI_STATUS RefitGetApfsSpecialFileInfo (
+    IN     EFI_FILE_PROTOCOL     *Root,
+    IN OUT APFS_INFO_VOLUME     **VolumeInfo    OPTIONAL,
+    IN OUT APFS_INFO_CONTAINER  **ContainerInfo OPTIONAL
 ) {
-    EFI_GUID AppleApfsVolumeInfoGuid    = APPLE_APFS_VOLUME_INFO_GUID;
-    EFI_GUID AppleApfsContainerInfoGuid = APPLE_APFS_CONTAINER_INFO_GUID;
+    EFI_GUID AppleApfsVolumeInfoGuid    = GUID_APFS_INFO_VOLUME;
+    EFI_GUID AppleApfsContainerInfoGuid = GUID_APFS_INFO_CONTAINER;
 
     if (ContainerInfo == NULL && VolumeInfo == NULL) {
         // Early Return ... Return Error
@@ -757,7 +751,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
     }
 
     if (VolumeInfo != NULL) {
-        *VolumeInfo = RP_GetFileInfo (
+        *VolumeInfo = RefitGetFileInfo (
             Root,
             &AppleApfsVolumeInfoGuid,
             sizeof (**VolumeInfo),
@@ -770,7 +764,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
     }
 
     if (ContainerInfo != NULL) {
-        *ContainerInfo = RP_GetFileInfo (
+        *ContainerInfo = RefitGetFileInfo (
             Root,
             &AppleApfsContainerInfoGuid,
             sizeof (**ContainerInfo),
@@ -783,19 +777,19 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
     }
 
     return EFI_SUCCESS;
-} // static EFI_STATUS RP_GetApfsSpecialFileInfo()
+} // static EFI_STATUS RefitGetApfsSpecialFileInfo()
 
-EFI_STATUS RP_GetApfsVolumeInfo (
-    IN  EFI_HANDLE               Device,
-    OUT EFI_GUID                *ContainerGuid OPTIONAL,
-    OUT EFI_GUID                *VolumeGuid    OPTIONAL,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
+EFI_STATUS RefitGetApfsVolumeInfo (
+    IN  EFI_HANDLE         Device,
+    OUT EFI_GUID          *ContainerGuid OPTIONAL,
+    OUT EFI_GUID          *VolumeGuid    OPTIONAL,
+    OUT APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 ) {
     EFI_STATUS                       Status;
     EFI_FILE_PROTOCOL               *Root;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
-    APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
-    APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
+    APFS_INFO_CONTAINER             *ApfsContainerInfo;
+    APFS_INFO_VOLUME                *ApfsVolumeInfo;
 
     if (ContainerGuid == NULL
         && VolumeGuid == NULL
@@ -822,25 +816,25 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         return Status;
     }
 
-    Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
+    Status = RefitGetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
     Root->Close (Root);
     if (EFI_ERROR(Status)) {
         // Early Return ... Return Error
         return EFI_NOT_FOUND;
     }
 
-    if (VolumeGuid) {
+    if (VolumeGuid != NULL) {
         CopyGuid (
             VolumeGuid,
             &ApfsVolumeInfo->Uuid
         );
     }
 
-    if (VolumeRole) {
+    if (VolumeRole != NULL) {
         *VolumeRole = ApfsVolumeInfo->Role;
     }
 
-    if (ContainerGuid) {
+    if (ContainerGuid != NULL) {
         CopyGuid (
             ContainerGuid,
             &ApfsContainerInfo->Uuid
@@ -851,10 +845,12 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     MY_FREE_POOL(ApfsContainerInfo);
 
     return EFI_SUCCESS;
-} // EFI_STATUS RP_GetApfsVolumeInfo()
+} // EFI_STATUS RefitGetApfsVolumeInfo()
 
+// DA-TAG: Currently Disabled by '#if 0'
+#if 0
 static
-EFI_STATUS RP_UninstallAllProtocolInstances (
+EFI_STATUS RefitUninstallAllProtocolInstances (
     EFI_GUID  *Protocol
 ) {
     EFI_STATUS      Status;
@@ -862,6 +858,7 @@ EFI_STATUS RP_UninstallAllProtocolInstances (
     UINTN           Index;
     UINTN           NoHandles;
     VOID           *OriginalProto;
+
 
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
@@ -893,10 +890,11 @@ EFI_STATUS RP_UninstallAllProtocolInstances (
     MY_FREE_POOL(Handles);
 
     return Status;
-} // static EFI_STATUS RP_UninstallAllProtocolInstances()
+} // static EFI_STATUS RefitUninstallAllProtocolInstances()
+#endif
 
 static
-EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
+EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
     IN   APPLE_FRAMEBUFFER_INFO_PROTOCOL  *This,
     OUT  EFI_PHYSICAL_ADDRESS             *FramebufferBase,
     OUT  UINT32                           *FramebufferSize,
@@ -910,13 +908,18 @@ EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
     EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE     *Mode;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    if (NULL == This            ||
-        NULL == FramebufferBase ||
-        NULL == FramebufferSize ||
-        NULL == ScreenRowBytes  ||
-        NULL == ScreenWidth     ||
-        NULL == ScreenHeight    ||
-        NULL == ScreenDepth
+
+    if (!AppleFirmware) {
+        return EFI_UNSUPPORTED;
+    }
+
+    if (!This            ||
+        !FramebufferBase ||
+        !FramebufferSize ||
+        !ScreenRowBytes  ||
+        !ScreenWidth     ||
+        !ScreenHeight    ||
+        !ScreenDepth
     ) {
         return EFI_INVALID_PARAMETER;
     }
@@ -944,93 +947,70 @@ EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo (
     *ScreenDepth     = DEFAULT_COLOUR_DEPTH;
 
     return EFI_SUCCESS;
-} // static EFI_STATUS EFIAPI RP_AppleFramebufferGetInfo()
+} // static EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo()
 
-#if REFIT_DEBUG > 0
-static
-VOID LogInstallStatusFB (
-    EFI_STATUS Status
-) {
-    CHAR16 *MsgStr = L"AppleFramebuffer Install Status";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-    LOG_MSG("%s      %s:- '%r'", OffsetNext, MsgStr, Status);
-} // static VOID LogInstallStatusFB()
-#endif
-
-APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol (
-    IN BOOLEAN  Reinstall
-) {
+VOID RefitAppleFbInfoInstallProtocol (VOID) {
     EFI_STATUS                       Status;
+    BOOLEAN                          ProcessThis;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
-    CHAR16 *DotGap;
     #endif
 
     static
     APPLE_FRAMEBUFFER_INFO_PROTOCOL
     OurAppleFramebufferInfo = {
-      RP_AppleFramebufferGetInfo
+      RefitAppleFramebufferGetInfo
     };
 
-    #if REFIT_DEBUG > 0
-    MsgStr = L"Attempt AppleFramebuffer Install";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s      %s", OffsetNext, MsgStr);
 
-    DotGap = L" ... ";
+    ProcessThis = (
+        AppleFirmware        &&
+        GlobalConfig.SetAppleFB
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Sync Source AppleFramebuffers";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
     #endif
 
-    if (Reinstall) {
-        Status = RP_UninstallAllProtocolInstances (&gAppleFramebufferInfoProtocolGuid);
-        if (EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgStr = L"Uninstall Existing AppleFramebuffer";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
-            #endif
-
-            if (Status != EFI_NOT_FOUND) {
-                #if REFIT_DEBUG > 0
-                LogInstallStatusFB (Status);
-                #endif
-
-                return NULL;
-            }
-        }
+    if (!ProcessThis) {
+        Status = EFI_NOT_STARTED;
     }
     else {
         Status = REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
             NULL, (VOID *) &Protocol
         );
-        if (!EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgStr = L"Locate Existing AppleFramebuffer";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s%s:- '%r'", DotGap, MsgStr, Status);
-
-            LogInstallStatusFB (Status);
-            #endif
-
-            return Protocol;
-        }
     }
 
-    Status = REFIT_CALL_4_WRAPPER(
-        gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
-        &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
-    );
     #if REFIT_DEBUG > 0
-    LogInstallStatusFB (Status);
+    MsgStr = L"Get Old AppleFramebuffers";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
     #endif
-    if (EFI_ERROR (Status)) {
-        return NULL;
+
+    if (!EFI_ERROR (Status)) {
+        Status = EFI_ALREADY_STARTED;
+    }
+    else if (ProcessThis) {
+        UninitRefitLib();
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+            &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
+        );
+        ReinitRefitLib();
     }
 
-    return &OurAppleFramebufferInfo;
-} // APPLE_FRAMEBUFFER_INFO_PROTOCOL * RP_AppleFbInfoInstallProtocol()
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Set New AppleFramebuffers";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+    LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
+    LOG_MSG("\n\n");
+    #endif
+} // VOID RefitAppleFbInfoInstallProtocol()
 
 // DA-TAG: Limit to TianoCore - END
 #endif
@@ -1049,13 +1029,13 @@ VOID ClearRecoveryBootFlag (VOID) {
     VariableName = L"recovery-boot-mode";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleVendorOsGuid, NULL,
+        &AppleBootGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
+            &AppleBootGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }
@@ -1064,13 +1044,13 @@ VOID ClearRecoveryBootFlag (VOID) {
     VariableName = L"internet-recovery-mode";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleVendorOsGuid, NULL,
+        &AppleBootGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
+            &AppleBootGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }
@@ -1079,13 +1059,13 @@ VOID ClearRecoveryBootFlag (VOID) {
     VariableName = L"RecoveryBootInitiator";
     Status = REFIT_CALL_5_WRAPPER(
         gRT->GetVariable, VariableName,
-        &AppleVendorOsGuid, NULL,
+        &AppleBootGuid, NULL,
         &BufferSize, TmpBuffer
     );
     if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
         REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            &AppleVendorOsGuid, AccessFlagsFull, 0, NULL
+            &AppleBootGuid, AccessFlagsFull, 0, NULL
         );
         MY_FREE_POOL(TmpBuffer);
     }

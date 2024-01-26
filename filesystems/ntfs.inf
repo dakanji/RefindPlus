@@ -11,7 +11,7 @@
 ##
 ##
 # Modified for Refindplus
-# Copyright (c) 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+# Copyright (c) 2022-2023 Dayo Akanji (sf.net/u/dakanji/profile)
 #
 # Modifications distributed under the preceding terms.
 ##
@@ -69,7 +69,7 @@
 [Pcd]
 
 [BuildOptions.common]
-    DEFINE RFT_BLD_ALL = -D__MAKEWITH_TIANO -DMDEPKG_NDEBUG -DFSTYPE=ntfs
+    DEFINE RFT_BLD_ALL = -D__MAKEWITH_TIANO -DFSTYPE=ntfs
 
 [BuildOptions.IA32]
     XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 $(RFT_BLD_ALL)

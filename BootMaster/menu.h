@@ -192,7 +192,7 @@ BOOLEAN GetYesNoMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN ConfirmShutdown (VOID);
 BOOLEAN ConfirmRestart (VOID);
-
+BOOLEAN ConfirmRotate (VOID);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
 

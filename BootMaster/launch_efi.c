@@ -86,10 +86,7 @@
 CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
-BOOLEAN SkipForcedReboot = FALSE;
-
 extern BOOLEAN  IsBoot;
-extern EFI_GUID AppleVendorOsGuid;
 
 static
 VOID WarnSecureBootError(
@@ -186,8 +183,6 @@ BOOLEAN ConfirmReboot (
     ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser), TRUE);
-
     RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
     if (!RetVal) {
         FreeMenuScreen (&ConfirmRebootMenu);
@@ -202,7 +197,7 @@ BOOLEAN ConfirmReboot (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmReboot'",
+        L"Returned '%d' (%s) in 'ConfirmReboot' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -274,7 +269,7 @@ EFI_STATUS ApfsRecoveryBoot (
     DataNVRAM = NULL;
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
+        &AppleBootGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -287,7 +282,7 @@ EFI_STATUS ApfsRecoveryBoot (
     // Set Recovery Initiator
     NameNVRAM = L"RecoveryBootInitiator";
     Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
+        &AppleBootGuid, NameNVRAM,
         (VOID **) &Entry->Volume->DevicePath, StrSize (DevicePathToStr (Entry->Volume->DevicePath)), TRUE
     );
     MY_FREE_POOL(NameNVRAM);
@@ -389,8 +384,8 @@ BOOLEAN IsValidLoader (
 #else
     EFI_STATUS       Status;
     BOOLEAN          IsValid;
-    BOOLEAN          AppleFatBinary;
-    BOOLEAN          ApplePlainBinary;
+    BOOLEAN          AppleBinaryFat;
+    BOOLEAN          AppleBinaryPlain;
     UINTN            SignaturePosition;
     UINTN            Size;
     CHAR8           *Header;
@@ -420,7 +415,7 @@ BOOLEAN IsValidLoader (
     }
 
     do {
-        IsValid = AppleFatBinary = ApplePlainBinary = FALSE;
+        IsValid = AppleBinaryFat = AppleBinaryPlain = FALSE;
 
         #if REFIT_DEBUG > 0
         AbortReason = L"";
@@ -461,7 +456,7 @@ BOOLEAN IsValidLoader (
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
-            AbortReason = L":- 'File is *NOT* Readable'";
+            AbortReason = L":- 'File *IS NOT* Readable'";
             #endif
 
             //LoaderType = LOADER_TYPE_INVALID;
@@ -510,8 +505,7 @@ BOOLEAN IsValidLoader (
         }
 
         // Search for Apple's 'Fat' Binary signature
-        IsValid = AppleFatBinary = (
-            AppleFirmware &&
+        IsValid = AppleBinaryFat = (
             *((UINT32 *) &Header[0]) == APPLE_FAT_BINARY
         );
         if (IsValid) {
@@ -522,7 +516,7 @@ BOOLEAN IsValidLoader (
         }
 
         // Allow plain binaries on Apple Firmware
-        IsValid = ApplePlainBinary = AppleFirmware;
+        IsValid = AppleBinaryPlain = AppleFirmware;
         if (IsValid) {
             //LoaderType = LOADER_TYPE_EFI;
 
@@ -543,11 +537,11 @@ BOOLEAN IsValidLoader (
     //         Assume the same for plain binaries on Apple firmware
     //         Test variables are only ever true on Apple firmware
     ValidText = (!IsValid)
-        ? L"EFI File is *NOT* Valid"
-        : (AppleFatBinary)
-            ? L"Apple 'Fat' Binary is *ASSUMED* to be Valid on Apple Firmware"
-            : (ApplePlainBinary)
-                ? L"Plain Binary is *ASSUMED* to be Valid on Apple Firmware"
+        ? L"EFI File *IS NOT* Valid"
+        : (AppleBinaryFat)
+            ? L"EFI File (Apple 'Fat' Binary) is *ASSUMED* to be Valid"
+            : (AppleBinaryPlain)
+                ? L"EFI File ('Plain' Binary) is *ASSUMED* to be Valid on Apple Firmware"
                 : L"EFI File is Valid";
 
     #if REFIT_DEBUG > 0
@@ -612,7 +606,7 @@ EFI_STATUS StartEFIImage (
     CHAR16                              *FullLoadOptions;
     BOOLEAN                              LoaderValid;
     EFI_HANDLE                           ChildImageHandle;
-    EFI_HANDLE                           ChildImageHandle2;
+    EFI_HANDLE                           TempImageHandle;
     EFI_DEVICE_PATH_PROTOCOL            *DevicePath;
     EFI_LOADED_IMAGE_PROTOCOL           *ChildLoadedImage;
 
@@ -621,8 +615,6 @@ EFI_STATUS StartEFIImage (
 
     BOOLEAN  CheckMute = FALSE;
     #endif
-
-    SkipForcedReboot = FALSE;
 
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
@@ -642,8 +634,10 @@ EFI_STATUS StartEFIImage (
     }
 
     // Set load options
-    FullLoadOptions = NULL;
-    if (LoadOptions != NULL) {
+    if (LoadOptions == NULL) {
+        FullLoadOptions = NULL;
+    }
+    else {
         FullLoadOptions = StrDuplicate (LoadOptions);
 
         // DA-TAG: The last space is also added by the EFI shell and is
@@ -691,8 +685,7 @@ EFI_STATUS StartEFIImage (
 
             MsgStr = PoolPrint (
                 L"When Loading %s ... %s",
-                ImageTitle,
-                ValidText
+                ImageTitle, ValidText
             );
             ValidText = L"Invalid Binary";
             CheckError (Status, MsgStr);
@@ -712,12 +705,15 @@ EFI_STATUS StartEFIImage (
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
+        #if REFIT_DEBUG < 1
         // Stall to avoid unwanted flash of text when starting loaders
-        // Stall works best in smaller increments as per Specs
+        // Stall works best in smaller increments as per specs
+        // Stall appears to be only needed on REl builds
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
             // DA-TAG: 100 Loops = 1 Sec
-            RefitStall (150);
+            RefitStall (50);
         }
+        #endif
 
         ChildImageHandle = NULL;
         // DA-TAG: Investigate This
@@ -765,11 +761,11 @@ EFI_STATUS StartEFIImage (
             #endif
 
             // Ignore return status here
-            ChildImageHandle2 = NULL;
+            TempImageHandle = NULL;
             REFIT_CALL_6_WRAPPER(
                 gBS->LoadImage, FALSE,
                 SelfImageHandle, GlobalConfig.SelfDevicePath,
-                NULL, 0, &ChildImageHandle2
+                NULL, 0, &TempImageHandle
             );
         }
 
@@ -793,20 +789,21 @@ EFI_STATUS StartEFIImage (
 
         do {
             ChildLoadedImage = NULL;
-            Status = REFIT_CALL_3_WRAPPER(
+            ReturnStatus = Status = REFIT_CALL_3_WRAPPER(
                 gBS->HandleProtocol, ChildImageHandle,
                 &LoadedImageProtocol, (VOID **) &ChildLoadedImage
             );
-            ReturnStatus = Status;
+            if (EFI_ERROR(Status)) {
+                CheckError (Status, L"while Getting LoadedImageProtocol Handle");
 
-            if (CheckError (Status, L"while Getting LoadedImageProtocol Handle")) {
                 // Unload and Bail Out
                 break;
             }
 
             ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
-            ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-                ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
+            ChildLoadedImage->LoadOptionsSize = (FullLoadOptions)
+                ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
+                : 0;
 
             // DA-TAG: Investigate This
             //         Re-enable the EFI watchdog timer (optionally)
@@ -860,7 +857,10 @@ EFI_STATUS StartEFIImage (
             #if REFIT_DEBUG > 0
             ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
             if (!IsDriver) {
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr, ImageTitle);
+                ALT_LOG(1, LOG_LINE_NORMAL,
+                    L"%s via Loader:- '%s'",
+                    ConstMsgStr, ImageTitle
+                );
                 OUT_TAG();
             }
             #endif
@@ -894,18 +894,17 @@ EFI_STATUS StartEFIImage (
                     ReturnStatus == EFI_NOT_FOUND   &&
                     FindSubStr (ImageTitle, L"gptsync")
                 ) {
-                    SkipForcedReboot = TRUE;
-
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_SET;
                     #endif
                     SwitchToText (FALSE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"  Completed Without Changes  ", NEXTLINE);
-                    PrintUglyText (L"    Skipping Forced Reboot   ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
-                    PrintUglyText (L"                             ", NEXTLINE);
+                    PauseSeconds (4);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"  Applicable Disks *NOT* Found for GPTSync  ", NEXTLINE);
+                    PrintUglyText (L"           Returning to Main Menu           ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
+                    PrintUglyText (L"                                            ", NEXTLINE);
                     PauseSeconds (4);
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_OFF;
@@ -946,6 +945,7 @@ EFI_STATUS StartEFIImage (
 
     // DA-TAG: bailout:
     MY_FREE_POOL(FullLoadOptions);
+
     if (!IsDriver) FinishExternalScreen();
 
     return ReturnStatus;
@@ -993,8 +993,9 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications Not Found");
-        LOG_MSG("%s    ** Aborted ... OsIndications Not Found", OffsetNext);
+        TmpStr = L"Aborted ... OsIndications *NOT* Found";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TmpStr);
+        LOG_MSG("%s    ** %s", OffsetNext, TmpStr);
         LOG_MSG("\n\n");
         #endif
 

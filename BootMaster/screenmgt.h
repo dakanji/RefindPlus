@@ -84,8 +84,6 @@ extern UINTN     ScreenW;
 extern UINTN     ScreenH;
 extern CHAR16   *BlankLine;
 extern BOOLEAN   AllowGraphicsMode;
-extern EG_PIXEL  StdBackgroundPixel;
-extern EG_PIXEL  MenuBackgroundPixel;
 
 EFI_STATUS SwitchToGraphics (VOID);
 

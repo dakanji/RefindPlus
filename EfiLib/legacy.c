@@ -757,12 +757,12 @@ EFI_STATUS BdsAddNonExistingLegacyBootOptions (VOID) {
 } // EFI_STATUS BdsAddNonExistingLegacyBootOptions()
 
 /**
-Deletete the Boot Option from UEFI Variable. The Boot Order Arrray
+Deletete the Boot Option from UEFI Variable. The BootOrder Arrray
 is also updated.
 
 @param OptionNumber    The number of Boot option want to be deleted.
-@param BootOrder       The Boot Order array.
-@param BootOrderSize   The size of the Boot Order Array.
+@param BootOrder       The BootOrder array.
+@param BootOrderSize   The size of the BootOrder Array.
 
 @retval  EFI_SUCCESS           The Boot Option Variable was found and removed
 @retval  EFI_UNSUPPORTED       The Boot Option Variable store was inaccessible

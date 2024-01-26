@@ -97,15 +97,15 @@ BOOLEAN MyStrBegins (
 
     StrBegins = FALSE;
     while (*FirstString != L'\0') {
-        if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
-            StrBegins = TRUE;
-            FirstString++;
-            SecondString++;
-        }
-        else {
+        if ((*FirstString & ~0x20) != (*SecondString & ~0x20)) {
             StrBegins = FALSE;
+
             break;
         }
+
+        FirstString++;
+        SecondString++;
+        StrBegins = TRUE;
     } // while
 
     return StrBegins;
@@ -134,7 +134,7 @@ CHAR16 * MyStrStr (
     CHAR16 *Sub;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MyStrStr";
+    const CHAR16 *FuncTag = L"MyStrStr";
     #endif
 
     if (!NestedStrStr) LOG_SEP(L"X");
@@ -173,7 +173,7 @@ CHAR16 * MyStrStr (
         return Src;
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring Not Found)", FuncTag);
+    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring *NOT* Found)", FuncTag);
     LOG_DECREMENT();
     if (!NestedStrStr) LOG_SEP(L"X");
 
@@ -199,7 +199,7 @@ BOOLEAN FindSubStr (
     IN CHAR16  *RawStrCharSet
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FindSubStr";
+    const CHAR16 *FuncTag = L"FindSubStr";
     #endif
 
     LOG_SEP(L"X");
@@ -284,7 +284,7 @@ CHAR8 * MyAsciiStrStr (
     const CHAR8 *SearchStringTmp;
 
     //
-    // ASSERT both strings are less long than PcdMaximumAsciiStringLength
+    // ASSERT both strings are shorter than PcdMaximumAsciiStringLength
     //
     ASSERT (AsciiStrSize (String) != 0);
     ASSERT (AsciiStrSize (SearchString) != 0);
@@ -372,7 +372,7 @@ VOID MergeStrings (
     CHAR16 *NewString;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MergeStrings";
+    const CHAR16 *FuncTag = L"MergeStrings";
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
@@ -470,7 +470,7 @@ VOID MergeUniqueStrings (
     BOOLEAN  SkipMerge;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"MergeUniqueStrings";
+    const CHAR16 *FuncTag = L"MergeUniqueStrings";
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
@@ -684,6 +684,26 @@ VOID MergeUniqueWords (
     }
 } // VOID MergeUniqueWords()
 
+// As MergeUniqueWords, but items are separated by ','
+VOID MergeUniqueItems (
+    CHAR16 **MergeTo,
+    CHAR16  *InString,
+    CHAR16   AddChar
+) {
+    UINTN   i;
+    CHAR16 *Item;
+
+    if (!InString) {
+        return;
+    }
+
+    i = 0;
+    while ((Item = FindCommaDelimited (InString, i++)) != NULL) {
+        MergeUniqueStrings (MergeTo, Item, AddChar);
+        MY_FREE_POOL(Item);
+    } // while
+} // VOID MergeUniqueItems()
+
 // Replaces special characters in the input string with a space.
 CHAR16 * SanitiseString (
     CHAR16  *InString
@@ -736,11 +756,10 @@ CHAR16 * SanitiseString (
     return OutString;
 } // CHAR16 * SanitiseString()
 
-// Restrict 'TheString' to at most 'Limit' characters.
-// Does this in two ways:
-// - Locates stretches of two or more spaces and compresses
-//   them down to one space.
-// - Truncates TheString
+// Restrict 'TheString' to no more than 'Limit' characters.
+// Does this in two steps:
+//   - Compresses blocks of two or more spaces down to one.
+//   - Truncates 'TheString' if still longer than 'Limit'.
 // Returns TRUE if changes were made, FALSE otherwise
 BOOLEAN LimitStringLength (
     CHAR16 *TheString,
@@ -757,7 +776,7 @@ BOOLEAN LimitStringLength (
     BOOLEAN   WasTruncated;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"LimitStringLength";
+    const CHAR16 *FuncTag = L"LimitStringLength";
     #endif
 
     LOG_SEP(L"X");
@@ -843,9 +862,8 @@ BOOLEAN TruncateString (
 // Returns all the digits in the input string, including intervening
 // non-digit characters. For instance, if InString is "foo-3.3.4-7.img",
 // this function returns "3.3.4-7". The GlobalConfig.ExtraKernelVersionStrings
-// variable specifies extra strings that may be treated as numbers. If
-// InString contains no digits or ExtraKernelVersionStrings, the return value
-// is NULL.
+// variable specifies extra strings that may be treated as numbers. If InString
+// contains no digits or ExtraKernelVersionStrings, the return value is NULL.
 CHAR16 * FindNumbers (
     IN CHAR16 *InString
 ) {
@@ -924,17 +942,24 @@ UINTN NumCharsInCommon (
     return Count;
 } // UINTN NumCharsInCommon()
 
-// Find the #Index element (numbered from 0) in a comma-delimited string
-// of elements.
+// Find the #Index element (numbered from 0) in a comma-delimited string.
 // Returns the found element, or NULL if Index is out of range or InString
 // is NULL. Note that the calling function is responsible for freeing the
 // memory associated with the returned string pointer.
+//
+// DA-TAG: Updated for 'ABC, 123, XYZ, 456'
+//         That is, ignores leading spaces
+//         'Internal' spaces not affected
+//         'A B C, XYZ' = 'A B C' & 'XYZ'
 CHAR16 * FindCommaDelimited (
     IN CHAR16 *InString,
     IN UINTN   Index
 ) {
-    UINTN     StartPos, CurPos, InLength;
+    UINTN     CurPos;
+    UINTN     StartPos;
+    UINTN     InLength;
     BOOLEAN   Found;
+    BOOLEAN   LeadingSpace;
     CHAR16   *FoundString;
 
     if (InString == NULL) {
@@ -943,6 +968,7 @@ CHAR16 * FindCommaDelimited (
 
     StartPos = CurPos = 0;
     InLength = StrLen (InString);
+
     // After while() loop, StartPos marks start of item #Index
     while (Index > 0 && CurPos < InLength) {
         if (InString[CurPos] == L',') {
@@ -953,14 +979,28 @@ CHAR16 * FindCommaDelimited (
         CurPos++;
     } // while
 
+    Found        = FALSE;
+    LeadingSpace =  TRUE;
+
     // After while() loop, CurPos is one past the end of the element
-    Found = FALSE;
     while (!Found && CurPos < InLength) {
         if (InString[CurPos] == L',') {
             Found = TRUE;
         }
         else {
+            // Move Current Position
             CurPos++;
+
+            if (LeadingSpace) {
+                if (InString[CurPos] == L' ') {
+                    // Ignore Leading Space ... Move Start Position
+                    ++StartPos;
+                }
+                else {
+                    // No Leading Space
+                    LeadingSpace = FALSE;
+                }
+            }
         }
     } // while
 
@@ -1016,9 +1056,35 @@ BOOLEAN DeleteItemFromCsvList (
     return FALSE;
 } // BOOLEAN DeleteItemFromCsvList()
 
+// Replaced by IsListItem.
+// Kept for upstream compatibility.
+BOOLEAN IsIn (
+    IN CHAR16 *SmallString,
+    IN CHAR16 *List
+) {
+    if (!SmallString || !List) {
+        return FALSE;
+    }
+
+    return IsListItem (SmallString, List);
+} // BOOLEAN IsIn()
+
+// Replaced by IsListItemSubstringIn.
+// Kept for upstream compatibility.
+BOOLEAN IsInSubstring (
+    IN CHAR16 *BigString,
+    IN CHAR16 *List
+) {
+    if (!BigString || !List) {
+        return FALSE;
+    }
+
+    return IsListItemSubstringIn (BigString, List);
+} // BOOLEAN IsInSubstring()
+
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.
-BOOLEAN IsIn (
+BOOLEAN IsListItem (
     IN CHAR16 *SmallString,
     IN CHAR16 *List
 ) {
@@ -1041,11 +1107,11 @@ BOOLEAN IsIn (
     } // while
 
    return Found;
-} // BOOLEAN IsIn()
+} // BOOLEAN IsListItem()
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
-BOOLEAN IsInSubstring (
+BOOLEAN IsListItemSubstringIn (
     IN CHAR16 *BigString,
     IN CHAR16 *List
 ) {
@@ -1080,7 +1146,7 @@ BOOLEAN IsInSubstring (
     } // while
 
     return Found;
-} // BOOLEAN IsSubstringIn()
+} // BOOLEAN IsListItemSubstringIn()
 
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString
 // is preceded by "%", instead remove that character.
@@ -1093,7 +1159,7 @@ BOOLEAN ReplaceSubstring (
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"ReplaceSubstring";
+    const CHAR16 *FuncTag = L"ReplaceSubstring";
     #endif
 
     LOG_SEP(L"X");
@@ -1107,6 +1173,7 @@ BOOLEAN ReplaceSubstring (
         BREAD_CRUMB(L"%s:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
+
         return FALSE;
     }
 
@@ -1118,7 +1185,7 @@ BOOLEAN ReplaceSubstring (
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     if (!FoundSearchString) {
-        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString Not Found!!", FuncTag);
+        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString *NOT* Found!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;
@@ -1154,7 +1221,7 @@ BOOLEAN ReplaceSubstring (
     MergeStrings (&NewString, EndString, L'\0');
 
     BREAD_CRUMB(L"%s:  10", FuncTag);
-    MY_FREE_POOL(MainString);
+    MY_FREE_POOL(*MainString);
     *MainString = NewString;
 
     BREAD_CRUMB(L"%s:  11 - END:- return BOOLEAN 'TRUE'", FuncTag);
@@ -1326,7 +1393,7 @@ EFI_GUID StringAsGuid (
 ) {
     EFI_GUID  Guid = NULL_GUID_VALUE;
 
-    if (!IsGuid(InString)) {
+    if (!IsGuid (InString)) {
         return Guid;
     }
 

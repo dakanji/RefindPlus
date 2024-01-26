@@ -240,7 +240,7 @@ VOID pdCleanup (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
 
-    MsgStr = L"Reset Pointer Devices";
+    MsgStr = L"Reconfigure Pointer Amenities";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
@@ -284,7 +284,7 @@ VOID pdCleanup (VOID) {
     State.Holding = FALSE;
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Close Pointer Protocols ... Success";
+    MsgStr = L"Disable Pointer Protocols ... Success";
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     #endif
@@ -490,7 +490,7 @@ VOID pdClear (VOID) {
 
     #if REFIT_DEBUG > 0
     if (NotLogged) {
-        MsgStr = L"Clear Pointer Artefacts ... Success";
+        MsgStr = L"Cleanse Pointer Artefacts ... Success";
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         LOG_MSG("%s  - %s", OffsetNext, MsgStr);
         NotLogged = FALSE;

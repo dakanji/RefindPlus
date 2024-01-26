@@ -119,6 +119,7 @@ REFIT_MENU_ENTRY MenuEntryYes = {
 
 extern UINT64              GetCurrentMS (VOID);
 extern CHAR16             *VendorInfo;
+extern EG_PIXEL            MenuBackgroundPixel;
 extern BOOLEAN             FoundExternalDisk;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
@@ -842,7 +843,7 @@ UINTN RunGenericMenu (
 
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"RunGenericMenu";
+    const CHAR16 *FuncTag = L"RunGenericMenu";
     #endif
 
     LOG_SEP(L"X");
@@ -2751,8 +2752,8 @@ VOID DisplaySimpleMessage (
     TypeMenuExit = (MenuExit < 0) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
 
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call in 'DisplaySimpleMessage'",
-        MenuExit, TypeMenuExit
+        L"Returned '%d' (%s) in 'DisplaySimpleMessage' From RunGenericMenu Call on '%s'",
+        MenuExit, TypeMenuExit, Title
     );
     #endif
 
@@ -2825,26 +2826,29 @@ VOID SaveHiddenList (
     EFI_STATUS Status;
     UINTN      ListLen;
 
-    if (HiddenList == NULL || VarName == NULL) {
-        Status = EFI_INVALID_PARAMETER;
-        CheckError (Status, L"in SaveHiddenList!!");
+    if (VarName == NULL) {
+        CheckError (EFI_INVALID_PARAMETER, L"in SaveHiddenList!!");
 
         // Early Return ... Prevent NULL dererencing
         return;
     }
 
-    ListLen = StrLen (HiddenList);
+    if (HiddenList == NULL) {
+        ListLen = 0;
+    }
+    else {
+        ListLen = StrLen (HiddenList) * 2 + 2;
+    }
 
     Status = EfivarSetRaw (
         &RefindPlusGuid, VarName,
-        HiddenList, ListLen * 2 + 2 * (ListLen > 0), TRUE
+        HiddenList, ListLen, TRUE
     );
     CheckError (Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
 // Present a menu for the user to delete (un-hide) hidden tags.
 VOID ManageHiddenTags (VOID) {
-    EFI_STATUS           Status;
     INTN                 DefaultEntry;
     UINTN                i;
     UINTN                MenuExit;
@@ -2864,16 +2868,14 @@ VOID ManageHiddenTags (VOID) {
     REFIT_MENU_SCREEN   *RestoreItemMenu;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Restore Tags' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating '%s' Screen", LABEL_HIDDEN);
     #endif
 
-    AllTags = NULL;
+    AllTags  = NULL;
+    SaveTags = SaveTools = SaveLegacy = SaveFirmware = FALSE;
 
     HiddenTags = ReadHiddenTags (L"HiddenTags");
-    if (!HiddenTags) {
-        SaveTags = FALSE;
-    }
-    else {
+    if (HiddenTags) {
         SaveTags = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
         if (HiddenTags && (HiddenTags[0] != L'\0')) {
             AllTags = StrDuplicate (HiddenTags);
@@ -2881,24 +2883,36 @@ VOID ManageHiddenTags (VOID) {
     }
 
     HiddenTools = ReadHiddenTags (L"HiddenTools");
-    if (!HiddenTools) {
-        SaveTools = FALSE;
-    }
-    else {
+    if (HiddenTools) {
         SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
         if (HiddenTools && (HiddenTools[0] != L'\0')) {
-            MergeStrings (&AllTags, HiddenTools, L',');
+            if (!AllTags) {
+                AllTags = StrDuplicate (HiddenTools);
+            }
+            else {
+                MergeUniqueStrings (&AllTags, HiddenTools, L',');
+            }
         }
     }
 
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
     if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
-        MergeStrings (&AllTags, HiddenLegacy, L',');
+        if (!AllTags) {
+            AllTags = StrDuplicate (HiddenLegacy);
+        }
+        else {
+            MergeUniqueStrings (&AllTags, HiddenLegacy, L',');
+        }
     }
 
     HiddenFirmware = ReadHiddenTags (L"HiddenFirmware");
     if (HiddenFirmware && (HiddenFirmware[0] != L'\0')) {
-        MergeStrings (&AllTags, HiddenFirmware, L',');
+        if (!AllTags) {
+            AllTags = StrDuplicate (HiddenFirmware);
+        }
+        else {
+            MergeUniqueStrings (&AllTags, HiddenFirmware, L',');
+        }
     }
 
     if (!AllTags || StrLen (AllTags) < 1) {
@@ -2910,19 +2924,19 @@ VOID ManageHiddenTags (VOID) {
 
     RestoreItemMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     RestoreItemMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    RestoreItemMenu->Title      = StrDuplicate (L"Restore Tags"        );
+    RestoreItemMenu->Title      = StrDuplicate (LABEL_HIDDEN           );
     RestoreItemMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
     RestoreItemMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
-    AddMenuInfoLine (RestoreItemMenu, L"Select a Tag and Press 'Enter' to Restore", FALSE);
+    AddMenuInfoLine (RestoreItemMenu, L"Select an Entry and Press 'Enter' to Restore", FALSE);
 
+    OneElement    = NULL;
     MenuEntryItem = NULL;
-    OneElement = NULL;
     i = 0;
     while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
-        MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
+        MenuEntryItem  = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
         MenuEntryItem->Title = StrDuplicate (OneElement);
         MenuEntryItem->Tag   = TAG_RETURN;
-        AddMenuEntryCopy (RestoreItemMenu, MenuEntryItem);
+        AddMenuEntry (RestoreItemMenu, MenuEntryItem);
 
         MY_FREE_POOL(OneElement);
     } // while
@@ -2938,52 +2952,29 @@ VOID ManageHiddenTags (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
+            L"Returned '%d' (%s) in 'ManageHiddenTags' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
 
-        if (ChosenOption->Tag == TAG_RETURN) {
-            break;
-        }
-
         // Previously unset defaults
-        SaveFirmware = SaveLegacy = FALSE;
         if (MenuExit == MENU_EXIT_ENTER) {
-            SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
-            SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
-            SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy);
-            SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
-
-            if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
-                i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
-                Status = EfivarSetRaw (
-                    &RefindPlusGuid, L"HiddenLegacy",
-                    HiddenLegacy, i * 2 + 2 * (i > 0), TRUE
-                );
-                SaveLegacy = TRUE;
-                CheckError (Status, L"in ManageHiddenTags!!");
-            }
+            if (HiddenTags    ) SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags    );
+            if (HiddenTools   ) SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools   );
+            if (HiddenLegacy  ) SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy  );
+            if (HiddenFirmware) SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
         }
 
-        if (SaveTags) {
-            SaveHiddenList (HiddenTags, L"HiddenTags");
-        }
-
-        if (SaveLegacy) {
-            SaveHiddenList (HiddenLegacy, L"HiddenLegacy");
-        }
-
-        if (SaveTools) {
-            SaveHiddenList (HiddenTools, L"HiddenTools");
-            MY_FREE_POOL(gHiddenTools);
-        }
-
-        if (SaveFirmware) {
-            SaveHiddenList (HiddenFirmware, L"HiddenFirmware");
-        }
+        if (SaveTags    ) SaveHiddenList (HiddenTags,     L"HiddenTags"    );
+        if (SaveTools   ) SaveHiddenList (HiddenTools,    L"HiddenTools"   );
+        if (SaveLegacy  ) SaveHiddenList (HiddenLegacy,   L"HiddenLegacy"  );
+        if (SaveFirmware) SaveHiddenList (HiddenFirmware, L"HiddenFirmware");
 
         if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
+            if (SaveTools) {
+                MY_FREE_POOL(gHiddenTools);
+            }
+
             RescanAll (FALSE);
         }
     } while (0); // This 'loop' only runs once
@@ -3013,14 +3004,21 @@ CHAR16 * ReadHiddenTags (
         &RefindPlusGuid, VarName,
         (VOID **) &Buffer, &Size
     );
-    #if REFIT_DEBUG > 0
-    if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
-        CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
-        CheckError (Status, CheckErrMsg);
-        MY_FREE_POOL(CheckErrMsg);
+    if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        if (Status != EFI_NOT_FOUND) {
+            #if REFIT_DEBUG > 0
+            CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
+            CheckError (Status, CheckErrMsg);
+            MY_FREE_POOL(CheckErrMsg);
+            #endif
+        }
+        #endif
+
+        return NULL;
     }
-    #endif
-    if (!EFI_ERROR(Status) && Size == 0) {
+
+    if (Size == 0) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
             L"Zero Size in ReadHiddenTags ... Clearing Buffer"
@@ -3048,20 +3046,14 @@ VOID AddToHiddenTags (
     }
 
     HiddenTags = ReadHiddenTags (VarName);
-    if (HiddenTags == NULL) {
+    if (FindSubStr (HiddenTags, Pathname)) {
+        CheckError (EFI_ALREADY_STARTED, L"in 'AddToHiddenTags'!!");
+
         // Early Return
         return;
     }
 
-    if (MyStrStr (HiddenTags, Pathname)) {
-        MY_FREE_POOL(HiddenTags);
-
-        // Early Return ... Already Present in List
-        return;
-    }
-
-    MergeStrings (&HiddenTags, Pathname, L',');
-
+    MergeUniqueStrings (&HiddenTags, Pathname, L',');
     Status = EfivarSetRaw (
         &RefindPlusGuid, VarName,
         HiddenTags, StrLen (HiddenTags) * 2 + 2, TRUE
@@ -3109,7 +3101,7 @@ BOOLEAN HideEfiTag (
 
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
 
-    AddMenuInfoLine (HideEfiMenu, L"Hide EFI Tag Below?",        FALSE);
+    AddMenuInfoLine (HideEfiMenu, L"Hide EFI Entry Below?",      FALSE);
     AddMenuInfoLine (HideEfiMenu, PoolPrint (L"'%s'", FullPath),  TRUE);
 
     AddMenuEntryCopy (HideEfiMenu, &MenuEntryYes);
@@ -3121,7 +3113,7 @@ BOOLEAN HideEfiTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideEfiTag'",
+        L"Returned '%d' (%s) in 'HideEfiTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3154,7 +3146,7 @@ BOOLEAN HideEfiTag (
 } // BOOLEAN HideEfiTag()
 
 static
-BOOLEAN HideFirmwareTag(
+BOOLEAN HideFirmwareTag (
     LOADER_ENTRY      *Loader,
     REFIT_MENU_SCREEN *HideFirmwareMenu
 ) {
@@ -3164,7 +3156,7 @@ BOOLEAN HideFirmwareTag(
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    AddMenuInfoLine (HideFirmwareMenu, L"Hide Firmware Tag Below?",        FALSE);
+    AddMenuInfoLine (HideFirmwareMenu, L"Hide Firmware Entry Below?",      FALSE);
     AddMenuInfoLine (HideFirmwareMenu, PoolPrint (L"'%s'", Loader->Title),  TRUE);
 
     AddMenuEntryCopy (HideFirmwareMenu, &MenuEntryYes);
@@ -3176,7 +3168,7 @@ BOOLEAN HideFirmwareTag(
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
+        L"Returned '%d' (%s) in 'HideFirmwareTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3217,8 +3209,8 @@ BOOLEAN HideLegacyTag (
         Name = StrDuplicate (L"Legacy Bootcode");
     }
 
-    AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Tag Below?", FALSE);
-    AddMenuInfoLine (HideLegacyMenu, PoolPrint (L"'%s'", Name),  TRUE);
+    AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Entry Below?", FALSE);
+    AddMenuInfoLine (HideLegacyMenu, PoolPrint (L"'%s'", Name),    TRUE);
 
     AddMenuEntryCopy (HideLegacyMenu, &MenuEntryYes);
     AddMenuEntryCopy (HideLegacyMenu, &MenuEntryNo);
@@ -3229,7 +3221,7 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'HideLegacyTag'",
+        L"Returned '%d' (%s) in 'HideLegacyTag' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3250,8 +3242,8 @@ static
 VOID HideTag (
     REFIT_MENU_ENTRY *ChosenEntry
 ) {
-    CHAR16            *MsgStr;
-    CHAR16            *Clarify;
+    CHAR16            *NoChanges;
+    UINTN              TagFlag;
     LOADER_ENTRY      *Loader;
     LEGACY_ENTRY      *LegacyLoader;
     REFIT_MENU_SCREEN *HideTagMenu;
@@ -3271,11 +3263,12 @@ VOID HideTag (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
-    HideTagMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN  );
-    HideTagMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
-    HideTagMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
+    HideTagMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
+    HideTagMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
+    HideTagMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
-    MsgStr       = NULL;
+    TagFlag      = 0;
+    NoChanges    = L"No Changes on Hide Entry Call";
     Loader       = (LOADER_ENTRY *) ChosenEntry;
     LegacyLoader = (LEGACY_ENTRY *) ChosenEntry;
 
@@ -3298,109 +3291,52 @@ VOID HideTag (
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
-                MsgStr = PoolPrint (L"HideTag Not Available on Synced APFS Loader: \"%s\"", ChosenEntry->Title);
-                Clarify = (SingleAPFS)
-                    ? L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token"
-                    : L"APFS Container with Multiple Mac OS Instances Found";
-                DisplaySimpleMessage (Clarify, MsgStr);
+                DisplaySimpleMessage (
+                    L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token",
+                    L"Hide Entry *IS NOT* Available on Synced APFS Loaders"
+                );
             }
             else if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
-                MsgStr = PoolPrint (L"HideTag Not Available on Manual Stanza: \"%s\"", ChosenEntry->Title);
-                DisplaySimpleMessage (L"Amend Config File Instead ... Disable Stanza", MsgStr);
+                DisplaySimpleMessage (
+                    L"Amend Config File Instead ... Disable Stanza",
+                    L"Hide Entry *IS NOT* Available on Manual Stanzas"
+                );
             }
             else {
-                HideTagMenu->Title = L"Hide UEFI Tag";
-                if (!HideEfiTag (Loader, HideTagMenu, L"HiddenTags")) {
-                    MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                    DisplaySimpleMessage (L"", MsgStr);
-                    #if REFIT_DEBUG > 0
-                    LOG_MSG("INFO: %s", MsgStr);
-                    LOG_MSG("\n\n");
-                    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                    #endif
+                HideTagMenu->Title = L"Hide UEFI Entry";
+                if (HideEfiTag (Loader, HideTagMenu, L"HiddenTags")) {
+                    // Changes Triggered
+                    TagFlag = 1;
                 }
                 else {
-                    #if REFIT_DEBUG > 0
-                    LOG_MSG("Received User Input:");
-                    LOG_MSG("\n");
-                    LOG_MSG("  - %s", HideTagMenu->Title);
-                    LOG_MSG("\n\n");
-                    #endif
-
-                    FreeMenuScreen (&HideTagMenu);
-
-                    #if REFIT_DEBUG > 0
-                    MY_MUTELOGGER_SET;
-                    #endif
-                    RescanAll (FALSE);
-                    #if REFIT_DEBUG > 0
-                    MY_MUTELOGGER_OFF;
-                    #endif
+                    // No Changes Triggered
+                    TagFlag = 2;
                 }
             }
-            MY_FREE_POOL(MsgStr);
 
         break;
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:
-            HideTagMenu->Title = L"Hide Legacy BIOS Tag";
-            if (!HideLegacyTag (LegacyLoader, HideTagMenu)) {
-                MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                DisplaySimpleMessage (L"", MsgStr);
-                #if REFIT_DEBUG > 0
-                LOG_MSG("\n\n");
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                #endif
-                MY_FREE_POOL(MsgStr);
+            HideTagMenu->Title = L"Hide Legacy BIOS Entry";
+            if (HideLegacyTag (LegacyLoader, HideTagMenu)) {
+                // Changes Triggered
+                TagFlag = 1;
             }
             else {
-                #if REFIT_DEBUG > 0
-                LOG_MSG("Received User Input:");
-                LOG_MSG("\n");
-                LOG_MSG("  - %s", HideTagMenu->Title);
-                LOG_MSG("\n\n");
-                #endif
-
-                FreeMenuScreen (&HideTagMenu);
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                RescanAll (FALSE);
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
+                // No Changes Triggered
+                TagFlag = 2;
             }
 
         break;
         case TAG_FIRMWARE_LOADER:
-            HideTagMenu->Title = L"Hide Firmware Boot Option Tag";
-            if (!HideFirmwareTag(Loader, HideTagMenu)) {
-                MsgStr = PoolPrint (L"No Changes on HideTag Call:- '%s'", ChosenEntry->Title);
-                DisplaySimpleMessage (L"", MsgStr);
-                #if REFIT_DEBUG > 0
-                LOG_MSG("\n\n");
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                #endif
-                MY_FREE_POOL(MsgStr);
+            HideTagMenu->Title = L"Hide Firmware BootOption Entry";
+            if (HideFirmwareTag(Loader, HideTagMenu)) {
+                // Changes Triggered
+                TagFlag = 1;
             }
             else {
-                #if REFIT_DEBUG > 0
-                LOG_MSG("Received User Input:");
-                LOG_MSG("\n");
-                LOG_MSG("  - %s", HideTagMenu->Title);
-                LOG_MSG("\n\n");
-                #endif
-
-                FreeMenuScreen (&HideTagMenu);
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                RescanAll (FALSE);
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
+                // No Changes Triggered
+                TagFlag = 2;
             }
 
         break;
@@ -3414,45 +3350,153 @@ VOID HideTag (
         case TAG_BOOTORDER:
         case TAG_CSR_ROTATE:
         case TAG_INFO_NVRAMCLEAN:
-            MsgStr = PoolPrint (L"HideTag Not Available on Internal Tool: \"%s\"", ChosenEntry->Title);
-            DisplaySimpleMessage (L"Amend Config File Instead ... Update \"showtools\" Token", MsgStr);
-            MY_FREE_POOL(MsgStr);
+            DisplaySimpleMessage (
+                L"Amend Config File Instead ... Update \"showtools\" Token",
+                L"Hide Entry *IS NOT* Available on Internal Tools"
+            );
 
         break;
         case TAG_TOOL:
-            HideTagMenu->Title = L"Hide Tool Tag";
-            if (!HideEfiTag (Loader, HideTagMenu, L"HiddenTools")) {
-                MsgStr = PoolPrint (L"No Changes on HideTool Call:- '%s'", ChosenEntry->Title);
-                DisplaySimpleMessage (L"", MsgStr);
-                #if REFIT_DEBUG > 0
-                LOG_MSG("\n\n");
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                #endif
-                MY_FREE_POOL(MsgStr);
+            HideTagMenu->Title = L"Hide Tool Entry";
+            if (HideEfiTag (Loader, HideTagMenu, L"HiddenTools")) {
+                // Changes Triggered
+                TagFlag = 1;
             }
             else {
-                MY_FREE_POOL(gHiddenTools);
-                #if REFIT_DEBUG > 0
-                LOG_MSG("Received User Input:");
-                LOG_MSG("\n");
-                LOG_MSG("  - %s", HideTagMenu->Title);
-                LOG_MSG("\n\n");
-                #endif
-
-                FreeMenuScreen (&HideTagMenu);
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                RescanAll (FALSE);
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
+                // No Changes Triggered
+                TagFlag = 2;
             }
     } // switch
 
+    if (TagFlag == 1) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("Received User Input:");
+        LOG_MSG("\n");
+        LOG_MSG("  - %s", HideTagMenu->Title);
+        LOG_MSG("\n\n");
+        #endif
+
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        RescanAll (FALSE);
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+    }
+    else if (TagFlag == 2) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("INFO: %s:- '%s'", NoChanges, HideTagMenu->Title);
+        LOG_MSG("\n\n");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", NoChanges);
+        #endif
+    }
+
     FreeMenuScreen (&HideTagMenu);
 } // VOID HideTag()
+
+// Present a menu for the user to confirm CSR rotatation
+BOOLEAN ConfirmRotate (VOID) {
+    UINT32             CurrentCsr;
+    UINT32             TargetCsr;
+    UINT32             TempCsr;
+    CHAR16            *TmpStrA;
+    CHAR16            *TmpStrB;
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            EmptySIP;
+    BOOLEAN            RetVal;
+    UINT32_LIST       *ListItem;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmRotateMenu;
+
+
+    if (GlobalConfig.CsrValues == NULL) {
+        // Early Exit
+        return FALSE;
+    }
+
+    ConfirmRotateMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ConfirmRotateMenu == NULL) {
+        // Resource Exhaustion ... Early Exit
+        return FALSE;
+    }
+
+    /* coverity[check_return: SUPPRESS] */
+    GetCsrStatus (&CurrentCsr);
+    RecordgCsrStatus (CurrentCsr, FALSE);
+    TmpStrA = PoolPrint (L"From : %s", gCsrStatus);
+    EmptySIP = (CurrentCsr == SIP_ENABLED_EX) ? TRUE : FALSE;
+
+    ListItem = GlobalConfig.CsrValues;
+    if (EmptySIP) {
+        // Store first config CsrValue when SIP is not set (for later use)
+        TempCsr = GlobalConfig.CsrValues->Value;
+    }
+    else {
+        while ((ListItem != NULL) && (ListItem->Value != CurrentCsr)) {
+            ListItem = ListItem->Next;
+        } // while
+    }
+    TargetCsr = (ListItem == NULL || ListItem->Next == NULL)
+        ? GlobalConfig.CsrValues->Value
+        : ListItem->Next->Value;
+
+    // Set recorded Human Readable String to Target CSR
+    RecordgCsrStatus (TargetCsr, FALSE);
+    // Save recorded Human Readable String for display later
+    TmpStrB = PoolPrint (L"To   : %s", gCsrStatus);
+    // Revert recorded Human Readable String to Current CSR
+    RecordgCsrStatus (CurrentCsr, FALSE);
+
+    // Build the menu page
+    ConfirmRotateMenu->Title      = StrDuplicate (L"Confirm CSR Rotation"    );
+    ConfirmRotateMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
+    ConfirmRotateMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT         );
+    ConfirmRotateMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
+
+    AddMenuInfoLine (ConfirmRotateMenu, TmpStrA,                        FALSE);
+    AddMenuInfoLine (ConfirmRotateMenu, TmpStrB,                        FALSE);
+    AddMenuInfoLine (ConfirmRotateMenu, L"",                            FALSE);
+
+    AddMenuEntryCopy (ConfirmRotateMenu, &MenuEntryYes);
+    AddMenuEntryCopy (ConfirmRotateMenu, &MenuEntryNo);
+
+    MY_FREE_POOL(TmpStrA);
+    MY_FREE_POOL(TmpStrB);
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmRotateMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmRotate'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        if (EmptySIP) {
+            // Save first config CsrValue when SIP is not set
+            // To allow rotation to the second value, usually "Disabled" setting
+            EfivarSetRaw (
+                &AppleBootGuid, L"csr-active-config",
+                &TempCsr, sizeof (UINT32), TRUE
+            );
+        }
+
+        RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
+    }
+
+    FreeMenuScreen (&ConfirmRotateMenu);
+
+    return RetVal;
+} // BOOLEAN ConfirmRotate()
 
 // Present a menu for the user to confirm restart
 BOOLEAN ConfirmRestart (VOID) {
@@ -3473,19 +3517,14 @@ BOOLEAN ConfirmRestart (VOID) {
         );
 
         // Useless return for Coverity
-        return FALSE;
+        return TRUE;
     }
 
-    // Prime RetVal
-    RetVal = FALSE;
-
     // Build the menu page
-    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm Restart"     );
-    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET );
-    ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
-    ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
-
-    AddMenuInfoLine (ConfirmRestartMenu, L"Run System Restart?", FALSE);
+    ConfirmRestartMenu->Title      = StrDuplicate (L"Confirm System Restart");
+    ConfirmRestartMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_RESET   );
+    ConfirmRestartMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmRestartMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmRestartMenu, &MenuEntryNo);
@@ -3496,13 +3535,16 @@ BOOLEAN ConfirmRestart (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmRestart'",
+        L"Returned '%d' (%s) in 'ConfirmRestart' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
     if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
     }
 
     FreeMenuScreen (&ConfirmRestartMenu);
@@ -3529,19 +3571,14 @@ BOOLEAN ConfirmShutdown (VOID) {
         );
 
         // Useless return for Coverity
-        return FALSE;
+        return TRUE;
     }
 
-    // Prime RetVal
-    RetVal = FALSE;
-
     // Build the menu page
-    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm Shutdown"      );
-    ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
-    ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
-    ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
-
-    AddMenuInfoLine (ConfirmShutdownMenu, L"Run System Shutdown?", FALSE);
+    ConfirmShutdownMenu->Title      = StrDuplicate (L"Confirm System Shutdown");
+    ConfirmShutdownMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN );
+    ConfirmShutdownMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT        );
+    ConfirmShutdownMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT   );
 
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryYes);
     AddMenuEntryCopy (ConfirmShutdownMenu, &MenuEntryNo);
@@ -3552,13 +3589,16 @@ BOOLEAN ConfirmShutdown (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmShutdown'",
+        L"Returned '%d' (%s) in 'ConfirmShutdown' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
     if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
     }
 
     FreeMenuScreen (&ConfirmShutdownMenu);
@@ -3570,13 +3610,17 @@ UINTN RunMenu (
     IN  REFIT_MENU_SCREEN  *Screen,
     OUT REFIT_MENU_ENTRY  **ChosenEntry
 ) {
-    INTN DefaultEntry = -1;
-    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    UINTN MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
+    INTN            DefaultEntry;
+    UINTN           MenuExit;
+    MENU_STYLE_FUNC Style;
+
+    DefaultEntry = -1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMenu'",
+        L"Returned '%d' (%s) in 'RunMenu' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
     #endif
@@ -3592,6 +3636,7 @@ UINTN RunMainMenu (
     REFIT_MENU_ENTRY   *TempChosenEntry;
     MENU_STYLE_FUNC     Style;
     MENU_STYLE_FUNC     MainStyle;
+    EG_PIXEL            BGColor = COLOR_LIGHTBLUE;
     BOOLEAN             KeyStrokeFound;
     UINTN               MenuExit;
     INTN                DefaultEntryIndex;
@@ -3604,7 +3649,7 @@ UINTN RunMainMenu (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"RunMainMenu";
+    const CHAR16 *FuncTag = L"RunMainMenu";
     #endif
 
     LOG_SEP(L"X");
@@ -3723,7 +3768,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'RunMainMenu'",
+            L"Returned '%d' (%s) in 'RunMainMenu' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
@@ -3754,7 +3799,7 @@ UINTN RunMainMenu (
                 BREAD_CRUMB(L"%s:  9a 3a 1b 2", FuncTag);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Returned '%d' (%s) From RunGenericMenu Call on SubScreen in 'RunMainMenu'",
+                    L"Returned '%d' (%s) in 'RunMainMenu' From RunGenericMenu Call on SubScreen",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif
@@ -3785,6 +3830,13 @@ UINTN RunMainMenu (
             if (GlobalConfig.HiddenTags) {
                 BREAD_CRUMB(L"%s:  9a 4a 1a 1", FuncTag);
                 HideTag (TempChosenEntry);
+            }
+            else {
+                BREAD_CRUMB(L"%s:  9a 4a 1b 1", FuncTag);
+                egDisplayMessage (
+                    L"Enable 'hidden_tags' in 'showtools' config to hide tag", &BGColor,
+                    CENTER, 3, L"PauseSeconds"
+                );
             }
 
             BREAD_CRUMB(L"%s:  9a 4a 2", FuncTag);
@@ -3847,7 +3899,7 @@ VOID FreeMenuScreen (
     UINTN i, j;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeMenuScreen";
+    const CHAR16 *FuncTag = L"FreeMenuScreen";
     #endif
 
     LOG_SEP(L"X");
@@ -3876,7 +3928,9 @@ VOID FreeMenuScreen (
         j = 0;
         for (i = 0; i < (*Screen)->InfoLineCount; i++) {
             j++;
-            BREAD_CRUMB(L"%s:  4a 1a 1 - FOR LOOP:- START ... InfoLine %d of %d", FuncTag, j, (*Screen)->InfoLineCount);
+            BREAD_CRUMB(L"%s:  4a 1a 1 - FOR LOOP:- START ... InfoLine %d of %d", FuncTag,
+                j, (*Screen)->InfoLineCount
+            );
             MY_FREE_POOL((*Screen)->InfoLines[i]);
             BREAD_CRUMB(L"%s:  4a 1a 2 - FOR LOOP:- END", FuncTag);
         }
@@ -3895,7 +3949,9 @@ VOID FreeMenuScreen (
         for (i = 0; i < (*Screen)->EntryCount; i++) {
             j++;
             LOG_SEP(L"X");
-            BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START ... Entry %d of %d", FuncTag, j, (*Screen)->EntryCount);
+            BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START ... Entry %d of %d", FuncTag,
+                j, (*Screen)->EntryCount
+            );
             FreeMenuEntry (&(*Screen)->Entries[i]);
             BREAD_CRUMB(L"%s:  5a 1a 2 - FOR LOOP:- END", FuncTag);
             LOG_SEP(L"X");
@@ -3932,7 +3988,6 @@ VOID FreeLegacyEntry (
     MY_FREE_IMAGE((*Entry)->me.BadgeImage);
     FreeMenuScreen (&(*Entry)->me.SubScreen);
 
-    FreeVolume (&(*Entry)->Volume);
     FreeBdsOption (&(*Entry)->BdsOption);
     MY_FREE_POOL((*Entry)->LoadOptions);
     MY_FREE_POOL(*Entry);
@@ -3943,7 +3998,7 @@ VOID FreeLoaderEntry (
     IN LOADER_ENTRY **Entry
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeLoaderEntry";
+    const CHAR16 *FuncTag = L"FreeLoaderEntry";
     #endif
 
     LOG_SEP(L"X");
@@ -3967,20 +4022,17 @@ VOID FreeLoaderEntry (
     MY_FREE_IMAGE((*Entry)->me.Image);
     MY_FREE_IMAGE((*Entry)->me.BadgeImage);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
-    FreeVolume (&(*Entry)->Volume);
-
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%s:  4", FuncTag);
     MY_FREE_POOL((*Entry)->Title);
     MY_FREE_POOL((*Entry)->LoaderPath);
     MY_FREE_POOL((*Entry)->InitrdPath);
     MY_FREE_POOL((*Entry)->LoadOptions);
     MY_FREE_POOL((*Entry)->EfiLoaderPath);
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%s:  5", FuncTag);
     MY_FREE_POOL(*Entry);
 
-    BREAD_CRUMB(L"%s:  7 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%s:  6 - END:- VOID", FuncTag);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FreeLoaderEntry()
@@ -4002,7 +4054,7 @@ VOID FreeMenuEntry (
     }
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FreeMenuEntry";
+    const CHAR16 *FuncTag = L"FreeMenuEntry";
     #endif
 
     LOG_SEP(L"X");

@@ -60,7 +60,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2023 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -638,11 +638,6 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
     }
 
     if (buffer_size < 33 || dirrec->dirrec_length == 0) {
-        // end of directory reached
-        for(i = 0; i < buffer_size; ++i)
-        {
-            DEBUG((DEBUG_INFO, "r[%d]:%c", i, (fsw_u8 *) dirrec[i]));
-        }
         dirrec->dirrec_length = 0;
         return FSW_SUCCESS;
     }

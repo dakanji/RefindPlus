@@ -127,13 +127,18 @@ EFI_STATUS EfivarSetRaw (
 VOID ScanVolumes (VOID);
 VOID ReinitVolumes (VOID);
 VOID UninitRefitLib (VOID);
-VOID SetVolumeIcons (VOID);
 VOID FreeSyncVolumes (VOID);
 VOID FreeVolume (REFIT_VOLUME **Volume);
 VOID SanitiseVolumeName (REFIT_VOLUME **Volume);
 VOID EraseUint32List (IN UINT32_LIST **TheList);
 VOID SetVolumeBadgeIcon (IN OUT REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
+VOID LoadVolumeBadgeIcon (
+    IN OUT REFIT_VOLUME  **Volume
+);
+VOID LoadVolumeIcon (
+    IN OUT REFIT_VOLUME  *Volume
+);
 VOID FreeList (
     IN OUT VOID ***ListPtr,
     IN OUT UINTN  *ElementCount
@@ -175,9 +180,14 @@ CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
 BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);
-BOOLEAN FileExists (IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN FindVolume (IN REFIT_VOLUME **Volume, IN CHAR16 *Identifier);
+BOOLEAN FileExists (IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
+BOOLEAN VolumeScanAllowed (
+    IN REFIT_VOLUME *Volume,
+    IN BOOLEAN       SkipVentoy,
+    IN BOOLEAN       SkipRootDir
+);
 BOOLEAN VolumeMatchesDescription (
     IN REFIT_VOLUME *Volume,
     IN CHAR16       *Description

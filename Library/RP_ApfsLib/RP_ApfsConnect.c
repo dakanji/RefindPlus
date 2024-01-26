@@ -1,7 +1,7 @@
 /** @file
   Copyright (C) 2020, vit9696. All rights reserved.
 
-  Modified 2021-2022, Dayo Akanji. (sf.net/u/dakanji/profile)
+  Modified 2021-2024, Dayo Akanji. (sf.net/u/dakanji/profile)
 
   All rights reserved.
 
@@ -33,7 +33,6 @@
 
 #include "../../include/refit_call_wrapper.h"
 
-extern BOOLEAN SilenceAPFS;
 extern BOOLEAN AppleFirmware;
 
 extern CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
@@ -43,12 +42,12 @@ static EFI_SYSTEM_TABLE  *mNullSystemTable;
 
 static
 EFI_STATUS ApfsRegisterPartition (
-    IN  EFI_HANDLE             Handle,
-    IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
-    IN  APFS_NX_SUPERBLOCK     *SuperBlock,
+    IN  EFI_HANDLE               Handle,
+    IN  EFI_BLOCK_IO_PROTOCOL   *BlockIo,
+    IN  APFS_NX_SUPERBLOCK      *SuperBlock,
     OUT APFS_PRIVATE_DATA      **PrivateDataPointer
 ) {
-    EFI_STATUS           Status;
+    EFI_STATUS            Status;
     APFS_PRIVATE_DATA    *PrivateData;
 
     PrivateData = AllocateZeroPool (sizeof (*PrivateData));
@@ -89,11 +88,11 @@ static
 EFI_STATUS ApfsStartDriver (
     IN APFS_PRIVATE_DATA  *PrivateData,
     IN VOID               *DriverBuffer,
-    IN UINTN              DriverSize
+    IN UINTN               DriverSize
 ) {
-    EFI_STATUS                 Status;
+    EFI_STATUS                  Status;
+    EFI_HANDLE                  ImageHandle;
     EFI_DEVICE_PATH_PROTOCOL   *DevicePath;
-    EFI_HANDLE                 ImageHandle;
     EFI_LOADED_IMAGE_PROTOCOL  *LoadedImage;
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -115,19 +114,17 @@ EFI_STATUS ApfsStartDriver (
         return Status;
     }
 
-    // Disable APFS verbose mode.
-    if (SilenceAPFS) {
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->HandleProtocol, ImageHandle,
-            &gEfiLoadedImageProtocolGuid, (VOID *) &LoadedImage
-        );
-        if (!EFI_ERROR(Status)) {
-            if (mNullSystemTable == NULL) {
-                mNullSystemTable = AllocateNullTextOutSystemTable (gST);
-            }
-            if (mNullSystemTable != NULL) {
-                LoadedImage->SystemTable = mNullSystemTable;
-            }
+    // Always disable verbose mode
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol, ImageHandle,
+        &gEfiLoadedImageProtocolGuid, (VOID *) &LoadedImage
+    );
+    if (!EFI_ERROR(Status)) {
+        if (mNullSystemTable == NULL) {
+            mNullSystemTable = AllocateNullTextOutSystemTable (gST);
+        }
+        if (mNullSystemTable != NULL) {
+            LoadedImage->SystemTable = mNullSystemTable;
         }
     }
 
@@ -141,9 +138,8 @@ EFI_STATUS ApfsStartDriver (
         return Status;
     }
 
-    // Unblock handles as some types of firmware, such as that on the HP EliteBook 840 G2,
-    // may automatically lock all volumes without filesystem drivers upon
-    // any attempt to connect them.
+    // Unblock handles as some types of firmware, such as on HP NoteBooks, may
+    // lock all volumes without filesystem drivers upon any connection attempt.
     // REF: https://github.com/acidanthera/bugtracker/issues/1128
     OcDisconnectDriversOnHandle (PrivateData->LocationInfo.ControllerHandle);
 
@@ -167,16 +163,16 @@ EFI_STATUS ApfsStartDriver (
 
 static
 EFI_STATUS ApfsConnectDevice (
-    IN EFI_HANDLE             Handle,
+    IN EFI_HANDLE              Handle,
     IN EFI_BLOCK_IO_PROTOCOL  *BlockIo
 ) {
-    EFI_STATUS           Status;
+    EFI_STATUS            Status;
     APFS_NX_SUPERBLOCK   *SuperBlock;
     APFS_PRIVATE_DATA    *PrivateData;
     VOID                 *DriverBuffer;
-    UINTN                DriverSize;
+    UINTN                 DriverSize;
 
-    // This may yet not be APFS but some other file system ... verify
+    // This may yet not be APFS but some other file system ... Verify
     Status = InternalApfsReadSuperBlock (BlockIo, &SuperBlock);
     if (EFI_ERROR(Status)) {
         return Status;
@@ -189,8 +185,8 @@ EFI_STATUS ApfsConnectDevice (
         return Status;
     }
 
-    // We cannot load drivers if we have no fusion drive pair as they are not
-    // guarantied to be located on each drive.
+    // We cannot load drivers if we have no fusion drive pair
+    // as they are not guaranteed to be located on each drive.
     if (!PrivateData->CanLoadDriver) {
         return EFI_NOT_READY;
     }
@@ -206,10 +202,10 @@ EFI_STATUS ApfsConnectDevice (
     return Status;
 }
 
-EFI_STATUS RP_ApfsConnectHandle (
+EFI_STATUS RefitApfsConnectHandle (
     IN EFI_HANDLE  Handle
 ) {
-    EFI_STATUS             Status;
+    EFI_STATUS              Status;
     VOID                   *TempProtocol;
     EFI_BLOCK_IO_PROTOCOL  *BlockIo;
 

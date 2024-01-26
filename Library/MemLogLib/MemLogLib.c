@@ -43,15 +43,15 @@
 typedef struct {
     CHAR8             *Buffer;
     CHAR8             *Cursor;
-    UINTN             BufferSize;
-    MEM_LOG_CALLBACK  Callback;
+    UINTN              BufferSize;
+    MEM_LOG_CALLBACK   Callback;
 
     /// Start debug ticks.
-    UINT64            TscStart;
+    UINT64             TscStart;
     /// Last debug ticks.
-    UINT64            TscLast;
+    UINT64             TscLast;
     /// TSC ticks per second.
-    UINT64            TscFreqSec;
+    UINT64             TscFreqSec;
 } MEM_LOG;
 
 
@@ -87,11 +87,13 @@ UINT64 GetCurrentMS (VOID) {
 }
 
 CHAR8 * GetTiming (VOID) {
-	UINT64    dTStartSec;
-	UINT64    dTStartMs;
-	UINT64    dTLastSec;
+    UINT64    dTStartSec;
+    UINT64    dTStartMs;
+    UINT64    dTLastSec;
 	UINT64    dTLastMs;
-	UINT64    CurrentTsc;
+    UINT64    CurrentTsc;
+    UINT64    dTStartSecLog;
+    UINT64    dTLastSecLog;
 
 	mTimingTxt[0] = '\0';
 
@@ -110,8 +112,6 @@ CHAR8 * GetTiming (VOID) {
         dTStartSec = DivU64x64Remainder (dTStartMs, 1000, &dTStartMs);
 
         // Limit logged value to 9999
-        UINT64 dTStartSecLog;
-
         if (dTStartSec > 9999) {
             dTStartSecLog = 9999;
         }
@@ -131,7 +131,6 @@ CHAR8 * GetTiming (VOID) {
         dTLastSec = DivU64x64Remainder (dTLastMs, 1000, &dTLastMs);
 
         // Limit logged value to 999
-        UINT64 dTLastSecLog;
         if (dTLastSec > 9999) {
             dTLastSecLog = 9999;
         }
@@ -233,11 +232,11 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     if ((PciRead16( PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
         // Intel ICH device was not found
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device Not Found");
+        AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device *NOT* Found");
     }
     else if ((PciRead8 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space Not Enabled");
+        AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space *NOT* Enabled");
     }
     else {
         TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) +
@@ -245,7 +244,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
         if (TimerAddr < 9) {
             TimerAddr = 0;
-            AsciiSPrint (InitError, sizeof (InitError), "Timer Address Not Obtained");
+            AsciiSPrint (InitError, sizeof (InitError), "Timer Address *NOT* Obtained");
         }
         else {
             // Check that Timer is advancing
@@ -255,7 +254,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
             if (AcpiTick0 == AcpiTick1) {
                 TimerAddr = 0;
-                AsciiSPrint (InitError, sizeof (InitError), "Timer Not Advancing");
+                AsciiSPrint (InitError, sizeof (InitError), "Timer *NOT* Advancing");
             }
         }
     }
@@ -340,7 +339,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
     // Show Notice if Required
     if (InitError[0] != '\0') {
-        MemLog (FALSE, 1, "** Could Not Calibrate ACPI PM Timer ... %a **\n\n", InitError);
+        MemLog (FALSE, 1, "** Could *NOT* Calibrate ACPI PM Timer ... %a **\n\n", InitError);
     }
 
     return EFI_SUCCESS;
@@ -355,10 +354,10 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
   @param  Marker      VA_LIST with variable arguments for Format.
 **/
 VOID EFIAPI MemLogVA (
-    IN  const BOOLEAN Timing,
-    IN  const INTN    DebugMode,
+    IN  const BOOLEAN  Timing,
+    IN  const INTN     DebugMode,
     IN  const CHAR8   *Format,
-    IN  VA_LIST       Marker
+    IN        VA_LIST  Marker
 ) {
     EFI_STATUS      Status;
     UINTN           DataWritten;
@@ -445,8 +444,8 @@ VOID EFIAPI MemLogVA (
   based on the format string specified by Format.
  **/
 VOID EFIAPI MemLog (
-    IN  const BOOLEAN Timing,
-    IN  const INTN    DebugMode,
+    IN  const BOOLEAN  Timing,
+    IN  const INTN     DebugMode,
     IN  const CHAR8   *Format,
     ...
 ) {

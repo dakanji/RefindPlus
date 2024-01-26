@@ -23,123 +23,114 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 #include <Protocol/BlockIo.h>
 
 VOID InternalApfsInitFusionData (
-  IN  APFS_NX_SUPERBLOCK   *SuperBlock,
-  OUT APFS_PRIVATE_DATA    *PrivateData
-  )
-{
-  LIST_ENTRY         *Entry;
-  APFS_PRIVATE_DATA  *Sibling;
-  UINT32             BlockSize;
+    IN  APFS_NX_SUPERBLOCK   *SuperBlock,
+    OUT APFS_PRIVATE_DATA    *PrivateData
+) {
+    LIST_ENTRY         *Entry;
+    APFS_PRIVATE_DATA  *Sibling;
+    UINT32              BlockSize;
 
-  //
-  // All-zero Fusion UUID means this is a normal disk.
-  //
-  if (IsZeroGuid (&SuperBlock->FusionUuid)) {
-    PrivateData->CanLoadDriver = TRUE;
-    return;
-  }
-
-  CopyGuid (&PrivateData->FusionUuid, &SuperBlock->FusionUuid);
-  PrivateData->IsFusion = TRUE;
-
-  //
-  // According to the specification the highest bit is one for the
-  // Fusion set's main device and zero for the second-tier device.
-  //
-  // However, the actual implementation of ApfsJumpStart.efi is different
-  // from the specification. The specification says that the slave disk
-  // has the bits set, but the implementation seems to assume that for master.
-  //
-  PrivateData->IsFusionMaster       = (SuperBlock->FusionUuid.Data4[7] & BIT0) == 0;
-  //
-  // Drop master type from the stored value for easier comparison.
-  //
-  PrivateData->FusionUuid.Data4[7] &= ~BIT0;
-
-  for (
-    Entry = GetFirstNode (&mApfsPrivateDataList);
-    !IsNull (&mApfsPrivateDataList, Entry);
-    Entry = GetNextNode (&mApfsPrivateDataList, Entry)) {
-    Sibling = CR (Entry, APFS_PRIVATE_DATA, Link, APFS_PRIVATE_DATA_SIGNATURE);
-
-    //
-    // Ignore the following potential siblings:
-    // - Non-fusion.
-    // - Ready to go fusion (aka FusionSibling != NULL).
-    // - Same master/slave type.
-    //
-    if (!Sibling->IsFusion
-      || Sibling->CanLoadDriver
-      || Sibling->IsFusionMaster == PrivateData->IsFusionMaster
-      || !CompareGuid (&Sibling->FusionUuid, &PrivateData->FusionUuid)) {
-      continue;
+    // All-zero Fusion UUID means this is a normal disk.
+    if (IsZeroGuid (&SuperBlock->FusionUuid)) {
+        PrivateData->CanLoadDriver = TRUE;
+        return;
     }
 
+    CopyGuid (&PrivateData->FusionUuid, &SuperBlock->FusionUuid);
+    PrivateData->IsFusion = TRUE;
+
+    // According to the specifications, the highest bit is one for the
+    // Fusion set's main device and zero for the second-tier device.
     //
-    // We have a matching fusion sibling, mark this partition as ready to go.
+    // However, the actual implementation of ApfsJumpStart.efi is different
+    // from the specification. The specification says that the slave disk
+    // has the bits set, but the implementation seems to assume that for master.
     //
-    PrivateData->FusionSibling = Sibling;
-    PrivateData->CanLoadDriver = TRUE;
-    //
-    // Calculate FusionMask. This is essentially ctz, but we do not have it in EDK II.
-    // We cannot use division either, since ApfsBlockSize is not guaranteed to be POT.
-    //
-    PrivateData->FusionMask    = APFS_FUSION_TIER2_DEVICE_BYTE_ADDR;
-    BlockSize                  = PrivateData->ApfsBlockSize;
-    while ((BlockSize & BIT0) == 0) {
-      PrivateData->FusionMask >>= 1U;
-      BlockSize               >>= 1U;
-    }
-    //
-    // Update sibling fields as well.
-    //
-    PrivateData->FusionSibling->FusionSibling = PrivateData;
-    PrivateData->FusionSibling->CanLoadDriver = TRUE;
-    PrivateData->FusionSibling->FusionMask    = PrivateData->FusionMask;
-    break;
-  }
+    PrivateData->IsFusionMaster = (SuperBlock->FusionUuid.Data4[7] & BIT0) == 0;
+
+    // Drop master type from the stored value for easier comparison.
+    PrivateData->FusionUuid.Data4[7] &= ~BIT0;
+
+    for (
+        Entry = GetFirstNode (&mApfsPrivateDataList);
+        !IsNull (&mApfsPrivateDataList, Entry);
+        Entry = GetNextNode (&mApfsPrivateDataList, Entry)
+    ) {
+        Sibling = CR(Entry, APFS_PRIVATE_DATA, Link, APFS_PRIVATE_DATA_SIGNATURE);
+
+        // Ignore the following potential siblings:
+        // - Non-fusion.
+        // - Ready to go fusion (aka FusionSibling != NULL).
+        // - Same master/slave type.
+        if (!Sibling->IsFusion                                     ||
+            Sibling->CanLoadDriver                                 ||
+            Sibling->IsFusionMaster == PrivateData->IsFusionMaster ||
+            !CompareGuid (&Sibling->FusionUuid, &PrivateData->FusionUuid)
+        ) {
+            continue;
+        }
+
+        // We have a matching fusion sibling, mark this partition as ready to go.
+        PrivateData->FusionSibling = Sibling;
+        PrivateData->CanLoadDriver = TRUE;
+
+        // Calculate FusionMask. This is essentially ctz, but we do not have it in EDK II.
+        // We cannot use division either, since ApfsBlockSize is not guaranteed to be POT.
+        PrivateData->FusionMask    = APFS_FUSION_TIER2_DEVICE_BYTE_ADDR;
+        BlockSize                  = PrivateData->ApfsBlockSize;
+        while ((BlockSize & BIT0) == 0) {
+            PrivateData->FusionMask >>= 1U;
+            BlockSize               >>= 1U;
+        }
+
+        // Update sibling fields as well.
+        PrivateData->FusionSibling->FusionSibling = PrivateData;
+        PrivateData->FusionSibling->CanLoadDriver = TRUE;
+        PrivateData->FusionSibling->FusionMask    = PrivateData->FusionMask;
+        break;
+    } // for
 }
 
 EFI_BLOCK_IO_PROTOCOL * InternalApfsTranslateBlock (
-  IN  APFS_PRIVATE_DATA    *PrivateData,
-  IN  UINT64               Block,
-  OUT EFI_LBA              *Lba
-  )
-{
-  BOOLEAN  IsFusionMaster;
+    IN  APFS_PRIVATE_DATA    *PrivateData,
+    IN  UINT64                Block,
+    OUT EFI_LBA              *Lba
+) {
+    BOOLEAN  IsFusionMaster;
 
-  ASSERT (PrivateData->CanLoadDriver);
+    if (!PrivateData->CanLoadDriver) {
+        return NULL;
+    }
 
-  //
-  // Note, LBA arithmetics may wrap around, but in this case we will
-  // just read the wrong block, and the signature is checked anyway.
-  //
+    //
+    // Note, LBA arithmetics may wrap around, but in this case we will
+    // just read the wrong block, and the signature is checked anyway.
+    //
 
-  //
-  // For normal disks we just return as is.
-  //
-  if (!PrivateData->IsFusion) {
+    // Return normal disks as is.
+    if (!PrivateData->IsFusion) {
+        *Lba = Block * PrivateData->LbaMultiplier;
+        return PrivateData->BlockIo;
+    }
+
+    if (PrivateData->FusionSibling == NULL) {
+        return NULL;
+    }
+
+    // It can be either volume on Fusion disks.
+    if ((Block & PrivateData->FusionMask) == 0) {
+        IsFusionMaster = TRUE;
+    }
+    else {
+        Block         &= ~PrivateData->FusionMask;
+        IsFusionMaster = FALSE;
+    }
+
     *Lba = Block * PrivateData->LbaMultiplier;
-    return PrivateData->BlockIo;
-  }
 
-  ASSERT (PrivateData->FusionSibling != NULL);
+    if (IsFusionMaster == PrivateData->IsFusionMaster) {
+        return PrivateData->BlockIo;
+    }
 
-  //
-  // For Fusion disks it can be either volume.
-  //
-  if ((Block & PrivateData->FusionMask) == 0) {
-    IsFusionMaster = TRUE;
-  } else {
-    Block         &= ~PrivateData->FusionMask;
-    IsFusionMaster = FALSE;
-  }
-
-  *Lba = Block * PrivateData->LbaMultiplier;
-
-  if (IsFusionMaster == PrivateData->IsFusionMaster) {
-    return PrivateData->BlockIo;
-  }
-
-  return PrivateData->FusionSibling->BlockIo;
+    return PrivateData->FusionSibling->BlockIo;
 }

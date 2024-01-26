@@ -87,7 +87,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           since-days: 450
           filter-threshold: 0.51
-          comment-title: '### Similar Items'
+          comment-title: '### Similar Items:'
           comment-body: '${index}. [Similarity Rating: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
           show-footer: false
 
@@ -191,8 +191,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Please do not close accepted confirmed bugs in future.
-            Work has aleady started, or is planned, on such items.
+            Please do not close confirmed bug items in future.
+            Work is planned or aleady started on such items.
 
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_enhance_check1:
@@ -257,39 +257,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Please do not close accepted `Accepted` Enhancements.
-            Work has aleady started, or is planned, on such items.
-
-  # Check Labels Bug - https://github.com/mheap/github-action-required-labels
-  handle_bug_tag_check:
-    name: Handle Bug Tag - Check
-    runs-on: ubuntu-20.04
-
-    if: github.actor == 'dakanji' && github.event.action == 'closed'
-    outputs:
-      status: ${{ steps.handle_bug_tag_check_main.outputs.status }}
-    steps:
-      - id: handle_bug_tag_check_main
-        uses: mheap/github-action-required-labels@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          mode: exactly
-          count: 1
-          labels: "Bug"
-          exit_type: success
-
-  # Bug Close Action - https://github.com/actions-cool/issues-helper
-  handle_bug_act:
-    name: Handle Bug Tag - Act
-    needs: [handle_bug_tag_check]
-    runs-on: ubuntu-20.04
-
-    if: needs.handle_bug_tag_check.outputs.status == 'success'
-    steps:
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Tagged'
+            Please do not close accepted enhancement items in future.
+            Work is planned or aleady started on such items.

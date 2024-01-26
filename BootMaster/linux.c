@@ -97,7 +97,7 @@ CHAR16 * FindInitrd (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"FindInitrd";
+    const CHAR16 *FuncTag = L"FindInitrd";
     #endif
 
     LOG_SEP(L"X");
@@ -162,7 +162,7 @@ CHAR16 * FindInitrd (
             ((KernelVersion == NULL) && (InitrdVersion == NULL))
         ) {
             BREAD_CRUMB(L"%s:  8a 2a 1", FuncTag);
-            CurrentInitrdName = AllocateZeroPool (sizeof(STRING_LIST));
+            CurrentInitrdName = AllocateZeroPool (sizeof (STRING_LIST));
 
             BREAD_CRUMB(L"%s:  8a 2a 2", FuncTag);
             if (InitrdNames == NULL) {
@@ -288,7 +288,7 @@ CHAR16 * AddInitrdToOptions (
     CHAR16 *InitrdVersion;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddInitrdToOptions";
+    const CHAR16 *FuncTag = L"AddInitrdToOptions";
     #endif
 
     LOG_SEP(L"X");
@@ -306,7 +306,7 @@ CHAR16 * AddInitrdToOptions (
     BREAD_CRUMB(L"%s:  2", FuncTag);
     if (InitrdPath != NULL) {
         BREAD_CRUMB(L"%s:  2a 1", FuncTag);
-        if (FindSubStr (Options, L"%v")) {
+        if (FindSubStr (NewOptions, L"%v")) {
             BREAD_CRUMB(L"%s:  2a 1a 1", FuncTag);
             InitrdVersion = FindNumbers (InitrdPath);
 
@@ -316,7 +316,7 @@ CHAR16 * AddInitrdToOptions (
             BREAD_CRUMB(L"%s:  2a 1a 3", FuncTag);
             MY_FREE_POOL(InitrdVersion);
         }
-        else if (!FindSubStr (Options, L"initrd=")) {
+        else if (!FindSubStr (NewOptions, L"initrd=")) {
             BREAD_CRUMB(L"%s:  2a 1b 1", FuncTag);
             MergeStrings (&NewOptions, L"initrd=", L' ');
 
@@ -345,7 +345,7 @@ CHAR16 * GetMainLinuxOptions (
     CHAR16 *Options, *FullOptions, *InitrdName, *KernelVersion;
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GetMainLinuxOptions";
+    const CHAR16 *FuncTag = L"GetMainLinuxOptions";
     #endif
 
     LOG_SEP(L"X");
@@ -365,6 +365,7 @@ CHAR16 * GetMainLinuxOptions (
         if (Options) {
             BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
+            BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
         }
         MY_FREE_POOL(KernelVersion);
     }
@@ -374,6 +375,7 @@ CHAR16 * GetMainLinuxOptions (
     if (InitrdName || Options) {
         BREAD_CRUMB(L"%s:  4a 1", FuncTag);
         FullOptions = AddInitrdToOptions (Options, InitrdName);
+        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  5", FuncTag);
@@ -427,9 +429,9 @@ VOID ParseReleaseFile (
 
             FreeTokenLine (&TokenList, &TokenCount);
         } while (TokenCount > 0);
-        MY_FREE_POOL(File.Buffer);
 
-    } // if
+        MY_FREE_POOL(File.Buffer);
+    }
 } // VOID ParseReleaseFile()
 
 // Try to guess the name of the Linux distribution & add that name to
@@ -440,7 +442,7 @@ VOID GuessLinuxDistribution (
     CHAR16        *LoaderPath
 ) {
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"GuessLinuxDistribution";
+    const CHAR16 *FuncTag = L"GuessLinuxDistribution";
     #endif
 
     LOG_SEP(L"X");
@@ -497,7 +499,7 @@ VOID AddKernelToSubmenu (
     #endif
 
     #if REFIT_DEBUG > 1
-    CHAR16 *FuncTag = L"AddKernelToSubmenu";
+    const CHAR16 *FuncTag = L"AddKernelToSubmenu";
     #endif
 
     LOG_SEP(L"X");
@@ -570,7 +572,7 @@ VOID AddKernelToSubmenu (
             CleanUpPathNameSlashes (SubEntry->LoaderPath);
 
             BREAD_CRUMB(L"%s:  6a 3a 10", FuncTag);
-            SubEntry->Volume = CopyVolume (Volume);
+            SubEntry->Volume = Volume;
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
 
             BREAD_CRUMB(L"%s:  6a 3a 11", FuncTag);

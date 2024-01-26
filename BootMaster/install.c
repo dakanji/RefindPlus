@@ -24,6 +24,7 @@
 #include "scan.h"
 #include "menu.h"
 #include "mystrings.h"
+#include "launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/Handle.h"
 
@@ -57,7 +58,7 @@ VOID DeleteESPList (
         AllESPs = AllESPs->NextESP;
         MY_FREE_POOL(Temp);
     } // while
-} // VOID DeleteESPList()
+} // static VOID DeleteESPList()
 
 // Return a list of all ESP volumes (ESP_LIST *) on internal disks EXCEPT
 // for the current ESP. ESPs are identified by GUID type codes, which means
@@ -224,7 +225,7 @@ REFIT_VOLUME * PickOneESP (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'PickOneESP'",
+            L"Returned '%d' (%s) in 'PickOneESP' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -250,7 +251,7 @@ REFIT_VOLUME * PickOneESP (
     FreeMenuScreen (&InstallMenu);
 
     return ChosenVolume;
-} // REFIT_VOLUME *PickOneESP()
+} // static REFIT_VOLUME *PickOneESP()
 
 /***********************
  *
@@ -318,7 +319,7 @@ EFI_STATUS RenameFile (
     MY_FREE_POOL(Buffer);
 
     return Status;
-} // EFI_STATUS RenameFile()
+} // static EFI_STATUS RenameFile()
 
 // Rename *FileName to add a "-old" extension, but only if that file does not
 // already exist. Called on the icons directory to preserve it in case the
@@ -380,7 +381,7 @@ EFI_STATUS CreateDirectories (
     } // while
 
     return Status;
-} // CreateDirectories()
+} // static EFI_STATUS CreateDirectories()
 
 static
 EFI_STATUS CopyOneFile (
@@ -501,7 +502,7 @@ EFI_STATUS CopyOneFile (
     #endif
 
     return Status;
-} // EFI_STATUS CopyOneFile()
+} // static EFI_STATUS CopyOneFile()
 
 // Copy a single directory (non-recursively)
 static
@@ -534,7 +535,7 @@ EFI_STATUS CopyDirectory (
     } // while
 
     return Status;
-} // EFI_STATUS CopyDirectory()
+} // static EFI_STATUS CopyDirectory()
 
 // Copy Linux drivers for detected filesystems, but not for undetected filesystems.
 // Note: Does NOT copy HFS+ driver on Apple hardware even if HFS+ is detected;
@@ -675,7 +676,7 @@ EFI_STATUS CopyDrivers (
     } // for
 
     return WorstStatus;
-} // EFI_STATUS CopyDrivers()
+} // static EFI_STATUS CopyDrivers()
 
 // Copy all the files from the source to *TargetDir
 static
@@ -804,7 +805,7 @@ EFI_STATUS CopyFiles (
     MY_FREE_POOL(TargetDriversDir);
 
     return WorstStatus;
-} // EFI_STATUS CopyFiles()
+} // static EFI_STATUS CopyFiles()
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
 // Success is not critical, so we do not return a Status value.
@@ -850,7 +851,7 @@ VOID CreateFallbackCSV (
         ALT_LOG(1, LOG_LINE_NORMAL, L"Error When Writing 'BOOT.CSV' File:- '%r'", Status);
     }
     #endif
-} // VOID CreateFallbackCSV()
+} // static VOID CreateFallbackCSV()
 
  static
  BOOLEAN CopyRefindPlusFiles (
@@ -899,7 +900,7 @@ VOID CreateFallbackCSV (
     CreateFallbackCSV (TargetDir);
 
     return Status;
-} // BOOLEAN CopyRefindPlusFiles()
+} // static BOOLEAN CopyRefindPlusFiles()
 
 /***********************
  *
@@ -976,58 +977,7 @@ UINTN FindBootNum (
     j = (i - 1);
 
     return j;
-} // UINTN FindBootNum()
-
-// Construct an NVRAM entry, but do NOT write it to NVRAM. The entry
-// consists of:
-// - A 32-bit options flag, which holds the LOAD_OPTION_ACTIVE value
-// - A 16-bit number specifying the size of the device path
-// - A label/description for the entry
-// - The device path data in binary form
-// - Any arguments to be passed to the program. This function does NOT
-//   create arguments.
-EFI_STATUS ConstructBootEntry (
-    EFI_HANDLE  *TargetVolume,
-    CHAR16      *Loader,
-    CHAR16      *Label,
-    CHAR8      **Entry,
-    UINTN       *Size
-) {
-    EFI_STATUS                 Status;
-    UINTN                      DevPathSize;
-    CHAR8                     *Working;
-    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
-
-    DevicePath  = FileDevicePath (TargetVolume, Loader);
-    DevPathSize = DevicePathSize (DevicePath);
-    *Size       = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
-    *Entry      = Working = AllocateZeroPool (*Size);
-
-    if (!DevicePath || !(*Entry)) {
-        Status = EFI_OUT_OF_RESOURCES;
-    }
-    else {
-        Status = EFI_SUCCESS;
-
-        *(UINT32 *) Working = LOAD_OPTION_ACTIVE;
-        Working += sizeof (UINT32);
-
-        *(UINT16 *) Working = DevPathSize;
-        Working += sizeof (UINT16);
-
-        StrCpy ((CHAR16 *) Working, Label);
-        Working += StrSize (Label);
-
-        CopyMem (Working, DevicePath, DevPathSize);
-        // If support for arguments is required in the future, uncomment
-        // the lines below and adjust Size computation above appropriately.
-        // Working += DevPathSize;
-        // StrCpy ((CHAR16 *)Working, Arguments);
-    }
-    MY_FREE_POOL(DevicePath);
-
-    return Status;
-} // EFI_STATUS ConstructBootEntry()
+} // static UINTN FindBootNum()
 
 // Set BootNum as first in the boot order. This function also eliminates any
 // duplicates of BootNum in the boot order list (but NOT duplicates among
@@ -1083,7 +1033,7 @@ EFI_STATUS SetBootDefault (
     }
 
     return Status;
-} // EFI_STATUS SetBootDefault()
+} // static EFI_STATUS SetBootDefault()
 
 // Create an NVRAM entry for the newly-installed RefindPlus and make it the default.
 // (If an entry that is identical to the one this function would create already
@@ -1134,7 +1084,58 @@ EFI_STATUS CreateNvramEntry (
     }
 
     return Status;
-} // VOID CreateNvramEntry()
+} // static EFI_STATUS CreateNvramEntry()
+
+// Construct an NVRAM entry, but do NOT write it to NVRAM. The entry
+// consists of:
+// - A 32-bit options flag, which holds the LOAD_OPTION_ACTIVE value
+// - A 16-bit number specifying the size of the device path
+// - A label/description for the entry
+// - The device path data in binary form
+// - Any arguments to be passed to the program. This function does NOT
+//   create arguments.
+EFI_STATUS ConstructBootEntry (
+    EFI_HANDLE  *TargetVolume,
+    CHAR16      *Loader,
+    CHAR16      *Label,
+    CHAR8      **Entry,
+    UINTN       *Size
+) {
+    EFI_STATUS                 Status;
+    UINTN                      DevPathSize;
+    CHAR8                     *Working;
+    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+
+    DevicePath  = FileDevicePath (TargetVolume, Loader);
+    DevPathSize = DevicePathSize (DevicePath);
+    *Size       = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
+    *Entry      = Working = AllocateZeroPool (*Size);
+
+    if (!DevicePath || !(*Entry)) {
+        Status = EFI_OUT_OF_RESOURCES;
+    }
+    else {
+        Status = EFI_SUCCESS;
+
+        *(UINT32 *) Working = LOAD_OPTION_ACTIVE;
+        Working += sizeof (UINT32);
+
+        *(UINT16 *) Working = DevPathSize;
+        Working += sizeof (UINT16);
+
+        StrCpy ((CHAR16 *) Working, Label);
+        Working += StrSize (Label);
+
+        CopyMem (Working, DevicePath, DevPathSize);
+        // If support for arguments is required in the future, uncomment
+        // the lines below and adjust Size computation above appropriately.
+        // Working += DevPathSize;
+        // StrCpy ((CHAR16 *)Working, Arguments);
+    }
+    MY_FREE_POOL(DevicePath);
+
+    return Status;
+} // EFI_STATUS ConstructBootEntry()
 
 /***********************
  *
@@ -1214,7 +1215,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     BOOT_ENTRY_LIST  *ListStart;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Fetch Boot Order Variables:");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Fetch BootOrder Variables:");
     #endif
 
     BootOrder = NULL;
@@ -1351,7 +1352,7 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmBootOptionOperation'",
+        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1392,7 +1393,7 @@ UINTN PickOneBootOption (
     REFIT_MENU_ENTRY  *ChosenOption;
 
     if (!Entries) {
-        DisplaySimpleMessage (L"Firmware BootOrder List is Not Available", NULL);
+        DisplaySimpleMessage (L"Firmware BootOrder List is Empty", NULL);
 
         // Early Return
         return EFI_BOOT_OPTION_DO_NOTHING;
@@ -1405,7 +1406,7 @@ UINTN PickOneBootOption (
     }
 
     PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-    PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
+    PickBootOptionMenu->Title      = StrDuplicate (L"Manage BootOrder");
     PickBootOptionMenu->Hint1      = StrDuplicate (
         L"Select an option and press 'Enter' to make it the default. Press '-' or"
     );
@@ -1472,7 +1473,7 @@ UINTN PickOneBootOption (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'PickOneBootOption'",
+            L"Returned '%d' (%s) in 'PickOneBootOption' From RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1555,7 +1556,7 @@ VOID ManageBootorder (VOID) {
     BOOT_ENTRY_LIST *Entries;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage Boot Order' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage BootOrder' Screen");
     #endif
 
     BootNum   = 0;
@@ -1571,8 +1572,8 @@ VOID ManageBootorder (VOID) {
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
         DisplaySimpleMessage (Message, NULL);
-        MY_FREE_POOL(Name);
         MY_FREE_POOL(Message);
+        MY_FREE_POOL(Name);
     }
 
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {

@@ -172,22 +172,22 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     UINT8                     *Variable;
     UINT8                     *TempPtr;
     UINTN                      VariableSize;
+    INTN                       i;
     EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
     BDS_COMMON_OPTION         *Option;
     VOID                      *LoadOptions;
     UINT32                     LoadOptionsSize;
     CHAR16                    *Description;
 
-    // Read the variable. We will never free this data.
+    // DA-TAG: Investigate This
+    //         From upstream 'Read the variable. We will never free this data'
+    //         Yet data is freed ... oversight?
     Variable = BdsLibGetVariableAndSize (
         VariableName,
         &gEfiGlobalVariableGuid,
         &VariableSize
     );
-
-    if (Variable == NULL) {
-        return NULL;
-    }
+    if (!Variable) return NULL;
 
     // Notes: careful defined the variable of Boot#### or
     // Driver####, consider use some macro to abstract the code
@@ -216,25 +216,42 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     // The Console variables may have multiple device paths,
     // so make an Entry for each one.
     Option = AllocateZeroPool (sizeof (BDS_COMMON_OPTION));
-    if (Option == NULL) {
+    if (!Option) {
+        MY_FREE_POOL(Variable);
+
         return NULL;
     }
 
     Option->Signature  = BDS_LOAD_OPTION_SIGNATURE;
     Option->DevicePath = AllocateZeroPool (GetDevicePathSize (DevicePath));
+    if (!Option->DevicePath) {
+        MY_FREE_POOL(Option);
+        MY_FREE_POOL(Variable);
 
-    ASSERT(Option->DevicePath != NULL);
+        return NULL;
+    }
 
     CopyMem (Option->DevicePath, DevicePath, GetDevicePathSize (DevicePath));
     Option->Attribute   = Attribute;
     Option->Description = AllocateZeroPool (StrSize (Description));
+    if (!Option->Description) {
+        MY_FREE_POOL(Option->DevicePath);
+        MY_FREE_POOL(Option);
+        MY_FREE_POOL(Variable);
 
-    ASSERT(Option->Description != NULL);
+        return NULL;
+    }
 
     CopyMem (Option->Description, Description, StrSize (Description));
     Option->LoadOptions = AllocateZeroPool (LoadOptionsSize);
+    if (!Option->LoadOptions) {
+        MY_FREE_POOL(Option->DevicePath);
+        MY_FREE_POOL(Option->Description);
+        MY_FREE_POOL(Option);
+        MY_FREE_POOL(Variable);
 
-    ASSERT(Option->LoadOptions != NULL);
+        return NULL;
+    }
 
     CopyMem (Option->LoadOptions, LoadOptions, LoadOptionsSize);
     Option->LoadOptionsSize = LoadOptionsSize;
@@ -242,7 +259,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     // Get the value from VariableName Unicode string since the ISO
     // standard assumes ASCII equivalent abbreviations, we can be safe
     // in converting this Unicode stream to ASCII without any loss in meaning.
-    INTN i = 0;
+    i = 0;
 
     #define is(x) (VariableName[i++] == x)
     #define ishex ({CHAR16 c; c = VariableName[i++]; (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');})
@@ -264,8 +281,11 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
         return Option;
     }
 
-    MY_FREE_POOL(Variable);
+    MY_FREE_POOL(Option->DevicePath);
+    MY_FREE_POOL(Option->Description);
+    MY_FREE_POOL(Option->LoadOptions);
     MY_FREE_POOL(Option);
+    MY_FREE_POOL(Variable);
 
     return NULL;
 } // BDS_COMMON_OPTION * BdsLibVariableToOption()

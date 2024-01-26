@@ -85,19 +85,19 @@ enum {
 	kHFSPlusVersion		= 0x0004,	/* 'H+' volumes are version 4 only */
 	kHFSXVersion		= 0x0005,	/* 'HX' volumes start with version 5 */
 
-	kHFSPlusMountVersion	= 0x31302E30,	/* '10.0' for MacOS */
-	kHFSJMountVersion	= 0x4846534a,	/* 'HFSJ' for journaled HFS+ on MacOS */
+	kHFSPlusMountVersion	= 0x31302E30,	/* '10.0' for macOS */
+	kHFSJMountVersion	= 0x4846534a,	/* 'HFSJ' for journaled HFS+ on macOS */
 	kFSKMountVersion	= 0x46534b21	/* 'FSK!' for failed journal replay */
 };
 
 
 #ifdef __APPLE_API_PRIVATE
 /*
- * MacOS has two special directories on HFS+ volumes for hardlinked files
+ * macOS has two special directories on HFS+ volumes for hardlinked files
  * and hardlinked directories as well as for open-unlinked files.
  *
  * These directories and their contents are not exported from the filesystem
- * under MacOS.
+ * under macOS.
  */
 #define HFSPLUSMETADATAFOLDER       "\xE2\x90\x80\xE2\x90\x80\xE2\x90\x80\xE2\x90\x80HFS+ Private Data"
 #define HFSPLUS_DIR_METADATA_FOLDER ".HFS+ Private Directory Data\xd"
@@ -106,7 +106,7 @@ enum {
  * Files in the "HFS+ Private Data" folder have one of the following prefixes
  * followed by a decimal number (no leading zeros) for the file ID.
  *
- * Note: Earlier version of MacOS used a 32 bit random number for the link
+ * Note: Earlier version of macOS used a 32 bit random number for the link
  * ref number instead of the file id.
  *
  * e.g.  iNode7182000 and temp3296
@@ -265,9 +265,9 @@ struct HFSPlusForkData {
 typedef struct HFSPlusForkData HFSPlusForkData;
 
 
-/* MacOS has 16 bytes worth of "BSD" info.
+/* macOS has 16 bytes worth of "BSD" info.
  *
- * Note:  MacOS 9 implementations and applications
+ * Note:  OS X 9 implementations and applications
  * should preserve, but not change, this information.
  */
 struct HFSPlusBSDInfo {
@@ -315,7 +315,7 @@ enum {
 	kHFSAllocationFileID		= 6,	/* File ID of the allocation file (HFS Plus only) */
 	kHFSStartupFileID		= 7,	/* File ID of the startup file (HFS Plus only) */
 	kHFSAttributesFileID		= 8,	/* File ID of the attribute file (HFS Plus only) */
-	kHFSAttributeDataFileID         = 13,	/* Used in MacOS runtime for extent based attributes */
+	kHFSAttributeDataFileID         = 13,	/* Used in macOS runtime for extent based attributes */
 	                                        /* kHFSAttributeDataFileID is never stored on disk. */
 	kHFSRepairCatalogFileID		= 14,	/* Used when rebuilding Catalog B-tree */
 	kHFSBogusExtentFileID		= 15,	/* Used for exchanging extents in extents file */
@@ -404,9 +404,9 @@ struct HFSPlusCatalogFolder {
 	u_int32_t		createDate;		/* date and time of creation */
 	u_int32_t		contentModDate;		/* date and time of last content modification */
 	u_int32_t		attributeModDate;	/* date and time of last attribute modification */
-	u_int32_t		accessDate;		/* date and time of last access (MacOS only) */
+	u_int32_t		accessDate;		/* date and time of last access (macOS only) */
 	u_int32_t		backupDate;		/* date and time of last backup */
-	HFSPlusBSDInfo		bsdInfo;		/* permissions (for MacOS) */
+	HFSPlusBSDInfo		bsdInfo;		/* permissions (for macOS) */
 	FndrDirInfo		userInfo;		/* Finder information */
 	FndrOpaqueInfo		finderInfo;		/* additional Finder information */
 	u_int32_t		textEncoding;		/* hint for name conversions */
@@ -447,9 +447,9 @@ struct HFSPlusCatalogFile {
 	u_int32_t		createDate;		/* date and time of creation */
 	u_int32_t		contentModDate;		/* date and time of last content modification */
 	u_int32_t		attributeModDate;	/* date and time of last attribute modification */
-	u_int32_t		accessDate;		/* date and time of last access (MacOS only) */
+	u_int32_t		accessDate;		/* date and time of last access (macOS only) */
 	u_int32_t		backupDate;		/* date and time of last backup */
-	HFSPlusBSDInfo		bsdInfo;		/* permissions (for MacOS) */
+	HFSPlusBSDInfo		bsdInfo;		/* permissions (for macOS) */
 	FndrFileInfo		userInfo;		/* Finder information */
 	FndrOpaqueInfo		finderInfo;		/* additional Finder information */
 	u_int32_t		textEncoding;		/* hint for name conversions */

@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -93,6 +93,7 @@ REFIT_CONFIG GlobalConfig = {
     /* FoldLinuxKernels = */ TRUE,
     /* EnableMouse = */ FALSE,
     /* EnableTouch = */ FALSE,
+    /* PersistBootArgs = */ FALSE,
     /* HiddenTags = */ TRUE,
     /* UseNvram = */ FALSE,
     /* TransientBoot = */ FALSE,
@@ -101,7 +102,8 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenIconsPrefer = */ FALSE,
     /* UseTextRenderer = */ FALSE,
     /* PassUgaThrough = */ FALSE,
-    /* ProvideConsoleGOP = */ FALSE,
+    /* PassGopThrough = */ TRUE,
+    /* SetConsoleGOP = */ TRUE,
     /* ReloadGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
@@ -117,19 +119,18 @@ REFIT_CONFIG GlobalConfig = {
     /* SupplyNVME = */ FALSE,
     /* SupplyAPFS = */ TRUE,
     /* SupplyUEFI = */ FALSE,
-    /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* NvramProtect = */ TRUE,
     /* ScanAllESP = */ TRUE,
     /* HelpIcon = */ TRUE,
-    /* HelpTags = */ TRUE,
+    /* HelpScan = */ TRUE,
     /* HelpText = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* WriteSystemdVars = */ FALSE,
     /* UnicodeCollation = */ FALSE,
-    /* SupplyAppleFB = */ TRUE,
+    /* SetAppleFB = */ TRUE,
     /* HandleVentoy = */ FALSE,
     /* MitigatePrimedBuffer = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -219,6 +220,7 @@ CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                gKernelStarted       = FALSE;
 BOOLEAN                IsBoot               = FALSE;
+BOOLEAN                RunningOC            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                OverrideSB           = FALSE;
 BOOLEAN                OneMainLoop          = FALSE;
@@ -233,6 +235,9 @@ BOOLEAN                WarnVersionEFI       = FALSE;
 BOOLEAN                WarnRevisionUEFI     = FALSE;
 BOOLEAN                WarnMissingQVInfo    = FALSE;
 BOOLEAN                SecureBootFailure    = FALSE;
+BOOLEAN                VarDisableAMFI       = FALSE;
+BOOLEAN                VarNoCompatCheck     = FALSE;
+BOOLEAN                VarDisablePanicLog   = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_GUID               RefindPlusOldGuid    = REFINDPLUS_OLD_GUID;
 EFI_GUID               OpenCoreVendorGuid   = OPENCORE_VENDOR_GUID;
@@ -243,12 +248,12 @@ EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 
 #define BOOT_FIX_STR_01            L"Disable AMFI Check"
 #define BOOT_FIX_STR_02            L"Disable Compatibility Check"
-#define BOOT_FIX_STR_03            L"Disable Paniclog Writes to NVRAM"
+#define BOOT_FIX_STR_03            L"Disable nvRAM Panic Logging"
 
 extern VOID              InitBooterLog (VOID);
 
 extern EFI_STATUS        AmendSysTable (VOID);
-extern EFI_STATUS        RP_ApfsConnectDevices (VOID);
+extern EFI_STATUS        RefitApfsConnectDevices (VOID);
 extern EFI_STATUS EFIAPI NvmExpressLoad (
     IN EFI_HANDLE        ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
@@ -258,9 +263,9 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 extern VOID              OcUnblockUnmountedPartitions (VOID);
 #endif
 
-extern CHAR16                       *StrSelfUUID;
+extern INTN                          LogLevelConfig;
 
-extern EFI_GUID                      AppleVendorOsGuid;
+extern CHAR16                       *StrSelfUUID;
 
 extern EFI_FILE_PROTOCOL            *gVarsDir;
 
@@ -270,8 +275,9 @@ extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
-extern BOOLEAN                       SkipForcedReboot;
+extern BOOLEAN                       NormaliseCall;
 
+extern EFI_UGA_DRAW_PROTOCOL        *UGADraw;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 
@@ -286,13 +292,16 @@ EFI_STATUS CheckStatusOC (VOID){
   VOID        *Bootstrap;
   EFI_GUID     GuidBootstrapOC = OC_BOOTSTRAP_GUID_VALUE;
 
-  Bootstrap = NULL;
+
+  RunningOC = FALSE;
+  Bootstrap =  NULL;
   Status = REFIT_CALL_3_WRAPPER(
       gBS->LocateProtocol, &GuidBootstrapOC,
       NULL, &Bootstrap
   );
-  if (!EFI_ERROR (Status)) {
-    return EFI_ALREADY_STARTED;
+  if (!EFI_ERROR(Status)) {
+      RunningOC = TRUE;
+      return EFI_ALREADY_STARTED;
   }
 
   return EFI_NOT_STARTED;
@@ -302,9 +311,10 @@ EFI_STATUS CheckStatusOC (VOID){
 #if REFIT_DEBUG > 0
 static
 VOID UnexpectedReturn (
-    IN CHAR16 *ItemType
+    CHAR16 *ItemType
 ) {
     CHAR16 *MsgStr;
+
 
     MsgStr = PoolPrint (L"WARN: Unexpected Return From %s", ItemType);
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -315,26 +325,52 @@ VOID UnexpectedReturn (
 #endif
 
 static
-VOID RebootSystem (
-    BOOLEAN Confirmed
+VOID InitRotateCSR (VOID) {
+    BOOLEAN            Confirmed;
+
+    #if REFIT_DEBUG > 0
+    CHAR16            *MsgStr;
+    #endif
+
+
+    Confirmed = ConfirmRotate();
+    if (!Confirmed) {
+        #if REFIT_DEBUG > 0
+        MsgStr = L"Aborted CSR Rotation";
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("%s  *** %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
+        // Early Exit
+        return;
+    }
+
+    // Rotate CSR and Unset DynamicCSR if active
+    RotateCsrValue (TRUE);
+} // static VOID InitRotateCSR()
+
+static
+BOOLEAN RebootSystem (
+    BOOLEAN            Confirmed
 ) {
     CHAR16            *TypeStr;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
 
     #if REFIT_DEBUG > 0
     CHAR16            *MsgStr;
-    BOOLEAN            CheckMute = FALSE;
     #endif
 
 
     TypeStr = L"Running System Restart";
 
-    // If 'RunOurTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-    // Do not show confirmation menu in such cases
-    if (Confirmed == FALSE) {
-        // Now set 'RunOurTool' for this tool
+    // Do not show confirmation menu if already confirmed
+    if (!Confirmed) {
+        // Request confirmation
         Confirmed = ConfirmRestart();
-        if (Confirmed == FALSE) {
+        if (!Confirmed) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Aborted %s", TypeStr);
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -346,23 +382,8 @@ VOID RebootSystem (
             #endif
 
             // Early Exit
-            return;
+            return TRUE;
         }
-    }
-
-    // If 'FoundTool' is TRUE, then we have dropped down from 'Clean Nvram' above
-    // Only display 'TypeStr' message in such cases
-    if (Confirmed == TRUE) {
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-        egDisplayMessage (
-            TypeStr, &BGColor, CENTER,
-            3, L"PauseSeconds"
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
     }
 
     #if REFIT_DEBUG > 0
@@ -379,14 +400,18 @@ VOID RebootSystem (
     END_TAG();
     #endif
 
-    // Terminate Screen
+    egDisplayMessage (
+        TypeStr, &BGColor,
+        CENTER, 3, L"PauseSeconds"
+    );
     TerminateScreen();
-
     REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem, EfiResetCold,
         EFI_SUCCESS, 0, NULL
     );
-}
+
+    return FALSE;
+} // static BOOLEAN RebootSystem()
 
 static
 VOID InitMainMenu (VOID) {
@@ -400,11 +425,11 @@ VOID InitMainMenu (VOID) {
         L"Press 'Insert', 'Tab', or 'F2' for more options. Press 'Esc' or 'Backspace' to refresh the screen"
     };
 
-    FreeMenuScreen (&MainMenu);
     MainMenu = CopyMenuScreen (&MainMenuSrc);
     MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
 } // static VOID InitMainMenu()
 
+// DA-TAG: Caller responsible for returned buffer
 static
 EFI_STATUS GetHardwareNvramVariable (
     IN  CHAR16    *VariableName,
@@ -430,7 +455,7 @@ EFI_STATUS GetHardwareNvramVariable (
         return EFI_NOT_FOUND;
     }
 
-    TmpBuffer = AllocateZeroPool (BufferSize);
+    TmpBuffer = AllocatePool (BufferSize);
     if (!TmpBuffer) {
         return EFI_OUT_OF_RESOURCES;
     }
@@ -507,8 +532,73 @@ EFI_STATUS SetHardwareNvramVariable (
     );
 
     return Status;
-} // EFI_STATUS SetHardwareNvramVariable()
+} // static EFI_STATUS SetHardwareNvramVariable()
 
+static
+EFI_STATUS StoreBootArgsNvram (
+    IN  VOID      *VariableData OPTIONAL
+) {
+    EFI_STATUS   Status;
+    UINTN        VariableSize;
+    UINTN        OldSize;
+    VOID        *OldBuf;
+    UINT32       Attributes;
+    BOOLEAN      SettingMatch;
+
+    OldSize = 0;
+    OldBuf  = NULL;
+    Status  = EFI_LOAD_ERROR;
+
+    if (!VariableData) {
+        VariableSize = 0;
+    }
+    else {
+        VariableSize = AsciiStrSize ((CHAR8 *) VariableData);
+        if (VariableSize == 0) {
+            VariableData = NULL;
+        }
+    }
+
+    if (VariableSize != 0) {
+        Status = GetHardwareNvramVariable (
+            L"boot-args", &AppleBootGuid,
+            &OldBuf, &OldSize
+        );
+        if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
+            // Early Return
+            return Status;
+        }
+    }
+
+    SettingMatch = FALSE;
+    if (!EFI_ERROR(Status)) {
+        if (VariableSize != 0) {
+            // Check for match
+            SettingMatch = (
+                VariableSize == OldSize &&
+                CompareMem (VariableData, OldBuf, VariableSize) == 0
+            );
+        }
+        MY_FREE_POOL(OldBuf);
+
+        if (SettingMatch) {
+            // Early Return
+            return EFI_ALREADY_STARTED;
+        }
+    }
+
+    // Store the new value
+    Attributes = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+    if (GlobalConfig.PersistBootArgs) {
+        Attributes |= EFI_VARIABLE_NON_VOLATILE;
+    }
+    Status = OrigSetVariableRT (
+        L"boot-args", &AppleBootGuid,
+        Attributes, VariableSize, VariableData
+    );
+
+    return Status;
+} // static EFI_STATUS StoreBootArgsNvram()
 
 static
 EFI_STATUS EFIAPI gRTSetVariableEx (
@@ -638,7 +728,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         LimitStringLength (LogNameFull, 32);
 
         MsgStr = PoolPrint (
-            L"In Hardware NVRAM ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
+            L"In Variable Memory (Hardware) ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
             LogStatus,
             NVRAM_LOG_SET,
             (BlockUEFI)
@@ -697,12 +787,16 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     return Status;
-} // EFI_STATUS EFIAPI gRTSetVariableEx()
+} // static EFI_STATUS EFIAPI gRTSetVariableEx()
 
 static
 VOID FlagKernelActive (VOID ) {
     // DA-TAG: Flag that the kernel has started
     //         To disable BootServices access
+    if (gKernelStarted) {
+        return;
+    }
+
     gKernelStarted = TRUE;
 } // static VOID FlagKernelActive()
 
@@ -802,21 +896,10 @@ static
 EFI_STATUS FilterCSR (VOID) {
     EFI_STATUS Status;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    #endif
-
     Status = (GlobalConfig.NormaliseCSR) ? NormaliseCSR() : EFI_NOT_STARTED;
     #if REFIT_DEBUG > 0
-    if (EFI_ERROR(Status)) {
-        MsgStr = PoolPrint (
-            L"Normalise CSR ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-    }
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Normalise CSR ... %r", Status);
+    LOG_MSG("%s    * Normalise CSR ... %r", OffsetNext, Status);
     #endif
 
     return Status;
@@ -853,22 +936,31 @@ BOOLEAN CheckToggle (
 } // static BOOLEAN CheckToggle()
 
 static
+BOOLEAN CheckCurrentCSR (VOID) {
+    BOOLEAN CsrEnabled;
+
+    CsrEnabled = CheckEnabledCSR();
+
+    return CheckToggle (CsrEnabled);
+} // static BOOLEAN CheckCurrentCSR()
+
+static
 VOID AlignCSR (VOID) {
     EFI_STATUS Status;
     UINT32     CsrStatus;
-    BOOLEAN    CsrEnabled;
+    BOOLEAN    HandledCSR;
+    BOOLEAN    RotatedCSR;
     BOOLEAN    FlipCSR;
 
     #if REFIT_DEBUG > 0
     CHAR16    *TmpStr;
     CHAR16    *MsgStr;
-    BOOLEAN    HandledCSR;
-    BOOLEAN    RotatedCSR;
     #endif
 
+
     if (!GlobalConfig.CsrValues) {
-        // Early Exit ... CsrValues not configured
-        return;
+        // Set for early exit ... CsrValues not configured
+        GlobalConfig.DynamicCSR = 0;
     }
 
     if (GlobalConfig.DynamicCSR == 0) {
@@ -876,124 +968,100 @@ VOID AlignCSR (VOID) {
         return;
     }
 
-    do {
-        #if REFIT_DEBUG > 0
-        // For accurate logging
-        HandledCSR = FALSE;
-        RotatedCSR =  TRUE;
-        #endif
-
-        if (!HasMacOS) {
-            #if REFIT_DEBUG > 0
-            Status = EFI_NOT_STARTED;
-            #endif
-
-            // Break Early ... No MacOS Instance
-            break;
-        }
-
-        if (GlobalConfig.DynamicCSR != -1 && GlobalConfig.DynamicCSR != 1) {
-            #if REFIT_DEBUG > 0
-            Status = EFI_INVALID_PARAMETER;
-            #endif
-
-            // Break Early ... Improperly configured
-            break;
-        }
-
-        // Try to get current CSR status
-        Status = GetCsrStatus (&CsrStatus);
-        if (EFI_ERROR(Status)) {
-            // Break Early ... Invalid CSR Status
-            break;
-        }
-
-        #if REFIT_DEBUG > 0
-        HandledCSR =  TRUE;
-        RotatedCSR = FALSE;
-        #endif
-
-        // Record CSR status in the 'gCsrStatus' variable
-        RecordgCsrStatus (CsrStatus, FALSE);
-        // Check 'gCsrStatus' variable for 'Enabled' string
-        CsrEnabled = CheckEnabledCSR();
-        // Check whether CSR should be rotated
-        FlipCSR = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            #if REFIT_DEBUG > 0
-            Status = EFI_ALREADY_STARTED;
-            RotatedCSR = TRUE;
-            #endif
-
-            // Break Early ...No Need to Rotate
-            break;
-        }
-
-        // Rotate SIP/SSV from current setting
-        // Do not Unset DynamicCSR
-        RotateCsrValue (FALSE);
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            #if REFIT_DEBUG > 0
-            RotatedCSR = TRUE;
-            #endif
-
-            // Break Early ... Sucessfully Rotated
-            break;
-        }
-
-        // Try again if not set
-        // Some may have more than one value
-        RotateCsrValue (FALSE);
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            #if REFIT_DEBUG > 0
-            RotatedCSR = TRUE;
-            #endif
-
-            // Break Early ... Sucessfully Rotated
-            break;
-        }
-
-        // Try a third and final time
-        RotateCsrValue (FALSE);
-        // Only check outcome in DBG
-        #if REFIT_DEBUG > 0
-        CsrEnabled = CheckEnabledCSR();
-        FlipCSR    = CheckToggle (CsrEnabled);
-        if (!FlipCSR) {
-            RotatedCSR = TRUE;
-        }
-        #endif
-    } while (0); // This 'loop' only runs once
-
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"D Y N A M I C   C S R   A L I G N M E N T");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
-    if (!RotatedCSR) {
-        // Failed to Definitively Rotate CSR
-        Status = EFI_NOT_READY;
-        GlobalConfig.DynamicCSR = 0;
+    #endif
 
-        TmpStr = L"WARN: Could Not Definitively Rotate";
+    do {
+        RotatedCSR = HandledCSR = FALSE;
+
+        if (!HasMacOS) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_NOT_STARTED;
+            #endif
+
+            // Abort ... No macOS Instance
+            break;
+        }
+
+        if (GlobalConfig.DynamicCSR !=  1 &&
+            GlobalConfig.DynamicCSR != -1
+        ) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_INVALID_PARAMETER;
+            #endif
+
+            // Abort ... Improperly configured
+            break;
+        }
+
+        // Try to get and record current CSR status
+        Status = GetCsrStatus (&CsrStatus);
+        if (EFI_ERROR(Status)) {
+            // Abort ... Invalid CSR Status
+            break;
+        }
+        RecordgCsrStatus (CsrStatus, FALSE);
+        HandledCSR = TRUE;
+
+        // Check whether CSR should be rotated
+        FlipCSR = CheckCurrentCSR();
+        if (!FlipCSR) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_ALREADY_STARTED;
+            #endif
+
+            // Break Early ... Do *NOT* Rotate
+            RotatedCSR = TRUE;
+            break;
+        }
+
+        // Rotate SIP/SSV from current setting
+        RotateCsrValue (FALSE);
+        RotatedCSR = CheckCurrentCSR();
+
+        if (!RotatedCSR) {
+            // Try again if not set
+            // Some may have more than one value
+            RotateCsrValue (FALSE);
+            RotatedCSR = CheckCurrentCSR();
+
+            if (!RotatedCSR) {
+                // Try a third and final time if not set
+                RotateCsrValue (FALSE);
+                RotatedCSR = CheckCurrentCSR();
+            }
+        }
+    } while (0); // This 'loop' only runs once
+
+    if (!RotatedCSR || !HandledCSR) {
+        GlobalConfig.DynamicCSR = 0;
+    }
+
+    #if REFIT_DEBUG > 0
+    if (RotatedCSR && HandledCSR) {
+        TmpStr = (GlobalConfig.DynamicCSR == -1)
+            ? L"Disable" : L"Enable";
     }
     else if (!HandledCSR) {
-        TmpStr = L"WARN: Did Not Update";
+        // Aborted
+        TmpStr = L"Did Not Update";
     }
     else {
-        TmpStr = (GlobalConfig.DynamicCSR == -1)
-            ? L"INFO: Disable"
-            : L"INFO: Enable";
+        // Failed to Definitively Rotate CSR
+        // That is, !RotatedCSR
+        Status = EFI_NOT_READY;
+        TmpStr = L"Could *NOT* Definitively Rotate";
     }
+
     MsgStr = PoolPrint (L"%s SIP/SSV ... %r", TmpStr, Status);
     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
     LOG_MSG("\n");
-    LOG_MSG("%s", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
@@ -1008,22 +1076,55 @@ VOID LogDisableCheck (
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
-        L"%s ... %r",
-        TypStr, Result
+        L"Status:- '%r' ... %s",
+        Result, TypStr
     );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
 } // static VOID LogDisableCheck()
 #endif
 
 static
+VOID HandleArgs (
+    IN EFI_STATUS  Result
+) {
+    #if REFIT_DEBUG > 0
+    if (VarDisableAMFI    ) LogDisableCheck (BOOT_FIX_STR_01, Result);
+    if (VarNoCompatCheck  ) LogDisableCheck (BOOT_FIX_STR_02, Result);
+    if (VarDisablePanicLog) LogDisableCheck (BOOT_FIX_STR_03, Result);
+    #endif
+
+    VarDisableAMFI     = FALSE;
+    VarNoCompatCheck   = FALSE;
+    VarDisablePanicLog = FALSE;
+} // static VOID HandleArgs()
+
+static
+EFI_STATUS StoreArgs (
+    IN CHAR16       *BootArg
+) {
+    CHAR8           *DataNVRAM;
+
+    DataNVRAM = AllocatePool (
+        (StrLen (BootArg) + 1) * sizeof (CHAR8)
+    );
+    if (!DataNVRAM) {
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+    UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+
+    return StoreBootArgsNvram (DataNVRAM);
+} // static EFI_STATUS StoreArgs()
+
+static
 VOID SetBootArgs (VOID) {
-    EFI_STATUS   Status;
-    CHAR16      *NameNVRAM;
-    CHAR16      *BootArg;
-    CHAR8       *DataNVRAM;
-    VOID        *VarData;
+    EFI_STATUS    Status;
+    CHAR16       *BootArg;
+    CHAR8        *DataNVRAM;
+    VOID         *VarData;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
@@ -1031,6 +1132,7 @@ VOID SetBootArgs (VOID) {
     BOOLEAN  LogDisableCompatCheck;
     BOOLEAN  LogDisableNvramPanicLog;
     #endif
+
 
     if (!GlobalConfig.SetBootArgs || GlobalConfig.SetBootArgs[0] == L'\0') {
         #if REFIT_DEBUG > 0
@@ -1049,46 +1151,37 @@ VOID SetBootArgs (VOID) {
         return;
     }
 
-    #if REFIT_DEBUG > 0
-    LogDisableAMFI          = FALSE;
-    LogDisableCompatCheck   = FALSE;
-    LogDisableNvramPanicLog = FALSE;
-    #endif
-
     if (MyStrStr (GlobalConfig.SetBootArgs, L"nvram_paniclog")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableNvramPanicLog) {
-            // Ensure Logging
-            LogDisableNvramPanicLog = TRUE;
-        }
-        #endif
-
         // Do not duplicate 'nvram_paniclog=0'
-        GlobalConfig.DisableNvramPanicLog = FALSE;
+        VarDisablePanicLog  = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableNvramPanicLog = GlobalConfig.DisableNvramPanicLog;
+    }
+    else {
+        LogDisableNvramPanicLog = FALSE;
+#endif
     }
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableAMFI) {
-            // Ensure Logging
-            LogDisableAMFI = TRUE;
-        }
-        #endif
-
         // Do not duplicate 'amfi_get_out_of_my_way=1'
-        GlobalConfig.DisableAMFI = FALSE;
+        VarDisableAMFI = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableAMFI = GlobalConfig.DisableAMFI;
+    }
+    else {
+        LogDisableAMFI = FALSE;
+#endif
     }
 
     if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check")) {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.DisableCompatCheck) {
-            // Ensure Logging
-            LogDisableCompatCheck = TRUE;
-        }
-        #endif
-
         // Do not duplicate '-no_compat_check'
-        GlobalConfig.DisableCompatCheck = FALSE;
+        VarNoCompatCheck = FALSE;
+#if REFIT_DEBUG > 0
+        LogDisableCompatCheck = GlobalConfig.DisableCompatCheck;
+    }
+    else {
+        LogDisableCompatCheck = FALSE;
+#endif
     }
 
     if (GlobalConfig.DisableAMFI &&
@@ -1154,116 +1247,71 @@ VOID SetBootArgs (VOID) {
         BootArg = StrDuplicate (GlobalConfig.SetBootArgs);
     }
 
-    DataNVRAM = AllocatePool (
-        (StrLen (BootArg) + 1) * sizeof (CHAR8)
-    );
-    if (!DataNVRAM) {
-        MY_FREE_POOL(BootArg);
-
-        #if REFIT_DEBUG > 0
-        Status = EFI_OUT_OF_RESOURCES;
-
-        MsgStr = PoolPrint (
-            L"Reset Boot Args ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        // Early Return
-        return;
-    }
-
     VarData = NULL;
-    NameNVRAM = L"boot-args";
-    GetHardwareNvramVariable (
-        NameNVRAM, &AppleVendorOsGuid,
-        &VarData, NULL
-    );
-
-    if (VarData && MyStriCmp (BootArg, VarData)) {
-        #if REFIT_DEBUG > 0
-        Status = EFI_ALREADY_STARTED;
-
-        MsgStr = PoolPrint (
-            L"%r When Setting Boot Args:- '%s'",
-            Status, BootArg
+    DataNVRAM = AllocatePool ((StrLen (BootArg) + 1) * sizeof (CHAR8));
+    Status = (DataNVRAM) ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES;
+    if (!EFI_ERROR(Status)) {
+        /* coverity[check_return: SUPPRESS] */
+        GetHardwareNvramVariable (
+            L"boot-args", &AppleBootGuid,
+            &VarData, NULL
         );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
 
-        MY_FREE_POOL(VarData);
-        MY_FREE_POOL(BootArg);
-
-        // Early Return
-        return;
+        if (VarData && MyStrStr (VarData, BootArg)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+            Status = StoreBootArgsNvram (DataNVRAM);
+        }
     }
-
-    // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-    UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-    Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
-        DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-    );
 
     #if REFIT_DEBUG > 0
-    if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
-        LogDisableCheck (BOOT_FIX_STR_01, Status);
-    }
-
-    if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
-        LogDisableCheck (BOOT_FIX_STR_02, Status);
-    }
-
-    if (LogDisableNvramPanicLog || GlobalConfig.DisableNvramPanicLog) {
-        LogDisableCheck (BOOT_FIX_STR_03, Status);
-    }
+    if (LogDisableAMFI         ) LogDisableCheck (BOOT_FIX_STR_01, Status);
+    if (LogDisableCompatCheck  ) LogDisableCheck (BOOT_FIX_STR_02, Status);
+    if (LogDisableNvramPanicLog) LogDisableCheck (BOOT_FIX_STR_03, Status);
 
     MsgStr = PoolPrint (
-        L"%r When Setting Boot Args:- '%s'",
+        L"Status:- '%r' ... Set Boot Arguments: '%s'",
         Status, GlobalConfig.SetBootArgs
     );
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
+    MY_FREE_POOL(VarData);
     MY_FREE_POOL(BootArg);
     MY_FREE_POOL(DataNVRAM);
 } // static VOID SetBootArgs()
 
 static
-EFI_STATUS NoCheckCompat (VOID) {
-    EFI_STATUS   Status;
-    CHAR16      *NameNVRAM;
-    CHAR16      *ArgData;
-    CHAR16      *BootArg;
-    CHAR8       *DataNVRAM;
-    CHAR16      *CurArgs;
-    VOID        *VarData;
+EFI_STATUS NoCheckAMFI (VOID) {
+    EFI_STATUS    Status;
+    CHAR16       *BootArg;
+    CHAR16       *CurArgs;
+    CHAR16       *ArgData;
+    VOID         *VarData;
 
-    if (!GlobalConfig.DisableCompatCheck) {
+
+    if (!VarDisableAMFI) {
         // Early Return ... Do Not Log
         return EFI_NOT_STARTED;
     }
 
     VarData = NULL;
-    NameNVRAM = L"boot-args";
-    GetHardwareNvramVariable (
-        NameNVRAM, &AppleVendorOsGuid,
+    BootArg = NULL;
+    ArgData = L"amfi_get_out_of_my_way";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
         &VarData, NULL
     );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    ArgData = L"-no_compat_check";
-    if (!VarData) {
-        BootArg = StrDuplicate (ArgData);
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = PoolPrint (L"%s=1", ArgData);
+        }
     }
     else {
         CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
@@ -1271,8 +1319,25 @@ EFI_STATUS NoCheckCompat (VOID) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
+            if (VarNoCompatCheck) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"-no_compat_check amfi_get_out_of_my_way";
+                }
+            }
+
+            if (VarDisablePanicLog) {
+                if (!FindSubStr (CurArgs, L"nvram_paniclog")) {
+                    if (VarNoCompatCheck) {
+                        ArgData = L"nvram_paniclog=0 -no_compat_check amfi_get_out_of_my_way";
+                    }
+                    else {
+                        ArgData = L"nvram_paniclog=0 amfi_get_out_of_my_way";
+                    }
+                }
+            }
+
             BootArg = PoolPrint (
-                L"%s %s",
+                L"%s %s=1",
                 CurArgs, ArgData
             );
         }
@@ -1280,124 +1345,52 @@ EFI_STATUS NoCheckCompat (VOID) {
     }
 
     if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            Status = EfivarSetRaw (
-                &AppleVendorOsGuid, NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-        }
+        Status = StoreArgs (BootArg);
     }
     MY_FREE_POOL(BootArg);
-
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_02, Status);
-    #endif
-
-    return Status;
-} // static EFI_STATUS NoCheckCompat()
-
-static
-EFI_STATUS NoCheckAMFI (VOID) {
-    EFI_STATUS   Status;
-    CHAR16      *NameNVRAM;
-    CHAR16      *ArgData;
-    CHAR16      *BootArg;
-    CHAR16      *CurArgs;
-    CHAR8       *DataNVRAM;
-    VOID        *VarData;
-
-    if (!GlobalConfig.DisableAMFI) {
-        // Early Return ... Do Not Log
-        return EFI_NOT_STARTED;
-    }
-
-    VarData = NULL;
-    NameNVRAM = L"boot-args";
-    GetHardwareNvramVariable (
-        NameNVRAM, &AppleVendorOsGuid,
-        &VarData, NULL
-    );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    ArgData = L"amfi_get_out_of_my_way";
-    if (!VarData) {
-        BootArg = PoolPrint (L"%s=1", ArgData);
-    }
-    else {
-        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
-        BootArg = PoolPrint (L"%s %s=1", CurArgs, ArgData);
-
-        if (FindSubStr (CurArgs, ArgData)) {
-            Status = EFI_ALREADY_STARTED;
-        }
-        MY_FREE_POOL(CurArgs);
-    }
 
     if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            Status = EfivarSetRaw (
-                &AppleVendorOsGuid, NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-        }
+        HandleArgs (Status);
     }
-    MY_FREE_POOL(BootArg);
+    else {
+        VarDisableAMFI = FALSE;
 
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_01, Status);
-    #endif
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_01, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
 
     return Status;
 } // static EFI_STATUS NoCheckAMFI()
 
 static
-EFI_STATUS NoNvramPanicLog (VOID) {
-    EFI_STATUS   Status;
-    CHAR16      *NameNVRAM;
-    CHAR16      *ArgData;
-    CHAR16      *BootArg;
-    CHAR16      *CurArgs;
-    CHAR8       *DataNVRAM;
-    VOID        *VarData;
+EFI_STATUS NoCheckCompat (VOID) {
+    EFI_STATUS    Status;
+    CHAR16       *BootArg;
+    CHAR16       *CurArgs;
+    CHAR16       *ArgData;
+    VOID         *VarData;
 
-    if (!GlobalConfig.DisableNvramPanicLog) {
+
+    if (!VarNoCompatCheck) {
         // Early Return ... Do Not Log
         return EFI_NOT_STARTED;
     }
 
     VarData = NULL;
-    NameNVRAM = L"boot-args";
-    GetHardwareNvramVariable (
-        NameNVRAM, &AppleVendorOsGuid,
+    BootArg = NULL;
+    ArgData = L"-no_compat_check";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
         &VarData, NULL
     );
-
-    BootArg = NULL;
-    Status  = EFI_SUCCESS;
-    ArgData = L"nvram_paniclog=0";
-    if (!VarData) {
-        BootArg = StrDuplicate (ArgData);
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = StrDuplicate (ArgData);
+        }
     }
     else {
         CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
@@ -1405,6 +1398,23 @@ EFI_STATUS NoNvramPanicLog (VOID) {
             Status = EFI_ALREADY_STARTED;
         }
         else {
+            if (VarDisableAMFI) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"amfi_get_out_of_my_way=1 -no_compat_check";
+                }
+            }
+
+            if (VarDisablePanicLog) {
+                if (!FindSubStr (CurArgs, L"nvram_paniclog")) {
+                    if (VarDisableAMFI) {
+                        ArgData = L"nvram_paniclog=0 amfi_get_out_of_my_way=1 -no_compat_check";
+                    }
+                    else {
+                        ArgData = L"nvram_paniclog=0 -no_compat_check";
+                    }
+                }
+            }
+
             BootArg = PoolPrint (
                 L"%s %s",
                 CurArgs, ArgData
@@ -1414,51 +1424,123 @@ EFI_STATUS NoNvramPanicLog (VOID) {
     }
 
     if (!EFI_ERROR(Status)) {
-        DataNVRAM = AllocatePool (
-            (StrLen (BootArg) + 1) * sizeof (CHAR8)
-        );
-        if (!DataNVRAM) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-
-        if (!EFI_ERROR(Status)) {
-            // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
-            UnicodeStrToAsciiStr (BootArg, DataNVRAM);
-
-            Status = EfivarSetRaw (
-                &AppleVendorOsGuid, NameNVRAM,
-                DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
-            );
-        }
+        Status = StoreArgs (BootArg);
     }
     MY_FREE_POOL(BootArg);
 
-    #if REFIT_DEBUG > 0
-    LogDisableCheck (BOOT_FIX_STR_03, Status);
-    #endif
+    if (!EFI_ERROR(Status)) {
+        HandleArgs (Status);
+    }
+    else {
+        VarNoCompatCheck = FALSE;
+
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_02, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
+
+    return Status;
+} // static EFI_STATUS NoCheckCompat()
+
+static
+EFI_STATUS NoNvramPanicLog (VOID) {
+    EFI_STATUS    Status;
+    CHAR16       *BootArg;
+    CHAR16       *CurArgs;
+    CHAR16       *ArgData;
+    VOID         *VarData;
+
+
+    if (!VarDisablePanicLog ) {
+        // Early Return ... Do Not Log
+        return EFI_NOT_STARTED;
+    }
+
+    VarData = NULL;
+    BootArg = NULL;
+    ArgData = L"nvram_paniclog";
+    Status  = GetHardwareNvramVariable (
+        L"boot-args", &AppleBootGuid,
+        &VarData, NULL
+    );
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            Status  = EFI_SUCCESS;
+            BootArg = PoolPrint (L"%s=0", ArgData);
+        }
+    }
+    else {
+        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
+        if (FindSubStr (CurArgs, ArgData)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            if (VarDisableAMFI) {
+                if (!FindSubStr (CurArgs, L"amfi_get_out_of_my_way")) {
+                    ArgData = L"amfi_get_out_of_my_way=1 nvram_paniclog";
+                }
+            }
+
+            if (VarNoCompatCheck) {
+                if (!FindSubStr (CurArgs, L"-no_compat_check")) {
+                    if (VarDisableAMFI) {
+                        ArgData = L"-no_compat_check amfi_get_out_of_my_way=1 nvram_paniclog";
+                    }
+                    else {
+                        ArgData = L"-no_compat_check nvram_paniclog";
+                    }
+                }
+            }
+
+            BootArg = PoolPrint (
+                L"%s %s=0",
+                CurArgs, ArgData
+            );
+        }
+        MY_FREE_POOL(CurArgs);
+    }
+
+    if (!EFI_ERROR(Status)) {
+        Status = StoreArgs (BootArg);
+    }
+    MY_FREE_POOL(BootArg);
+
+    if (!EFI_ERROR(Status)) {
+        HandleArgs (Status);
+    }
+    else {
+        VarDisablePanicLog = FALSE;
+
+        #if REFIT_DEBUG > 0
+        LogDisableCheck (BOOT_FIX_STR_03, Status);
+        #endif
+    }
+
+    MY_FREE_POOL(VarData);
 
     return Status;
 } // static EFI_STATUS NoNvramPanicLog()
 
 static
 EFI_STATUS TrimCoerce (VOID) {
-    EFI_STATUS Status;
-    CHAR16    *NameNVRAM;
-    CHAR8      DataNVRAM[1] = {0x01};
+    EFI_STATUS    Status;
+    CHAR8         DataNVRAM[1] = {0x01};
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
     #endif
+
 
     if (!GlobalConfig.ForceTRIM) {
         // Early Return
         return EFI_NOT_STARTED;
     }
 
-    NameNVRAM = L"EnableTRIM";
-    Status = EfivarSetRaw (
-        &AppleVendorOsGuid, NameNVRAM,
-        DataNVRAM, sizeof (DataNVRAM), TRUE
+    Status = SetHardwareNvramVariable (
+        L"EnableTRIM", &AppleBootGuid,
+        AccessFlagsFull, AsciiStrSize (DataNVRAM), DataNVRAM
     );
 
     #if REFIT_DEBUG > 0
@@ -1475,7 +1557,7 @@ EFI_STATUS TrimCoerce (VOID) {
 } // static EFI_STATUS TrimCoerce()
 
 // Extended 'OpenProtocol'
-// Ensures GOP Interface for Boot Loading Screen
+// Ensures Interface for Boot Loading Screen
 static
 EFI_STATUS EFIAPI OpenProtocolEx (
     IN   EFI_HANDLE    Handle,
@@ -1485,66 +1567,30 @@ EFI_STATUS EFIAPI OpenProtocolEx (
     IN   EFI_HANDLE    ControllerHandle,
     IN   UINT32        Attributes
 ) {
-    EFI_STATUS   Status;
-    UINTN        i;
-    UINTN        HandleCount;
-    EFI_HANDLE  *HandleBuffer;
+    EFI_STATUS  Status;
 
     Status = REFIT_CALL_6_WRAPPER(
         OrigOpenProtocolBS, Handle,
         Protocol, Interface,
         AgentHandle, ControllerHandle, Attributes
     );
-    if (Status == EFI_UNSUPPORTED) {
-        // Early Return
-        return EFI_UNSUPPORTED;
-    }
-
-    if (!GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-        // Early Return
-        return Status;
-    }
-
-    if (GOPDraw != NULL) {
-        *Interface = GOPDraw;
-
-        // Early Return
-        return EFI_SUCCESS;
-    }
-
-    HandleCount = 0;
-    HandleBuffer = NULL;
-    Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer, ByProtocol,
-        &gEfiGraphicsOutputProtocolGuid, NULL,
-        &HandleCount, &HandleBuffer
-    );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return EFI_UNSUPPORTED;
-    }
-
-    for (i = 0; i < HandleCount; i++) {
-        if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-            Status = REFIT_CALL_6_WRAPPER(
-                OrigOpenProtocolBS, HandleBuffer[i],
-                &gEfiGraphicsOutputProtocolGuid, *Interface,
-                AgentHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+    if (!EFI_ERROR(Status)) {
+        if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->LocateProtocol, &gEfiGraphicsOutputProtocolGuid,
+                NULL, Interface
             );
-            if (!EFI_ERROR(Status) && *Interface != NULL) {
-                break;
-            }
         }
-    } // for
-
-    if (EFI_ERROR(Status) || *Interface == NULL) {
-        Status = EFI_UNSUPPORTED;
+        else if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->LocateProtocol, &gEfiUgaDrawProtocolGuid,
+                NULL, Interface
+            );
+        }
     }
-
-    MY_FREE_POOL(HandleBuffer);
 
     return Status;
-} // EFI_STATUS OpenProtocolEx()
+} // EFI_STATUS EFIAPI OpenProtocolEx()
 
 
 // Extended 'HandleProtocol'
@@ -1568,8 +1614,8 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 
 static
 VOID ReMapOpenProtocol (VOID) {
-    if (!GOPDraw) {
-        // Early Return if GOP is Absent
+    if (!GOPDraw && !UGADraw) {
+        // Early Return if GOP and UGA are Absent
         return;
     }
 
@@ -1578,7 +1624,7 @@ VOID ReMapOpenProtocol (VOID) {
             // Early Return on Compact Macs
             return;
         }
-        if (AppleFramebuffers == 0) {
+        if (AppleFramebuffers < 1) {
             // Early Return on Macs without AppleFramebuffers
             return;
         }
@@ -1591,14 +1637,14 @@ VOID ReMapOpenProtocol (VOID) {
         gBS->CalculateCrc32, gBS,
         gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32
     );
-} // ReMapOpenProtocol()
+} // static VOID ReMapOpenProtocol()
 
 static
 VOID RunMacBootSupportFuncs (VOID) {
     // Set Mac boot args if configured to
     // Disables AMFI if DisableAMFI is active
-    // Disables MacOS compatibility check if DisableCompatCheck is active
-    // Disables MacOS kernel panic logging to NVRAM if DisableNvramPanicLog is active
+    // Disables macOS compatibility check if DisableCompatCheck is active
+    // Disables macOS kernel panic logging to NVRAM if DisableNvramPanicLog is active
     if (GlobalConfig.SetBootArgs && GlobalConfig.SetBootArgs[0] != L'\0') {
         SetBootArgs();
     }
@@ -1606,10 +1652,10 @@ VOID RunMacBootSupportFuncs (VOID) {
     // Disable AMFI if configured to and not previously disabled
     NoCheckAMFI();
 
-    // Disable MacOS compatibility check if configured to and not previously disabled
+    // Disable macOS compatibility check if configured to and not previously disabled
     NoCheckCompat();
 
-    // Disable MacOS kernel panic logging to NVRAM if configured to and not previously disabled
+    // Disable macOS kernel panic logging to NVRAM if configured to and not previously disabled
     NoNvramPanicLog();
 
     // Filter out the 'APPLE_INTERNAL' CSR bit if required
@@ -1621,85 +1667,6 @@ VOID RunMacBootSupportFuncs (VOID) {
     // Re-Map OpenProtocol
     ReMapOpenProtocol();
 } // static VOID RunMacBootSupportFuncs()
-
-static
-BOOLEAN ToolEntryInfo (
-    CHAR16 *ToolPurpose
-) {
-    INTN               DefaultEntry;
-    UINTN              MenuExit;
-    BOOLEAN            RetVal;
-    MENU_STYLE_FUNC    Style;
-    REFIT_MENU_ENTRY  *ChosenEntry;
-    REFIT_MENU_SCREEN *ToolEntryInfoMenu;
-
-    ToolEntryInfoMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (ToolEntryInfoMenu == NULL) {
-        // Early Return
-        return FALSE;
-    }
-
-    ToolEntryInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT              );
-    ToolEntryInfoMenu->Title      = PoolPrint (L"Confirm '%s' Entry", ToolPurpose);
-    ToolEntryInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT             );
-    ToolEntryInfoMenu->Hint2      = StrDuplicate (L""                                 );
-
-    if (MyStriCmp (ToolPurpose, LABEL_GPTSYNC)) {
-        AddMenuInfoLine (ToolEntryInfoMenu, L"Your system *MAY* be restarted on return from the tool",   FALSE);
-        AddMenuInfoLine (ToolEntryInfoMenu, L"This happens when changes are made by the tool",           FALSE);
-    }
-    else {
-        AddMenuInfoLine (ToolEntryInfoMenu, L"Your system will be restarted on return from the tool",    FALSE);
-        AddMenuInfoLine (ToolEntryInfoMenu, L"This will always happen whether actually used or not",     FALSE);
-    }
-    AddMenuInfoLine (ToolEntryInfoMenu, L"",                                                         FALSE);
-    AddMenuInfoLine (ToolEntryInfoMenu, L"Please confirm you wish to proceed with running the tool", FALSE);
-    AddMenuInfoLine (ToolEntryInfoMenu, L"",                                                         FALSE);
-
-    REFIT_MENU_ENTRY *MenuEntryToolEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    if (MenuEntryToolEntry == NULL) {
-        FreeMenuScreen (&ToolEntryInfoMenu);
-
-        // Early Return
-        return FALSE;
-    }
-
-    MenuEntryToolEntry->Title = PoolPrint (L"Run %s", ToolPurpose);
-    MenuEntryToolEntry->Tag   = TAG_GENERIC;
-    AddMenuEntry (ToolEntryInfoMenu, MenuEntryToolEntry);
-
-    RetVal = GetReturnMenuEntry (&ToolEntryInfoMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&ToolEntryInfoMenu);
-
-        // Early Return
-        return TRUE;
-    }
-
-    DefaultEntry = 1;
-    Style = GraphicsMenuStyle;
-    ChosenEntry = NULL;
-    MenuExit = RunGenericMenu (ToolEntryInfoMenu, Style, &DefaultEntry, &ChosenEntry);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ToolEntryInfo'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
-    );
-    LOG_MSG("\n");
-    LOG_MSG("%s  User Confirmation:", OffsetNext);
-    LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
-    #endif
-
-    RetVal = TRUE;
-    if (MenuExit != MENU_EXIT_ENTER || ChosenEntry->Tag != TAG_GENERIC) {
-        RetVal = FALSE;
-    }
-
-    FreeMenuScreen (&ToolEntryInfoMenu);
-
-    return RetVal;
-} // static BOOLEAN ToolEntryInfo()
 
 static
 BOOLEAN ShowCleanNvramInfo (
@@ -1765,7 +1732,7 @@ BOOLEAN ShowCleanNvramInfo (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
+        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' From RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     LOG_MSG("Received User Input:");
@@ -1853,8 +1820,8 @@ VOID AboutRefindPlus (VOID) {
         ),
         TRUE
     );
-    if (!HasMacOS) {
-        TmpStr = StrDuplicate (L"Not Available");
+    if (!AppleFirmware && !HasMacOS) {
+        TmpStr = StrDuplicate (L"Absent");
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1879,31 +1846,27 @@ VOID AboutRefindPlus (VOID) {
         TmpStr = (!EFI_ERROR(Status))
             ? StrDuplicate (gCsrStatus)
             : PoolPrint (L"%s ... %r", gCsrStatus, Status);
+
+        LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
     }
-    LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for Mac   : %s", TmpStr), TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for macOS : %s", TmpStr),                   TRUE);
     MY_FREE_POOL(TmpStr);
+
     TmpStr = egScreenDescription();
-    LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
-    AddMenuInfoLine (AboutMenu, PoolPrint(L"Screen Output : %s", TmpStr),  TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Output : %s", TmpStr),                   TRUE);
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                        FALSE);
-    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2023 Dayo Akanji and Others",          FALSE);
+    AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2024 Dayo Akanji and Others",          FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2023 Roderick W. Smith",      FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer",    FALSE);
     AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and Others", FALSE);
     AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license",    FALSE);
 
     RetVal = GetReturnMenuEntry (&AboutMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&AboutMenu);
-
-        // Early Return
-        return;
+    if (RetVal) {
+        RunMenu (AboutMenu, NULL);
     }
-
-    RunMenu (AboutMenu, NULL);
 
     FreeMenuScreen (&AboutMenu);
 } // static VOID AboutRefindPlus()
@@ -1957,8 +1920,20 @@ VOID RescanAll (
     MY_NATIVELOGGER_SET;
     #endif
 
+    // Default UI Scale
+    IconScaleSet = FALSE;
+    GlobalConfig.IconSizes[ICON_SIZE_BIG]   = DEFAULT_BIG_ICON_SIZE    ;
+    GlobalConfig.IconSizes[ICON_SIZE_BADGE] = DEFAULT_BIG_ICON_SIZE / 4;
+    GlobalConfig.IconSizes[ICON_SIZE_SMALL] = DEFAULT_SMALL_ICON_SIZE  ;
+    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = DEFAULT_MOUSE_SIZE       ;
+
     // Reset MainMenu
-    InitMainMenu();
+    FreeList (
+        (VOID ***) &(MainMenu->Entries),
+        &MainMenu->EntryCount
+    );
+    MainMenu->Entries    = NULL;
+    MainMenu->EntryCount =    0;
 
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary.
@@ -1986,13 +1961,6 @@ VOID RescanAll (
         #endif
     }
 
-    // Default UI Scale
-    IconScaleSet = FALSE;
-    GlobalConfig.IconSizes[ICON_SIZE_BIG]   = DEFAULT_BIG_ICON_SIZE    ;
-    GlobalConfig.IconSizes[ICON_SIZE_BADGE] = DEFAULT_BIG_ICON_SIZE / 4;
-    GlobalConfig.IconSizes[ICON_SIZE_SMALL] = DEFAULT_SMALL_ICON_SIZE  ;
-    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = DEFAULT_MOUSE_SIZE       ;
-
     // Read Config
     ReadConfig (GlobalConfig.ConfigFilename);
 
@@ -2001,11 +1969,10 @@ VOID RescanAll (
 
     if (OverrideSB) {
         GlobalConfig.DirectBoot = FALSE;
-        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-        GlobalConfig.Timeout = MainMenu->TimeoutSeconds = 0;
+        GlobalConfig.TextOnly   = ForceTextOnly            = TRUE;
+        GlobalConfig.Timeout    = MainMenu->TimeoutSeconds =    0;
     }
 
-    SetVolumeIcons();
     ScanForBootloaders();
 
     #if REFIT_DEBUG > 0
@@ -2164,7 +2131,7 @@ VOID SetConfigFilename (
                 #endif
             }
             else {
-                MsgStr = StrDuplicate (L"** WARN: Specified Config File Not Found");
+                MsgStr = StrDuplicate (L"** WARN: Specified Config File *NOT* Found");
                 #if REFIT_DEBUG > 0
                 LOG_MSG("%s", MsgStr);
                 LOG_MSG("\n");
@@ -2241,7 +2208,7 @@ VOID AdjustDefaultSelection (VOID) {
                 MY_FREE_POOL(Element);
 
                 #if REFIT_DEBUG > 0
-                BRK_MOD("\n");
+                LOG_MSG("\n");
                 #endif
 
                 Status = EfivarGetRaw (
@@ -2259,7 +2226,6 @@ VOID AdjustDefaultSelection (VOID) {
             if (!LoggedOnce) {
                 LoggedOnce = TRUE;
                 if (FormatLog) {
-                    BRK_MEG("\n");
                     MsgStr = StrDuplicate (L"Changed to Previous Selection");
                 }
                 else {
@@ -2394,7 +2360,7 @@ VOID LogBasicInfo (VOID) {
 
     /* NVRAM Storage Info */
     QVInfoSupport = FALSE;
-    LOG_MSG("Non-Volatile Storage:");
+    LOG_MSG("Non-Volatile Memory:");
     if (((gST->Hdr.Revision >> 16U) > 1) &&
         ((gBS->Hdr.Revision >> 16U) > 1) &&
         ((gRT->Hdr.Revision >> 16U) > 1)
@@ -2405,7 +2371,7 @@ VOID LogBasicInfo (VOID) {
 
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: Irregular UEFI 2.x Implementation Detected");
-            LOG_MSG("%s         Program Behaviour is *NOT* Defined", OffsetNext);
+            LOG_MSG("%s         Program Behaviour *IS NOT* Defined", OffsetNext);
         }
         else {
             // Flag as 'TRUE' even on error to skip the "Skipped QVI Call" message later
@@ -2416,7 +2382,7 @@ VOID LogBasicInfo (VOID) {
             );
             if (EFI_ERROR(Status)) {
                 LOG_MSG("\n\n");
-                LOG_MSG("** WARN: Could Not Retrieve Non-Volatile Storage Details");
+                LOG_MSG("** WARN: Could *NOT* Retrieve Non-Volatile Memory Details");
             }
             else {
                 if (AppleFirmware) {
@@ -2517,19 +2483,22 @@ EFI_STATUS EFIAPI efi_main (
     EFI_TIME           Now;
     UINTN              i, k;
     UINTN              Trigger;
+    UINT8              ResetNVRam;
     INTN               MenuExit;
     CHAR16            *MsgStr;
     CHAR16            *PartMsg;
     CHAR16            *TypeStr;
     CHAR16            *FilePath;
     CHAR16            *SelectionName;
+    CHAR16            *VentoyName;
     CHAR16            *VarNVRAM;
     CHAR16             KeyAsString[2];
-    BOOLEAN            RunningOC;
     BOOLEAN            FoundTool;
     BOOLEAN            RunOurTool;
     BOOLEAN            MokProtocol;
+    BOOLEAN            FoundVentoy;
     BOOLEAN            MainLoopRunning;
+    BOOLEAN            FoundInstallerMac;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
     LEGACY_ENTRY      *ourLegacyEntry;
@@ -2540,10 +2509,7 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     CHAR16            *SelfGUID;
-    CHAR16            *CurDateStr;
     CHAR16            *DisplayName;
-    CHAR16            *VentoyName;
-    BOOLEAN            FoundVentoy;
     BOOLEAN            ForceContinue;
 
     #if REFIT_DEBUG > 1
@@ -2585,7 +2551,7 @@ EFI_STATUS EFIAPI efi_main (
     }
     else {
         VendorInfo = PoolPrint (
-            L"%s %d.%02d",
+            L"%s v%d.%02d",
             gST->FirmwareVendor,
             gST->FirmwareRevision >> 16U,
             gST->FirmwareRevision & ((1 << 16U) - 1)
@@ -2600,26 +2566,12 @@ EFI_STATUS EFIAPI efi_main (
         ? CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS)
         : CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
 
-
     /* Init Logging */
     // DA-TAG: Also on RELEASE builds as we need the timer
     //         - Without logging output on RELEASE builds
     InitBooterLog();
 
     #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_SET;
-    #endif
-
-    // Clear 'BootNext' if present
-    // Just in case ... Should have been cleared by the firmware
-    EfivarSetRaw (
-        &GlobalGuid, L"BootNext",
-        NULL, 0, TRUE
-    );
-
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-
     /* Enable Forced Native Logging */
     MY_NATIVELOGGER_SET;
 
@@ -2641,7 +2593,7 @@ EFI_STATUS EFIAPI efi_main (
 #elif defined(EFIAARCH64)
     ArchType = L"ARM_64 (64 bit)";
 #else
-    ArchType = L"Unknown Arch";
+    ArchType = L"Unknown";
 #endif
 
 #if REFIT_DEBUG > 0
@@ -2661,27 +2613,12 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("\n");
 
     /* TimeStamp */
-    if (Now.TimeZone == EFI_UNSPECIFIED_TIMEZONE) {
-        CurDateStr = PoolPrint (
-            L"%d-%02d-%02d %02d:%02d:%02d (UTC)",
-            NowYear, NowMonth,
-            NowDay, NowHour,
-            NowMinute, NowSecond
-        );
-    }
-    else {
-        CurDateStr = PoolPrint (
-            L"%d-%02d-%02d %02d:%02d:%02d (UTC%s%02d:%02d)",
-            NowYear, NowMonth,
-            NowDay, NowHour,
-            NowMinute, NowSecond,
-            (Now.TimeZone > 0 ? L"-" : L"+"),
-            ((ABS(Now.TimeZone)) / 60),
-            ((ABS(Now.TimeZone)) % 60)
-        );
-    }
-    LOG_MSG("Timestamp:- '%s'", CurDateStr);
-    MY_FREE_POOL(CurDateStr);
+    LOG_MSG(
+        "Timestamp:- '%d-%02d-%02d %02d:%02d:%02d (UTC)'",
+        NowYear, NowMonth,
+        NowDay, NowHour,
+        NowMinute, NowSecond
+    );
 // Big REFIT_DEBUG - END
 #endif
 
@@ -2711,7 +2648,7 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     if (!SelfVolSet) {
-        MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
+        MsgStr = StrDuplicate (L"Could *NOT* Set Self Volume!!");
         ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
         LOG_MSG("** WARN: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -2745,15 +2682,16 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Load config tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
+    VarDisableAMFI     = GlobalConfig.DisableAMFI         ;
+    VarNoCompatCheck   = GlobalConfig.DisableCompatCheck  ;
+    VarDisablePanicLog = GlobalConfig.DisableNvramPanicLog;
 
-    RunningOC = FALSE;
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO
-    /* Disable 'NvramProtect' and 'NvramProtectEx' if loaded via OpenCore */
-    if (GlobalConfig.NvramProtect || GlobalConfig.NvramProtectEx) {
-        Status = CheckStatusOC();
-        if (Status == EFI_ALREADY_STARTED) {
-            RunningOC                   =  TRUE;
+    Status = CheckStatusOC();
+    if (Status == EFI_ALREADY_STARTED) {
+        // Disable 'NvramProtect' and 'NvramProtectEx' if loaded via OpenCore
+        if (GlobalConfig.NvramProtect || GlobalConfig.NvramProtectEx) {
             GlobalConfig.NvramProtect   = FALSE;
             GlobalConfig.NvramProtectEx = FALSE;
         }
@@ -2781,13 +2719,13 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("L I S T   M I S C   S E T T I N G S");
     LOG_MSG("\n");
     LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                              );
-    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(GlobalConfig.LogLevel        ));
+    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(LogLevelConfig               ));
     LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay       ));
     LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA       ));
     LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
-    LOG_MSG("%s      HelpTags:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpTags        ));
+    LOG_MSG("%s      HelpScan:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpScan        ));
     LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon        ));
     LOG_MSG("%s      AlignCSR:- ",         OffsetNext                               );
     if (GlobalConfig.DynamicCSR == 1) {
@@ -2832,13 +2770,11 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      SupplyAppleFB:- ",    OffsetNext                               );
-    if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                        );
-    }
-    else {
-        LOG_MSG("'%s'", GlobalConfig.SupplyAppleFB ? L"Active" : L"Inactive"        );
-    }
+    LOG_MSG(
+        "%s      HandleVentoy:- '%s'",
+        OffsetNext,
+        GlobalConfig.HandleVentoy ? L"Active" : L"Inactive"
+    );
     LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
     if (AppleFirmware) {
         LOG_MSG("'Disabled'"                                                        );
@@ -2906,7 +2842,7 @@ EFI_STATUS EFIAPI efi_main (
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
-        Status = RP_ApfsConnectDevices();
+        Status = RefitApfsConnectDevices();
     }
     #endif
 
@@ -2941,7 +2877,7 @@ EFI_STATUS EFIAPI efi_main (
         Status = SetAppleOSInfo();
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Spoof MacOS Version ... %r", Status);
+        LOG_MSG("INFO: Spoof macOS Version ... %r", Status);
         LOG_MSG("\n\n");
         #endif
     }
@@ -3086,8 +3022,8 @@ EFI_STATUS EFIAPI efi_main (
         if (GlobalConfig.ScanDelay > Trigger) {
             PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (
-                PartMsg, &BGColor, CENTER,
-                0, NULL
+                PartMsg, &BGColor,
+                CENTER, 0, NULL
             );
 
             MY_FREE_POOL(PartMsg);
@@ -3126,7 +3062,6 @@ EFI_STATUS EFIAPI efi_main (
     }
 
     // Continue Bootstrap
-    SetVolumeIcons();
     ScanForBootloaders();
     ScanForTools();
 
@@ -3159,7 +3094,7 @@ EFI_STATUS EFIAPI efi_main (
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"             Program Behaviour is Undefined!!             ", NEXTLINE);
+        PrintUglyText (L"            Program Behaviour *IS NOT* Defined            ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PauseForKey();
@@ -3330,17 +3265,10 @@ EFI_STATUS EFIAPI efi_main (
             #endif
 
             TypeStr = L"Aborted Invalid System Reset Call ... Please Try Again";
-
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
             egDisplayMessage (
-                TypeStr, &BGColor, CENTER,
-                4, L"PauseSeconds"
+                TypeStr, &BGColor,
+                CENTER, 4, L"PauseSeconds"
             );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             continue;
         }
@@ -3388,7 +3316,7 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                             ourLoaderEntry->me.Title        =  StrDuplicate (TypeStr);
                             ourLoaderEntry->me.Tag          =     TAG_LOAD_NVRAMCLEAN;
-                            ourLoaderEntry->Volume          = CopyVolume (Volumes[i]);
+                            ourLoaderEntry->Volume          =              Volumes[i];
                             ourLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
                             ourLoaderEntry->UseGraphicsMode =                   FALSE;
 
@@ -3406,7 +3334,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Could Not Find Tool:- '%s'", TypeStr);
+                    MsgStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", TypeStr);
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("\n\n");
                     LOG_MSG("** WARN : %s ... Return to Main Menu", MsgStr);
@@ -3458,7 +3386,7 @@ EFI_STATUS EFIAPI efi_main (
                 while ((VarNVRAM = FindCommaDelimited (
                     RP_NVRAM_VARIABLES, i++
                 )) != NULL) {
-                    // Clear Emulated NVRAM
+                    // Clear Emulated Variable Memory
                     if (!EFI_ERROR(Status)) {
                         egSaveFile (
                             gVarsDir, VarNVRAM,
@@ -3466,13 +3394,13 @@ EFI_STATUS EFIAPI efi_main (
                         );
                     }
 
-                    // Clear Hardware NVRAM (RefindPlusGuid)
+                    // Clear Hardware Variable Memory (RefindPlusGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusGuid,
                         AccessFlagsFull, 0, NULL
                     );
 
-                    // Clear Hardware NVRAM (RefindPlusOldGuid)
+                    // Clear Hardware Variable Memory (RefindPlusOldGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusOldGuid,
                         AccessFlagsFull, 0, NULL
@@ -3483,10 +3411,10 @@ EFI_STATUS EFIAPI efi_main (
 
                 // Force nvram garbage collection on Macs
                 if (AppleFirmware) {
-                    UINT8 ResetNVRam = 1;
+                    ResetNVRam = 1;
                     REFIT_CALL_5_WRAPPER(
                         gRT->SetVariable, L"ResetNVRam",
-                        &AppleVendorOsGuid, AccessFlagsFull,
+                        &AppleBootGuid, AccessFlagsFull,
                         sizeof (ResetNVRam), &ResetNVRam
                     );
                 }
@@ -3498,28 +3426,34 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                RebootSystem (TRUE);
+                MainLoopRunning = RebootSystem (TRUE);
+                if (!MainLoopRunning) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Reset Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
 
             break;
             case TAG_REBOOT:    // Reboot
-                RebootSystem (FALSE);
-
-                // Just in case we get this far
-                MainLoopRunning = FALSE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"System Reset Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
+                MainLoopRunning = RebootSystem (FALSE);
+                if (!MainLoopRunning) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Reset Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
 
             break;
             case TAG_SHUTDOWN: // Shut Down
                 TypeStr = L"Running System Shutdown";
 
                 RunOurTool = ConfirmShutdown();
-                if (RunOurTool == FALSE) {
+                if (!RunOurTool) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Aborted %s", TypeStr);
                     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -3529,42 +3463,40 @@ EFI_STATUS EFIAPI efi_main (
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
-
-                    // Early Exit
-                    break;
                 }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    LOG_MSG("%s", MsgStr);
+                    LOG_MSG("\n");
+                    MY_FREE_POOL(MsgStr);
 
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n");
-                MY_FREE_POOL(MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
+                    LOG_MSG("%s", TypeStr);
+                    END_TAG();
+                    #endif
 
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
-                LOG_MSG("%s", TypeStr);
-                END_TAG();
-                #endif
+                    // Terminate Screen
+                    TerminateScreen();
 
-                // Terminate Screen
-                TerminateScreen();
+                    REFIT_CALL_4_WRAPPER(
+                        gRT->ResetSystem, EfiResetShutdown,
+                        EFI_SUCCESS, 0, NULL
+                    );
 
-                REFIT_CALL_4_WRAPPER(
-                    gRT->ResetSystem, EfiResetShutdown,
-                    EFI_SUCCESS, 0, NULL
-                );
+                    // Just in case we get this far
+                    MainLoopRunning = FALSE;
 
-                // Just in case we get this far
-                MainLoopRunning = FALSE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"System Shutdown Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"System Shutdown Failed");
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("WARN: %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                } // if/else !RunOurTool
 
             break;
             case TAG_ABOUT:    // About RefindPlus
@@ -3587,15 +3519,16 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 EntryVol       = ourLoaderEntry->Volume;
+                FoundVentoy    = FALSE;
 
-                // Fix undetected MacOS
-                if (!FindSubStr (ourLoaderEntry->Title, L"MacOS")                          &&
-                    !FindSubStr (ourLoaderEntry->Title, L"Mac OS")                         &&
-                    !FindSubStr (ourLoaderEntry->Title, L"Install")                        &&
+                // Fix undetected macOS
+                if (!FindSubStr (ourLoaderEntry->Title, L"macOS"  )                       &&
+                    !FindSubStr (ourLoaderEntry->Title, L"Mac OS" )                       &&
+                    !FindSubStr (ourLoaderEntry->Title, L"Install")                       &&
                     FindSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     ourLoaderEntry->Title = (FindSubStr (EntryVol->VolName, L"PreBoot"))
-                        ? L"MacOS" : L"RefindPlus";
+                        ? L"macOS" : L"RefindPlus";
                 }
 
                 // Fix undetected Windows
@@ -3605,38 +3538,62 @@ EFI_STATUS EFIAPI efi_main (
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
-                if (
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_SET;
+                #endif
+                FoundInstallerMac = (
+                    FindSubStr (ourLoaderEntry->Title, L"Install OS X") ||
+                    FindSubStr (ourLoaderEntry->Title, L"OS X Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"Install macOS") ||
+                    FindSubStr (ourLoaderEntry->Title, L"macOS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"Install Mac OS") ||
+                    FindSubStr (ourLoaderEntry->Title, L"Mac OS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->Title, L"com.apple.install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install OS X") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"OS X Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install macOS") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"macOS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Install Mac OS") ||
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"Mac OS Install")
+                ) || (
+                    FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.install")
+                ) || (
+                    EntryVol->VolName &&
                     (
-                        FindSubStr (ourLoaderEntry->Title, L"OS X Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"MacOS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"Mac OS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->Title, L"com.apple.install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"OS X Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"MacOS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"Mac OS Install")
-                    ) || (
-                        FindSubStr (ourLoaderEntry->LoaderPath, L"com.apple.install")
-                    ) || (
-                        EntryVol->VolName &&
+                        FindSubStr (EntryVol->VolName, L"Install OS X") ||
                         FindSubStr (EntryVol->VolName, L"OS X Install")
-                    ) || (
-                        EntryVol->VolName &&
-                        FindSubStr (EntryVol->VolName, L"Mac OS Install")
-                    ) || (
-                        EntryVol->VolName &&
-                        FindSubStr (EntryVol->VolName, L"com.apple.install")
                     )
-                ) {
+                ) || (
+                    EntryVol->VolName &&
+                    (
+                        FindSubStr (EntryVol->VolName, L"Install macOS") ||
+                        FindSubStr (EntryVol->VolName, L"macOS Install")
+                    )
+                ) || (
+                    EntryVol->VolName &&
+                    (
+                        FindSubStr (EntryVol->VolName, L"Install Mac OS") ||
+                        FindSubStr (EntryVol->VolName, L"Mac OS Install")
+                    )
+                ) || (
+                    EntryVol->VolName &&
+                    FindSubStr (EntryVol->VolName, L"com.apple.install")
+                );
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
+
+                if (FoundInstallerMac) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG("Received User Input:");
-                    MsgStr = StrDuplicate (L"Load MacOS Installer");
+                    MsgStr = StrDuplicate (L"Load macOS Installer");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s%s '%s'",
@@ -3656,34 +3613,20 @@ EFI_STATUS EFIAPI efi_main (
                     (
                         SubScreenBoot && FindSubStr (SelectionName, L"OpenCore")
                     )
-                    || FindSubStr (ourLoaderEntry->Title, L"OpenCore")
-                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC_")
-                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\")
+                    || FindSubStr (ourLoaderEntry->Title,      L"OpenCore"  )
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC_"     )
+                    || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OC\\"    )
                     || FindSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
-                    if (RunningOC) {
-                        #if REFIT_DEBUG > 0
-                        MY_MUTELOGGER_SET;
-                        #endif
-                        egDisplayMessage (
-                            L"Invalid OpenCore Load Attempt ... Already Started",
-                            &BGColor, CENTER,
-                            3, L"PauseSeconds"
-                        );
-                        #if REFIT_DEBUG > 0
-                        MY_MUTELOGGER_OFF;
-                        #endif
-                    }
-
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
                     LOG_MSG(
                         "Received %sUser Input:",
-                        (RunningOC) ? L"*Invalid* " : L""
+                        (RunningOC) ? L"*INVALID* " : L""
                     );
                     MsgStr = PoolPrint (
                         L"Load %sInstance: OpenCore",
-                        (RunningOC) ? L"*Invalid* " : L""
+                        (RunningOC) ? L"*INVALID* " : L""
                     );
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -3697,9 +3640,14 @@ EFI_STATUS EFIAPI efi_main (
 
                     if (RunningOC) {
                         #if REFIT_DEBUG > 0
+                        LOG_MSG("%sRejected *INVALID* User Input", OffsetNext);
                         LOG_MSG("\n\n");
                         #endif
 
+                        egDisplayMessage (
+                            L"Invalid OpenCore Load Attempt ... Already Started",
+                            &BGColor, CENTER, 4, L"PauseSeconds"
+                        );
                         break;
                     }
 
@@ -3740,10 +3688,10 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else if (
                     (
-                        SubScreenBoot && FindSubStr (SelectionName, L"MacOS")
+                        SubScreenBoot && FindSubStr (SelectionName, L"macOS")
                     )
                     || ourLoaderEntry->OSType == 'M'
-                    || FindSubStr (ourLoaderEntry->Title, L"MacOS")
+                    || FindSubStr (ourLoaderEntry->Title, L"macOS")
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input:'
@@ -3757,30 +3705,14 @@ EFI_STATUS EFIAPI efi_main (
                         LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
-                        if (GlobalConfig.SyncAPFS &&
-                            EntryVol->FSType == FS_TYPE_APFS
+                        if (GlobalConfig.SyncAPFS                      &&
+                            EntryVol->FSType  == FS_TYPE_APFS          &&
+                            EntryVol->VolRole == APFS_VOLUME_ROLE_PREBOOT
                         ) {
-                            APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
-
-                            // DA-TAG: Limit to TianoCore
-                            #ifndef __MAKEWITH_TIANO
-                            Status = EFI_NOT_STARTED;
-                            #else
-                            Status = RP_GetApfsVolumeInfo (
-                                EntryVol->DeviceHandle,
-                                NULL, NULL,
-                                &VolumeRole
+                            DisplayName = GetVolumeGroupName (
+                                ourLoaderEntry->LoaderPath,
+                                EntryVol
                             );
-                            #endif
-
-                            if (!EFI_ERROR(Status)) {
-                                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                                    DisplayName = GetVolumeGroupName (
-                                        ourLoaderEntry->LoaderPath,
-                                        EntryVol
-                                    );
-                                }
-                            }
                         }
 
                         LOG_MSG(
@@ -3951,23 +3883,31 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
                 }
                 else {
+                    i = 0;
+                    while (
+                        GlobalConfig.HandleVentoy &&
+                        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                    ) {
+                        if (MyStrBegins (VentoyName, EntryVol->VolName)) {
+                            FoundVentoy = TRUE;
+                        }
+                        MY_FREE_POOL(VentoyName);
+
+                        if (FoundVentoy) break;
+                    } // while
+
                     #if REFIT_DEBUG > 0
-                    if (!GlobalConfig.HandleVentoy) {
-                        MsgStr = PoolPrint (L"Load EFI File:- '%s'", ourLoaderEntry->LoaderPath);
+                    if (!FoundVentoy) {
+                        MsgStr = PoolPrint (
+                            L"Load EFI File:- '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
                     else {
-                        i = 0;
-                        FoundVentoy = FALSE;
-                        while (!FoundVentoy && (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL) {
-                            if (MyStriCmp (EntryVol->VolName, VentoyName)) {
-                                FoundVentoy = TRUE;
-                                MsgStr = PoolPrint (
-                                    L"Load Instance: Ventoy on %s Partition via '%s'",
-                                    VentoyName, ourLoaderEntry->LoaderPath
-                                );
-                            }
-                            MY_FREE_POOL(VentoyName);
-                        } // while
+                        MsgStr = PoolPrint (
+                            L"Load Instance: Ventoy via '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
 
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -3977,7 +3917,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    if (GlobalConfig.NvramProtectEx) {
+                    if (!FoundVentoy && GlobalConfig.NvramProtectEx) {
                         if (GlobalConfig.NvramProtect) {
                             // Some UEFI Windows installers/updaters may not be in the standard path
                             // So, activate NvramProtect (if set and allowed) on unidentified loaders
@@ -4080,39 +4020,8 @@ EFI_STATUS EFIAPI efi_main (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                if (MyStriCmp (ourLoaderEntry->me.Title, LABEL_GDISK)) {
-                    TypeStr = LABEL_GDISK;
-                    FoundTool = TRUE;
-                }
-                else if (MyStriCmp (ourLoaderEntry->me.Title, LABEL_GPTSYNC)) {
-                    TypeStr = LABEL_GPTSYNC;
-                    FoundTool = TRUE;
-                }
-
-                if (!FoundTool) {
-                    RunOurTool = TRUE;
-                }
-                else {
-                    RunOurTool = ToolEntryInfo (TypeStr);
-                    if (RunOurTool == FALSE) {
-                        #if REFIT_DEBUG > 0
-                        LOG_MSG("%s    ** Not Running %s", OffsetNext, TypeStr);
-                        LOG_MSG("\n\n");
-                        #endif
-
-                        // Early Exit
-                        break;
-                    }
-                }
-
-                if (RunOurTool) {
-                    // No end dash line ... Expected to return
-                    StartTool (ourLoaderEntry);
-                }
-
-                if (FoundTool && !SkipForcedReboot) {
-                    RebootSystem (TRUE);
-                }
+                // No end dash line ... Expected to return
+                StartTool (ourLoaderEntry);
 
             break;
             case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the NVRAM
@@ -4135,7 +4044,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Restore Entries", OffsetNext);
+                LOG_MSG("%s  - %s", OffsetNext, LABEL_HIDDEN);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -4144,7 +4053,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit 'Restore Entries'", OffsetNext);
+                LOG_MSG("%s  - Exit '%s'", OffsetNext, LABEL_HIDDEN);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -4183,8 +4092,7 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 // No end dash line ... Expected to return
-                // Unset DynamicCSR if active
-                RotateCsrValue (TRUE);
+                InitRotateCSR();
 
             break;
             case TAG_INSTALL:
@@ -4201,7 +4109,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_BOOTORDER:
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Manage Boot Order", OffsetNext);
+                LOG_MSG("%s  - Manage BootOrder", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
@@ -4210,7 +4118,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("Received User Input:");
-                LOG_MSG("%s  - Exit 'Boot Order'", OffsetNext);
+                LOG_MSG("%s  - Exit 'Manage BootOrder'", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
 
