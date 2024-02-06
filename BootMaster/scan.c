@@ -491,7 +491,7 @@ VOID GenerateSubScreen (
     // InitializeSubScreen cannot return NULL; but guard against this regardless
     if (SubScreen != NULL) {
         // Loader specific submenu entries
-        if (Entry->OSType == 'M') {          // Entries for macOS
+        if (Entry->OSType == 'M') {        // Entries for macOS
             LOG_SEP(L"X");
             BREAD_CRUMB(L"%s:  A1 - OSType M:- START", FuncTag);
 #if defined (EFIX64)
@@ -1359,6 +1359,7 @@ VOID SetLoaderDefaults (
         if (!GlobalConfig.HelpIcon) {
             BREAD_CRUMB(L"%s:  6a 1a 1", FuncTag);
             MergeUniqueStrings (&OSIconName, TmpIconName, L',');
+            MY_FREE_POOL(TmpIconName);
         }
         else {
             BREAD_CRUMB(L"%s:  6a 1b 1", FuncTag);
@@ -2402,7 +2403,10 @@ BOOLEAN ScanLoaderDir (
         // but nothing wrong has been found or the problem reproduced. It is therefore
         // being put down to buggy EFI implementations and that particular error igored.
         //BREAD_CRUMB(L"%s:  2a 5", FuncTag);
-        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
+        if (EFI_ERROR(Status)            &&
+            Status != EFI_NOT_FOUND      &&
+            Status != EFI_INVALID_PARAMETER
+        ) {
             //BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
             if (Path) {
                 //BREAD_CRUMB(L"%s:  2a 5a 1a 1", FuncTag);
@@ -2917,7 +2921,10 @@ VOID ScanEfiFiles (
     Status = DirIterClose (&EfiDirIter);
 
     //BREAD_CRUMB(L"%s:  12", FuncTag);
-    if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
+    if (EFI_ERROR(Status)            &&
+        Status != EFI_NOT_FOUND      &&
+        Status != EFI_INVALID_PARAMETER
+    ) {
         //BREAD_CRUMB(L"%s:  12a 1", FuncTag);
         Temp = PoolPrint (
             L"While Scanning the EFI System Partition on '%s'",
@@ -3317,7 +3324,6 @@ LOADER_ENTRY * AddToolEntry (
 VOID ScanForBootloaders (VOID) {
     UINTN     i;
     UINTN     SetOptions;
-    CHAR16    ShortCutKey;
     CHAR16   *HiddenTags;
     CHAR16   *HiddenLegacy;
     CHAR16   *DontScanItem;
@@ -3331,6 +3337,7 @@ VOID ScanForBootloaders (VOID) {
     #if REFIT_DEBUG > 0
     UINTN    KeyNum;
     CHAR16  *MsgStr;
+    CHAR16  *LogSection;
     #endif
 
     ScanningLoaders = TRUE;
@@ -3364,7 +3371,8 @@ VOID ScanForBootloaders (VOID) {
         }
     } // for
 
-    // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
+    // Update NVRAM boot manager list if this is UEFI legacy type unit,
+    // scanning for legacy loaders and deep legacy scan is active
     if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) &&
         ScanForLegacy && GlobalConfig.DeepLegacyScan
     ) {
@@ -3441,7 +3449,7 @@ VOID ScanForBootloaders (VOID) {
 
                 MY_FREE_POOL(DontScanItem);
             } // while
-        } // if GlobalConfig
+        } // if GlobalConfig.DontScanFiles
 
         if (GlobalConfig.DontScanDirs) {
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanDirs, i)) != NULL) {
@@ -3460,7 +3468,7 @@ VOID ScanForBootloaders (VOID) {
 
                 MY_FREE_POOL(DontScanItem);
             } // while
-        } // if GlobalConfig
+        } // if GlobalConfig.DontScanDirs
 
         if (GlobalConfig.DontScanVolumes) {
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanVolumes, i)) != NULL) {
@@ -3480,7 +3488,7 @@ VOID ScanForBootloaders (VOID) {
 
                 MY_FREE_POOL(DontScanItem);
             } // while
-        } // if GlobalConfig
+        } // if GlobalConfig.DontScanVolumes
 
         #if REFIT_DEBUG > 0
         if (AmendedDontScan) {
@@ -3626,13 +3634,14 @@ VOID ScanForBootloaders (VOID) {
         GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
     }
 
-    if (GlobalConfig.SyncAPFS && OrigDontScanDirs && AmendedDontScan) {
+    if (!AmendedDontScan) {
+        MY_FREE_POOL(OrigDontScanDirs);
+    }
+
+    if (OrigDontScanDirs) {
         // Restore the stashed GlobalConfig.DontScanDirs variable
         MY_FREE_POOL(GlobalConfig.DontScanDirs);
         GlobalConfig.DontScanDirs = OrigDontScanDirs;
-    }
-    else {
-        MY_FREE_POOL(OrigDontScanDirs);
     }
 
     if (MainMenu->EntryCount < 1) {
@@ -3648,7 +3657,7 @@ VOID ScanForBootloaders (VOID) {
         // Assign shortcut keys
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        CHAR16 *LogSection = L"A S S I G N   S H O R T C U T   K E Y S";
+        LogSection = L"A S S I G N   S H O R T C U T   K E Y S";
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
         LOG_MSG("\n\n");
         LOG_MSG("%s", LogSection);
@@ -3664,24 +3673,22 @@ VOID ScanForBootloaders (VOID) {
         #endif
 
         for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
+            if (i > 9) break;
+
             if (i < 9) {
                 #if REFIT_DEBUG > 0
                 KeyNum = i + 1;
                 #endif
 
-                ShortCutKey = (CHAR16) ('1' + i);
+                MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('1' + i);
             }
-            else if (i == 9) {
-                ShortCutKey = (CHAR16) ('9' - i);
+            else { // i == 9
+                MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('9' - i);
 
                 #if REFIT_DEBUG > 0
                 KeyNum = 0;
                 #endif
             }
-            else {
-                break;
-            }
-            MainMenu->Entries[i]->ShortcutDigit = ShortCutKey;
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
@@ -3707,7 +3714,7 @@ VOID ScanForBootloaders (VOID) {
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
-    }
+    } // if/else MainMenu->EntryCount
 
     // Wait for user acknowledgement if there were errors
     FinishTextScreen (FALSE);
@@ -3942,7 +3949,7 @@ VOID ScanForTools (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN   FlagAPFS;
     CHAR16   *ToolStr;
-    CHAR16   *LogSection = L"H A N D L E   T O O L   O P T I O N S";
+    CHAR16   *LogSection = L"P R O C E S S   T O O L   O P T I O N S";
 
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
@@ -4020,7 +4027,7 @@ VOID ScanForTools (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LogSection = L"Process Tool List Items:";
+    LogSection = L"Validate List Items:";
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
     LOG_MSG("\n");
@@ -4060,7 +4067,7 @@ VOID ScanForTools (VOID) {
         ToolTotal++;
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s  - List Item %02d ... ", OffsetNext, ToolTotal);
+        LOG_MSG("%s  - Tool List Item %02d ... ", OffsetNext, ToolTotal);
         #endif
 
         FoundTool = FALSE;

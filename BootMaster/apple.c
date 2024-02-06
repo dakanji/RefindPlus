@@ -38,10 +38,10 @@ BOOLEAN    MuteLogger     =                    FALSE;
 BOOLEAN    NormaliseCall  =                    FALSE;
 EFI_GUID   AppleBootGuid  = APPLE_BOOT_VARIABLE_GUID;
 
-// Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
-// Protection [SIP], or "rootless") status information. If the variable is not
-// present and the firmware is Apple, fake it and claim it is enabled, since
-// that is how macOS 10.11 treats a system with the variable absent.
+// Return details of Apple's Configurable Security Restrictions (CSR),
+// AKA the System Integrity Protection (SIP) or "rootless", status.
+// Claim this nvRAM setting is enabled if it is actually absent.
+// This is how macOS treats systems with this setting absent.
 EFI_STATUS GetCsrStatus (
     IN OUT UINT32 *CsrStatus
 ) {
@@ -58,21 +58,17 @@ EFI_STATUS GetCsrStatus (
     );
     if (EFI_ERROR(Status)) {
         if (Status != EFI_NOT_FOUND) {
-            gCsrStatus = StrDuplicate (L"Retrieval Error");
+            gCsrStatus = StrDuplicate (L"CSR Retrieval Error");
         }
         else {
-            if (NormaliseCall) {
-                gCsrStatus = StrDuplicate (L"Assumed Enabled");
-            }
-            else {
-                gCsrStatus = StrDuplicate (L"Enabled (Cleared/Empty)");
+            // Assume 'Enabled' if not found
+            gCsrStatus = StrDuplicate (L"CSR Enabled (Cleared/Empty)");
+            *CsrStatus = SIP_ENABLED_EX;
 
-                // Return 'Success' status if not called from NormaliseCSR
+            if (!NormaliseCall) {
+                // Return 'Success' if not from 'NormaliseCSR'
                 Status = EFI_SUCCESS;
             }
-
-            // Assume to be 'Enabled' if not found
-            *CsrStatus = SIP_ENABLED_EX;
         }
 
         // Early Return ... Return Status
@@ -80,7 +76,7 @@ EFI_STATUS GetCsrStatus (
     }
 
     if (CsrLength != sizeof (UINT32)) {
-        gCsrStatus = StrDuplicate (L"Storage Error");
+        gCsrStatus = StrDuplicate (L"CSR Storage Error");
 
         // Early Return ... Return Error
         return EFI_BAD_BUFFER_SIZE;
@@ -92,15 +88,15 @@ EFI_STATUS GetCsrStatus (
     return Status;
 } // EFI_STATUS GetCsrStatus()
 
-// Store string describing CSR status value in gCsrStatus variable, which appears
-// on the Info page. If DisplayMessage is TRUE, displays the new value of
-// gCsrStatus on the screen for four seconds.
+// Store string describing CSR status value in 'gCsrStatus'
+// Displayed on the 'About' page.
 VOID RecordgCsrStatus (
     UINT32  CsrStatus,
-    BOOLEAN DisplayMessage
+    BOOLEAN ShowResult
 ) {
     EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
     CHAR16   *MsgStr;
+
 
     MY_FREE_POOL(gCsrStatus);
 
@@ -116,7 +112,64 @@ VOID RecordgCsrStatus (
         // SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L"0x%04x - SIP Enabled",
+                L"0x%04x - SIP/SSV Enabled",
+                CsrStatus
+            );
+
+        break;
+        // SIP "Partially Enabled" Settings
+        case SIP_ENABLED_A001:
+        case SIP_ENABLED_A002:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans FileSys Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_B001:
+        case SIP_ENABLED_B002:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans nvRAM Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_C001:
+        case SIP_ENABLED_C002:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans Kext Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_AB01:
+        case SIP_ENABLED_AB02:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans FileSys/nvRAM Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_AC01:
+        case SIP_ENABLED_AC02:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans FileSys/Kext Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_BC01:
+        case SIP_ENABLED_BC02:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans nvRAM/Kext Limits)",
+                CsrStatus
+            );
+
+        break;
+        case SIP_ENABLED_ABC1:
+        case SIP_ENABLED_ABC2:
+            gCsrStatus = PoolPrint (
+                L"0x%04x - SIP Enabled (Sans FileSys/nvRAM/Kext Limits)",
                 CsrStatus
             );
 
@@ -149,7 +202,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_KEXT:
         case SSV_DISABLED_ANY_EX:
             gCsrStatus = PoolPrint (
-                L"0x%04x - SIP/SSV Disabled (Known Custom Setting)",
+                L"0x%04x - SIP/SSV Semi Disabled (Known Custom Setting)",
                 CsrStatus
             );
 
@@ -158,7 +211,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"0x%04x - SIP/SSV Disabled (Inactive)",
+                L"0x%04x - SIP/SSV Totally Disabled",
                 CsrStatus
             );
 
@@ -166,15 +219,16 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L"0x%04x - SIP/SSV Disabled (Unknown Custom Setting)",
+                L"0x%04x - SIP/SSV Semi Disabled (Unknown Custom Setting)",
                 CsrStatus
             );
     } // switch
 
-    if (DisplayMessage) {
-        MsgStr = (NormaliseCall)
-            ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
-            : PoolPrint (L"%s", gCsrStatus);
+    if (ShowResult) {
+        MsgStr = PoolPrint (
+            L"Changed %sCSR Setting",
+            (NormaliseCall) ? L"and Normalised " : L""
+        );
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
@@ -188,8 +242,6 @@ VOID RecordgCsrStatus (
             MsgStr, &BGColor,
             CENTER, 2, L"PauseSeconds"
         );
-
-        MY_FREE_POOL(MsgStr);
     }
 } // VOID RecordgCsrStatus()
 
@@ -207,7 +259,6 @@ VOID RotateCsrValue (
     BOOLEAN UnsetDynamic
 ) {
     EFI_STATUS    Status;
-    BOOLEAN       ShowMessage;
     EG_PIXEL      BGColor         = COLOR_LIGHTBLUE;
     UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
@@ -309,7 +360,7 @@ VOID RotateCsrValue (
         return;
     }
 
-    if (!GlobalConfig.NormaliseCSR) {
+    if (UnsetDynamic || !GlobalConfig.NormaliseCSR) {
         NormaliseCall = FALSE;
     }
     else if ((TargetCsr & CSR_ALLOW_APPLE_INTERNAL) != 0) {
@@ -317,12 +368,8 @@ VOID RotateCsrValue (
         NormaliseCall = TRUE;
     }
 
-    #if REFIT_DEBUG > 0
-    ShowMessage = TRUE;
-    #else
-    ShowMessage = UnsetDynamic;
-    #endif
-    RecordgCsrStatus (TargetCsr, ShowMessage);
+    // 'ShowResult' is based on 'UnsetDynamic'
+    RecordgCsrStatus (TargetCsr, UnsetDynamic);
 
     NormaliseCall = FALSE;
 

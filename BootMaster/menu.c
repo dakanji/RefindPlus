@@ -2844,7 +2844,9 @@ VOID SaveHiddenList (
         &RefindPlusGuid, VarName,
         HiddenList, ListLen, TRUE
     );
-    CheckError (Status, L"in SaveHiddenList!!");
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"in SaveHiddenList!!");
+    }
 } // VOID SaveHiddenList()
 
 // Present a menu for the user to delete (un-hide) hidden tags.
@@ -3058,7 +3060,9 @@ VOID AddToHiddenTags (
         &RefindPlusGuid, VarName,
         HiddenTags, StrLen (HiddenTags) * 2 + 2, TRUE
     );
-    CheckError (Status, L"in 'AddToHiddenTags'!!");
+    if (EFI_ERROR(Status)) {
+        CheckError (Status, L"in 'AddToHiddenTags'!!");
+    }
 
     MY_FREE_POOL(HiddenTags);
 } // VOID AddToHiddenTags()
@@ -3471,7 +3475,7 @@ BOOLEAN ConfirmRotate (VOID) {
     ConfirmRotateMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (ConfirmRotateMenu == NULL) {
         // Resource Exhaustion ... Early Exit
-        return FALSE;
+        return TRUE;
     }
 
     /* coverity[check_return: SUPPRESS] */
@@ -3685,8 +3689,8 @@ UINTN RunMainMenu (
     REFIT_MENU_ENTRY  **ChosenEntry
 ) {
     REFIT_MENU_ENTRY   *TempChosenEntry;
-    MENU_STYLE_FUNC     Style;
     MENU_STYLE_FUNC     MainStyle;
+    MENU_STYLE_FUNC     Style;
     EG_PIXEL            BGColor = COLOR_LIGHTBLUE;
     BOOLEAN             KeyStrokeFound;
     UINTN               MenuExit;
@@ -3694,9 +3698,12 @@ UINTN RunMainMenu (
     INTN                DefaultSubmenuIndex;
 
     #if REFIT_DEBUG > 0
-    CHAR16         *MsgStr;
-    BOOLEAN         SetSelection;
-    static BOOLEAN  ShowLoaded   =  TRUE;
+    CHAR16             *MsgStr;
+    UINTN               EntryPosition;
+    BOOLEAN             SetSelection;
+    BOOLEAN             TmpLevel;
+
+    static BOOLEAN      ShowLoaded = TRUE;
     #endif
 
     #if REFIT_DEBUG > 1
@@ -3718,12 +3725,13 @@ UINTN RunMainMenu (
             L"Loaded RefindPlus %s on %s Firmware",
             REFINDPLUS_VERSION, VendorInfo
         );
+        TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+        if (TmpLevel) GlobalConfig.LogLevel = 1;
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
-        LOG_MSG("\n\n");
+        if (TmpLevel) GlobalConfig.LogLevel = 0;
         MY_FREE_POOL(MsgStr);
 
-        MsgStr = StrDuplicate (L"R U N   M A I N   L O O P");
+        MsgStr = StrDuplicate (L"H A N D L E   U S E R   I N P U T");
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("%s", MsgStr);
@@ -3766,7 +3774,7 @@ UINTN RunMainMenu (
         BREAD_CRUMB(L"%s:  4a 2", FuncTag);
         if (SetSelection) {
             BREAD_CRUMB(L"%s:  4a 2a 1", FuncTag);
-            UINTN EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
+            EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
             MsgStr = PoolPrint (
                 L"Highlighted Screen Option:- '%s'",
                 Screen->Entries[EntryPosition]->Title

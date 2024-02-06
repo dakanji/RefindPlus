@@ -17,6 +17,19 @@
 - Fixes `Legacy MBR`, including `Legacy Windows`, Handling
   * Negatively impacted by `Volume->RootDir` filtering in the `DontScanVolumes` check consolidation
   * This bug was introduced in v0.14.0.AB (Commit a92b376)
+- Improves Misc Handling
+  * Partially back-ported LodePNG updates
+  * Additional CSR scenarios are now recognised
+  * Updated misc function structures to improve speed
+    - Variable initialisation tweaks
+    - Memory handling tweaks to prefer stack over heap where possible
+  * MemLog resolution set to 1/10000 seconds (1/10 milliseconds)
+    - For timing accuracy when RefindPlus loads under a second
+    - Previous resolution was 1/1000 seconds (1 millisecond)
+  * Extend `ostype` Coverage in Manual Stanzas
+    - Now includes `RefitVariant`, `OpenCore`, and `Clover`
+    - These are additional to the upstream original items
+    - Manual stanzas stay in Section 3 of the config file
 - Improves Graphics Handling
   * Improvements to handling `Appleframebuffer`
   * Improvements to handling `Graphics Pass Through`
@@ -41,8 +54,8 @@
 - Improves `RotateCSR` Handling
   * Now displays a confirmation input screen before execution
   * The `NormaliseCSR` feature was always applied when rotating
-- Amends `Apple 'Fat' Binary` Handling
-  * Now also assumed valid on UEFI-PC
+- Amends `Non Standard` Binary Handling
+  * `Apple 'Fat' Binary` now also assumed valid on UEFI-PC
   * Consistent with upstream implementation
     - `'Plain' Binaries` are assumed valid on Apple firmware
     - Upstream considers such invalid on all firmware types

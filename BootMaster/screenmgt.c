@@ -92,11 +92,36 @@ extern BOOLEAN            FlushFailedTag;
 extern BOOLEAN            GotConsoleControl;
 
 
+#if 0
+// DA-TAG: Permit Image->PixelData Memory Leak on Qemu
+//         Apparent Memory Conflict ... Needs Investigation.
+//         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
+//         Temporary ... Eliminate when no longer required.
+//
+//         Probable 'El Gordo' manifestation.
+//         See notes in 'HideTag' for more.
+//
+// UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
+static
+VOID egFreeImageQEMU (
+    EG_IMAGE *Image
+) {
+    if (GotConsoleControl) {
+        MY_FREE_IMAGE(Image);
+    }
+    else {
+        MY_FREE_POOL(Image);
+    }
+} // static VOID egFreeImageQEMU()
+#endif
+
+
 VOID FixIconScale (VOID) {
     if (IconScaleSet || GlobalConfig.ScaleUI == 99) {
         // Early Return
         return;
     }
+
     IconScaleSet = TRUE;
 
     // Scale UI Elements as required
@@ -151,12 +176,15 @@ VOID PrepareBlankLine (VOID) {
     UINTN i;
 
     MY_FREE_POOL(BlankLine);
+
     // Make a buffer for a whole text line
     BlankLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
-    for (i = 0; i < ConWidth; i++) {
-        BlankLine[i] = ' ';
+    if (BlankLine) {
+        for (i = 0; i < ConWidth; i++) {
+            BlankLine[i] = ' ';
+        }
+        BlankLine[i] = 0;
     }
-    BlankLine[i] = 0;
 } // VOID PrepareBlankLine()
 
 //
@@ -231,7 +259,7 @@ VOID InitScreen (VOID) {
 VOID SetupScreen (VOID) {
     UINTN   NewWidth;
     UINTN   NewHeight;
-    BOOLEAN gotGraphics;
+    BOOLEAN TextOption;
 
     static BOOLEAN BannerLoaded = FALSE;
 
@@ -254,8 +282,8 @@ VOID SetupScreen (VOID) {
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     // Convert mode number to horizontal & vertical resolution values
-    if ((GlobalConfig.RequestedScreenWidth > 0) &&
-        (GlobalConfig.RequestedScreenHeight == 0)
+    if (GlobalConfig.RequestedScreenWidth   > 0 &&
+        GlobalConfig.RequestedScreenHeight == 0
     ) {
         #if REFIT_DEBUG > 0
         LOG_MSG("Get Resolution From Mode:");
@@ -271,8 +299,8 @@ VOID SetupScreen (VOID) {
     // Set the believed-to-be current resolution to the LOWER of the current
     // believed-to-be resolution and the requested resolution. This is done to
     // enable setting a lower-than-default resolution.
-    if ((GlobalConfig.RequestedScreenWidth > 0) &&
-        (GlobalConfig.RequestedScreenHeight > 0)
+    if (GlobalConfig.RequestedScreenWidth  > 0 &&
+        GlobalConfig.RequestedScreenHeight > 0
     ) {
         ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth)
             ? ScreenW
@@ -318,15 +346,14 @@ VOID SetupScreen (VOID) {
         );
         #endif
 
-        if ((ScreenW > GlobalConfig.RequestedScreenWidth) ||
-            (ScreenH > GlobalConfig.RequestedScreenHeight)
+        if (ScreenW > GlobalConfig.RequestedScreenWidth ||
+            ScreenH > GlobalConfig.RequestedScreenHeight
         ) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
+            MsgStr = L"Match Requested Resolution to Actual Resolution";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("  - %s", MsgStr);
             LOG_MSG("\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
@@ -348,82 +375,100 @@ VOID SetupScreen (VOID) {
         } // if user requested a particular screen resolution
     }
 
-    if (AllowGraphicsMode) {
-        gotGraphics = egIsGraphicsModeEnabled();
-        if (!gotGraphics || !BannerLoaded) {
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        if (GlobalConfig.TextOnly) {
+            MsgStr = (GlobalConfig.DirectBoot)
+                ? L"'DirectBoot' is Active"
+                : L"Screen is in Text Only Mode";
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
+        }
+        else {
+            MsgStr = L"Invalid Screen Mode ... Switching to Text Mode";
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG_MSG("WARN: %s", MsgStr);
+        }
+        LOG_MSG("\n\n");
+        #endif
+
+        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+        AllowGraphicsMode = FALSE;
+        SwitchToText (FALSE);
+    }
+    else {
+        TextOption = (egIsGraphicsModeEnabled()) ? FALSE : TRUE;
+        if (TextOption || !BannerLoaded) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (
-                (!gotGraphics)
-                    ? L"Text Screen Mode Active ... Prepare Graphics Mode Switch"
-                    : L"Graphics FX Mode Active ... Prepare Title Banner Display"
-            );
+            MsgStr = (TextOption)
+                ? L"Text Screen Mode Active ... Prepare Graphics Mode Switch"
+                : L"Graphics FX Mode Active ... Prepare Title Banner Display";
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
-            MY_FREE_POOL(MsgStr);
 
-            MsgStr = PoolPrint (
-                L"Display Mode Resolution:- '%d x %d'",
-                ScreenLongest, ScreenShortest
+            MsgStr = L"Display Mode Resolution";
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"%s:- '%d x %d'",
+                MsgStr, ScreenLongest, ScreenShortest
             );
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-            MY_FREE_POOL(MsgStr);
-            #endif
+            LOG_MSG(
+                "%s  - %s:- '%d x %d'",
+                OffsetNext, MsgStr, ScreenLongest, ScreenShortest
+            );
 
             // Scale UI Elements for HiDPI or LoRez graphics as required
-            #if REFIT_DEBUG > 0
             if (GlobalConfig.ScaleUI == 99) {
-                MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain UI Scale");
+                MsgStr = L"UI Scaling Disabled ... Maintain UI Scale";
             }
             else if (GlobalConfig.ScaleUI == 1) {
-                MsgStr = StrDuplicate (
-                    (IconScaleSet)
-                        ? L"HiDPI Flag ... Maintain UI Scale"
-                        : L"HiDPI Flag ... Scale UI Elements Up"
-                );
+                MsgStr = (IconScaleSet)
+                    ? L"HiDPI Flag ... Maintain UI Scale"
+                    : L"HiDPI Flag ... Scale UI Elements Up";
             }
             else if (GlobalConfig.ScaleUI == -1) {
                 if (IconScaleSet) {
-                    MsgStr = StrDuplicate (
-                        (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
-                            ? L"LoRez Flag ... Maintain UI Scale"
-                            : L"Basic Flag ... Maintain UI Scale"
-                    );
+                    MsgStr = (
+                            ScreenLongest  > BASE_REZ &&
+                            ScreenShortest > BASE_REZ
+                        )
+                        ? L"LoRez Flag ... Maintain UI Scale"
+                        : L"Basic Flag ... Maintain UI Scale";
                 }
                 else {
-                    MsgStr = StrDuplicate (
-                        (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ)
-                            ? L"LoRez Flag ... Scale UI Elements Down"
-                            : L"Basic Flag ... Scale UI Elements Down"
-                    );
+                    MsgStr = (
+                            ScreenLongest  > BASE_REZ &&
+                            ScreenShortest > BASE_REZ
+                        )
+                        ? L"LoRez Flag ... Scale UI Elements Down"
+                        : L"Basic Flag ... Scale UI Elements Down";
                 }
             }
             else { // GlobalConfig.ScaleUI == 0 ... Technically any other value
-                if (ScreenShortest > HIDPI_SHORT && ScreenLongest > HIDPI_LONG) {
-                    MsgStr = StrDuplicate (
-                        (IconScaleSet)
-                            ? L"HiDPI Mode ... Maintain UI Scale"
-                            : L"HiDPI Mode ... Scale UI Elements Up"
-                    );
+                if (ScreenLongest  > HIDPI_LONG &&
+                    ScreenShortest > HIDPI_SHORT
+                ) {
+                    MsgStr = (IconScaleSet)
+                        ? L"HiDPI Mode ... Maintain UI Scale"
+                        : L"HiDPI Mode ... Scale UI Elements Up";
+                }
+                else if (
+                    ScreenLongest  > LOREZ_LIMIT &&
+                    ScreenShortest > LOREZ_LIMIT
+                ) {
+                    MsgStr = L"LoDPI Mode ... Maintain UI Scale";
+                }
+                else if (
+                    ScreenLongest  > BASE_REZ &&
+                    ScreenShortest > BASE_REZ
+                ) {
+                    MsgStr = (IconScaleSet)
+                        ? L"LoRez Mode ... Maintain UI Scale"
+                        : L"LoRez Mode ... Scale UI Elements Down";
                 }
                 else {
-                    if (ScreenShortest > LOREZ_LIMIT && ScreenLongest > LOREZ_LIMIT) {
-                        MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain UI Scale");
-                    }
-                    else if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
-                        MsgStr = StrDuplicate (
-                            (IconScaleSet)
-                                ? L"LoRez Mode ... Maintain UI Scale"
-                                : L"LoRez Mode ... Scale UI Elements Down"
-                        );
-                    }
-                    else {
-                        MsgStr = StrDuplicate (
-                            (IconScaleSet)
-                                ? L"Basic Mode ... Maintain UI Scale"
-                                : L"Basic Mode ... Scale UI Elements Down"
-                        );
-                    }
+                    MsgStr = (IconScaleSet)
+                        ? L"Basic Mode ... Maintain UI Scale"
+                        : L"Basic Mode ... Scale UI Elements Down";
                 }
             } // if/else GlobalConfig.ScaleUI
             #endif
@@ -435,16 +480,14 @@ VOID SetupScreen (VOID) {
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s    * %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
-            if (!gotGraphics) {
+            if (TextOption) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Running Graphics Mode Switch");
+                MsgStr = L"Deploying Graphics Mode";
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("INFO: %s", MsgStr);
                 LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
                 #endif
 
                 // Clear screen and show banner
@@ -456,10 +499,9 @@ VOID SetupScreen (VOID) {
                 #if REFIT_DEBUG > 0
                 LOG_MSG("INFO: Changing to Screensaver Display");
 
-                MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
+                MsgStr = L"Configured to Start with Screensaver";
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
-                MY_FREE_POOL(MsgStr);
                 #endif
 
                 // Start with screen blanked
@@ -470,20 +512,16 @@ VOID SetupScreen (VOID) {
                 BltClearScreen (TRUE);
 
                 #if REFIT_DEBUG > 0
-                TmpStr = L"Displayed Title Banner";
-                MsgStr = (gotGraphics)
-                    ? StrDuplicate (TmpStr)
-                    : StrDuplicate (L"Switched to Graphics Mode");
+                TmpStr = L"Title Banner Displayed";
+                MsgStr = (TextOption) ? L"Graphics Mode Deployed" : TmpStr;
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 LOG_MSG("INFO: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
 
-                if (!gotGraphics) {
+                if (TextOption) {
                     LOG_MSG("%s      %s", OffsetNext, TmpStr);
                 }
                 #endif
             }
-            BannerLoaded = TRUE;
 
             #if REFIT_DEBUG > 0
             if (NativeLogger && GlobalConfig.LogLevel > 0) {
@@ -493,30 +531,10 @@ VOID SetupScreen (VOID) {
                 LOG_MSG("\n\n");
             }
             #endif
-        }
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        if (GlobalConfig.TextOnly) {
-            MsgStr = (GlobalConfig.DirectBoot)
-                ? StrDuplicate (L"'DirectBoot' is Active")
-                : StrDuplicate (L"Screen is in Text Only Mode");
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
-        }
-        else {
-            MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            LOG_MSG("WARN: %s", MsgStr);
-        }
-        MY_FREE_POOL(MsgStr);
-        LOG_MSG("\n\n");
-        #endif
 
-        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
-        AllowGraphicsMode = FALSE;
-        SwitchToText (FALSE);
-    }
+            BannerLoaded = TRUE;
+        } // if TextOption || !BannerLoaded
+    } // if/else !AllowGraphicsMode
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -544,8 +562,10 @@ VOID SwitchToText (
 // DA-TAG: Limit to TianoCore
     if (!GlobalConfig.UseTextRenderer && !IsBoot && AppleFirmware) {
         // Override Text Renderer Setting on Apple Firmware
-        // DA-TAG: Investigate need ... was needed on MacPro but maybe not all Macs?
-        //         Confirm if really needed on MacPro or else consider removing
+        //
+        // DA-TAG: Investigate This
+        //         Was needed on MacPro but maybe not all Macs?
+        //         Confirm if really needed on MacPro or consider removing
         Status = OcUseBuiltinTextOutput (
             (egHasGraphics)
                 ? EfiConsoleControlScreenGraphics
@@ -849,26 +869,19 @@ VOID DrawScreenHeader (
     // Paint header background
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (i = 0; i < 3; i++) {
-        REFIT_CALL_3_WRAPPER(
-            gST->ConOut->SetCursorPosition, gST->ConOut,
-            0, i
-        );
-        Print (BlankLine);
+        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, i);
+        if (BlankLine) Print (BlankLine);
     }
 
     // Print header text
-    REFIT_CALL_3_WRAPPER(
-        gST->ConOut->SetCursorPosition, gST->ConOut,
-        3, 1
-    );
-    Print (L"%s", Title);
+    if (Title) {
+        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
+        Print (L"%s", Title);
+    }
 
     // Reposition cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-    REFIT_CALL_3_WRAPPER(
-        gST->ConOut->SetCursorPosition, gST->ConOut,
-        0, 4
-    );
+    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
 } // VOID DrawScreenHeader()
 
 //
@@ -879,8 +892,9 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     EFI_STATUS           Status        = EFI_NOT_FOUND;
     BOOLEAN              GotKeyStrokes = FALSE;
     BOOLEAN              EmptyBuffer   = FALSE;
-    static BOOLEAN       FirstCall     = TRUE;
     EFI_INPUT_KEY        key;
+
+    static BOOLEAN       FirstCall     = TRUE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -888,7 +902,9 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
 
     if (FirstCall || !GlobalConfig.DirectBoot) {
         for (;;) {
-            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+            Status = REFIT_CALL_2_WRAPPER(
+                gST->ConIn->ReadKeyStroke, gST->ConIn, &key
+            );
             switch (Status) {
                 case EFI_SUCCESS:
                     // Found keystrokes ... Tag this ... Repeat loop
@@ -1340,31 +1356,6 @@ VOID SwitchToGraphicsAndClear (
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SwitchToGraphicsAndClear()
-
-
-#if 0
-// DA-TAG: Permit Image->PixelData Memory Leak on Qemu
-//         Apparent Memory Conflict ... Needs Investigation.
-//         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-//         Temporary ... Eliminate when no longer required.
-//
-//         Probable 'El Gordo' manifestation.
-//         See notes in 'HideTag' for more.
-//
-// UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
-static
-VOID egFreeImageQEMU (
-    EG_IMAGE *Image
-) {
-    if (GotConsoleControl) {
-        MY_FREE_IMAGE(Image);
-    }
-    else {
-        MY_FREE_POOL(Image);
-    }
-} // static VOID egFreeImageQEMU()
-#endif
-
 
 UINTN GetLumIndex (
     UINTN DataR,

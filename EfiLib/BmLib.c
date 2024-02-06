@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -80,7 +80,9 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
     if (!EFI_ERROR(Status)) {
         // Open the root directory of the volume
         Status = REFIT_CALL_2_WRAPPER(Volume->OpenVolume, Volume, &File);
-        CheckError (Status, L"While Opening the Root Directory of the Volume");
+        if (EFI_ERROR(Status)) {
+            CheckError (Status, L"While Opening the Root Directory of the Volume");
+        }
     }
 
     // Done

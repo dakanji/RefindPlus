@@ -66,7 +66,7 @@ disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 disable_compat_check  |Disables Mac version compatibility checks if required
 disable_pass_gop_thru |Disables feature that provides GOP instance on UGA for some loading screens
-disable_nvram_paniclog|Disables macOS kernel panic logging to nvRAM
+disable_nvram_paniclog|Disables logging macOS kernel panics to nvRAM
 disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
 disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
@@ -92,7 +92,7 @@ renderer_text         |Provides a text renderer for text output when otherwise u
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary macOS boot arguments
-supply_nvme           |Enables an inbuilt NvmExpress Driver
+supply_nvme           |Enables an inbuilt NvmExpress driver
 supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
 sync_nvram            |Resets nvRAM settings, such as BlueTooth, on some boot types if required
 transient_boot        |Disables selection of the last booted loader if not required

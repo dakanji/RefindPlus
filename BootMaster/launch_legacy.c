@@ -1399,6 +1399,7 @@ VOID WarnIfLegacyProblems (VOID) {
     CHAR16   *Spacer;
 
     #if REFIT_DEBUG > 0
+    BOOLEAN TmpLevel;
     BOOLEAN CheckMute = FALSE;
 
     #if REFIT_DEBUG > 1
@@ -1442,9 +1443,10 @@ VOID WarnIfLegacyProblems (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = L"Legacy BIOS Booting Enabled in RefindPlus but *NOT* Available in EFI";
-    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
-    LOG_MSG("\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *", MsgStr);
-    LOG_MSG("\n\n");
+    TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+    if (TmpLevel) GlobalConfig.LogLevel = 1;
+    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+    if (TmpLevel) GlobalConfig.LogLevel = 0;
     #endif
 
     MsgStr = L"Your 'scanfor' config line specifies scanning for one or more \n"

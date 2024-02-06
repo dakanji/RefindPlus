@@ -54,7 +54,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -658,7 +658,7 @@ UINTN ScanDriverDir (
     } // while
 
     Status = DirIterClose (&DirIter);
-    if (Status != EFI_NOT_FOUND) {
+    if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
         ErrMsg = PoolPrint (L"While Scanning the '%s' Directory", Path);
         CheckError (Status, ErrMsg);
         MY_FREE_POOL(ErrMsg);
@@ -704,7 +704,7 @@ BOOLEAN LoadDrivers (VOID) {
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
     LOG_MSG("\n\n");
-    LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
+    LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
 #if REFIT_DEBUG > 1
     LOG_MSG("\n");
 #endif
@@ -753,7 +753,7 @@ BOOLEAN LoadDrivers (VOID) {
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-        LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
+        LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
         BRK_MAX("\n");
         #endif
 

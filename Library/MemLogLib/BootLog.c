@@ -6,7 +6,7 @@
  */
  /**
   * Modified for RefindPlus
-  * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+  * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
   *
   * Modifications distributed under the preceding terms.
  **/
@@ -51,7 +51,7 @@ CHAR16 * GetAltMonth (VOID) {
 
     switch (NowMonth) {
         case  1: AltMonth = L"b";  break;
-        case  2: AltMonth = L"d";  break;
+        case  2: AltMonth = L"c";  break;
         case  3: AltMonth = L"f";  break;
         case  4: AltMonth = L"h";  break;
         case  5: AltMonth = L"j";  break;
@@ -366,21 +366,21 @@ VOID DeepLoggger (
 
     switch (type) {
         case LOG_BLOCK_SEP:
-        case LOG_BLANK_LINE_SEP: Tmp = StrDuplicate (L"\n");                                                    break;
-        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s ]***\n",                   *Msg); break;
-        case LOG_STAR_SEPARATOR: Tmp = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Msg); break;
-        case LOG_LINE_SEPARATOR: Tmp = PoolPrint (L"\n===================[ %s ]===================\n",   *Msg); break;
-        case LOG_LINE_THIN_SEP:  Tmp = PoolPrint (L"\n-------------------[ %s ]-------------------\n",   *Msg); break;
-        case LOG_LINE_DASH_SEP:  Tmp = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n",   *Msg); break;
-        case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n",   *Msg); break;
-        case LOG_THREE_STAR_END: Tmp = PoolPrint (L"                ***[ %s ]***\n\n",                   *Msg); break;
-        case LOG_THREE_STAR_MID: Tmp = PoolPrint (L"                ***[ %s\n",                          *Msg); break;
-        case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---%s%s\n",                  OurPad, *Msg); break;
-        case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                            *Msg); break;
-        case LOG_LINE_SAME:      Tmp = PoolPrint (L"%s",                                                 *Msg); break;
-        case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n%s\n\n",                                           *Msg); break;
-        case LOG_LINE_BASE:      Tmp = PoolPrint (L"%s\n",                                               *Msg); break;
-        default:                 Tmp = PoolPrint (L"%s\n",                                               *Msg);
+        case LOG_BLANK_LINE_SEP: Tmp = StrDuplicate (L"\n");                                                      break;
+        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s ]***\n",                     *Msg); break;
+        case LOG_STAR_SEPARATOR: Tmp = PoolPrint (L"\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Msg); break;
+        case LOG_LINE_SEPARATOR: Tmp = PoolPrint (L"\n===================[ %s ]===================\n",     *Msg); break;
+        case LOG_LINE_THIN_SEP:  Tmp = PoolPrint (L"\n-------------------[ %s ]-------------------\n",     *Msg); break;
+        case LOG_LINE_DASH_SEP:  Tmp = PoolPrint (L"\n- - - - --- --- ---[ %s ]--- --- --- - - - -\n",     *Msg); break;
+        case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n... ... ... *** ***[ %s ]*** *** ... ... ...\n",     *Msg); break;
+        case LOG_THREE_STAR_END: Tmp = PoolPrint (L"                ***[ %s ]***\n\n",                     *Msg); break;
+        case LOG_THREE_STAR_MID: Tmp = PoolPrint (L"                ***[ %s\n",                            *Msg); break;
+        case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---%s%s\n",                    OurPad, *Msg); break;
+        case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                              *Msg); break;
+        case LOG_LINE_SAME:      Tmp = PoolPrint (L"%s",                                                   *Msg); break;
+        case LOG_LINE_EXIT:      Tmp = PoolPrint (L"\n%s\n\n",                                             *Msg); break;
+        case LOG_LINE_BASE:      Tmp = PoolPrint (L"%s\n",                                                 *Msg); break;
+        default:                 Tmp = PoolPrint (L"%s\n",                                                 *Msg);
             // Should be 'LOG_LINE_NORMAL' ... Using 'default' to catch coding errors
             // Enable Timestamp for this
             TimeStamp = TRUE;

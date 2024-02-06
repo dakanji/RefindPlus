@@ -65,7 +65,7 @@ MEM_LOG   *mMemLog = NULL;
 // Buffer for debug time.
 CHAR8     mTimingTxt[32];
 
-// Flag whether timer was previously reset
+// Flag whether timer was previously reset.
 BOOLEAN   mTimerPrev = FALSE;
 
 
@@ -73,7 +73,7 @@ UINT64 GetCurrentMS (VOID) {
 	UINT64    CurrentMS  = 0;
 	UINT64    CurrentTsc = 0;
 
-	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
+	if (mMemLog && mMemLog->TscFreqSec != 0) {
 		CurrentTsc = AsmReadTsc();
 
 		CurrentMS = DivU64x64Remainder (
@@ -97,57 +97,36 @@ CHAR8 * GetTiming (VOID) {
 
 	mTimingTxt[0] = '\0';
 
-	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
+	if (mMemLog && mMemLog->TscFreqSec != 0) {
 		CurrentTsc = AsmReadTsc();
 
 		dTStartMs = DivU64x64Remainder (
-            MultU64x32 (
-                CurrentTsc - mMemLog->TscStart,
-                1000
-            ),
-            mMemLog->TscFreqSec,
-            NULL
+            MultU64x32 (CurrentTsc - mMemLog->TscStart, 10000),
+            mMemLog->TscFreqSec, NULL
         );
-
-        dTStartSec = DivU64x64Remainder (dTStartMs, 1000, &dTStartMs);
-
-        // Limit logged value to 9999
-        if (dTStartSec > 9999) {
-            dTStartSecLog = 9999;
-        }
-        else {
-            dTStartSecLog = dTStartSec;
-        }
-
 		dTLastMs = DivU64x64Remainder (
-            MultU64x32 (
-                CurrentTsc - mMemLog->TscLast,
-                1000
-            ),
-            mMemLog->TscFreqSec,
-            NULL
+            MultU64x32 (CurrentTsc - mMemLog->TscLast, 10000),
+            mMemLog->TscFreqSec, NULL
         );
 
-        dTLastSec = DivU64x64Remainder (dTLastMs, 1000, &dTLastMs);
+        dTStartSec = DivU64x64Remainder (dTStartMs, 10000, &dTStartMs);
+        dTLastSec  = DivU64x64Remainder (dTLastMs,  10000, &dTLastMs);
 
-        // Limit logged value to 999
-        if (dTLastSec > 9999) {
-            dTLastSecLog = 9999;
-        }
-        else {
-            dTLastSecLog = dTLastSec;
-        }
+        // Limit logged values to '999'
+        dTStartSecLog = (dTStartSec < 1000) ? dTStartSec : 999;
+        dTLastSecLog  = (dTLastSec  < 1000) ? dTLastSec  : 999;
 
 		AsciiSPrint (
             mTimingTxt,
             sizeof (mTimingTxt),
-            "%4ld:%03ld %4ld:%03ld",
+            "%3ld:%04ld %3ld:%04ld",
             dTStartSecLog,
             dTStartMs,
             dTLastSecLog,
             dTLastMs
         );
-		mMemLog->TscLast = CurrentTsc;
+
+        mMemLog->TscLast = CurrentTsc;
 	}
 
 	return mTimingTxt;
@@ -173,52 +152,52 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
     static BOOLEAN  SkipLog = FALSE;
 
-    if (SkipLog) {
-        // Logging disabled
-        return EFI_NOT_READY;
-    }
+    // Return if Logging is Disabled.
+    if (SkipLog) return EFI_NOT_READY;
 
-    // Try to use existing MEM_LOG
+    // Try to use existing MEM_LOG.
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &mMemLogProtocolGuid,
         NULL, (VOID **) &mMemLog
     );
-    if (!EFI_ERROR(Status) && mMemLog != NULL) {
+    if (!EFI_ERROR(Status) && mMemLog) {
         if (!mTimerPrev) {
-            // Set timer and flag this
+            // Set timer and flag this.
             mTimerPrev        =         TRUE;
             mMemLog->TscStart = AsmReadTsc();
             mMemLog->TscLast  = AsmReadTsc();
         }
 
-        // Early return ... We are inited with an existing MEM_LOG
+        // Early return ... We are inited with an existing MEM_LOG.
         return EFI_SUCCESS;
     }
 
-    // Set up and publish new MEM_LOG
+    // Set up and publish new MEM_LOG.
     mMemLog = AllocateZeroPool ( sizeof (MEM_LOG) );
-    if (mMemLog == NULL) {
-        // Disable logging
+    if (!mMemLog) {
+        // Disable logging.
         SkipLog = TRUE;
 
-        // Early return
+        // Early return.
         return EFI_OUT_OF_RESOURCES;
     }
+
     mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
-    if (mMemLog->Buffer == NULL) {
+    if (!mMemLog->Buffer) {
         MY_FREE_POOL(mMemLog);
 
-        // Disable logging
+        // Disable logging.
         SkipLog = TRUE;
 
-        // Early return
+        // Early return.
         return EFI_OUT_OF_RESOURCES;
     }
+
     mMemLog->BufferSize = MEM_LOG_INITIAL_SIZE;
     mMemLog->Cursor     = mMemLog->Buffer;
     mMemLog->Callback   = NULL;
 
-    // Calibrate TSC for timings
+    // Calibrate TSC for timings.
     InitError[0]='\0';
 
     // We will try to calibrate TSC frequency according to the ACPI Power Management Timer.
@@ -230,83 +209,114 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     // Check if we can use the timer - we need to be on Intel ICH,
     //  get ACPI PM Timer Address from PCI, and check that it is sane
     if ((PciRead16( PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
-        // Intel ICH device was not found
+        // Intel ICH device was not found.
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "Intel ICH Device *NOT* Found");
+
+        AsciiSPrint (
+            InitError,
+            sizeof (InitError),
+            "Intel ICH Device *NOT* Found"
+        );
     }
-    else if ((PciRead8 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
+    else if (
+        (
+            PciRead8 (
+                PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)
+            ) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0
+    ) {
         TimerAddr = 0;
-        AsciiSPrint (InitError, sizeof (InitError), "ACPI I/O Space *NOT* Enabled");
+
+        AsciiSPrint (
+            InitError,
+            sizeof (InitError),
+            "ACPI I/O Space *NOT* Enabled"
+        );
     }
     else {
-        TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) +
-            R_ACPI_PM1_TMR;
+        TimerAddr = (
+            (
+                PciRead16 (
+                    PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE)
+                )
+            ) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
 
         if (TimerAddr < 9) {
             TimerAddr = 0;
-            AsciiSPrint (InitError, sizeof (InitError), "Timer Address *NOT* Obtained");
+
+            AsciiSPrint (
+                InitError,
+                sizeof (InitError),
+                "Timer Address *NOT* Obtained"
+            );
         }
         else {
-            // Check that Timer is advancing
+            // Check that Timer is advancing.
             AcpiTick0 = IoRead32 (TimerAddr);
             gBS->Stall(1000); // 1ms
             AcpiTick1 = IoRead32 (TimerAddr);
 
             if (AcpiTick0 == AcpiTick1) {
                 TimerAddr = 0;
-                AsciiSPrint (InitError, sizeof (InitError), "Timer *NOT* Advancing");
+
+                AsciiSPrint (
+                    InitError,
+                    sizeof (InitError),
+                    "Timer *NOT* Advancing"
+                );
             }
         }
     }
 
-    // We prefer to use the ACPI PM Timer when possible. If it is not available we fallback to old method.
+    // Prefer ACPI PM Timer when possible.
+    // Fall back on old method otherwise.
     if (TimerAddr == 0) {
-        // ACPI PM Timer is not working, fall back on the old method
+        // ACPI PM Timer is not working.
+        // Fall back on old method.
 
-        // Read Current Tsc
+        // Read Current Tsc.
         Tsc0 = AsmReadTsc();
 
-        // Wait for 100ms
-        // DA-TAG: 100 Loops = 1 Sec
+        // Wait for 100ms.
+        // DA-TAG: 100 Loops = 1 Sec.
         RefitStall (10);
 
-        // Read New Current Tsc
+        // Read New Current Tsc.
         Tsc1 = AsmReadTsc();
 
-        // Get Frequency from Tsc Difference
+        // Get Frequency from Tsc Difference.
         mMemLog->TscFreqSec = MultU64x32 ((Tsc1 - Tsc0), 10);
     }
     else {
-        // ACPI PM Timer seems to be working
+        // ACPI PM Timer seems to be working.
         // ACPI PM timers are usually of 24-bit length but there are some less common cases of 32-bit lengths.
         //   When the maximal number is reached, it overflows.
         // The code below can handle overflow with AcpiTicksTarget of up to 24-bit size,
         AcpiTicksTarget = V_ACPI_TMR_FREQUENCY/10; // 357954 clocks of ACPI timer (100ms)
-        AcpiTick0       = IoRead32 (TimerAddr); // read ACPI tick
-        Tsc0            = AsmReadTsc(); // read TSC
+        AcpiTick0       = IoRead32 (TimerAddr); // read ACPI tick.
+        Tsc0            = AsmReadTsc(); // read TSC.
 
-        do {
+        do { // Keep checking Acpi ticks until target is reached.
             CpuPause();
 
-            // Check how many AcpiTicks have passed since we started
+            // Check how many AcpiTicks have passed since we started.
             AcpiTick1 = IoRead32 (TimerAddr);
             if (AcpiTick0 <= AcpiTick1) {
                 // No overflow
                 AcpiTicksDelta = AcpiTick1 - AcpiTick0;
             }
             else if (AcpiTick0 - AcpiTick1 <= 0x00FFFFFF) {
-                // Overflow, 24-bit timer
+                // Overflow, 24-bit timer.
                 AcpiTicksDelta = (0x00FFFFFF - AcpiTick0) + AcpiTick1;
             }
             else {
-                // Overflow, 32-bit timer
+                // Overflow, 32-bit timer.
                 AcpiTicksDelta = (0xFFFFFFFF - AcpiTick0) + AcpiTick1;
             }
-        } while (AcpiTicksDelta < AcpiTicksTarget); // Keep checking Acpi ticks until target is reached
+        } while (AcpiTicksDelta < AcpiTicksTarget);
 
         Tsc1 = AsmReadTsc();
 
-        // Done ... get another TSC
+        // Done ... Get Another TSC.
         mMemLog->TscFreqSec = DivU64x32 (
             MultU64x32 (
                 (Tsc1 - Tsc0),
@@ -316,12 +326,12 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         );
     }
 
-    // Set timer and flag this
+    // Set timer and flag this.
     mTimerPrev        =         TRUE;
     mMemLog->TscStart = AsmReadTsc();
     mMemLog->TscLast  = AsmReadTsc();
 
-    // Install (publish) MEM_LOG
+    // Install (publish) MEM_LOG.
     Status = REFIT_CALL_4_WRAPPER(
         gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
         &mMemLogProtocolGuid, mMemLog, NULL
@@ -330,16 +340,19 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         MY_FREE_POOL(mMemLog->Buffer);
         MY_FREE_POOL(mMemLog);
 
-        // Disable logging
+        // Disable Logging.
         SkipLog = TRUE;
 
-        // Return Error
+        // Return Error.
         return Status;
     }
 
-    // Show Notice if Required
+    // Show Notice if Required.
     if (InitError[0] != '\0') {
-        MemLog (FALSE, 1, "** Could *NOT* Calibrate ACPI PM Timer ... %a **\n\n", InitError);
+        MemLog (FALSE, 1,
+            "** Could *NOT* Calibrate ACPI PM Timer ... %a **\n\n",
+            InitError
+        );
     }
 
     return EFI_SUCCESS;
@@ -360,27 +373,22 @@ VOID EFIAPI MemLogVA (
     IN        VA_LIST  Marker
 ) {
     EFI_STATUS      Status;
+    UINTN           Offset;
     UINTN           DataWritten;
     CHAR8           *LastMessage;
 
-    if (Format == NULL) {
-        // Early return
-        return;
-    }
+    if (!Format) return;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) {
-        return;
-    }
+    if (EFI_ERROR(Status)) return;
 
     // Check if buffer can accept MEM_LOG_MAX_LINE_SIZE chars.
     // Increase buffer if not.
     if ((UINTN) (mMemLog->Cursor - mMemLog->Buffer) + MEM_LOG_MAX_LINE_SIZE > mMemLog->BufferSize) {
-        UINTN Offset;
-        // not enough place for max line - make buffer bigger
-        // but not too big (if something gets out of control)
-        if (mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE > MEM_LOG_MAX_SIZE) {
-            // Early return ... Out of resources
+        // Not enough room for max line ... Enlarge buffer.
+        // Up to a predefined max.
+        if ((mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE) > MEM_LOG_MAX_SIZE) {
+            // Early return ... Out of resources.
             return;
         }
 
@@ -390,21 +398,19 @@ VOID EFIAPI MemLogVA (
             mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE,
             mMemLog->Buffer
         );
-
-        if (mMemLog->Buffer == NULL) {
-            // Early return
-            return;
-        }
+        if (!mMemLog->Buffer) return;
 
         mMemLog->BufferSize += MEM_LOG_INITIAL_SIZE;
         mMemLog->Cursor = mMemLog->Buffer + Offset;
     }
 
-    // Add log to buffer
+    // Add log to buffer.
     LastMessage = mMemLog->Cursor;
     if (Timing) {
-        // Write timing only when starting a new line
-        if ((mMemLog->Buffer[0] == '\0') || (mMemLog->Cursor[-1] == '\n')) {
+        // Write timing only when starting a new line.
+        if (mMemLog->Buffer[0]  == '\0' ||
+            mMemLog->Cursor[-1] == '\n'
+        ) {
             DataWritten = AsciiSPrint (
                 mMemLog->Cursor,
                 mMemLog->BufferSize - (mMemLog->Cursor - mMemLog->Buffer),
@@ -423,12 +429,10 @@ VOID EFIAPI MemLogVA (
     );
     mMemLog->Cursor += DataWritten;
 
-    // Pass this last message to callback if defined
-    if (mMemLog->Callback != NULL) {
-        mMemLog->Callback(DebugMode, LastMessage);
-    }
+    // Pass this last message to callback if defined.
+    if (mMemLog->Callback) mMemLog->Callback(DebugMode, LastMessage);
 
-    // Write to standard debug device also
+    // Also write to standard debug device.
     DebugPrint (DEBUG_INFO, LastMessage);
 }
 
@@ -451,10 +455,7 @@ VOID EFIAPI MemLog (
 ) {
     VA_LIST           Marker;
 
-    if (Format == NULL) {
-        // Early return
-        return;
-    }
+    if (!Format) return;
 
     VA_START(Marker, Format);
     MemLogVA (Timing, DebugMode, Format, Marker);
@@ -469,12 +470,9 @@ CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) {
-        // Early return
-        return NULL;
-    }
+    if (EFI_ERROR(Status)) return NULL;
 
-    return mMemLog != NULL ? mMemLog->Buffer : NULL;
+    return (mMemLog) ? mMemLog->Buffer : NULL;
 }
 
 
@@ -485,12 +483,9 @@ UINTN EFIAPI GetMemLogLen (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) {
-        // Early return
-        return 0;
-    }
+    if (EFI_ERROR(Status)) return 0;
 
-    return mMemLog != NULL ? mMemLog->Cursor - mMemLog->Buffer : 0;
+    return (mMemLog) ? mMemLog->Cursor - mMemLog->Buffer : 0;
 }
 
 /**
@@ -502,10 +497,7 @@ VOID EFIAPI SetMemLogCallback (
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) {
-        // Early return
-        return;
-    }
+    if (EFI_ERROR(Status)) return;
 
     mMemLog->Callback = Callback;
 }
@@ -517,10 +509,7 @@ UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) {
-        // Early return
-        return 0;
-    }
+    if (EFI_ERROR(Status)) return 0;
 
     return mMemLog->TscFreqSec;
 }

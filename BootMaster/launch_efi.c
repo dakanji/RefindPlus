@@ -670,9 +670,13 @@ EFI_STATUS StartEFIImage (
 
     do {
         ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
-        // Some EFIs crash if attempting to load drivers for an invalid architecture, so
-        // protect for this condition; but sometimes Volume comes back NULL, so provide
-        // an exception. (TODO: Handle this special condition better.)
+
+        // DA-TAG: Investigate This
+        //         Some EFIs crash if attempting to load drivers for an invalid
+        //         architecture, so protect for this condition; but sometimes
+        //         Volume comes back NULL, so provide an exception.
+        //
+        //         Handle this special condition better.
         LoaderValid = IsValidLoader (Volume->RootDir, Filename);
         if (!LoaderValid) {
             #if REFIT_DEBUG > 0
@@ -683,13 +687,15 @@ EFI_STATUS StartEFIImage (
             MY_FREE_POOL(MsgStr);
             #endif
 
-            MsgStr = PoolPrint (
-                L"When Loading %s ... %s",
-                ImageTitle, ValidText
-            );
-            ValidText = L"Invalid Binary";
-            CheckError (Status, MsgStr);
-            MY_FREE_POOL(MsgStr);
+            if (EFI_ERROR(Status)) {
+                MsgStr = PoolPrint (
+                    L"When Loading %s ... %s",
+                    ImageTitle, ValidText
+                );
+                ValidText = L"Invalid Binary";
+                CheckError (Status, MsgStr);
+                MY_FREE_POOL(MsgStr);
+            }
 
             // Bail Out
             break;
@@ -708,7 +714,7 @@ EFI_STATUS StartEFIImage (
         #if REFIT_DEBUG < 1
         // Stall to avoid unwanted flash of text when starting loaders
         // Stall works best in smaller increments as per specs
-        // Stall appears to be only needed on REl builds
+        // Stall appears to be only needed on REL builds
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
             // DA-TAG: 100 Loops = 1 Sec
             RefitStall (50);
@@ -717,12 +723,13 @@ EFI_STATUS StartEFIImage (
 
         ChildImageHandle = NULL;
         // DA-TAG: Investigate This
-        //         Commented-out lines below could be more efficient if file were read ahead of
-        //         time and passed as a pre-loaded image to LoadImage(), but it does not work on my
-        //         32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel.
-        //         The kernel returns a "Failed to handle fs_proto" error message.
+        //         Commented-out lines below could be more efficient if the file
+        //         were read ahead of time and passed as a pre-loaded image to
+        //         LoadImage(), but it does not work on a 32-bit Mac Mini
+        //         or a 64-bit Intel box when launching a Linux kernel.
+        //         The kernel returns "Failed to handle fs_proto".
         //
-        //         Track down the cause of this error and fix it, if possible.
+        //         Track down the cause of this error, and fix it, if possible.
         /*
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
@@ -739,19 +746,20 @@ EFI_STATUS StartEFIImage (
         ReturnStatus = Status;
 
         if (secure_mode() && ShimLoaded()) {
-            // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
-            // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
-            // then unregisters itself from the UEFI system table when its replacement
-            // StartImage() function is called *IF* the previous LoadImage() was for the same
-            // program. The result is that RefindPlus can validate only the first program it
-            // launches (often a filesystem driver). Loading a second program (RefindPlus itself,
-            // here, to keep it smaller than a kernel) works around this problem. See the
-            // replacements.c file in Shim, and especially its start_image() function, for
-            // the source of the problem.
+            // Load ourself into memory. This is a trick to work around a bug in
+            // Shim 0.8, which hooks into gBS->LoadImage() and gBS->StartImage()
+            // and then unregisters itself from the UEFI system table when its
+            // replacement StartImage() function is called *IF* the previous
+            // LoadImage() was for the same program. The result is that
+            // RefindPlus can only validate the first program it launches (often
+            // a filesystem driver). Loading a second program (RefindPlus itself
+            // here to keep it smaller than a kernel) works around this problem.
+            // See the replacements.c file in Shim, especially its start_image()
+            // function, for the source of the problem.
             //
-            // NOTE: This does not check the return status or handle errors. It could
-            // conceivably do weird things if, say, RefindPlus were on a USB drive that the
-            // user pulls before launching a program.
+            // NOTE: This does not check the return status or handle errors.
+            // It could conceivably do weird things if, say, RefindPlus were on
+            // a USB drive that the user pulls before launching a program.
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1116,18 +1124,27 @@ VOID RebootIntoLoader (
         EFI_SUCCESS, 0, NULL
     );
 
+    EfivarSetRaw (
+        &GlobalGuid, L"BootNext",
+        NULL, 0, TRUE
+    );
+
     Status = EFI_LOAD_ERROR;
     MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
-    LOG_MSG("\n\n");
-    #endif
+    RET_TAG();
 
+    MY_MUTELOGGER_SET;
+    #endif
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 
     PauseForKey();
 

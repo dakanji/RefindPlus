@@ -1138,64 +1138,64 @@ EFI_STATUS egSetGopMode (
     return Status;
 } // static EFI_STATUS egSetGopMode()
 
-// On GOP systems, set the maximum available resolution.
-// On UGA systems, just record the current resolution.
+// On systems with GOP, set maximum available resolution.
+// On systems with UGA, just record current resolution.
 static
 EFI_STATUS egSetMaxResolution (VOID) {
+    EFI_STATUS                            Status;
+    UINT32                                Mode;
+    UINT32                                Depth;
+    UINT32                                Width;
+    UINT32                                Height;
+    UINT32                                MaxMode;
+    UINT32                                BestMode;
+    UINT32                                RefreshRate;
+    UINTN                                 SizeOfInfo;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status;
-    UINT32       Width    = 0;
-    UINT32       Height   = 0;
-    UINT32       BestMode = 0;
-    UINT32       MaxMode;
-    UINT32       Mode;
-    UINTN        SizeOfInfo;
-
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
+    CHAR16                               *MsgStr;
     #endif
 
     if (!GOPDraw) {
         // Cannot do this in text mode or with UGA.
-        // So get and set basic data and ignore.
-        UINT32 Depth, RefreshRate;
-
+        // So get and set basic data, then exit.
         REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &Width, &Height,
             &Depth, &RefreshRate
         );
 
-        GlobalConfig.RequestedScreenWidth  = Width;
+        GlobalConfig.RequestedScreenWidth  =  Width;
         GlobalConfig.RequestedScreenHeight = Height;
 
         return EFI_UNSUPPORTED;
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Sync Screen Resolution";
+    MsgStr = L"Set Screen Resolution";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
 
+    Width   = Height = BestMode = 0;
     MaxMode = GOPDraw->Mode->MaxMode;
+
     for (Mode = 0; Mode < MaxMode; Mode++) {
         Status = REFIT_CALL_4_WRAPPER(
             GOPDraw->QueryMode, GOPDraw,
             Mode, &SizeOfInfo, &Info
         );
         if (!EFI_ERROR(Status)) {
-            if (Width > Info->HorizontalResolution) {
-                continue;
-            }
-            if (Height > Info->VerticalResolution) {
+            if (Height > Info->VerticalResolution ||
+                Width  > Info->HorizontalResolution
+            ) {
                 continue;
             }
 
             BestMode = Mode;
-            Width    = Info->HorizontalResolution;
             Height   = Info->VerticalResolution;
+            Width    = Info->HorizontalResolution;
         }
 
         MY_FREE_POOL(Info);
@@ -1283,13 +1283,13 @@ VOID egDetermineScreenSize (VOID) {
         );
         if (EFI_ERROR(Status)) {
             // Graphics *IS NOT* Available
-            UGADraw = NULL;
+            UGADraw       =  NULL;
             egHasGraphics = FALSE;
         }
         else {
             egScreenWidth  = ScreenW;
             egScreenHeight = ScreenH;
-            egHasGraphics  = TRUE;
+            egHasGraphics  =    TRUE;
         }
     }
 } // static VOID egDetermineScreenSize()
@@ -1348,10 +1348,9 @@ VOID egInitConsoleControl (VOID) {
     EFI_HANDLE                    *HandleBuffer;
 
     #if REFIT_DEBUG > 0
-    EFI_STATUS  LogStatus;
     CHAR16     *MsgStr;
 
-    LOG_MSG("%s  - Locate Console Control", OffsetNext);
+    LOG_MSG("%s  - Locate Console Control Protocol", OffsetNext);
     #endif
 
     // Check ConsoleOut Handle
@@ -1360,8 +1359,7 @@ VOID egInitConsoleControl (VOID) {
         &ConsoleControlProtocolGuid, (VOID **) &ConsoleControl
     );
     #if REFIT_DEBUG > 0
-    LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
-    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
+    LOG_MSG("%s    * Seek on ConOut Handle ... %r", OffsetNext, Status);
     #endif
     if (EFI_ERROR(Status)) {
         // Try Locating by Handle
@@ -1401,8 +1399,8 @@ VOID egInitConsoleControl (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = (EFI_ERROR(Status))
-        ? L"Assess Console Control ... NOT OK!!"
-        : L"Assess Console Control ... ok";
+        ? L"Assess Console Control Protocol ... NOT OK!!"
+        : L"Assess Console Control Protocol ... ok";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     #endif
@@ -1433,8 +1431,8 @@ BOOLEAN egInitUGADraw (
     EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
-    UINT32                         Width;
     UINT32                         Depth;
+    UINT32                         Width;
     UINT32                         Height;
     UINT32                         RefreshRate;
     BOOLEAN                        UGAonGPU;
@@ -1442,7 +1440,6 @@ BOOLEAN egInitUGADraw (
     EFI_UGA_DRAW_PROTOCOL         *TmpUGA;
 
     #if REFIT_DEBUG > 0
-    EFI_STATUS LogStatus;
     BOOLEAN    CheckMute = FALSE;
 
     if (!LogOutput) {
@@ -1460,10 +1457,9 @@ BOOLEAN egInitUGADraw (
         &UgaDrawProtocolGuid, (VOID *) &TmpUGA
     );
     #if REFIT_DEBUG > 0
-    LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
     LOG_MSG("%s", OffsetNext);
     LOG_MSG("%s  - Locate Universal Graphics Adapter", OffsetNext);
-    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
+    LOG_MSG("%s    * Seek on ConOut Handle ... %r", OffsetNext, Status);
     #endif
     if (!EFI_ERROR(Status)) {
         UGADraw = TmpUGA;
@@ -1564,10 +1560,9 @@ VOID egInitScreen (VOID) {
     UINTN                                  i;
     UINTN                                  HandleCount;
     UINTN                                  SizeOfInfo;
+    UINT32                                 Depth;
     UINT32                                 Width;
     UINT32                                 Height;
-    UINT32                                 Depth;
-    UINT32                                 RefreshRate;
     UINT32                                 MaxMode;
     UINT32                                 GopMode;
     UINT32                                 GopWidth;
@@ -1575,18 +1570,18 @@ VOID egInitScreen (VOID) {
     UINT32                                 TmpScreenW;
     UINT32                                 TmpScreenH;
     UINT32                                 TmpUgaDepth;
+    UINT32                                 RefreshRate;
     UINT32                                 TmpUgaRefreshRate;
+    BOOLEAN                                NewAppleFramebuffers;
+    BOOLEAN                                FoundHandleUGA;
     BOOLEAN                                FlagUGA;
     BOOLEAN                                thisValidGOP;
-    BOOLEAN                                FoundHandleUGA;
-    BOOLEAN                                NewAppleFramebuffers;
     EFI_HANDLE                            *HandleBuffer;
     EFI_GRAPHICS_OUTPUT_PROTOCOL          *OldGop;
     EFI_GRAPHICS_OUTPUT_PROTOCOL          *TmpGop;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
     #if REFIT_DEBUG > 0
-    EFI_STATUS  LogStatus;
     CHAR16     *MsgStr;
     BOOLEAN     PrevFlag;
     BOOLEAN     SelectedOnce;
@@ -1644,10 +1639,9 @@ VOID egInitScreen (VOID) {
                 &GOPDrawProtocolGuid, (VOID **) &OldGop
             );
             #if REFIT_DEBUG > 0
-            LogStatus = (Status == EFI_UNSUPPORTED) ? EFI_NOT_FOUND : Status;
             LOG_MSG("%s", OffsetNext);
             LOG_MSG("%s  - Locate Graphics Output Protocol", OffsetNext);
-            LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, LogStatus);
+            LOG_MSG("%s    * Seek on ConOut Handle ... %r", OffsetNext, Status);
             #endif
             if (!EFI_ERROR(Status)) {
                 // Break Loop
@@ -2082,7 +2076,7 @@ VOID egInitScreen (VOID) {
         }
 
         if (FlagUGA) {
-            egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
+            egScreenWidth  = GlobalConfig.RequestedScreenWidth  =  Width;
             egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
 
             #if REFIT_DEBUG > 0
@@ -2813,8 +2807,8 @@ VOID egDrawImage (
     SetImage = FALSE;
     if (GlobalConfig.ScreenBackground == NULL ||
         (
-            (Image->Width  == egScreenWidth) &&
-            (Image->Height == egScreenHeight)
+            Image->Width  == egScreenWidth &&
+            Image->Height == egScreenHeight
         )
     ) {
         CompImage = Image;

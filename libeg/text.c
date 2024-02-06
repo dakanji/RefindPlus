@@ -35,7 +35,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -64,14 +64,17 @@ EG_IMAGE        *BaseFontImage = NULL;
 
 static
 VOID egPrepareFont (VOID) {
-    UINTN     ScreenW, ScreenH;
+    UINTN     ScreenW;
+    UINTN     ScreenH;
+    UINTN     ScreenLongest;
+    UINTN     ScreenShortest;
     EG_PIXEL  TextFontColor = { 0x00, 0x00, 0x00, 0 };
 
-    egGetScreenSize(&ScreenW, &ScreenH);
+    egGetScreenSize (&ScreenW, &ScreenH);
 
     // Get longest and shortest edge dimensions
-    UINTN ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
-    UINTN ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
+    ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+    ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
 
     if (BaseFontImage == NULL) {

@@ -11,7 +11,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -79,9 +79,9 @@ ESP_LIST * FindAllESPs (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL
             && (
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT12 ||
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT32 ||
                 Volumes[VolumeIndex]->FSType == FS_TYPE_FAT16 ||
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT32
+                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT12
             )
             && GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid)
             && !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)

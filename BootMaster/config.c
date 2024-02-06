@@ -68,25 +68,24 @@ L"refind_linux.conf,refind-linux.conf,\
 refindplus_linux.conf,refindplus-linux.conf"
 
 
-#define ENCODING_ISO8859_1                 (0)
-#define ENCODING_UTF8                      (1)
-#define ENCODING_UTF16_LE                  (2)
+#define ENCODING_ISO8859_1                  (0)
+#define ENCODING_UTF8                       (1)
+#define ENCODING_UTF16_LE                   (2)
 
-#define LAST_MINUTE                     (1439) /* Last minute of a day */
+#define LAST_MINUTE                      (1439) /* Last minute of a day */
 
-INTN                   LogLevelConfig  = 0;
+INTN                   LogLevelConfig  =     0;
 
-UINTN                  TotalEntryCount = 0;
-UINTN                  ValidEntryCount = 0;
+UINTN                  TotalEntryCount =     0;
+UINTN                  ValidEntryCount =     0;
 
 BOOLEAN                OuterLoop       =  TRUE;
-BOOLEAN                FirstInclude    =  TRUE;
 BOOLEAN                ManualInclude   = FALSE;
 BOOLEAN                FoundFontImage  =  TRUE;
 
 // Control Forensic Logging
 #if REFIT_DEBUG > 1
-    BOOLEAN            ForensicLogging = TRUE;
+    BOOLEAN            ForensicLogging =  TRUE;
 #else
     BOOLEAN            ForensicLogging = FALSE;
 #endif
@@ -924,8 +923,51 @@ LOADER_ENTRY * AddStanzaEntries (
         && ((TokenCount = ReadTokenLine (File, &TokenList)) > 0)
         && (StrCmp (TokenList[0], L"}") != 0)
     ) {
-        if (MyStriCmp (TokenList[0], L"disabled")) {
-            Entry->Enabled = FALSE;
+        if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'graphics'");
+            #endif
+
+            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
+        }
+        else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
+            if (TokenCount > 1) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'ostype'");
+                #endif
+
+                Entry->OSType = TokenList[1][0];
+            }
+        }
+        else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'icon'");
+            #endif
+
+            if (!AllowGraphicsMode) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"In AddStanzaEntries ... Skipped Loading Icon in %s Mode",
+                    (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"Text Screen"
+                );
+                #endif
+            }
+            else {
+                // DA-TAG: Avoid Memory Leak
+                MY_FREE_IMAGE(Entry->me.Image);
+                Entry->me.Image = egLoadIcon (
+                    CurrentVolume->RootDir,
+                    TokenList[1],
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
+
+                if (Entry->me.Image == NULL) {
+                    // Set dummy image if icon was not found
+                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+                }
+            }
+
+            DoneIcon = TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
@@ -997,36 +1039,6 @@ LOADER_ENTRY * AddStanzaEntries (
                 }
             } // if/else !FindVolume
         }
-        else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'icon'");
-            #endif
-
-            if (!AllowGraphicsMode) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"In AddStanzaEntries ... Skipped Loading Icon in %s Mode",
-                    (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"Text Screen"
-                );
-                #endif
-            }
-            else {
-                // DA-TAG: Avoid Memory Leak
-                MY_FREE_IMAGE(Entry->me.Image);
-                Entry->me.Image = egLoadIcon (
-                    CurrentVolume->RootDir,
-                    TokenList[1],
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
-
-                if (Entry->me.Image == NULL) {
-                    // Set dummy image if icon was not found
-                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-                }
-            }
-
-            DoneIcon = TRUE;
-        }
         else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'initrd'");
@@ -1044,22 +1056,6 @@ LOADER_ENTRY * AddStanzaEntries (
             // DA-TAG: Avoid Memory Leak
             MY_FREE_POOL(LoadOptions);
             LoadOptions = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
-            if (TokenCount > 1) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'ostype'");
-                #endif
-
-                Entry->OSType = TokenList[1][0];
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"Handling Token:- 'graphics'");
-            #endif
-
-            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
         }
         else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
@@ -1090,6 +1086,9 @@ LOADER_ENTRY * AddStanzaEntries (
 
             AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
             AddedSubmenu = TRUE;
+        }
+        else if (MyStriCmp (TokenList[0], L"disabled")) {
+            Entry->Enabled = FALSE;
         } // Set options to pass to the loader program
 
         FreeTokenLine (&TokenList, &TokenCount);
@@ -1839,48 +1838,51 @@ REFIT_FILE * ReadLinuxOptionsFile (
         (OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++)) != NULL
     ) {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  2a 1 - WHILE LOOP:- START", FuncTag);
         BaseFilename = StrDuplicate (FullFilename);
+
+        BREAD_CRUMB(L"%s:  2a 1 - WHILE LOOP:- START", FuncTag);
         MergeStrings (&BaseFilename, OptionsFilename, '\\');
+
+        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
         if (!FileExists (Volume->RootDir, BaseFilename)) {
-            BREAD_CRUMB(L"%s:  2a 1a 1 - OptionsFile *NOT* Found", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 2a 1 - OptionsFile *NOT* Found", FuncTag);
         }
         else {
-            BREAD_CRUMB(L"%s:  2a 1b 1 - Seek OptionsFile ... Success", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 2b 1 - Seek OptionsFile ... Success", FuncTag);
             MY_FREE_FILE(File);
             File = AllocateZeroPool (sizeof (REFIT_FILE));
-            if (File == NULL) {
+            if (!File) {
                 MY_FREE_POOL(OptionsFilename);
                 MY_FREE_POOL(FullFilename);
                 MY_FREE_POOL(BaseFilename);
 
-                BREAD_CRUMB(L"%s:  2a 1b 1a 1 - WHILE LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
+                BREAD_CRUMB(L"%s:  2a 2b 1a 1 - WHILE LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
                 LOG_DECREMENT();
                 LOG_SEP(L"X");
 
                 return NULL;
             }
+            BREAD_CRUMB(L"%s:  2a 2b 2", FuncTag);
 
-            BREAD_CRUMB(L"%s:  2a 1b 2", FuncTag);
             Status = RefitReadFile (Volume->RootDir, BaseFilename, File, &size);
-            BREAD_CRUMB(L"%s:  2a 1b 3", FuncTag);
-            if (!EFI_ERROR(Status)) {
-                BREAD_CRUMB(L"%s:  2a 1b 3a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 2b 3", FuncTag);
+            if (EFI_ERROR(Status)) {
+                BREAD_CRUMB(L"%s:  2a 2b 3a 1", FuncTag);
+                CheckError (Status, L"While Loading the Linux Options File");
+            }
+            else {
+                BREAD_CRUMB(L"%s:  2a 2b 3b 1", FuncTag);
                 GoOn      = FALSE;
                 FileFound =  TRUE;
             }
-            else {
-                BREAD_CRUMB(L"%s:  2a 1b 3b 1", FuncTag);
-                CheckError (Status, L"While Loading the Linux Options File");
-            }
-            BREAD_CRUMB(L"%s:  2a 1b 4", FuncTag);
+            BREAD_CRUMB(L"%s:  2a 2b 4", FuncTag);
         }
 
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
         MY_FREE_POOL(OptionsFilename);
         MY_FREE_POOL(BaseFilename);
 
-        BREAD_CRUMB(L"%s:  2a 3 - WHILE LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%s:  2a 4 - WHILE LOOP:- END", FuncTag);
         LOG_SEP(L"X");
     } // while;
     MY_FREE_POOL(FullFilename);
@@ -1978,10 +1980,14 @@ VOID ReadConfig (
     static UINTN      ReadLoops = 0;
 
     #if REFIT_DEBUG > 0
-    static BOOLEAN   ValidInclude = TRUE;
     INTN             RealLogLevel;
     INTN             HighLogLevel;
+    BOOLEAN          UpdatedToken;
+
+    static BOOLEAN   ValidInclude = TRUE;
+    static BOOLEAN   FirstInclude = TRUE;
     #endif
+
 
     // Control 'Include' Depth
     if (ReadLoops > 1) {
@@ -2004,13 +2010,13 @@ VOID ReadConfig (
     if (OuterLoop) {
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
-        LOG_MSG("R E A D   C O N F I G U R A T I O N   T O K E N S");
+        LOG_MSG("R E A D   C O N F I G   T O K E N S");
         MuteLogger = TRUE;
         #endif
     }
 
     if (!FileExists (SelfDir, FileName)) {
-#if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
         LOG_MSG("%s", OffsetNext);
         if (!OuterLoop) {
@@ -2024,18 +2030,22 @@ VOID ReadConfig (
         }
         LOG_MSG("WARN: %sFile *NOT* Found", Flag);
         // DA-TAG: No 'TRUE' Flag
-#endif
+        #endif
 
         if (!OuterLoop) {
             ReadLoops = ReadLoops - 1;
+
+            #if REFIT_DEBUG > 0
+            UpdatedToken = FALSE;
+            #endif
         }
-#if REFIT_DEBUG > 0
         else {
+            #if REFIT_DEBUG > 0
             LOG_MSG(" ... Using Default Settings ***");
             LOG_MSG("\n\n");
             MuteLogger = TRUE;
+            #endif
         }
-#endif
 
         return;
     }
@@ -2094,7 +2104,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'timeout'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2105,7 +2115,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'shutdown_after_timeout'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2170,7 +2180,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'hideui'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2181,7 +2191,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'icons_dir'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2196,7 +2206,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'set_boot_args'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2209,7 +2219,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'scanfor'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2220,7 +2230,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'use_nvram'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2231,7 +2241,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'uefi_deep_legacy_scan'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2243,7 +2253,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_rescan_dxe'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2254,7 +2264,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'ransom_drives'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2265,7 +2275,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'sync_nvram'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2276,7 +2286,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'scan_delay'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2294,7 +2304,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'log_level'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2306,7 +2316,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'icon_row_move'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2320,7 +2330,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'icon_row_tune'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2331,12 +2341,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'also_scan_dirs'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"dont_scan_dirs") ||
+            MyStriCmp (TokenList[0], L"dont_scan_dirs" ) ||
             MyStriCmp (TokenList[0], L"don't_scan_dirs")
         ) {
             // DA-TAG: Synced With Defaults Later
@@ -2346,12 +2356,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'dont_scan_dirs'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"dont_scan_files") ||
+            MyStriCmp (TokenList[0], L"dont_scan_files" ) ||
             MyStriCmp (TokenList[0], L"don't_scan_files")
         ) {
             // DA-TAG: Synced With Defaults Later
@@ -2361,12 +2371,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'dont_scan_files'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"dont_scan_tools") ||
+            MyStriCmp (TokenList[0], L"dont_scan_tools" ) ||
             MyStriCmp (TokenList[0], L"don't_scan_tools")
         ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
@@ -2375,12 +2385,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'dont_scan_tools'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"dont_scan_firmware") ||
+            MyStriCmp (TokenList[0], L"dont_scan_firmware" ) ||
             MyStriCmp (TokenList[0], L"don't_scan_firmware")
         ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
@@ -2389,12 +2399,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'dont_scan_firmware'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"dont_scan_volumes") ||
+            MyStriCmp (TokenList[0], L"dont_scan_volumes" ) ||
             MyStriCmp (TokenList[0], L"don't_scan_volumes")
         ) {
             // Note: Do not use HandleStrings() because it modifies slashes.
@@ -2408,7 +2418,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'dont_scan_volumes'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2419,7 +2429,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'windows_recovery_files'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2430,7 +2440,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'scan_driver_dirs'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2506,7 +2516,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'showtools'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2518,7 +2528,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'support_gzipped_loaders'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2529,7 +2539,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'banner'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2564,7 +2574,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'banner_scale'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2575,7 +2585,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'nvram_variable_limit'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2589,7 +2599,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'small_icon_size'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2604,7 +2614,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'big_icon_size'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2618,7 +2628,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'mouse_size'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2629,7 +2639,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'selection_small'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2640,7 +2650,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'selection_big'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2657,7 +2667,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'default_selection'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2668,7 +2678,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'textonly'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2679,7 +2689,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'textmode'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2707,7 +2717,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'resolution'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2719,7 +2729,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'screensaver'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2743,7 +2753,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'use_graphics_for'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2754,7 +2764,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'font'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2765,7 +2775,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'scan_all_linux_kernels'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2776,7 +2786,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'fold_linux_kernels'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2787,7 +2797,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'linux_prefixes'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2798,7 +2808,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'extra_kernel_version_strings'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2809,7 +2819,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'max_tags'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2820,7 +2830,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'enable_and_lock_vmx'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2831,7 +2841,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'spoof_osx_version'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2842,7 +2852,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'csr_values'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2864,7 +2874,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'screen_rgb'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2875,7 +2885,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'write_systemd_vars'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2886,7 +2896,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'unicode_collation'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2897,7 +2907,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'enable_mouse'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
 
@@ -2914,7 +2924,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'enable_touch'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
 
@@ -2931,13 +2941,13 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'persist_boot_args'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_set_consolegop") ||
-            MyStriCmp (TokenList[0], L"provide_console_gop")
+            MyStriCmp (TokenList[0], L"provide_console_gop"   )
         ) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             if (MyStriCmp (TokenList[0], L"disable_set_consolegop")) {
@@ -2953,12 +2963,12 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_set_consolegop'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
-            MyStriCmp (TokenList[0], L"transient_boot") ||
+            MyStriCmp (TokenList[0], L"transient_boot"      ) ||
             MyStriCmp (TokenList[0], L"ignore_previous_boot")
         ) {
             // DA_TAG: Accomodate Deprecation
@@ -2968,7 +2978,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'transient_boot'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2983,7 +2993,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'hidden_icons_ignore'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -2998,7 +3008,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'hidden_icons_external'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3013,7 +3023,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'hidden_icons_prefer'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3028,7 +3038,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'renderer_text'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3043,7 +3053,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'pass_uga_through'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3055,7 +3065,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_pass_gop_thru'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3070,7 +3080,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'renderer_direct_gop'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3085,14 +3095,14 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'force_trim'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_reload_gop") ||
             MyStriCmp (TokenList[0], L"decline_reload_gop") ||
-            MyStriCmp (TokenList[0], L"decline_reloadgop")
+            MyStriCmp (TokenList[0], L"decline_reloadgop" )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3102,14 +3112,14 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_reload_gop'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_apfs_load") ||
             MyStriCmp (TokenList[0], L"decline_apfs_load") ||
-            MyStriCmp (TokenList[0], L"decline_apfsload")
+            MyStriCmp (TokenList[0], L"decline_apfsload" )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3119,14 +3129,14 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_apfs_load'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_apfs_sync") ||
             MyStriCmp (TokenList[0], L"decline_apfs_sync") ||
-            MyStriCmp (TokenList[0], L"decline_apfssync")
+            MyStriCmp (TokenList[0], L"decline_apfssync" )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3136,15 +3146,15 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_apfs_sync'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_set_applefb") ||
-            MyStriCmp (TokenList[0], L"disable_provide_fb")  ||
-            MyStriCmp (TokenList[0], L"decline_apple_fb")    ||
-            MyStriCmp (TokenList[0], L"decline_applefb")
+            MyStriCmp (TokenList[0], L"disable_provide_fb" ) ||
+            MyStriCmp (TokenList[0], L"decline_apple_fb"   ) ||
+            MyStriCmp (TokenList[0], L"decline_applefb"    )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3154,7 +3164,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_set_applefb'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3166,14 +3176,14 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'handle_ventoy'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"disable_nvram_protect") ||
             MyStriCmp (TokenList[0], L"decline_nvram_protect") ||
-            MyStriCmp (TokenList[0], L"decline_nvramprotect")
+            MyStriCmp (TokenList[0], L"decline_nvramprotect" )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3183,7 +3193,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_nvram_protect'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3195,14 +3205,14 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'decline_help_icon'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"decline_help_text") ||
             MyStriCmp (TokenList[0], L"decline_text_help") ||
-            MyStriCmp (TokenList[0], L"decline_texthelp")
+            MyStriCmp (TokenList[0], L"decline_texthelp" )
         ) {
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
@@ -3212,7 +3222,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'decline_help_text'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3224,7 +3234,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'decline_help_scan'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3239,13 +3249,13 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'csr_normalise'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             MyStriCmp (TokenList[0], L"csr_dynamic") ||
-            MyStriCmp (TokenList[0], L"active_csr")
+            MyStriCmp (TokenList[0], L"active_csr" )
         ) {
             // DA_TAG: Accomodate Deprecation
             // DA-TAG: Signed integer as can have negative value
@@ -3255,7 +3265,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'csr_dynamic'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3269,7 +3279,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'mouse_speed'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3280,7 +3290,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'continue_on_warning'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3291,7 +3301,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'decouple_key_f10'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3302,7 +3312,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_nvram_paniclog'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3313,7 +3323,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_compat_check'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3324,7 +3334,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'disable_amfi'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3335,7 +3345,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'follow_symlinks'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3346,7 +3356,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'prefer_uga'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3357,7 +3367,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'supply_nvme'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3368,7 +3378,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'supply_uefi'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3379,13 +3389,13 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'nvram_protect_ex'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
         else if (
             StriSubCmp (L"esp_filter", TokenList[0]) ||
-            StriSubCmp (L"espfilter", TokenList[0])
+            StriSubCmp (L"espfilter",  TokenList[0])
         ) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             if (MyStriCmp (TokenList[0], L"enable_esp_filter")) {
@@ -3393,7 +3403,7 @@ VOID ReadConfig (
             }
             else if (
                 MyStriCmp (TokenList[0], L"disable_esp_filter") ||
-                MyStriCmp (TokenList[0], L"disable_espfilter")
+                MyStriCmp (TokenList[0], L"disable_espfilter" )
             ) {
                 // DA_TAG: Duplication Purely to Accomodate Deprecation
                 //         Change top level 'substring' check when dropped
@@ -3404,7 +3414,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'enable_esp_filter'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3416,7 +3426,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'scale_ui'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3432,7 +3442,7 @@ VOID ReadConfig (
             if (!OuterLoop) {
                 MuteLogger = FALSE;
                 LOG_MSG("%s  - Updated:- 'Manual Stanzas'", OffsetNext);
-                MuteLogger = TRUE;
+                UpdatedToken = MuteLogger = TRUE;
             }
             #endif
         }
@@ -3454,11 +3464,17 @@ VOID ReadConfig (
                 MuteLogger = FALSE;
                 if (FirstInclude) {
                     LOG_MSG("\n");
-                    LOG_MSG("Detected Override File(s) - L O A D   S E T T I N G   O V E R R I D E S");
-                    FirstInclude = FALSE;
+                    LOG_MSG("Detected Override File(s) - L O A D   C O N F I G   O V E R R I D E S");
                 }
-                LOG_MSG("%s* Supplementary Configuration ... %s", OffsetNext, TokenList[1]);
+                LOG_MSG(
+                    "%s%s* Supplementary Configuration ... %s",
+                    (FirstInclude) ? L"" : L"\n",
+                    OffsetNext,
+                    TokenList[1]
+                );
+                LOG_MSG("%s*** Examine Included File ***", OffsetNext);
                 MuteLogger = TRUE; /* Explicit For FB Infer */
+                FirstInclude = FALSE;
                 #endif
 
                 // Set 'OuterLoop' to 'false' to break any 'include' chains
@@ -3472,7 +3488,7 @@ VOID ReadConfig (
 
                 // DA-TAG: Restore the RealLogLevel
                 if (GlobalConfig.LogLevel == HighLogLevel) {
-                    GlobalConfig.LogLevel = RealLogLevel;
+                    GlobalConfig.LogLevel =  RealLogLevel;
                 }
                 #endif
             }
@@ -3491,6 +3507,7 @@ VOID ReadConfig (
     if (!OuterLoop) {
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
+        if (!UpdatedToken) LOG_MSG("%s  - Nothing Included Yet", OffsetNext);
         LOG_MSG("%s*** Handled Included File ***", OffsetNext);
         // DA-TAG: No 'TRUE' Flag
         #endif
@@ -3524,14 +3541,10 @@ VOID ReadConfig (
     SyncLinuxPrefixes();
 
     // Forced Default Settings
-    if ( AppleFirmware) GlobalConfig.RansomDrives   = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtect   = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtectEx = FALSE;
-
-    // Prioritise EnableTouch
-    if (GlobalConfig.EnableTouch) {
-        GlobalConfig.EnableMouse = FALSE;
-    }
+    if ( AppleFirmware) GlobalConfig.RansomDrives          = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtect          = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtectEx        = FALSE;
+    if (GlobalConfig.EnableTouch) GlobalConfig.EnableMouse = FALSE;
 
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE;
@@ -3543,7 +3556,7 @@ VOID ReadConfig (
     ) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "%s  - WARN: Cannot Find Icons Directory ... Activating Text-Only Mode",
+            "%s  - WARN: Could *NOT* Find Icons Directory ... Activating Text-Only Mode",
             OffsetNext
         );
         #endif
@@ -3569,7 +3582,7 @@ VOID ReadConfig (
     LOG_MSG("Process Configuration Options ... %r", Status);
     LOG_MSG("\n\n");
 
-    // Reset 'ValidInclude' Flag
-    ValidInclude = TRUE;
+    // Reset 'Include' Flags
+    FirstInclude = ValidInclude = TRUE;
     #endif
 } // VOID ReadConfig()

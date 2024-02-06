@@ -110,9 +110,12 @@ EG_IMAGE * egCreateImage (
     NewImage = (EG_IMAGE *) AllocatePool (sizeof (EG_IMAGE));
     if (!NewImage) return NULL;
 
-    NewImage->PixelData = (EG_PIXEL *) AllocatePool (Width * Height * sizeof (EG_PIXEL));
+    NewImage->PixelData = (EG_PIXEL *) AllocatePool (
+        Width * Height * sizeof (EG_PIXEL)
+    );
     if (!NewImage->PixelData) {
         MY_FREE_IMAGE(NewImage);
+
         return NULL;
     }
 
@@ -144,12 +147,15 @@ EG_IMAGE * egCopyImage (
 ) {
     EG_IMAGE  *NewImage = NULL;
 
-    if (Image) {
-        NewImage = egCreateImage (Image->Width, Image->Height, Image->HasAlpha);
-    }
+    if (Image) NewImage = egCreateImage (
+        Image->Width, Image->Height, Image->HasAlpha
+    );
     if (!NewImage) return NULL;
 
-    CopyMem (NewImage->PixelData, Image->PixelData, Image->Width * Image->Height * sizeof (EG_PIXEL));
+    CopyMem (
+        NewImage->PixelData, Image->PixelData,
+        Image->Width * Image->Height * sizeof (EG_PIXEL)
+    );
 
     return NewImage;
 }
@@ -215,7 +221,9 @@ EG_IMAGE * egScaleImage (
         return NULL;
     }
 
-    if ((Image->Width == NewWidth) && (Image->Height == NewHeight)) {
+    if (Image->Width  == NewWidth &&
+        Image->Height == NewHeight
+    ) {
         return (egCopyImage (Image));
     }
 
@@ -309,20 +317,15 @@ EFI_STATUS egLoadFile (
     EFI_FILE_INFO      *FileInfo;
     EFI_FILE_HANDLE     FileHandle;
 
-    if (!BaseDir || !FileName) {
-        // Early Return
-        return EFI_INVALID_PARAMETER;
-    }
+
+    if (!BaseDir || !FileName) return EFI_INVALID_PARAMETER;
 
     Status = REFIT_CALL_5_WRAPPER(
         BaseDir->Open, BaseDir,
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
     );
-    if (EFI_ERROR(Status)) {
-        // Early Return
-        return Status;
-    }
+    if (EFI_ERROR(Status)) return Status;
 
     FileInfo = LibFileInfo (FileHandle);
     if (!FileInfo) {
@@ -334,9 +337,7 @@ EFI_STATUS egLoadFile (
 
     ReadSize = FileInfo->FileSize;
 
-    if (ReadSize > MAX_FILE_SIZE) {
-        ReadSize = MAX_FILE_SIZE;
-    }
+    if (ReadSize > MAX_FILE_SIZE) ReadSize = MAX_FILE_SIZE;
 
     MY_FREE_POOL(FileInfo);
 
@@ -367,9 +368,8 @@ EFI_STATUS egLoadFile (
     else {
         MY_FREE_POOL(Buffer);
     }
-    if (FileDataLength) {
-        *FileDataLength = BufferSize;
-    }
+
+    if (FileDataLength) *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadFile ... Loaded File:- '%s'", FileName);
@@ -395,10 +395,12 @@ EFI_STATUS egFindESP (
     );
     if (!EFI_ERROR(Status)) {
         Status = EFI_NOT_FOUND;
+
         for (i = 0; i < HandleCount; i++) {
             *RootDir = LibOpenRoot (Handles[i]);
             if (*RootDir) {
                 Status = EFI_SUCCESS;
+
                 break;
             }
         } // for
@@ -617,10 +619,11 @@ EG_IMAGE * egLoadIconAnyType (
     IN CHAR16              *BaseName,
     IN UINTN                IconSize
 ) {
-    UINTN      i;
-    CHAR16    *FileName;
-    CHAR16    *Extension;
-    EG_IMAGE  *Image;
+    UINTN                   i;
+    CHAR16                 *FileName;
+    CHAR16                 *Extension;
+    EG_IMAGE               *Image;
+
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0

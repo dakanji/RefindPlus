@@ -174,10 +174,24 @@ CHAR16 * RefitGetAppleDiskLabel (
 
 // SIP/SSV "Enabled" Setting
 #define SIP_ENABLED (CSR_ALLOW_APPLE_INTERNAL)                                             // 0x010
-#define SIP_ENABLED_A01 (CSR_ALLOW_UNRESTRICTED_NVRAM)                                     // 0x040
-#define SIP_ENABLED_A02 (SIP_ENABLED_A01 | CSR_ALLOW_APPLE_INTERNAL)                       // 0x050
-#define SIP_ENABLED_B01 (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNAPPROVED_KEXTS)           // 0x201
-#define SIP_ENABLED_B02 (SIP_ENABLED_B01 | CSR_ALLOW_APPLE_INTERNAL)                       // 0x211
+
+#define SIP_ENABLED_A001 (CSR_ALLOW_UNRESTRICTED_FS)                                       // 0x002
+#define SIP_ENABLED_B001 (CSR_ALLOW_UNRESTRICTED_NVRAM)                                    // 0x040
+#define SIP_ENABLED_C001 (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNAPPROVED_KEXTS)          // 0x201
+
+#define SIP_ENABLED_A002 (SIP_ENABLED_A001 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x012
+#define SIP_ENABLED_B002 (SIP_ENABLED_B001 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x050
+#define SIP_ENABLED_C002 (SIP_ENABLED_C001 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x211
+
+#define SIP_ENABLED_AB01 (SIP_ENABLED_A001 | SIP_ENABLED_B001)                             // 0x042
+#define SIP_ENABLED_AC01 (SIP_ENABLED_A001 | SIP_ENABLED_C001)                             // 0x203
+#define SIP_ENABLED_BC01 (SIP_ENABLED_B001 | SIP_ENABLED_C001)                             // 0x241
+#define SIP_ENABLED_ABC1 (SIP_ENABLED_A001 | SIP_ENABLED_B001 | SIP_ENABLED_C001)          // 0x243
+
+#define SIP_ENABLED_AB02 (SIP_ENABLED_AB01 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x052
+#define SIP_ENABLED_AC02 (SIP_ENABLED_AC01 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x213
+#define SIP_ENABLED_BC02 (SIP_ENABLED_BC01 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x251
+#define SIP_ENABLED_ABC2 (SIP_ENABLED_ABC1 | CSR_ALLOW_APPLE_INTERNAL)                     // 0x253
 
 // SIP "Disabled" Setting (macOS 10.11+)
 #define SIP_DISABLED (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
@@ -225,5 +239,5 @@ EFI_STATUS FlagNoCSR (VOID);
 
 VOID ClearRecoveryBootFlag (VOID);
 VOID RotateCsrValue (BOOLEAN UnsetDynamic);
-VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
+VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN ShowResult);
 #endif

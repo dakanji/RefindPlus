@@ -99,9 +99,9 @@
 #
 #decouple_key_f10
 
-# Disable Apple Mobile File Integrity (AMFI) checks when booting macOS. When
+# Disable Apple Mobile File Integrity (AMFI) checks on booting macOS. Whenever
 # this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
-# argument which along with System Integrity Protection (SIP), restricts
+# argument which, along with System Integrity Protection (SIP), restricts
 # application access to OS entitlements. Note that this setting will
 # create a macOS boot argument the first time it is triggered when
 # "persist_boot_args" is also set, and that this boot argument
@@ -648,7 +648,7 @@
 #
 #log_level 1
 
-# Set the screen's display resolution. Pass this option either:
+# Set the screen display resolution. Pass this option either:
 #         * One Value (corresponding to one UEFI GOP video mode)
 #         * Two Values (corresponding to the X and Y resolutions)
 # Note that not all resolutions are supported. On UEFI 2.x systems,
@@ -1268,14 +1268,16 @@
 
 # Manual configuration stanzas. Each one begins with a "menuentry"
 # keyword followed by a name that will appear in the menu screen
-# (use quotes if the name has spaces) and an open curly brace,
-# ("{"). Each stanza ends with a close curly brace, ("}").
+# (use quotes if the name has spaces) and an 'open' curly brace,
+# ("{"). Each stanza ends with a 'close' curly brace, ("}").
 #
 # Common keywords in manual stanzas are:
 #  disabled    - Use alone or set to "yes" to disable this entry.
-#  ostype      - OS type code to determine boot options available by
-#                  pressing Insert. Valid values are "macOS", "Linux",
-#                  "Windows", and "XOM". Case-sensitive.
+#                  This is best on the first line within the stanza
+#  ostype      - OS type code to determine boot options available via
+#                  the 'Insert' key. Accepted options (case sensitive):
+#                  "MacOS", "Linux", "Windows", "XOM", "Grub", "Elilo",
+#                  "RefitVariant", "OpenCore", and "Clover".
 #  graphics    - Set to "on" to enable graphics-mode boot (mainly useful
 #                  for macOS) or "off" for text-mode boot. The default
 #                  setting is auto-detected from the loader filename.
@@ -1321,6 +1323,7 @@
 #
 menuentry Linux {
     disabled
+    ostype Linux
     volume 904404F8-B481-440C-A1E3-11A5A954E601
     icon EFI/refindplus/icons/os_linux.png
     loader bzImage-3.3.0-rc7
@@ -1338,6 +1341,7 @@ menuentry Linux {
 #
 menuentry "Arch Linux" {
     disabled
+    ostype Linux
     volume   "Arch Linux"
     icon     /EFI/refindplus/icons/os_arch.png
     loader   /boot/vmlinuz-linux
@@ -1356,6 +1360,7 @@ menuentry "Arch Linux" {
 #
 menuentry Ubuntu {
     disabled
+    ostype Grub
     icon   /EFI/refindplus/icons/os_linux.png
     loader /EFI/ubuntu/grubx64.efi
 }
@@ -1365,6 +1370,7 @@ menuentry Ubuntu {
 #
 menuentry "ELILO" {
     disabled
+    ostype Elilo
     loader \EFI\elilo\elilo.efi
 }
 
@@ -1373,6 +1379,7 @@ menuentry "ELILO" {
 #
 menuentry "Windows 7" {
     disabled
+    ostype Windows
     loader \EFI\Microsoft\Boot\bootmgfw.efi
 }
 
@@ -1397,6 +1404,7 @@ menuentry "Windows via shell script" {
 #
 menuentry "My macOS" {
     disabled
+    ostype MacOS
     volume "macOS Boot"
     icon \EFI\refindplus\icons\os_mac.png
     loader \System\Library\CoreServices\boot.efi

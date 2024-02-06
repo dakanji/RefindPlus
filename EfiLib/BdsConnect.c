@@ -157,31 +157,59 @@ EFI_STATUS ScanDeviceHandles (
         }
 
         for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiLoadedImageProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiDriverBindingProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiDriverConfigurationProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiDriverDiagnosticsProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiComponentName2ProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiComponentNameProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
             }
 
-            if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
+            if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex],
+                    &gEfiDevicePathProtocolGuid
+                )
+            ) {
                 (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
             }
 
@@ -190,14 +218,13 @@ EFI_STATUS ScanDeviceHandles (
                 gBS->OpenProtocolInformation, (*HandleBuffer)[k],
                 ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
             );
-            if (EFI_ERROR(Status)) {
-                continue;
-            }
+            if (EFI_ERROR(Status)) continue;
 
             for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
                 if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
                     if ((OpenInfo[OpenInfoIndex].Attributes &
-                        EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER
+                            EFI_OPEN_PROTOCOL_BY_DRIVER
+                        ) == EFI_OPEN_PROTOCOL_BY_DRIVER
                     ) {
                         for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
                             if ((*HandleBuffer)[ChildIndex] == OpenInfo[OpenInfoIndex].AgentHandle) {
@@ -207,7 +234,8 @@ EFI_STATUS ScanDeviceHandles (
                     }
 
                     if ((OpenInfo[OpenInfoIndex].Attributes &
-                        EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                            EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                        ) == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                     ) {
                         (*HandleType)[k] |= EFI_HANDLE_TYPE_PARENT_HANDLE;
                         for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
@@ -246,37 +274,42 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     BOOLEAN               VGADevice;
     BOOLEAN               GFXDevice;
     BOOLEAN               MakeConnection;
+    PCI_TYPE00            Pci;
     EFI_HANDLE           *AllHandleBuffer;
     EFI_HANDLE           *HandleBuffer;
     EFI_HANDLE           *GOPArray;
-    PCI_TYPE00            Pci;
-    EFI_PCI_IO_PROTOCOL *PciIo;
-
-
+    EFI_PCI_IO_PROTOCOL  *PciIo;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *GopDevicePathStr;
-    CHAR16 *StrDevicePath;
-    CHAR16 *DeviceData;
-    CHAR16 *FillStr;
-    CHAR16 *MsgStr;
-    CHAR16 *TmpStr;
-    UINTN   HexIndex;
-    UINTN   AllHandleCountTrigger;
+    CHAR16               *GopDevicePathStr;
+    CHAR16               *StrDevicePath;
+    CHAR16               *DeviceData;
+    CHAR16               *FillStr;
+    CHAR16               *MsgStr;
+    CHAR16               *TmpStr;
+    UINTN                 HexIndex;
+    UINTN                 AllHandleCountTrigger;
+
     BOOLEAN CheckMute = FALSE;
     #endif
+
 
     DetectedDevices = FALSE;
 
     #if REFIT_DEBUG > 0
     if (ReLoaded) {
-        MsgStr = StrDuplicate (L"R E C O N N E C T   D E V I C E   H A N D L E S");
+        MsgStr = StrDuplicate (
+            L"R E C O N N E C T   D E V I C E   H A N D L E S"
+        );
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     }
     else {
-        MsgStr = StrDuplicate (L"C O N N E C T   D E V I C E   H A N D L E S");
+        MsgStr = StrDuplicate (
+            L"C O N N E C T   D E V I C E   H A N D L E S"
+        );
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     }
+
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
@@ -297,7 +330,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     );
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Did Not Find Any Contollers with Device Paths");
+        MsgStr = StrDuplicate (
+            L"Did Not Find Any Contollers with Device Paths"
+        );
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         LOG_MSG("INFO: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -331,7 +366,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         );
         if (EFI_ERROR(XStatus)) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X      - ERROR: %r", HexIndex, XStatus);
+            MsgStr = PoolPrint (
+                L"Handle 0x%03X      - ERROR: %r",
+                HexIndex, XStatus
+            );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -339,7 +377,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
         }
         else if (HandleType == NULL) {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Handle 0x%03X      - ERROR: Invalid Handle", HexIndex);
+            MsgStr = PoolPrint (
+                L"Handle 0x%03X      - ERROR: Invalid Handle",
+                HexIndex
+            );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -350,19 +391,21 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
             Device = TRUE;
 
             for (k = 0; k < HandleCount; k++) {
-                if (HandleType[k] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE) {
+                if ((HandleType[k] & EFI_HANDLE_TYPE_IMAGE_HANDLE)      ||
+                    (HandleType[k] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE)
+                ) {
                     Device = FALSE;
-                    break;
-                }
-                if (HandleType[k] & EFI_HANDLE_TYPE_IMAGE_HANDLE) {
-                    Device = FALSE;
+
                     break;
                 }
             } // for
 
             if (!Device) {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Handle 0x%03X     Discounted [Other Item]", HexIndex);
+                MsgStr = PoolPrint (
+                    L"Handle 0x%03X     Discounted [Other Item]",
+                    HexIndex
+                );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
@@ -378,7 +421,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 for (k = 0; k < HandleCount; k++) {
                     if (HandleType[k] & EFI_HANDLE_TYPE_PARENT_HANDLE) {
                         MakeConnection = FALSE;
-                        Parent         = TRUE;
+                        Parent         =  TRUE;
+
                         break;
                     }
                 } // for
@@ -389,6 +433,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 for (k = 0; k < HandleCount; k++) {
                     if (HandleType[k] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
                         DevTag = TRUE;
+
                         break;
                     }
                 } // for
@@ -432,7 +477,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
                             if (VGADevice) {
                                 // DA-TAG: Investigate This
-                                //         Unable to reconnect later after disconnecting here
+                                //         Unable to reconnect later if disconnected here
                                 //         Comment out and set 'MakeConnection' to FALSE
                                 //REFIT_CALL_3_WRAPPER(
                                 //    gBS->DisconnectController, AllHandleBuffer[i],
@@ -445,7 +490,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 #endif
                             }
                             else if (GFXDevice) {
-                                // DA-TAG: Currently unable to detect GFX Device
+                                // DA-TAG: Investigate This
+                                //         Currently unable to detect GFX Device
                                 //         Revisit Clover implementation later
                                 //         Not currently missed but may allow new options
                                 // UPDATE: Actually works on a Non-Mac Firmware Laptop
@@ -487,6 +533,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 #endif
 
                                 FoundGOP = TRUE;
+
                                 break;
                             }
                         }
@@ -514,7 +561,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 #endif
 
                 if (MakeConnection) {
-                    XStatus = RefitConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
+                    XStatus = RefitConnectController (
+                        AllHandleBuffer[i], NULL, NULL, TRUE
+                    );
                 }
 
                 #if REFIT_DEBUG > 0
@@ -710,7 +759,9 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
             }
         }
         else {
-            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
+            MsgStr = StrDuplicate (
+                L"Additional DXE Drivers Revealed ... Relink Handles"
+            );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -757,7 +808,10 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
-    MsgStr = PoolPrint (L"Status:- '%r' ... Acquire OptionROM From Volatile Memory", Status);
+    MsgStr = PoolPrint (
+        L"Status:- '%r' ... Acquire OptionROM From Volatile Memory",
+        Status
+    );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
@@ -773,7 +827,10 @@ EFI_STATUS ApplyGOPFix (VOID) {
     // Update Boot Services Table to permit reloading OptionROMs
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Status:- '%r' ... Amend Boot Services Table", Status);
+    MsgStr = PoolPrint (
+        L"Status:- '%r' ... Amend Boot Services Table",
+        Status
+    );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s      %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
@@ -820,16 +877,15 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
     IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS Status;
-    BOOLEAN    KeyStrokeFound;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
     #endif
 
     // Remove any buffered key strokes
-    KeyStrokeFound = ReadAllKeyStrokes();
-    if (!KeyStrokeFound && !AppleFirmware) {
-        // No KeyStrokes found ... Reset the buffer on UEFI PC anyway
+    ReadAllKeyStrokes();
+    if (!AppleFirmware) {
+        // Always reset the buffer on UEFI PC
         REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
     }
 
@@ -841,7 +897,10 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
-                MsgStr = PoolPrint (L"Status:- '%r' ... Issue OptionROM From Volatile Memory", Status);
+                MsgStr = PoolPrint (
+                    L"Status:- '%r' ... Issue OptionROM From Volatile Memory",
+                    Status
+                );
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 LOG_MSG("%s      %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
