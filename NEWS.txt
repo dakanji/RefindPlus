@@ -1,5 +1,12 @@
 0.14.0.AC (PRE-RELEASE):
 -----------------------
+- Adds `SyncNVram` Feature
+  * Sets RefindPlus to always clear some nvRAM settings on certain boot types
+    - Currently applied to Bluetooth setings for macOS
+      * bluetoothInternalControllerinfo
+      * bluetoothActiveControllerInfo
+      * bluetoothExternalDongleFailed
+  * The feature can be enabled using a new `sync_nvram` configuration token
 - Adds `PersistBootArgs` Feature
   * Outputs of macOS boot argument related settings are now written to vRAM instead of to nvRAM
     - This is to reduce wear and tear on the nvRAM storage chip

@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -3394,6 +3394,57 @@ VOID HideTag (
 
     FreeMenuScreen (&HideTagMenu);
 } // VOID HideTag()
+
+// Present a menu for the user to confirm Bluetooth Sync
+BOOLEAN ConfirmSyncNVram (VOID) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *ConfirmSyncNVramMenu;
+
+
+    ConfirmSyncNVramMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (ConfirmSyncNVramMenu == NULL) {
+        // Resource Exhaustion ... Early Exit
+        return FALSE;
+    }
+
+    // Build the menu page
+    ConfirmSyncNVramMenu->Title      = StrDuplicate (L"Confirm nvRAM Sync");
+    ConfirmSyncNVramMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT   );
+    ConfirmSyncNVramMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
+    ConfirmSyncNVramMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
+
+    AddMenuInfoLine (ConfirmSyncNVramMenu, L"Sync Misc nvRAM Entries?",  FALSE);
+    AddMenuInfoLine (ConfirmSyncNVramMenu, L"",                          FALSE);
+
+    AddMenuEntryCopy (ConfirmSyncNVramMenu, &MenuEntryYes);
+    AddMenuEntryCopy (ConfirmSyncNVramMenu, &MenuEntryNo);
+
+    DefaultEntry = 1;
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = RunGenericMenu (ConfirmSyncNVramMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) From RunGenericMenu Call on '%s' in 'ConfirmSyncNVram'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        RetVal = TRUE;
+    }
+    else {
+        RetVal = FALSE;
+    }
+
+    FreeMenuScreen (&ConfirmSyncNVramMenu);
+
+    return RetVal;
+} // BOOLEAN ConfirmSyncNVram()
 
 // Present a menu for the user to confirm CSR rotatation
 BOOLEAN ConfirmRotate (VOID) {

@@ -2258,6 +2258,17 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (MyStriCmp (TokenList[0], L"sync_nvram") && (TokenCount == 2)) {
+            HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.SyncNVram));
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'sync_nvram'", OffsetNext);
+                MuteLogger = TRUE;
+            }
+            #endif
+        }
         else if (MyStriCmp (TokenList[0], L"scan_delay") && (TokenCount == 2)) {
             HandleUnsignedInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
 

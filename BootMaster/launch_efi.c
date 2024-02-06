@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -1002,16 +1002,16 @@ EFI_STATUS RebootIntoFirmware (VOID) {
         return Status;
     }
 
-    UninitRefitLib();
-
     #if REFIT_DEBUG > 0
     OUT_TAG();
     #endif
 
+    UninitRefitLib();
     REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem, EfiResetCold,
         EFI_SUCCESS, 0, NULL
     );
+    ReinitRefitLib();
 
     Status = EFI_LOAD_ERROR;
     MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
@@ -1021,8 +1021,6 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     LOG_MSG("INFO: %s", MsgStr);
     LOG_MSG("\n\n");
     #endif
-
-    ReinitRefitLib();
 
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);

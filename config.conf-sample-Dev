@@ -512,6 +512,31 @@
 #
 #supply_uefi
 
+# Booting into different generations of macOS may result in BlueTooth related
+# nvRAM settings being out of sync. When this token is used, RefindPlus unsets
+# nvRAM settings as defined below on boots into macOS, OpenCore or Clover since
+# booting into these indicate a potential generation change on various settings:
+#   - bluetoothInternalControllerinfo
+#   - bluetoothActiveControllerInfo
+#   - bluetoothExternalDongleFailed
+#
+# This token accepts these options:
+#   0    - Sync is not attempted                       (Default/Base Option:- Y)
+#   1    - Sync when current boot not as previous boot (Confirm Before Sync:- N)
+#   2    - Sync when current boot not as previous boot (Confirm Before Sync:- Y)
+#   3    - Sync before every boot                      (Confirm Before Sync:- Y)
+#   4    - Sync before every boot                      (Confirm Before Sync:- N)
+#
+# NOTES:
+# 1. Some options require user confirmation before action
+# 2. Option '1' is as '4' when 'transient_boot' is active
+# 3. Option '2' is as '3' when 'transient_boot' is active
+# 4. Qualifying boots are macOS, OpenCore or Clover boots
+#
+# Inactive when commented out (Does not sync nvRAM)
+#
+#sync_nvram 1
+
 # RefindPlus defaults to storing the name of the last booted loader in
 # the "PreviousBoot" variable in the nvRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus

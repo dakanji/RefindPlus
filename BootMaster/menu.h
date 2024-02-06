@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -190,6 +190,7 @@ CHAR16 * MenuExitInfo (IN UINTN MenuExit);
 
 BOOLEAN GetYesNoMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
+BOOLEAN ConfirmSyncNVram (VOID);
 BOOLEAN ConfirmShutdown (VOID);
 BOOLEAN ConfirmRestart (VOID);
 BOOLEAN ConfirmRotate (VOID);

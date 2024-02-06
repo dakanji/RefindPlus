@@ -142,6 +142,7 @@ REFIT_CONFIG GlobalConfig = {
     /* GraphicsFor = */ GRAPHICS_FOR_OSX,
     /* LegacyType = */ LEGACY_TYPE_MAC,
     /* ScanDelay = */ 0,
+    /* SyncNVram = */ 0,
     /* MouseSpeed = */ 4,
     /* IconSizes = */ {
         DEFAULT_BIG_ICON_SIZE / 4,
@@ -1640,7 +1641,118 @@ VOID ReMapOpenProtocol (VOID) {
 } // static VOID ReMapOpenProtocol()
 
 static
-VOID RunMacBootSupportFuncs (VOID) {
+VOID RunNVramSync (
+    CHAR16       *SelectionName
+) {
+    EFI_STATUS    Status;
+    BOOLEAN       Proceed;
+    UINT8        *TmpBuffer;
+    CHAR16       *PreviousBoot;
+    CHAR16       *MacLoadString;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute;
+    #endif
+
+
+    if (GlobalConfig.SyncNVram < 1) {
+        // Sync Off ... Early Return
+        return;
+    }
+
+    Proceed = TRUE;
+
+    #if REFIT_DEBUG > 0
+    CheckMute = FALSE;
+    MY_MUTELOGGER_SET;
+    #endif
+
+    Status = EfivarGetRaw (
+        &AppleBootGuid, L"bluetoothInternalControllerinfo",
+        (VOID **) &TmpBuffer, NULL
+    );
+    if (Status == EFI_NOT_FOUND) {
+        Status = EfivarGetRaw (
+            &AppleBootGuid, L"bluetoothActiveControllerInfo",
+            (VOID **) &TmpBuffer, NULL
+        );
+        if (Status == EFI_NOT_FOUND) {
+            Status = EfivarGetRaw (
+                &AppleBootGuid, L"bluetoothExternalDongleFailed",
+                (VOID **) &TmpBuffer, NULL
+            );
+            if (Status == EFI_NOT_FOUND) {
+                // Not Present
+                Proceed = FALSE;
+            }
+        }
+    }
+
+    if (Proceed) {
+        if (!GlobalConfig.TransientBoot) {
+            if (GlobalConfig.SyncNVram == 1 ||
+                GlobalConfig.SyncNVram == 2
+            ) {
+                Status = EfivarGetRaw (
+                    &RefindPlusGuid, L"PreviousBoot",
+                    (VOID **) &PreviousBoot, NULL
+                );
+                if (!EFI_ERROR(Status)) {
+                    if (MyStriCmp (PreviousBoot, SelectionName)) {
+                        // Matched Previous
+                        Proceed = FALSE;
+                    }
+                    else {
+                        MacLoadString = L"Load Instance macOS";
+                        if (MyStrBegins (MacLoadString, SelectionName) &&
+                            MyStrBegins (MacLoadString,  PreviousBoot)
+                        ) {
+                            // Sucessive macOS Boots
+                            Proceed = FALSE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    if (Proceed &&
+        (
+            GlobalConfig.SyncNVram == 2 ||
+            GlobalConfig.SyncNVram == 3
+        )
+    ) {
+        // Confirm Sync
+        Proceed = ConfirmSyncNVram();
+    }
+
+    if (!Proceed) {
+        // Early Return
+        return;
+    }
+
+    SetHardwareNvramVariable (
+        L"bluetoothInternalControllerinfo", &AppleBootGuid,
+        AccessFlagsBoot, 0, NULL
+    );
+    SetHardwareNvramVariable (
+        L"bluetoothActiveControllerInfo", &AppleBootGuid,
+        AccessFlagsBoot, 0, NULL
+    );
+    SetHardwareNvramVariable (
+        L"bluetoothExternalDongleFailed", &AppleBootGuid,
+        AccessFlagsBoot, 0, NULL
+    );
+} // static VOID RunNVramSync()
+
+static
+VOID RunMacBootSupportFuncs (
+    CHAR16       *SelectionName
+) {
     // Set Mac boot args if configured to
     // Disables AMFI if DisableAMFI is active
     // Disables macOS compatibility check if DisableCompatCheck is active
@@ -1663,6 +1775,9 @@ VOID RunMacBootSupportFuncs (VOID) {
 
     // Enable TRIM on non-Apple SSDs if configured to
     TrimCoerce();
+
+    // Sync nvRAM
+    RunNVramSync (SelectionName);
 
     // Re-Map OpenProtocol
     ReMapOpenProtocol();
@@ -2721,6 +2836,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                              );
     LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(LogLevelConfig               ));
     LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay       ));
+    LOG_MSG("%s      SyncNVram:- '%d'",    TAG_ITEM_A(GlobalConfig.SyncNVram       ));
     LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA       ));
     LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
@@ -3607,7 +3723,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    RunMacBootSupportFuncs();
+                    RunMacBootSupportFuncs (SelectionName);
                 }
                 else if (
                     (
@@ -3658,6 +3774,9 @@ EFI_STATUS EFIAPI efi_main (
                             ) == GRAPHICS_FOR_OPENCORE
                         );
                     }
+
+                    // Sync nvRAM
+                    RunNVramSync (SelectionName);
                 }
                 else if (
                     (
@@ -3685,6 +3804,9 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    // Sync nvRAM
+                    RunNVramSync (SelectionName);
                 }
                 else if (
                     (
@@ -3726,7 +3848,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(DisplayName);
                     #endif
 
-                    RunMacBootSupportFuncs();
+                    RunMacBootSupportFuncs (SelectionName);
 
                     if (GlobalConfig.NvramProtectEx) {
                         if (GlobalConfig.NvramProtect) {

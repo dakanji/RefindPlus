@@ -527,6 +527,7 @@ typedef struct {
     UINTN                       GraphicsFor;
     UINTN                       LegacyType;
     UINTN                       ScanDelay;
+    UINTN                       SyncNVram;
     UINTN                       MouseSpeed;
     UINTN                       IconSizes[4];
     UINTN                       BannerScale;

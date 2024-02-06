@@ -94,6 +94,7 @@ screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary macOS boot arguments
 supply_nvme           |Enables an inbuilt NvmExpress Driver
 supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
+sync_nvram            |Resets nvRAM settings, such as BlueTooth, on some boot types if required
 transient_boot        |Disables selection of the last booted loader if not required
 unicode_collation     |Provides fine tuned support for languages that use unicode text
 
