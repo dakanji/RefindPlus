@@ -1,4 +1,4 @@
-0.14.0.AC (PRE-RELEASE):
+0.14.0.AC (06 FEB 2024):
 -----------------------
 - Adds `SyncNVram` Feature
   * Sets RefindPlus to always clear some nvRAM settings on certain boot types
