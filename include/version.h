@@ -16,4 +16,4 @@
  * Modifications distributed under the preceding terms.
  */
 
-#define REFINDPLUS_VERSION L"0.14.0.AC"
+#define REFINDPLUS_VERSION L"0.14.0.AD (PRE-RELEASE)"

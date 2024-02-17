@@ -1,8 +1,8 @@
-# **BUILDING REFINDPLUS VIA DOCKER VIRTUALISATION**
+# **BUILDING VIA DOCKER VIRTUALISATION**
 RefindPlus can be built on any operating system environment that supports Docker virtualisation. A Docker image has been created by a third party developer and is available on the DockerHub website (https://hub.docker.com/r/xaionaro2/edk2-builder).
 Please refer to that project's repository (https://github.com/xaionaro/edk2-builder-docker) for details and support on this option.
 
-# **BUILDING REFINDPLUS ON MAC OS NATIVELY**
+# **BUILDING NATIVELY ON MAC OS**
 # Python
 The build process requires Python 2 but Python was essentially removed from macOS in 12.x Monterey.
 If running this version of macOS or newer, download and install Python 2.7.18 from the Python website (https://www.python.org/downloads).

@@ -1,3 +1,8 @@
+0.14.0.AD (PRE-RELEASE):
+-----------------------
+PENDING
+
+
 0.14.0.AC (06 FEB 2024):
 -----------------------
 - Adds `SyncNVram` Feature

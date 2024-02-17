@@ -28,7 +28,7 @@ jobs:
     steps:
 
       - name: Lock Resolved issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
@@ -46,13 +46,13 @@ jobs:
           sleep 48s
 
       - name: Lock Invalid/Not-Planned Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Not-Planned'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -64,14 +64,14 @@ jobs:
           sleep 48s
 
       - name: Lock Misc Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Cannot-Replicate, Cancelled'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -83,14 +83,14 @@ jobs:
           sleep 48s
 
       - name: Lock Acknowledged/Known Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Acknowledged, Known-Issue'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -102,14 +102,14 @@ jobs:
           sleep 48s
 
       - name: Lock Incomplete/Abandoned Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Abandoned'
           issue-inactive-days: '4'
           include-any-issue-labels: 'Stale, Incomplete'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This item is being locked.
             Trigger: Apparent Abandonment
@@ -120,13 +120,13 @@ jobs:
           sleep 48s
 
       - name: Lock Unclear Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: 'Unclear'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -138,15 +138,15 @@ jobs:
           sleep 48s
 
       - name: Lock Inactive Issues
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '3'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Acknowledged, Known-Issue, Unclear, Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          exclude-any-issue-labels: 'Triage, Unclear, Parked, Prorogued, Help-Wanted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -158,7 +158,7 @@ jobs:
           sleep 48s
 
       - name: Lock Declined Pull Requests
-        uses: dakanji/lock-threads@v4.0.0.1
+        uses: dessant/lock-threads@v5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pr-lock-reason: ''

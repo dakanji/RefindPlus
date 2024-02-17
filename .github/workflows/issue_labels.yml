@@ -22,7 +22,7 @@ jobs:
       status: ${{ steps.add_label_user_close_check_main.outputs.status }}
     steps:
       - id: add_label_user_close_check_main
-        uses: mheap/github-action-required-labels@v4
+        uses: mheap/github-action-required-labels@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -154,7 +154,7 @@ jobs:
       status: ${{ steps.bounce_bug_check1_main.outputs.status }}
     steps:
       - id: bounce_bug_check1_main
-        uses: mheap/github-action-required-labels@v4
+        uses: mheap/github-action-required-labels@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -204,7 +204,7 @@ jobs:
       status: ${{ steps.bounce_enhance_check1_main.outputs.status }}
     steps:
       - id: bounce_enhance_check1_main
-        uses: mheap/github-action-required-labels@v4
+        uses: mheap/github-action-required-labels@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -221,7 +221,7 @@ jobs:
 
     if: needs.bounce_enhance_check1.outputs.status == 'success'
     steps:
-      - uses: mheap/github-action-required-labels@v4
+      - uses: mheap/github-action-required-labels@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

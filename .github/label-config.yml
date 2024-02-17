@@ -256,7 +256,7 @@ Duplicate:
     close: true
     # Add Comment
     comment: >
-      This item is a duplicate of an existing item
+      This item is a duplicate of one or more existing items
 
 # The `Enhancement` label is added to issues
 Enhancement:

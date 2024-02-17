@@ -19,7 +19,7 @@ jobs:
 
     if: github.actor == 'dakanji'
     steps:
-      - uses: dessant/label-actions@v3
+      - uses: dessant/label-actions@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config-path: '.github/label-config.yml'
@@ -36,7 +36,7 @@ jobs:
       status: ${{ steps.handle_enhance_check_main.outputs.status }}
     steps:
       - id: handle_enhance_check_main
-        uses: mheap/github-action-required-labels@v4
+        uses: mheap/github-action-required-labels@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -58,13 +58,78 @@ jobs:
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
+          labels: 'Tagged'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
-          labels: 'Tagged'
 
       - name: Close Item
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  handle_resolved_check_1:
+    name: Handle Resolved - Check1
+    needs: [auto_labels]
+    runs-on: ubuntu-20.04
+
+    if: ${{ always() && github.actor == 'dakanji' && github.event.label.name == 'Resolved' }}
+    outputs:
+      status: ${{ steps.handle_resolved_check_1_main.outputs.status }}
+    steps:
+      - id: handle_resolved_check_1_main
+        uses: mheap/github-action-required-labels@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: maximum
+          count: 0
+          labels: "Upstream"
+          exit_type: success
+
+  # Check Labels - https://github.com/mheap/github-action-required-labels
+  handle_resolved_check_2:
+    name: Handle Resolved - Check2
+    needs: [handle_resolved_check_1]
+    runs-on: ubuntu-20.04
+
+    if: needs.handle_resolved_check_1.outputs.status == 'success'
+    outputs:
+      status: ${{ steps.handle_resolved_check_2_main.outputs.status }}
+    steps:
+      - id: handle_resolved_check_2_main
+        uses: mheap/github-action-required-labels@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          mode: minimum
+          count: 1
+          labels: "Acknowledged, Known-Issue"
+          exit_type: success
+
+  # Update Labels - https://github.com/actions-cool/issues-helper
+  handle_resolved_act:
+    name: Handle Resolved - Act
+    needs: [handle_resolved_check_2]
+    runs-on: ubuntu-20.04
+
+    if: needs.handle_resolved_check_2.outputs.status == 'success'
+    steps:
+
+      - name: Remove Label
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          labels: 'Acknowledged,Known-Issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+      - name: Add Label
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          labels: 'Bug'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
