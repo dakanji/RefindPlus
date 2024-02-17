@@ -1623,7 +1623,6 @@ LOADER_ENTRY * AddLoaderEntry (
         #endif
     } // if/else if Volume->FSType
 
-    CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
     if (Entry == NULL) {
         // Early Return
@@ -1631,6 +1630,8 @@ LOADER_ENTRY * AddLoaderEntry (
     }
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
+
+    CleanUpPathNameSlashes (LoaderPath);
 
     if (LoaderTitle) {
         Entry->Title = StrDuplicate (LoaderTitle);
@@ -2479,6 +2480,7 @@ CHAR16 * RuniPXEDiscover (
 // entirely reliable. See BUILDING.txt for information on building them.
 static
 VOID ScanNetboot (VOID) {
+    CHAR16        *Temp;
     CHAR16        *Location;
     REFIT_VOLUME  *NetVolume;
 
@@ -2504,7 +2506,9 @@ VOID ScanNetboot (VOID) {
                 MY_FREE_POOL(NetVolume->VolName);
                 MY_FREE_POOL(NetVolume->FsName);
 
-                AddLoaderEntry (IPXE_NAME, Location, NetVolume, TRUE, FALSE);
+                Temp = StrDuplicate(IPXE_NAME);
+                AddLoaderEntry (Temp, Location, NetVolume, TRUE, FALSE);
+                MY_FREE_POOL(Temp);
 
                 FreeVolume (&NetVolume);
             }
@@ -3011,7 +3015,9 @@ VentoyJump:
         }
 
         //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
-        AddLoaderEntry (FALLBACK_FULLNAME, TmpMsg, Volume, TRUE, FALSE);
+        Temp = StrDuplicate(FALLBACK_FULLNAME);
+        AddLoaderEntry (Temp, TmpMsg, Volume, TRUE, FALSE);
+        MY_FREE_POOL(Temp);
         //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
     }
 
@@ -4035,9 +4041,7 @@ VOID ScanForTools (VOID) {
     #endif
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);
-    if (MokLocations != NULL) {
-        MergeUniqueStrings (&MokLocations, SelfDirPath, L',');
-    }
+    MergeUniqueStrings (&MokLocations, SelfDirPath, L',');
 
     ToolTotal = 0;
     VolumeTag = NULL;

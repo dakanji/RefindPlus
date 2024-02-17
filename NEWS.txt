@@ -1,6 +1,9 @@
 0.14.0.AD (PRE-RELEASE):
 -----------------------
-PENDING
+- Fixes Potential Memory Conflict
+  * Some constants were passed to a function that reallocates memory
+  * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
+    - Extended in v0.14.0.AB (Commit 5cb1ed9)
 
 
 0.14.0.AC (06 FEB 2024):
