@@ -2282,28 +2282,30 @@ BOOLEAN ScanLoaderDir (
                 #if REFIT_DEBUG > 0
                 MY_MUTELOGGER_SET;
                 #endif
-                IsFallbackLoader = MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME);
+                IsFallbackLoader = MyStriCmp (
+                    DirEntry->FileName,
+                    FALLBACK_BASENAME
+                );
+
                 if (DirEntry->FileName[0] == '.'               ||
                     !IsValidLoader (Volume->RootDir, FullName) ||
                     (
-                        (
-                            IsFallbackLoader
-                        ) && (
-                            MyStriCmp (Path, L"EFI\\BOOT")
+                        IsFallbackLoader &&
+                        MyStriCmp (Path, L"EFI\\BOOT")
+                    ) || (
+                        !IsFallbackLoader &&
+                        IsListItem (
+                            DirEntry->FileName, MEMTEST_NAMES
                         )
                     ) || (
                         IsListItem (
-                            DirEntry->FileName,
-                            GlobalConfig.DontScanFiles
+                            DirEntry->FileName, GlobalConfig.DontScanFiles
                         )
                     ) || (
-                        (
-                            !IsFallbackLoader
-                        ) && (
-                            IsListItem (
-                                DirEntry->FileName,
-                                MEMTEST_NAMES
-                            )
+                        FilenameIn (
+                            Volume, Path,
+                            DirEntry->FileName,
+                            GlobalConfig.DontScanFiles
                         )
                     ) || (
                         HasSignedCounterpart (Volume, FullName)

@@ -4,6 +4,9 @@
   * Some constants were passed to a function that reallocates memory
   * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
     - Extended in v0.14.0.AB (Commit 5cb1ed9)
+- Fixes Hidden Entry Handling
+  * Some loaders in ESP locations were not hidden when selected on-screen (minus key)
+  * Was also the case when full paths were used in `dont_scan_files`
 
 
 0.14.0.AC (06 FEB 2024):

@@ -2879,7 +2879,7 @@ VOID ManageHiddenTags (VOID) {
     HiddenTags = ReadHiddenTags (L"HiddenTags");
     if (HiddenTags) {
         SaveTags = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
-        if (HiddenTags && (HiddenTags[0] != L'\0')) {
+        if (HiddenTags[0] != L'\0') {
             AllTags = StrDuplicate (HiddenTags);
         }
     }
@@ -2887,7 +2887,7 @@ VOID ManageHiddenTags (VOID) {
     HiddenTools = ReadHiddenTags (L"HiddenTools");
     if (HiddenTools) {
         SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
-        if (HiddenTools && (HiddenTools[0] != L'\0')) {
+        if (HiddenTools[0] != L'\0') {
             if (!AllTags) {
                 AllTags = StrDuplicate (HiddenTools);
             }
@@ -2898,22 +2898,26 @@ VOID ManageHiddenTags (VOID) {
     }
 
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-    if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
-        if (!AllTags) {
-            AllTags = StrDuplicate (HiddenLegacy);
-        }
-        else {
-            MergeUniqueStrings (&AllTags, HiddenLegacy, L',');
+    if (HiddenLegacy) {
+        if (HiddenLegacy[0] != L'\0') {
+            if (!AllTags) {
+                AllTags = StrDuplicate (HiddenLegacy);
+            }
+            else {
+                MergeUniqueStrings (&AllTags, HiddenLegacy, L',');
+            }
         }
     }
 
     HiddenFirmware = ReadHiddenTags (L"HiddenFirmware");
-    if (HiddenFirmware && (HiddenFirmware[0] != L'\0')) {
-        if (!AllTags) {
-            AllTags = StrDuplicate (HiddenFirmware);
-        }
-        else {
-            MergeUniqueStrings (&AllTags, HiddenFirmware, L',');
+    if (HiddenFirmware) {
+        if (HiddenFirmware[0] != L'\0') {
+            if (!AllTags) {
+                AllTags = StrDuplicate (HiddenFirmware);
+            }
+            else {
+                MergeUniqueStrings (&AllTags, HiddenFirmware, L',');
+            }
         }
     }
 
