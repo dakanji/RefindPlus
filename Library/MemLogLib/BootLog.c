@@ -109,13 +109,12 @@ CHAR16 * GetDateString (VOID) {
 
     static CHAR16 *DateStr = NULL;
 
-    if (DateStr != NULL) {
-        return DateStr;
-    }
+    if (DateStr) return DateStr;
 
-    ourYear   = (NowYear % 100);
-    ourMonth  = GetAltMonth();
-    ourHour   = GetAltHour();
+    ourYear  = (NowYear % 100);
+    ourMonth = GetAltMonth();
+    ourHour  = GetAltHour();
+
     DateStr = PoolPrint(
         L"%02d%s%02d%s%02d%02d",
         ourYear, ourMonth,
@@ -130,8 +129,8 @@ static
 EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     EFI_STATUS                    Status;
     CHAR16                       *DateStr;
-    EFI_LOADED_IMAGE_PROTOCOL    *LoadedImage;
     EFI_FILE_PROTOCOL            *LogProtocol;
+    EFI_LOADED_IMAGE_PROTOCOL    *LoadedImage;
 
     // DA-TAG: Always get 'LoadedImage->DeviceHandle' each time
     //         That is, do not use static
@@ -139,22 +138,15 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         gBS->HandleProtocol, gImageHandle,
         &gEfiLoadedImageProtocolGuid, (VOID **) &LoadedImage
     );
-    if (EFI_ERROR(Status) || !LoadedImage->DeviceHandle) {
-        return NULL;
-    }
+    if (EFI_ERROR(Status) || !LoadedImage->DeviceHandle) return NULL;
 
     // DA-TAG: Always get 'mRootDir' each time
     //
     // Get mRootDir from device we are loaded from
-    if (mRootDir != NULL) {
-        mRootDir = NULL;
-    }
     mRootDir = EfiLibOpenRoot (LoadedImage->DeviceHandle);
-    if (mRootDir == NULL) {
-        return NULL;
-    }
+    if (!mRootDir) return NULL;
 
-    if (mDebugLog == NULL) {
+    if (!mDebugLog) {
         DateStr = GetDateString();
         mDebugLog = PoolPrint (L"EFI\\%s.log", DateStr);
         MY_FREE_POOL(DateStr);
@@ -166,9 +158,8 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         &LogProtocol, mDebugLog,
         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
     );
-
-    // Try to create log file if not found
     if (Status == EFI_NOT_FOUND) {
+        // Try to create log file if not found
         REFIT_CALL_5_WRAPPER(
             mRootDir->Open, mRootDir,
             &LogProtocol, mDebugLog,
@@ -176,7 +167,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         );
     }
 
-    Status  = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
+    Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
     if (EFI_ERROR(Status)) {
         // Try on first EFI partition
         mRootDir = NULL;
@@ -201,9 +192,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
             Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
         }
 
-        if (EFI_ERROR(Status)) {
-            mRootDir = LogProtocol = NULL;
-        }
+        if (EFI_ERROR(Status)) mRootDir = LogProtocol = NULL;
     }
 
     // DA-TAG: Do not set 'mRootDir' to NULL here
@@ -225,9 +214,7 @@ VOID SaveMessageToDebugLogFile (
 
     // Get/Open Logfile
     LogFile = GetDebugLogFile();
-    if (LogFile == NULL) {
-        return;
-    }
+    if (!LogFile) return;
 
     if (GlobalConfig.LogLevel < MINLOGLEVEL) {
         // DA-TAG: Undocumented feature
@@ -248,9 +235,7 @@ VOID SaveMessageToDebugLogFile (
         }
     }
 
-    if (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL) {
-        return;
-    }
+    if (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL) return;
 
     // Get File Info for LogFile
     Info = EfiLibFileInfo (LogFile);
@@ -323,10 +308,7 @@ VOID DeepLoggger (
     BOOLEAN  LongStr;
     BOOLEAN  EarlyReturn;
 
-    if (!(*Msg)) {
-        // Early Return
-        return;
-    }
+    if (!(*Msg)) return;
 
     // Make sure we are able to write
     EarlyReturn = (
@@ -367,13 +349,13 @@ VOID DeepLoggger (
     switch (type) {
         case LOG_BLOCK_SEP:
         case LOG_BLANK_LINE_SEP: Tmp = StrDuplicate (L"\n");                                                      break;
-        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s ]***\n",                     *Msg); break;
+        case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n\n*** *** --- --- ---[ %s ]--- --- --- *** ***\n",   *Msg); break;
         case LOG_STAR_SEPARATOR: Tmp = PoolPrint (L"\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Msg); break;
-        case LOG_LINE_SEPARATOR: Tmp = PoolPrint (L"\n===================[ %s ]===================\n",     *Msg); break;
-        case LOG_LINE_THIN_SEP:  Tmp = PoolPrint (L"\n-------------------[ %s ]-------------------\n",     *Msg); break;
-        case LOG_LINE_DASH_SEP:  Tmp = PoolPrint (L"\n- - - - --- --- ---[ %s ]--- --- --- - - - -\n",     *Msg); break;
-        case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n... ... ... *** ***[ %s ]*** *** ... ... ...\n",     *Msg); break;
-        case LOG_THREE_STAR_END: Tmp = PoolPrint (L"                ***[ %s ]***\n\n",                     *Msg); break;
+        case LOG_LINE_SEPARATOR: Tmp = PoolPrint (L"\n===================[ %s ]===================\n\n",   *Msg); break;
+        case LOG_LINE_THIN_SEP:  Tmp = PoolPrint (L"\n    ------- - - - -[ %s ]- - - - -------\n",         *Msg); break;
+        case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n           * ** ***[ %s ]*** ** *\n",                *Msg); break;
+        case LOG_STAR_HEAD_SEPX: Tmp = PoolPrint (L"           * ** ***[ %s ]*** ** *\n",                  *Msg); break;
+        case LOG_THREE_STAR_END: Tmp = PoolPrint (L"        *** *** ***[ %s ]*** *** ***\n\n",             *Msg); break;
         case LOG_THREE_STAR_MID: Tmp = PoolPrint (L"                ***[ %s\n",                            *Msg); break;
         case LOG_LINE_FORENSIC:  Tmp = PoolPrint (L"            !!! ---%s%s\n",                    OurPad, *Msg); break;
         case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                              *Msg); break;
@@ -425,9 +407,7 @@ VOID EFIAPI DebugLog (
     // Abort on higher log levels if not forcing
     if (!UseMsgLog) {
         UseMsgLog = NativeLogger;
-        if (!UseMsgLog && GlobalConfig.LogLevel > MINLOGLEVEL) {
-            return;
-        }
+        if (!UseMsgLog && GlobalConfig.LogLevel > MINLOGLEVEL) return;
     }
 
     // Print message to log buffer
@@ -499,9 +479,7 @@ VOID EFIAPI MemLogCallback (
     IN CHAR8 *LastMessage
 ) {
     #if REFIT_DEBUG > 0
-    if (DebugMode >= 1) {
-        SaveMessageToDebugLogFile (LastMessage);
-    }
+    if (DebugMode >= 1) SaveMessageToDebugLogFile (LastMessage);
     #endif
 
     return;

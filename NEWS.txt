@@ -1,5 +1,6 @@
-0.14.0.AD (PRE-RELEASE):
+0.14.1.AA (PRE-RELEASE):
 -----------------------
+- Synced with Upstream v0.14.1
 - Fixes Potential Memory Conflict
   * Some constants were passed to a function that reallocates memory
   * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
@@ -7,13 +8,19 @@
 - Fixes Hidden Entry Handling
   * Some loaders in ESP locations were not hidden when selected on-screen (minus key)
   * Was also the case when full paths were used in `dont_scan_files`
+- Improves `MemTest` Handling
+  * Updated exclusion from loaders (Row 1 Items)
+  * Updated to handle `memtest+{ARCH}.efi` and `memtest86+{ARCH}.efi` files as per upstream
+- Improves Misc Handling
+  * Restructured config File into four (4) sections
+  * Completed LodePNG 20230410 update started in v0.14.0.AC
 
 
 0.14.0.AC (06 FEB 2024):
 -----------------------
 - Adds `SyncNVram` Feature
   * Sets RefindPlus to always clear some nvRAM settings on certain boot types
-    - Currently applied to Bluetooth setings for macOS
+    - Currently applied to Bluetooth settings for macOS
       * bluetoothInternalControllerinfo
       * bluetoothActiveControllerInfo
       * bluetoothExternalDongleFailed

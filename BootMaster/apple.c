@@ -266,7 +266,7 @@ VOID RotateCsrValue (
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotate CSR");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Rotate CSR");
     #endif
 
     if (GlobalConfig.CsrValues == NULL) {
@@ -316,19 +316,19 @@ VOID RotateCsrValue (
     if (TargetCsr == 0) {
         // Set target CSR value to NULL
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Clearing SIP to 'NULL' From '0x%04x'",
+            L"Clearing SIP to 'NULL' from '0x%04x'",
             CurrentValue
         );
     }
     else if (CurrentValue == 0) {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' From 'NULL'",
+            L"Setting SIP to '0x%04x' from 'NULL'",
             TargetCsr
         );
     }
     else {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' From '0x%04x'",
+            L"Setting SIP to '0x%04x' from '0x%04x'",
             CurrentValue, TargetCsr
         );
     }
@@ -1018,7 +1018,7 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Sync Source AppleFramebuffers";
+    MsgStr = L"Update Base AppleFramebuffers";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
@@ -1034,9 +1034,11 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Get Old AppleFramebuffers";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-    LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
+    if (EFI_ERROR (Status)) {
+        MsgStr = L"Get Old AppleFramebuffers";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+        LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
+    }
     #endif
 
     if (!EFI_ERROR (Status)) {

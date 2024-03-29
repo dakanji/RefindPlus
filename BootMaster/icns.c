@@ -138,6 +138,11 @@ EG_IMAGE * DummyImageEx (
 EG_IMAGE * BuiltinIcon (
     IN UINTN Id
 ) {
+    if (!AllowGraphicsMode) {
+        // Early Return
+        return NULL;
+    }
+
     if (Id >= BUILTIN_ICON_COUNT) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"Invalid Builtin Icon Request");
@@ -149,7 +154,7 @@ EG_IMAGE * BuiltinIcon (
 
     if (BuiltinIconTable[Id].Image) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Loaded Cached Builtin Icon:- '%s'", BuiltinIconTable[Id].FileName);
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Load Cached Builtin Icon:- '%s'", BuiltinIconTable[Id].FileName);
         #endif
     }
     else {
@@ -157,6 +162,7 @@ EG_IMAGE * BuiltinIcon (
             BuiltinIconTable[Id].FileName,
             GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
         );
+
         if (BuiltinIconTable[Id].Image == NULL) {
             if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
                 BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
@@ -168,8 +174,8 @@ EG_IMAGE * BuiltinIcon (
         }
 
         #if REFIT_DEBUG > 0
-        if (BuiltinIconTable[Id].Image) {
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"Saved in Icon Cache:- '%s'", BuiltinIconTable[Id].FileName);
+        if (BuiltinIconTable[Id].Image != NULL) {
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"Save in Icon Cache:- '%s'", BuiltinIconTable[Id].FileName);
         }
         #endif
     }
@@ -214,7 +220,7 @@ EG_IMAGE * LoadOSIcon (
         BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon from '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -226,7 +232,7 @@ EG_IMAGE * LoadOSIcon (
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon from '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -238,7 +244,7 @@ EG_IMAGE * LoadOSIcon (
         BaseName = PoolPrint (L"%s_unknown", BootLogo ? L"boot" : L"os");
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon from '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -249,7 +255,7 @@ EG_IMAGE * LoadOSIcon (
             BaseName = StrDuplicate (L"os_unknown");
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon From '%s'", BaseName);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Find an Icon from '%s'", BaseName);
             #endif
 
             Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);

@@ -225,7 +225,7 @@ REFIT_VOLUME * PickOneESP (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneESP' From RunGenericMenu Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneESP' from RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1313,7 +1313,7 @@ UINTN ConfirmBootOptionOperation (
     }
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm Boot Option Operation' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Confirm Boot Option Operation' Screen");
     #endif
 
     ConfirmBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -1352,7 +1352,7 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' From RunGenericMenu Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' from RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1473,7 +1473,7 @@ UINTN PickOneBootOption (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneBootOption' From RunGenericMenu Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneBootOption' from RunGenericMenu Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1511,7 +1511,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
     CHAR16     *VarName;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries From Internal BootOrder List");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries from Internal BootOrder List");
     #endif
 
     Status = EfivarGetRaw (
@@ -1556,7 +1556,7 @@ VOID ManageBootorder (VOID) {
     BOOT_ENTRY_LIST *Entries;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage BootOrder' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Manage BootOrder' Screen");
     #endif
 
     BootNum   = 0;

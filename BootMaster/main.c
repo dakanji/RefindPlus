@@ -317,7 +317,7 @@ VOID UnexpectedReturn (
     CHAR16 *MsgStr;
 
 
-    MsgStr = PoolPrint (L"WARN: Unexpected Return From %s", ItemType);
+    MsgStr = PoolPrint (L"WARN: Unexpected Return from %s", ItemType);
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("*** %s", MsgStr);
     LOG_MSG("\n\n");
@@ -339,7 +339,7 @@ VOID InitRotateCSR (VOID) {
         #if REFIT_DEBUG > 0
         MsgStr = L"Aborted CSR Rotation";
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("%s  *** %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
@@ -665,9 +665,9 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         LimitStringLength (LogNameFull, 32);
 
         MsgStr = PoolPrint (
-            L"In Variable Memory (Hardware) ... %18s %s:- %s  :::  %-32s  ***  Size: %5d byte%s%s",
-            LogStatus,
+            L"%s Variable Storage (Hardware) ... %18s:- '%s'  :::  %-32s  ***  Size: %5d byte%s%s",
             NVRAM_LOG_SET,
+            LogStatus,
             (BlockUEFI)
                 ? L"WindowsCert"
                 : (BlockCert)
@@ -903,9 +903,10 @@ VOID AlignCSR (VOID) {
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"E N F O R C E   C S R   P O L I C Y");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Vet and Set SIP/SSV");
     #endif
 
     do {
@@ -989,7 +990,8 @@ VOID AlignCSR (VOID) {
     }
 
     MsgStr = PoolPrint (L"%s SIP/SSV ... %r", TmpStr, Status);
-    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+    ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("\n");
     LOG_MSG("INFO: %s", MsgStr);
     LOG_MSG("\n\n");
@@ -1771,7 +1773,7 @@ BOOLEAN ShowCleanNvramInfo (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' From RunGenericMenu Call on '%s'",
+        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' from RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     LOG_MSG("Received User Input:");
@@ -1807,7 +1809,7 @@ VOID AboutRefindPlus (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
 
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'About RefindPlus' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'About RefindPlus' Screen");
     #endif
 
     AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT                 );
@@ -1953,24 +1955,17 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr     ;
-    BOOLEAN  ForceNative;
+    BOOLEAN  TmpLevel;
+    BOOLEAN  CheckMute = FALSE;
+    UINTN    ThislogLevel;
+    CHAR16  *MsgStr;
 
-    #if REFIT_DEBUG > 1
-    UINTN   ThislogLevel ;
-    BOOLEAN TempLevelFlip;
-    #endif
 
-    MsgStr =   L"R E S C A N   A L L   I T E M S";
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X")         ;
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X")         ;
-    LOG_MSG("I N F O :   %s", MsgStr)            ;
-    LOG_MSG("\n\n")                              ;
-
-    /* Enable Forced Native Logging */
-    ForceNative = FALSE;
-    MY_NATIVELOGGER_SET;
+    TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+    if (TmpLevel) GlobalConfig.LogLevel = 1;
+    MsgStr = L"R E S C A N   K E Y   I T E M S";
+    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+    if (TmpLevel) GlobalConfig.LogLevel = 0;
     #endif
 
     // Default UI Scale
@@ -1996,27 +1991,21 @@ VOID RescanAll (
         ConnectAllDriversToAllControllers (FALSE);
         ForceRescanDXE =   GlobalConfig.RescanDXE;
 
-        #if REFIT_DEBUG > 1
-        TempLevelFlip =                 FALSE;
-        ThislogLevel  = GlobalConfig.LogLevel;
-        if (ThislogLevel > MAXLOGLEVEL) {
-            TempLevelFlip         =        TRUE;
-            GlobalConfig.LogLevel = MAXLOGLEVEL;
-        }
-        #endif
-
         ScanVolumes();
-
-        #if REFIT_DEBUG > 1
-        if (TempLevelFlip) {
-            TempLevelFlip         =        FALSE;
-            GlobalConfig.LogLevel = ThislogLevel;
-        }
-        #endif
     }
 
     // Read Config
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
     ReadConfig (GlobalConfig.ConfigFilename);
+
+    #if REFIT_DEBUG > 0
+    // Force LogLevel 0
+    ThislogLevel = GlobalConfig.LogLevel;
+    TmpLevel = (ThislogLevel > 0) ? TRUE : FALSE;
+    if (TmpLevel) GlobalConfig.LogLevel = 0;
+    #endif
 
     // Fix Icon Scales
     FixIconScale();
@@ -2026,15 +2015,26 @@ VOID RescanAll (
         GlobalConfig.TextOnly   = ForceTextOnly            = TRUE;
         GlobalConfig.Timeout    = MainMenu->TimeoutSeconds =    0;
     }
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
 
     ScanForBootloaders();
 
-    #if REFIT_DEBUG > 0
-    /* Disable Forced Native Logging */
-    MY_NATIVELOGGER_OFF;
-    #endif
 
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
     ScanForTools();
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+
+    // Reset LogLevel
+    if (TmpLevel) GlobalConfig.LogLevel = ThislogLevel;
+    #endif
 } // VOID RescanAll()
 
 #ifdef __MAKEWITH_TIANO
@@ -2166,7 +2166,7 @@ VOID SetConfigFilename (
         SubString = MyStrStr (Options, L" -c ");
         if (SubString) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("Set Config Filename From Command Line Option:");
+            LOG_MSG("Set Config Filename from Command Line Option:");
             LOG_MSG("\n");
             #endif
 
@@ -2234,21 +2234,22 @@ VOID AdjustDefaultSelection (VOID) {
     CHAR16     *Element;
     CHAR16     *NewCommaDelimited;
     CHAR16     *PreviousBoot;
+    BOOLEAN     FoundOnce;
     BOOLEAN     FormatLog;
     BOOLEAN     Ignore;
 
     #if REFIT_DEBUG > 0
     CHAR16     *MsgStr;
-    BOOLEAN     LoggedOnce = FALSE;
 
     LOG_MSG("U P D A T E   D E F A U L T   S E L E C T I O N");
     #endif
 
     i = 0;
-    PreviousBoot = NewCommaDelimited = NULL;
-    while ((Element = FindCommaDelimited (
-        GlobalConfig.DefaultSelection, i++
-    )) != NULL) {
+    FoundOnce    =                     FALSE;
+    PreviousBoot = NewCommaDelimited =  NULL;
+    while (!FoundOnce &&
+        (Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)
+    ) != NULL) {
         Ignore = FormatLog = FALSE;
         if (MyStriCmp (Element, L"+")) {
             if (GlobalConfig.TransientBoot &&
@@ -2258,38 +2259,34 @@ VOID AdjustDefaultSelection (VOID) {
             }
 
             if (!Ignore) {
-                FormatLog = TRUE;
-                MY_FREE_POOL(Element);
-
                 #if REFIT_DEBUG > 0
                 LOG_MSG("\n");
                 #endif
 
+                FormatLog = TRUE;
+                MY_FREE_POOL(Element);
                 Status = EfivarGetRaw (
                     &RefindPlusGuid, L"PreviousBoot",
                     (VOID **) &PreviousBoot, NULL
                 );
-                if (!EFI_ERROR(Status)) {
-                    Element = PreviousBoot;
-                }
+                if (!EFI_ERROR(Status)) Element = PreviousBoot;
             }
         }
 
         if (!Ignore && Element && StrLen (Element)) {
             #if REFIT_DEBUG > 0
-            if (!LoggedOnce) {
-                LoggedOnce = TRUE;
-                if (FormatLog) {
-                    MsgStr = StrDuplicate (L"Changed to Previous Selection");
-                }
-                else {
-                    LOG_MSG("\n");
-                    MsgStr = StrDuplicate (L"Changed to Preferred Selection");
-                }
-                LOG_MSG("%s:- '%s'", MsgStr, Element);
+            if (FormatLog) {
+                MsgStr = L"Changed to Previous Selection";
             }
+            else {
+                LOG_MSG("\n");
+                MsgStr = L"Changed to Preferred Selection";
+            }
+            BRK_MIN("INFO: ");
+            LOG_MSG("%s:- '%s'", MsgStr, Element);
             #endif
 
+            FoundOnce = TRUE;
             MergeStrings (&NewCommaDelimited, Element, L',');
         }
 
@@ -2297,9 +2294,10 @@ VOID AdjustDefaultSelection (VOID) {
     } // while
 
     #if REFIT_DEBUG > 0
-    if (!LoggedOnce) {
-        BRK_MIN("\n");
-        LOG_MSG("INFO: No Change to Default Selection");
+    if (!FoundOnce) {
+        if (!FormatLog) BRK_MIN("\n");
+        BRK_MIN("INFO: ");
+        LOG_MSG("No Change to Default Selection");
     }
     BRK_MOD("\n\n");
     #endif
@@ -2428,7 +2426,7 @@ VOID LogBasicInfo (VOID) {
             LOG_MSG("%s         Program Behaviour *IS NOT* Defined", OffsetNext);
         }
         else {
-            // Flag as 'TRUE' even on error to skip the "Skipped QVI Call" message later
+            // Flag as 'TRUE' even on error to avoid the "Skip QVI Call" message later
             QVInfoSupport = TRUE;
             Status = REFIT_CALL_4_WRAPPER(
                 gRT->QueryVariableInfo, AccessFlagsBoot,
@@ -2443,7 +2441,7 @@ VOID LogBasicInfo (VOID) {
                     // DA-TAG: Investigate This
                     //         Do not log output on Apple Firmware
                     //         Currently gives inaccurate output
-                    LOG_MSG("%s*** Redacted Invalid Output ***", OffsetNext);
+                    LOG_MSG("%s** Redacted Invalid Output from QVI **", OffsetNext);
                 }
                 else {
                     LOG_MSG("%s  - Total Storage         : %ld", OffsetNext,   MaximumVariableStorageSize);
@@ -2467,21 +2465,33 @@ VOID LogBasicInfo (VOID) {
     LOG_MSG("ConsoleOut Modes:");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
-    LOG_MSG("%s  - Mode = Text           : %s", OffsetNext, EFI_ERROR(Status) ? L" NO" : L"YES");
+    LOG_MSG("%s  - %sMode = Text           : %s",
+        OffsetNext,
+        (AppleFirmware)   ? L"ConOut " : L"",
+        EFI_ERROR(Status) ? L" NO"     : L"YES"
+    );
     MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &gEfiUgaDrawProtocolGuid, (VOID **) &MsgStr
     );
-    LOG_MSG("%s  - Mode = Graphics (UGA) : %s", OffsetNext, EFI_ERROR(Status) ? L" NO" : L"YES");
+    LOG_MSG("%s  - %sMode = Graphics (UGA) : %s",
+        OffsetNext,
+        (AppleFirmware)   ? L"ConOut " : L"",
+        EFI_ERROR(Status) ? L" NO"     : L"YES"
+    );
     MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid, (VOID **) &MsgStr
     );
-    LOG_MSG("%s  - Mode = Graphics (GOP) : %s", OffsetNext, EFI_ERROR(Status) ? L" NO" : L"YES");
+    LOG_MSG("%s  - %sMode = Graphics (GOP) : %s",
+        OffsetNext,
+        (AppleFirmware)   ? L"ConOut " : L"",
+        EFI_ERROR(Status) ? L" NO"     : L"YES"
+    );
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
 
@@ -2790,17 +2800,11 @@ EFI_STATUS EFIAPI efi_main (
 
     LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
     LOG_MSG("%s      AlignCSR:- ",         OffsetNext                               );
-    if (GlobalConfig.DynamicCSR == 1) {
-        LOG_MSG("'Active ... CSR Enable'"                                           );
-    }
-    else if (GlobalConfig.DynamicCSR == 0) {
-        LOG_MSG("'Inactive'"                                                        );
-    }
-    else if (GlobalConfig.DynamicCSR == -1) {
-        LOG_MSG("'Active ... CSR Disable'"                                          );
-    }
-    else {
-        LOG_MSG("'Error ... Invalid'"                                               );
+    switch (GlobalConfig.DynamicCSR) {
+        case  0: LOG_MSG("'Inactive'"              );  break;
+        case  1: LOG_MSG("'Active ... CSR Enable'" );  break;
+        case -1: LOG_MSG("'Active ... CSR Disable'");  break;
+        default: LOG_MSG("'Error ... Invalid'"     );
     }
 
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
@@ -3009,7 +3013,7 @@ EFI_STATUS EFIAPI efi_main (
     } // if GlobalConfig.DirectBoot
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"A C T I V A T E   M O N I T O R   D I S P L A Y");
+    MsgStr = StrDuplicate (L"E N A B L E   S C R E E N   O U T P U T");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
@@ -3038,7 +3042,7 @@ EFI_STATUS EFIAPI efi_main (
     if (SecureBootFailure) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Secure Boot Failure");
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"Display %s Warning", MsgStr);
         LOG_MSG("INFO: User Warning:- '%s ... Forcing Shutdown'", MsgStr);
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
@@ -3084,7 +3088,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Scan Delay");
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Scan Delay");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("%s:", MsgStr);
         LOG_MSG("\n");
@@ -3133,7 +3137,7 @@ EFI_STATUS EFIAPI efi_main (
 
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -3189,7 +3193,7 @@ EFI_STATUS EFIAPI efi_main (
 
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Missing Config File");
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -3344,7 +3348,7 @@ EFI_STATUS EFIAPI efi_main (
                 TypeStr = L"Clean/Reset NVRAM";
 
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating '%s Info' Screen", TypeStr);
+                ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare '%s Info' Screen", TypeStr);
 
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
@@ -3392,7 +3396,7 @@ EFI_STATUS EFIAPI efi_main (
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Could *NOT* Find Tool:- '%s'", TypeStr);
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
                     LOG_MSG("\n\n");
                     LOG_MSG("** WARN : %s ... Return to Main Menu", MsgStr);
                     LOG_MSG("\n\n");
@@ -3444,13 +3448,13 @@ EFI_STATUS EFIAPI efi_main (
                         );
                     }
 
-                    // Clear Hardware Variable Memory (RefindPlusGuid)
+                    // Clear Hardware Variable Storage (RefindPlusGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusGuid,
                         AccessFlagsFull, 0, NULL
                     );
 
-                    // Clear Hardware Variable Memory (RefindPlusOldGuid)
+                    // Clear Hardware Variable Storage (RefindPlusOldGuid)
                     SetHardwareNvramVariable (
                         VarNVRAM, &RefindPlusOldGuid,
                         AccessFlagsFull, 0, NULL
@@ -3492,7 +3496,7 @@ EFI_STATUS EFIAPI efi_main (
                         #if REFIT_DEBUG > 0
                         MsgStr = PoolPrint (L"Aborted %s", TypeStr);
                         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
                         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                         LOG_MSG("INFO: %s", MsgStr);
                         LOG_MSG("\n\n");
@@ -3506,9 +3510,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 LOG_MSG("%s", MsgStr);
                 LOG_MSG("\n");
                 MY_FREE_POOL(MsgStr);
@@ -3546,7 +3548,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Aborted %s", TypeStr);
                     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
                     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                     LOG_MSG("INFO: %s", MsgStr);
                     LOG_MSG("\n\n");
@@ -3556,9 +3558,7 @@ EFI_STATUS EFIAPI efi_main (
                 else {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
-                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                     LOG_MSG("%s", MsgStr);
                     LOG_MSG("\n");
                     MY_FREE_POOL(MsgStr);
@@ -3689,7 +3689,7 @@ EFI_STATUS EFIAPI efi_main (
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load macOS Installer");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s%s '%s'",
                         OffsetNext,
@@ -3714,7 +3714,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", SelectionName);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", SelectionName);
                     LOG_MSG("%s  - %s", OffsetNext, SelectionName);
                     #endif
 
@@ -3737,7 +3737,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", SelectionName);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", SelectionName);
                     LOG_MSG("%s  - %s", OffsetNext, SelectionName);
 
                     MsgStr = PoolPrint (
@@ -3766,7 +3766,7 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Instance: Linux (Grub)");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG(
@@ -3781,7 +3781,7 @@ EFI_STATUS EFIAPI efi_main (
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Instance: Linux (VMLinuz)");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG(
@@ -3796,7 +3796,7 @@ EFI_STATUS EFIAPI efi_main (
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Instance: Linux (BZImage)");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG(
@@ -3811,7 +3811,7 @@ EFI_STATUS EFIAPI efi_main (
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"kernel")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Instance: Linux (Kernel)");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG(
@@ -3834,7 +3834,7 @@ EFI_STATUS EFIAPI efi_main (
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load Instance: Linux");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     if (EntryVol->VolName) {
                         LOG_MSG(" on '%s' Partition", EntryVol->VolName);
@@ -3852,7 +3852,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Instance: rEFIt Variant");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG(
@@ -3884,7 +3884,7 @@ EFI_STATUS EFIAPI efi_main (
                         L"Load %sInstance: OpenCore",
                         (RunningOC) ? L"*INVALID* " : L""
                     );
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext,
@@ -3937,7 +3937,7 @@ EFI_STATUS EFIAPI efi_main (
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     MsgStr = StrDuplicate (L"Load Instance: Clover");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext,
@@ -3978,7 +3978,7 @@ EFI_STATUS EFIAPI efi_main (
                         );
                     }
 
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
                     LOG_MSG("Received User Input:");
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -4013,7 +4013,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("Received User Input:");
 
                 if (MyStrStr (EntryVol->OSName, L"Windows")) {
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", SelectionName);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", SelectionName);
                     LOG_MSG("%s  - %s", OffsetNext, SelectionName);
                 }
                 else {
@@ -4021,7 +4021,7 @@ EFI_STATUS EFIAPI efi_main (
                         L"Load '%s-Style' Legacy Bootcode",
                         (ChosenEntry->Tag == TAG_LEGACY) ?  L"Mac" : L"UEFI"
                     );
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
                         "%s  - %s for %s",
                         OffsetNext, MsgStr,
@@ -4053,7 +4053,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Start %s", TypeStr);
-                ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
                 MY_FREE_POOL(MsgStr);
@@ -4178,7 +4178,7 @@ EFI_STATUS EFIAPI efi_main (
     // Things have gone wrong if we end up here ... Try to reboot.
     // Go into a dead loop if the reboot attempt fails.
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Unexpected Main Loop Exit ... Try to Reboot!!");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Unexpected Main Loop Exit ... Try to Reboot!!");
 
     LOG_MSG("Fallback: System Restart...");
     LOG_MSG("\n");
@@ -4199,7 +4199,7 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Reset After Unexpected Main Loop Exit:- 'FAILED!!'");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Reset After Unexpected Main Loop Exit:- 'FAILED!!'");
     #endif
 
     SwitchToText (FALSE);

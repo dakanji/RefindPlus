@@ -169,7 +169,7 @@ BOOLEAN ConfirmReboot (
     REFIT_MENU_SCREEN *ConfirmRebootMenu;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm %s' Screen", PromptUser);
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Confirm %s' Screen", PromptUser);
     #endif
 
     ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -197,7 +197,7 @@ BOOLEAN ConfirmReboot (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmReboot' From RunGenericMenu Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmReboot' from RunGenericMenu Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -646,8 +646,8 @@ EFI_STATUS StartEFIImage (
     }
 
     MsgStr = PoolPrint (
-        L"Loading '%s' ... Load Options:- '%s'",
-        ImageTitle, (FullLoadOptions) ? FullLoadOptions : L"NULL"
+        L"Start '%s' with Load Options:- '%s'",
+        ImageTitle, (FullLoadOptions != NULL) ? FullLoadOptions : L"NULL"
     );
 
     #if REFIT_DEBUG > 0
@@ -761,7 +761,7 @@ EFI_STATUS StartEFIImage (
             // It could conceivably do weird things if, say, RefindPlus were on
             // a USB drive that the user pulls before launching a program.
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
+            MsgStr = StrDuplicate (L"Shim 'LoadImage' Hack Required");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -780,7 +780,7 @@ EFI_STATUS StartEFIImage (
         if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"'%r' Returned by Secure Boot While Loading %s!!",
+                L"'%r' Returned by Secure Boot While Loading %s",
                 Status, ImageTitle
             );
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
@@ -841,7 +841,7 @@ EFI_STATUS StartEFIImage (
                 #if REFIT_DEBUG > 0
                 if (EFI_ERROR(Status)) {
                     MsgStr = PoolPrint (
-                        L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
+                        L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable",
                         Status
                     );
                     ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- '%s'", MsgStr);
@@ -863,10 +863,10 @@ EFI_STATUS StartEFIImage (
             UninitRefitLib();
 
             #if REFIT_DEBUG > 0
-            ConstMsgStr = (!IsDriver) ? L"Running Child Image" : L"Loading UEFI Driver";
+            ConstMsgStr = (!IsDriver) ? L"Child Image" : L"UEFI Driver";
             if (!IsDriver) {
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"%s via Loader:- '%s'",
+                    L"Launch %s via Loader:- '%s'",
                     ConstMsgStr, ImageTitle
                 );
                 OUT_TAG();
@@ -885,7 +885,7 @@ EFI_STATUS StartEFIImage (
             NewImageHandle = ChildImageHandle;
 
             #if REFIT_DEBUG > 0
-            MsgStrEx = PoolPrint (L"'%r' When %s", ReturnStatus, ConstMsgStr);
+            MsgStrEx = PoolPrint (L"'%r' While Running %s", ReturnStatus, ConstMsgStr);
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
             if (!IsDriver) {
                 LOG_MSG("%s", MsgStrEx);
@@ -919,7 +919,7 @@ EFI_STATUS StartEFIImage (
                     #endif
                 }
                 else {
-                    MsgStrTmp = L"Returned From Child Image";
+                    MsgStrTmp = L"Returned from Child Image";
                     if (!IsDriver) {
                         MsgStrEx = StrDuplicate (MsgStrTmp);
                     }
@@ -981,7 +981,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     TmpStr = L"Reboot into Firmware";
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", TmpStr);
     #endif
 
     ConfirmAction = ConfirmReboot(TmpStr);
@@ -1054,10 +1054,10 @@ VOID RebootIntoLoader (
     BOOLEAN CheckMute = FALSE;
     #endif
 
-    TmpStr = L"Reboot into NVRAM Boot Option";
+    TmpStr = L"Reboot into nvRAM Boot Option";
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", TmpStr);
     #endif
 
     ConfirmAction = ConfirmReboot(TmpStr);
@@ -1094,7 +1094,7 @@ VOID RebootIntoLoader (
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("\n\n");
         #endif
 
@@ -1162,7 +1162,7 @@ VOID StartLoader (
     IsBoot        = TRUE;
     BootSelection = SelectionName;
     LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"Starting:- '%s'", SelectionName);
+    MsgStr        = PoolPrint (L"User Input:- '%s'", SelectionName);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1200,7 +1200,7 @@ VOID StartTool (
 
     IsBoot     = FALSE;
     LoaderPath = Basename (Entry->LoaderPath);
-    MsgStr     = PoolPrint (L"Launching Child (Tool) Image:- '%s'", Entry->me.Title);
+    MsgStr     = PoolPrint (L"Launch Child (Tool) Image:- '%s'", Entry->me.Title);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1224,7 +1224,7 @@ VOID StartTool (
             );
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
             #endif

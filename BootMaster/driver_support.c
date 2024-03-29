@@ -692,17 +692,14 @@ BOOLEAN LoadDrivers (VOID) {
     UINTN        DriversIndex;
 #endif
 
-
     #if REFIT_DEBUG > 0
     CHAR16        *MsgStr;
     const CHAR16  *MsgNotFound = L"Not Found or Empty";
 
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
-    #endif
 
     // Load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
-    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Load Provided Drivers in Program Default Folder");
     LOG_MSG("\n\n");
     LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
 #if REFIT_DEBUG > 1
@@ -750,8 +747,9 @@ BOOLEAN LoadDrivers (VOID) {
     } // while
 
     // Scan additional user-specified driver directories.
-    if (GlobalConfig.DriverDirs != NULL) {
+    if (GlobalConfig.DriverDirs) {
         #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Load Provided Drivers in User Defined Folders");
         LOG_MSG("\n\n");
         LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
         BRK_MAX("\n");
@@ -809,7 +807,7 @@ BOOLEAN LoadDrivers (VOID) {
         L"Processed %d UEFI Driver%s",
         NumFound, (NumFound == 1) ? L"" : L"s"
     );
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 

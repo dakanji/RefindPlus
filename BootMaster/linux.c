@@ -146,10 +146,10 @@ CHAR16 * FindInitrd (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Checking 'KernelVersion = %s' Against 'InitrdVersion = %s' From '%s'",
-            KernelVersion ? KernelVersion : L"NULL",
-            InitrdVersion ? InitrdVersion : L"NULL",
-            DirEntry->FileName
+            L"Validate 'KernelVersion = %s' on 'DirEntry = %s' with 'InitrdVersion = %s'",
+            (KernelVersion      != NULL) ? KernelVersion      : L"NULL",
+            (DirEntry->FileName != NULL) ? DirEntry->FileName : L"NULL",
+            (InitrdVersion      != NULL) ? InitrdVersion      : L"NULL"
         );
         #endif
 
@@ -259,11 +259,11 @@ CHAR16 * FindInitrd (
     MY_FREE_POOL(KernelVersion);
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Located Initrd:- '%s'", InitrdName ? InitrdName : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Located Initrd:- '%s'", (InitrdName != NULL) ? InitrdName : L"NULL");
     #endif
 
     BREAD_CRUMB(L"%s:  12 - END:- return CHAR16 *InitrdName = '%s'", FuncTag,
-        (InitrdName) ? InitrdName : L"NULL"
+        (InitrdName != NULL) ? InitrdName : L"NULL"
     );
     LOG_DECREMENT();
     LOG_SEP(L"X");
@@ -495,7 +495,7 @@ VOID AddKernelToSubmenu (
     UINTN                TokenCount;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Add Linux Kernel as SubMenu Entry");
     #endif
 
     #if REFIT_DEBUG > 1
@@ -627,7 +627,7 @@ BOOLEAN HasSignedCounterpart (
     if (NewFile != NULL) {
         if (FileExists(Volume->RootDir, NewFile)) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Found Signed Counterpart to '%s'", FullName);
             #endif
 
             retval = TRUE;

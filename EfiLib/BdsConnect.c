@@ -297,19 +297,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     DetectedDevices = FALSE;
 
     #if REFIT_DEBUG > 0
-    if (ReLoaded) {
-        MsgStr = StrDuplicate (
-            L"R E C O N N E C T   D E V I C E   H A N D L E S"
-        );
-        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-    }
-    else {
-        MsgStr = StrDuplicate (
-            L"C O N N E C T   D E V I C E   H A N D L E S"
-        );
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    }
-
+    MsgStr = (ReLoaded)
+        ? StrDuplicate (L"R E C O N N E C T   D E V I C E   H A N D L E S")
+        : StrDuplicate (L"C O N N E C T   D E V I C E   H A N D L E S");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
@@ -573,11 +564,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 }
                 else {
                     MY_MUTELOGGER_SET;
-                    if (FindSubStr (DeviceData, L"Monitor Display")) {
+                    if (FindSubStr (DeviceData, L"Monitor Display") ||
+                        FindSubStr (DeviceData, L"GraphicsFX Card")
+                    ) {
                         FillStr = L"  x  ";
-                    }
-                    else if (FindSubStr (DeviceData, L"GraphicsFX Card")) {
-                        FillStr = L"  @  ";
                     }
                     else if (Parent) {
                         FillStr = L"     ";
@@ -783,7 +773,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     else {
         LOG_MSG("INFO: %s", MsgStr);
     }
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -807,9 +797,9 @@ EFI_STATUS ApplyGOPFix (VOID) {
     // Check whether OptionROMs are available in RAM
     Status = AcquireGOP();
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Reload OptionROM");
     MsgStr = PoolPrint (
-        L"Status:- '%r' ... Acquire OptionROM From Volatile Memory",
+        L"Status:- '%r' ... Acquire OptionROM from Volatile Memory",
         Status
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -898,7 +888,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
                 MsgStr = PoolPrint (
-                    L"Status:- '%r' ... Issue OptionROM From Volatile Memory",
+                    L"Status:- '%r' ... Issue OptionROM from Volatile Memory",
                     Status
                 );
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);

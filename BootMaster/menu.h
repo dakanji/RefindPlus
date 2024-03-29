@@ -164,10 +164,10 @@ VOID DisplaySimpleMessage (
 UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
 UINTN WaitForInput (IN UINTN Timeout);
 UINTN RunGenericMenu (
-    IN REFIT_MENU_SCREEN *Screen,
-    IN MENU_STYLE_FUNC StyleFunc,
-    IN OUT INTN *DefaultEntryIndex,
-    OUT REFIT_MENU_ENTRY **ChosenEntry
+    IN     REFIT_MENU_SCREEN   *Screen,
+    IN     MENU_STYLE_FUNC      StyleFunc,
+    IN OUT INTN                *DefaultEntryIndex,
+    OUT    REFIT_MENU_ENTRY  **ChosenEntry
 );
 UINTN RunMenu (
     IN REFIT_MENU_SCREEN  *Screen,

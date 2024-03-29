@@ -6,7 +6,7 @@ Acknowledged:
   issues:
     # Add labels
     label:
-      - 'Not-Resolved'
+      - 'Unresolved'
     # Remove labels
     unlabel:
       - 'Uncertain'
@@ -108,7 +108,7 @@ Bug:
   issues:
     # Add labels
     label:
-      - 'Not-Resolved'
+      - 'Unresolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -400,7 +400,7 @@ Known-Issue:
   issues:
     # Add labels
     label:
-      - 'Not-Resolved'
+      - 'Unresolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -451,7 +451,7 @@ Upstream:
     # Add labels
     label:
       - 'Acknowledged'
-      - 'Not-Resolved'
+      - 'Unresolved'
     # Remove labels
     unlabel:
       - 'Acknowledged'
@@ -502,7 +502,7 @@ Resolved:
   issues:
     # Remove labels
     unlabel:
-      - 'Not-Resolved'
+      - 'Unresolved'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -524,7 +524,7 @@ Resolved:
 #   issues:
 #     # Add labels
 #     label:
-#       - 'Not-Resolved'
+#       - 'Unresolved'
 #    # Reopen issue and unlock thread
 #    reopen: true
 #    unlock: true

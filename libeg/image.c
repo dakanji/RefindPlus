@@ -228,7 +228,7 @@ EG_IMAGE * egScaleImage (
     }
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scaling Image to %d x %d", NewWidth, NewHeight);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scale Image to %d x %d", NewWidth, NewHeight);
     #endif
 
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
@@ -281,10 +281,6 @@ EG_IMAGE * egScaleImage (
                 (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
         } // for (j...)
     } // for (i...)
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scaling Image Completed");
-    #endif
 
     return NewImage;
 } // EG_IMAGE * egScaleImage()
@@ -372,7 +368,7 @@ EFI_STATUS egLoadFile (
     if (FileDataLength) *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadFile ... Loaded File:- '%s'", FileName);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -482,7 +478,7 @@ EG_IMAGE * egLoadImage (
 
     if (!BaseDir || !FileName) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements *NOT* Met!!");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadImage ... Requirements *NOT* Met");
         #endif
 
         // Early Return
@@ -493,8 +489,8 @@ EG_IMAGE * egLoadImage (
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"In egLoadImage ... '%r' Returned While Attempting to Load File!!",
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"In egLoadImage ... Load File Attempt:- '%r'",
             Status
         );
         #endif
@@ -525,27 +521,27 @@ EG_IMAGE * egLoadIcon (
     EG_IMAGE       *NewImage;
     EG_IMAGE       *Image;
 
-    if (!BaseDir || !Path) {
+    if (!AllowGraphicsMode || !BaseDir || !Path) {
         #if REFIT_DEBUG > 0
-        // Set error status if unable to get to image
-        Status = EFI_INVALID_PARAMETER;
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIcon ... '%r' When Trying to Load Icon!!",
-            Status
-        );
-        #endif
-
-        // Early Return
-        return NULL;
-    }
-    else if (!AllowGraphicsMode) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIcon ... Skipped Loading Icon in %s Mode",
-            (GlobalConfig.DirectBoot)
-                ? L"DirectBoot"
-                : L"Text Screen"
-        );
+        if (Path) {
+            if (!BaseDir) {
+                // Set error status if unable to get to image
+                Status = EFI_INVALID_PARAMETER;
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"In egLoadIcon ... Load Icon:- '%r ... %s'",
+                    Status, Path
+                );
+            }
+            else if (!AllowGraphicsMode) {
+                ALT_LOG(1, LOG_THREE_STAR_MID,
+                    L"In egLoadIcon ... Skip Icon Load (%s Mode):- '%s'",
+                    (GlobalConfig.DirectBoot)
+                        ? L"DirectBoot"
+                        : L"Text Screen",
+                     Path
+                );
+            }
+        }
         #endif
 
         // Early Return
@@ -557,8 +553,8 @@ EG_IMAGE * egLoadIcon (
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"In egLoadIcon ... '%r' When Trying to Load Icon:- '%s'!!",
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"In egLoadIcon ... Load Icon:- '%r ... %s'",
             Status, Path
         );
         #endif
@@ -572,8 +568,9 @@ EG_IMAGE * egLoadIcon (
     MY_FREE_POOL(FileData);
     if (!Image) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"In egLoadIcon ... Could *NOT* Decode Image Data!!"
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"In egLoadIcon ... Could *NOT* Decode Image Data:- '%s'",
+            Path
         );
         #endif
 
@@ -628,10 +625,9 @@ EG_IMAGE * egLoadIconAnyType (
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIconAnyType ... Skipped Loading Icon in %s Mode",
+            L"In egLoadIconAnyType ... Skip Icon Load (%s Mode)",
             (GlobalConfig.DirectBoot)
-                ? L"DirectBoot"
-                : L"Text Screen"
+                ? L"DirectBoot" : L"Text Screen"
         );
         #endif
 
@@ -640,8 +636,8 @@ EG_IMAGE * egLoadIconAnyType (
     }
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"In egLoadIconAnyType ... Trying to Load Icon From '%s' with Base Name:- '%s'",
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Load Icon from '%s' Folder with Base Name:- '%s'",
         (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
         BaseName
     );
@@ -661,7 +657,7 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     if (!Image) {
-        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadIconAnyType ... Could *NOT* Load Icon!");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadIconAnyType ... Load Icon:- 'Not Ready'");
     }
     #endif
 

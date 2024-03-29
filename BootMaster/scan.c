@@ -70,7 +70,7 @@
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 #if REFIT_DEBUG > 0
-static CHAR16  *Spacer   = L"                ";
+static CHAR16  *Spacer   = L"                          ";
 
 BOOLEAN  LogNewLine      = FALSE;
 #endif
@@ -821,7 +821,7 @@ VOID SetLoaderDefaults (
     #endif
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Setting Loader Defaults");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Set Loader Defaults");
     #endif
 
     LOG_SEP(L"X");
@@ -842,7 +842,7 @@ VOID SetLoaderDefaults (
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In SetLoaderDefaults ... Skipped Loading Icon in %s Mode",
+            L"In SetLoaderDefaults ... Skip Icon Load in %s Mode",
             (GlobalConfig.DirectBoot)
                 ? L"DirectBoot"
                 : L"Text Screen"
@@ -898,7 +898,9 @@ VOID SetLoaderDefaults (
                 if (!GlobalConfig.HiddenIconsIgnore &&
                     GlobalConfig.HiddenIconsPrefer
                 ) {
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Could *NOT* Find '.VolumeIcon' Image");
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Could *NOT* Find '.VolumeIcon' Image"
+                    );
                 }
                 #endif
 
@@ -915,7 +917,7 @@ VOID SetLoaderDefaults (
                     BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Skipped Bootloader Directory Icon Search ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
+                        L"Skip Bootloader Directory Icon Search ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
                     );
                     #endif
                 }
@@ -983,8 +985,8 @@ VOID SetLoaderDefaults (
                 #if REFIT_DEBUG > 0
                 BREAD_CRUMB(L"%s:  3b 1b 3b 1", FuncTag);
                 if (Entry->me.Image == NULL) {
-                    ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Creating Icon Hint From Loader Path:- '%s'",
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Create Icon Hint from Loader Path:- '%s'",
                         LoaderPath
                     );
                 }
@@ -1381,7 +1383,7 @@ VOID SetLoaderDefaults (
     if (GetImage) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Trying to Locate an Icon Based on Hints:- '%s'",
+            L"Locate Icon Based on Hint String:- '%s'",
             OSIconName
         );
         #endif
@@ -1522,7 +1524,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
     TempStr              = DevicePathToStr (EfiLoaderPath);
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", TempStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"UEFI Loader Path:- '%s'", TempStr);
     #endif
 
     MY_FREE_POOL(TempStr);
@@ -1731,7 +1733,10 @@ LOADER_ENTRY * AddLoaderEntry (
         SetVolType (Entry->Title, TmpName, Volume->FSType)
     );
 
-    ALT_LOG(1, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
+    ALT_LOG(1, LOG_THREE_STAR_END,
+        L"Successfully Created Menu Entry for %s",
+        Entry->Title
+    );
     #endif
 
     MY_FREE_POOL(DisplayName);
@@ -1857,6 +1862,9 @@ CHAR16 * SetVolKind (
     else if (VolumeFSType == FS_TYPE_FAT16          ) RetVal = L""          ;
     else if (VolumeFSType == FS_TYPE_FAT12          ) RetVal = L""          ;
     else if (VolumeFSType == FS_TYPE_EXFAT          ) RetVal = L""          ;
+    else if (MyStriCmp  (VolumeName,   L"EFI"      )) RetVal = L""          ;
+    else if (MyStriCmp  (VolumeName,   L"ESP"      )) RetVal = L""          ;
+    else if (FindSubStr (VolumeName,   L"Partition")) RetVal = L""          ;
     else if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume:- " ;
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -2217,23 +2225,21 @@ BOOLEAN ScanLoaderDir (
     LOADER_ENTRY            *LatestEntry;
     BOOLEAN                  IsLinux;
     BOOLEAN                  InSelfPath;
+    BOOLEAN                  ShouldScanThis;
     BOOLEAN                  IsFallbackLoader;
     BOOLEAN                  FoundFallbackDuplicate;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-
+    BOOLEAN                  CheckMute = FALSE;
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ScanLoaderDir";
-    #endif
     #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, Path);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scan for '%s' in '%s'", Pattern, Path);
     #endif
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
@@ -2259,7 +2265,7 @@ BOOLEAN ScanLoaderDir (
                 Extension = FindExtension (DirEntry->FileName);
 
                 //BREAD_CRUMB(L"%s:  2a 2a 1a 2", FuncTag);
-                FullName  = StrDuplicate (Path);
+                FullName = StrDuplicate (Path);
 
                 //BREAD_CRUMB(L"%s:  2a 2a 1a 3", FuncTag);
                 MergeStrings (&FullName, DirEntry->FileName, L'\\');
@@ -2271,35 +2277,45 @@ BOOLEAN ScanLoaderDir (
                 if (!GlobalConfig.FollowSymlinks) {
                     //BREAD_CRUMB(L"%s:  2a 2a 1a 5a 1", FuncTag);
                     if (IsSymbolicLink (Volume, FullName, DirEntry)) {
-                        BREAD_CRUMB(L"%s:  2a 2a 1a 5a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Symlink)", FuncTag);
+                        BREAD_CRUMB(L"%s:  2a 2a 1a 5a 1a 1 - WHILE LOOP:- CONTINUE (Skip Symlink)", FuncTag);
                         // Skip This Entry
                         break;
                     }
                 }
 
                 //BREAD_CRUMB(L"%s:  2a 2a 1a 6", FuncTag);
-                // HasSignedCounterpart (Volume, FullName) == file with same name plus ".efi.signed" is present
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
                 IsFallbackLoader = MyStriCmp (
                     DirEntry->FileName,
                     FALLBACK_BASENAME
                 );
 
-                if (DirEntry->FileName[0] == '.'               ||
-                    !IsValidLoader (Volume->RootDir, FullName) ||
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_SET;
+                #endif
+                ShouldScanThis = IsValidLoader (Volume->RootDir, FullName);
+                #if REFIT_DEBUG > 0
+                MY_MUTELOGGER_OFF;
+                #endif
+
+                if (!ShouldScanThis              ||
+                    DirEntry->FileName[0] == '.' ||
                     (
+                        IsListItem (Path, MEMTEST_LOCATIONS)
+                    ) || (
                         IsFallbackLoader &&
                         MyStriCmp (Path, L"EFI\\BOOT")
                     ) || (
+                        // Handle MEMTEST_NAMES here and not in 'SyncDontScanFiles'
+                        // to accomodate fallback loaders in the list.
                         !IsFallbackLoader &&
                         IsListItem (
-                            DirEntry->FileName, MEMTEST_NAMES
+                            DirEntry->FileName,
+                            MEMTEST_NAMES
                         )
                     ) || (
                         IsListItem (
-                            DirEntry->FileName, GlobalConfig.DontScanFiles
+                            DirEntry->FileName,
+                            GlobalConfig.DontScanFiles
                         )
                     ) || (
                         FilenameIn (
@@ -2308,33 +2324,28 @@ BOOLEAN ScanLoaderDir (
                             GlobalConfig.DontScanFiles
                         )
                     ) || (
+                        // TRUE == "SameName" + ".efi.signed" file present
                         HasSignedCounterpart (Volume, FullName)
                     )
                 ) {
-                    #if REFIT_DEBUG > 0
-                    MY_MUTELOGGER_OFF;
-                    #endif
-                    BREAD_CRUMB(L"%s:  2a 2a 1a 6a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
+                    BREAD_CRUMB(L"%s:  2a 2a 1a 6a 1 - WHILE LOOP:- CONTINUE (Skip Invalid Item:- '%s')", FuncTag,
                         DirEntry->FileName
                     );
                     // Skip This Entry
                     break;
                 }
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
 
                 //BREAD_CRUMB(L"%s:  2a 2a 1a 7", FuncTag);
                 NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
-                //BREAD_CRUMB(L"%s:  2a 2a 1a 8", FuncTag);
                 if (NewLoader != NULL) {
-                    //BREAD_CRUMB(L"%s:  2a 2a 1a 8a 1", FuncTag);
+                    //BREAD_CRUMB(L"%s:  2a 2a 1a 7a 1", FuncTag);
                     NewLoader->FileName  = StrDuplicate (FullName);
                     NewLoader->TimeStamp = DirEntry->ModificationTime;
                     LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
 
+                    //BREAD_CRUMB(L"%s:  2a 2a 1a 7a 2", FuncTag);
                     if (DuplicatesFallback (Volume, FullName)) {
-                        //BREAD_CRUMB(L"%s:  2a 2a 1a 8a 1a 1", FuncTag);
+                        //BREAD_CRUMB(L"%s:  2a 2a 1a 7a 2a 1", FuncTag);
                         FoundFallbackDuplicate = TRUE;
                     }
                 }
@@ -2487,7 +2498,7 @@ VOID ScanNetboot (VOID) {
     REFIT_VOLUME  *NetVolume;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE Boot Options");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"IPXE Boot Options");
     #endif
 
     if (FileExists (SelfVolume->RootDir, IPXE_NAME) &&
@@ -2604,10 +2615,6 @@ VOID ScanEfiFiles (
     REFIT_DIR_ITER          EfiDirIter;
 
 
-    #if REFIT_DEBUG > 0
-    UINTN    LogLineType;
-    #endif
-
     //#if REFIT_DEBUG > 1
     //const CHAR16 *FuncTag = L"ScanEfiFiles";
     //#endif
@@ -2683,11 +2690,11 @@ VOID ScanEfiFiles (
                     //LOG_SEP(L"X");
                     //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1 - FOR LOOP:- START", FuncTag);
                     if (GuidsAreEqual (&(SkipApfsVolumes[i]->PartGuid), &(Volume->PartGuid))) {
-                        //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on Skipped APFS Volume", FuncTag);
+                        //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 1a 1 - FOR LOOP:- END VOID ... Exit on APFS Volume Skip", FuncTag);
                         //LOG_DECREMENT();
                         //LOG_SEP(L"X");
 
-                        // Early Return on Skipped APFS Volume
+                        // Early Return on APFS Volume Skip
                         return;
                     }
                     //BREAD_CRUMB(L"%s:  3a 1a 1a 1a 2 - FOR LOOP:- END", FuncTag);
@@ -2718,11 +2725,9 @@ VOID ScanEfiFiles (
 
     //BREAD_CRUMB(L"%s:  4", FuncTag);
     #if REFIT_DEBUG > 0
-    /* Exception for LOG_THREE_STAR_SEP */
-    LogLineType = (FirstLoaderScan) ? LOG_THREE_STAR_MID : LOG_THREE_STAR_SEP;
-    ALT_LOG(1, LogLineType,
-        L"Scanning Volume '%s' for UEFI Loaders",
-        Volume->VolName ? Volume->VolName : L"** No Name **"
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
+        L"Handle UEFI Loaders on Volume:- '%s'",
+        (Volume->VolName != NULL) ? Volume->VolName : L"** No Name **"
     );
     #endif
 
@@ -3034,7 +3039,7 @@ VOID ScanInternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Scan for Internal Disk Volumes with Mode:- 'UEFI'");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Internal Disk Volumes with Mode:- 'UEFI'");
     #endif
 
     #if REFIT_DEBUG > 1
@@ -3065,7 +3070,7 @@ VOID ScanExternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Scan for External Disk Volumes with Mode:- 'UEFI'");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"External Disk Volumes with Mode:- 'UEFI'");
     #endif
 
     #if REFIT_DEBUG > 1
@@ -3096,7 +3101,7 @@ VOID ScanOptical (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Scan for Optical Discs with Mode:- 'UEFI'");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Optical Discs with Mode:- 'UEFI'");
     #endif
 
     #if REFIT_DEBUG > 1
@@ -3152,9 +3157,7 @@ VOID ScanFirmwareDefined (
 
     #if REFIT_DEBUG > 0
     if (Row == 0) {
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Scanning for Firmware Defined Boot Options"
-        );
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Firmware Defined Boot Options");
     }
     #endif
 
@@ -3187,7 +3190,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell From Scan");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Excluding UEFI Shell from Scan");
         #endif
 
         if (DontScanFirmware) {
@@ -3258,7 +3261,7 @@ VOID ScanFirmwareDefined (
     DeleteBootOrderEntries (BootEntries);
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
+    ALT_LOG(1, LOG_THREE_STAR_END,
         L"Evaluate Firmware Defined Options ... Relevant Options:- '%s'",
         (FoundIt) ? L"Added" : L"None"
     );
@@ -3278,7 +3281,7 @@ EG_IMAGE * GetDiskBadge (
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped ... Config Setting is Active:- 'HideUI Badges'"
+            L"Skip ... Config Setting is Active:- 'HideUI Badges'"
         );
         #endif
 
@@ -3343,9 +3346,10 @@ VOID ScanForBootloaders (VOID) {
     BOOLEAN   AmendedDontScan;
 
     #if REFIT_DEBUG > 0
-    UINTN    KeyNum;
-    CHAR16  *MsgStr;
-    CHAR16  *LogSection;
+    UINTN     KeyNum;
+    CHAR16   *MsgStr;
+    CHAR16   *LogSection;
+    BOOLEAN   TmpLevel;
     #endif
 
     ScanningLoaders = TRUE;
@@ -3354,6 +3358,7 @@ VOID ScanForBootloaders (VOID) {
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     MsgStr = StrDuplicate (L"S E E K   I N S T A N C E   L O A D E R S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Update Hidden Entry List");
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
@@ -3501,7 +3506,7 @@ VOID ScanForBootloaders (VOID) {
         #if REFIT_DEBUG > 0
         if (AmendedDontScan) {
             ALT_LOG(1, LOG_STAR_SEPARATOR,
-                L"Ignored PreBoot Volumes in 'Dont Scan' List ... disable_apfs_sync is *NOT* Active"
+                L"Ignored PreBoot Volumes in 'Dont Scan' Lists ... Config Setting is *NOT* Active:- 'disable_apfs_sync'"
             );
         }
         #endif
@@ -3533,7 +3538,7 @@ VOID ScanForBootloaders (VOID) {
                 LogNewLine = TRUE;
 
                 LOG_MSG("Scan Manual:");
-                ALT_LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Stanzas");
+                ALT_LOG(1, LOG_THREE_STAR_SEP, L"Manually Defined Stanzas");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);
@@ -3654,27 +3659,33 @@ VOID ScanForBootloaders (VOID) {
 
     if (MainMenu->EntryCount < 1) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could *NOT* Find Boot Loaders");
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("* WARN: %s", MsgStr);
-        LOG_MSG("\n\n");
+        MsgStr = StrDuplicate (L"Could *NOT* Locate Valid Instance Loaders");
+        TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+        if (TmpLevel) GlobalConfig.LogLevel = 1;
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        if (TmpLevel) GlobalConfig.LogLevel = 0;
         MY_FREE_POOL(MsgStr);
         #endif
     }
     else {
         // Assign shortcut keys
         #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_STAR_HEAD_SEP,
+            L"Located %d Instance Loader%s",
+            MainMenu->EntryCount,
+            (MainMenu->EntryCount == 1) ? L"" : L"s"
+        );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+
         LogSection = L"A S S I G N   S H O R T C U T   K E Y S";
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
         LOG_MSG("\n\n");
         LOG_MSG("%s", LogSection);
 
-        MsgStr = StrDuplicate (L"Set Shortcuts:");
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        MsgStr = StrDuplicate (L"Set Shortcuts");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("\n");
-        LOG_MSG("%s", MsgStr);
+        LOG_MSG("%s:", MsgStr);
         MY_FREE_POOL(MsgStr);
 
         KeyNum = 0;
@@ -3711,12 +3722,12 @@ VOID ScanForBootloaders (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Assigned Shortcut Key%s to %d of %d Loader%s",
+            L"Assigned Shortcut Key%s to %d of %d Instance Loader%s",
             (i == 1) ? L"" : L"s",
             i, MainMenu->EntryCount,
             (MainMenu->EntryCount == 1) ? L"" : L"s"
         );
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("INFO: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -3752,17 +3763,28 @@ BOOLEAN IsValidTool (
     CHAR16  *DontScanTools;
     BOOLEAN  retval;
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
+
     if (!FileExists (BaseVolume->RootDir, PathName)) {
         // Early return ... File does not exist
         return FALSE;
     }
 
     if (gHiddenTools == NULL) {
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+
         DontScanTools = ReadHiddenTags (L"HiddenTools");
-        gHiddenTools  = (DontScanTools) ? StrDuplicate (DontScanTools) : StrDuplicate (L"NotSet");
+        gHiddenTools  = (DontScanTools)
+            ? StrDuplicate (DontScanTools)
+            : StrDuplicate (L"NotSet");
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        MY_MUTELOGGER_OFF;
         #endif
     }
     else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
@@ -3773,7 +3795,9 @@ BOOLEAN IsValidTool (
     }
 
     if (GlobalConfig.DontScanTools) {
-        MergeUniqueStrings (&DontScanTools, GlobalConfig.DontScanTools, L',');
+        MergeUniqueStrings (
+            &DontScanTools, GlobalConfig.DontScanTools, L','
+        );
     }
 
     #if REFIT_DEBUG > 0
@@ -3955,14 +3979,14 @@ VOID ScanForTools (VOID) {
     #endif
 
     #if REFIT_DEBUG > 0
+    BOOLEAN   CheckMute = FALSE;
     BOOLEAN   FlagAPFS;
     CHAR16   *ToolStr;
-    CHAR16   *LogSection = L"P R O C E S S   T O O L   O P T I O N S";
+    CHAR16   *LogSection = L"H A N D L E   T O O L   O P T I O N S";
 
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
     LOG_MSG("%s", LogSection);
-    #endif
 
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ScanForTools";
@@ -3971,10 +3995,11 @@ VOID ScanForTools (VOID) {
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    #endif
 
     if (GlobalConfig.DirectBoot) {
         #if REFIT_DEBUG > 0
-        LogSection = L"Skipped Loading Tool Options ... 'DirectBoot' is Active";
+        LogSection = L"Skip Loading Tool Options ... 'DirectBoot' is Active";
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -4018,7 +4043,7 @@ VOID ScanForTools (VOID) {
     } // for
     if (ToolTotal == 0) {
         #if REFIT_DEBUG > 0
-        LogSection = L"Skipped Loading Tool Options ...  Empty 'showtools' List";
+        LogSection = L"Skip Loading Tool Options ...  Empty 'showtools' List";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -4035,11 +4060,10 @@ VOID ScanForTools (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LogSection = L"Validate List Items:";
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LogSection = L"Check and Set Items";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
     LOG_MSG("\n");
-    LOG_MSG("%s", LogSection);
+    LOG_MSG("%s:", LogSection);
     #endif
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);
@@ -4361,7 +4385,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Adding '%s' Tag:- '%s' on '%s'",
+                            L"Add '%s' Tag:- '%s' on '%s'",
                             ToolName, FileName,
                             SelfVolume->VolName
                         );
@@ -4400,16 +4424,11 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Scanning for Firmware Defined Shell Options"
+                    L"Scan for Firmware Defined Shell Options"
                 );
                 #endif
 
                 ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
-
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                #endif
-
             break;
             case TAG_GPTSYNC:
                 j = 0;
@@ -4433,7 +4452,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Adding '%s' Tag:- '%s' on '%s'",
+                            L"Add '%s' Tag:- '%s' on '%s'",
                             ToolName, FileName,
                             SelfVolume->VolName
                         );
@@ -4493,7 +4512,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Adding '%s' Tag:- '%s' on '%s'",
+                            L"Add '%s' Tag:- '%s' on '%s'",
                             ToolName, FileName,
                             SelfVolume->VolName
                         );
@@ -4553,7 +4572,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Adding '%s' Tag:- '%s' on '%s'",
+                            L"Add '%s' Tag:- '%s' on '%s'",
                             ToolName, FileName,
                             SelfVolume->VolName
                         );
@@ -4615,7 +4634,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ALT_LOG(1, LOG_LINE_NORMAL,
-                                L"Adding '%s' Tag:- '%s' for '%s'",
+                                L"Add '%s' Tag:- '%s' for '%s'",
                                 ToolName, FileName,
                                 VolumeTag
                             );
@@ -4786,7 +4805,7 @@ VOID ScanForTools (VOID) {
                         ) {
                             #if REFIT_DEBUG > 0
                             ALT_LOG(1, LOG_LINE_NORMAL,
-                                L"Adding '%s' Tag:- '%s' on '%s'",
+                                L"Add '%s' Tag:- '%s' on '%s'",
                                 ToolName, FileName,
                                 Volumes[VolumeIndex]->VolName
                             );
@@ -4886,8 +4905,10 @@ VOID ScanForTools (VOID) {
                     Status = EFI_UNSUPPORTED;
                 }
                 else if (GlobalConfig.CsrValues) {
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_SET;
+                    #endif
                     // Only attempt to enable if CSR Values are set
-                    MuteLogger = TRUE;
                     // Sets 'gCsrStatus' and returns a Status Code based on outcome
                     Status = GetCsrStatus (&CsrValue);
                     if (!EFI_ERROR(Status)) {
@@ -4900,7 +4921,9 @@ VOID ScanForTools (VOID) {
                             gCsrStatus = StrDuplicate (L"Dynamic SIP/SSV Enable");
                         }
                     }
-                    MuteLogger = FALSE;
+                    #if REFIT_DEBUG > 0
+                    MY_MUTELOGGER_OFF;
+                    #endif
                 }
                 else {
                     // Sets 'gCsrStatus' and always returns 'EFI_NOT_READY'
@@ -5025,7 +5048,7 @@ VOID ScanForTools (VOID) {
         ToolTotal,
         (ToolTotal == 1) ? L"" : L"s"
     );
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", ToolStr);
+    ALT_LOG(1, LOG_STAR_HEAD_SEPX, L"%s", ToolStr);
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"%s", ToolStr);
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", ToolStr);

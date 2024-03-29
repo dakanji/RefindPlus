@@ -176,7 +176,7 @@ your copyrighted material outside their relationship with you.
 the conditions stated below.  Sublicensing is not allowed; section 10
 makes it unnecessary.
 
-  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+  3. Protecting Users' Legal Rights from Anti-Circumvention Law.
 
   No covered work shall be deemed part of an effective technological
 measure under any applicable law fulfilling obligations under article

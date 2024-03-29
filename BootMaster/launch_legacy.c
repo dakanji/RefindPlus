@@ -146,8 +146,8 @@ static
 EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, \
     { 0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82 } };
 
-BOOLEAN FirstLegacyScan = TRUE;
-
+BOOLEAN FirstLegacyScan  = TRUE;
+BOOLEAN ShowLegacyVolume = TRUE;
 
 static
 EFI_STATUS ActivateMbrPartition (
@@ -472,7 +472,7 @@ EFI_STATUS StartLegacyImageList (
     // DA-TAG: (optionally) re-enable the EFI watchdog timer!
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Loading 'Mac-Style' Legacy Bootcode");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Load 'Mac-Style' Legacy Bootcode");
     #endif
 
     // Close open file handles
@@ -531,13 +531,13 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Loading 'Mac-Style' Legacy Bootcode:- '%s'",
+        L"Load 'Mac-Style' Legacy Bootcode:- '%s'",
         SelectionName
     );
     #endif
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    BeginExternalScreen (TRUE, L"Loading 'Mac-Style' Legacy Bootcode");
+    BeginExternalScreen (TRUE, L"Load 'Mac-Style' Legacy Bootcode");
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
@@ -618,7 +618,7 @@ VOID StartLegacy (
             SwitchToText (FALSE);
 
             BREAD_CRUMB(L"%s:  10a 1b 2", FuncTag);
-            MsgStrA = L"The Firmware Refused to Boot From the Selected Volume";
+            MsgStrA = L"The Firmware Refused to Boot from the Selected Volume";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -993,10 +993,10 @@ VOID ScanLegacyUEFI (
     #if REFIT_DEBUG > 0
     UINTN LogLineType = (FirstLegacyScan)
         ? LOG_STAR_HEAD_SEP
-        : LOG_THREE_STAR_SEP;
+        : LOG_LINE_THIN_SEP;
 
-    /* Exception for LOG_THREE_STAR_SEP */
-    ALT_LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy Boot Options");
+    /* Exception for LOG_LINE_THIN_SEP */
+    ALT_LOG(1, LogLineType, L"'UEFI-Style' Legacy Boot Options");
     #endif
 
     FirstLegacyScan = FALSE;
@@ -1210,27 +1210,41 @@ VOID ScanLegacyVolume (
             BREAD_CRUMB(L"%s:  5a 1a 2 - FOR LOOP:- END", FuncTag);
             LOG_SEP(L"X");
 
-            if (!ShowVolume) break;
+            if (!ShowVolume) {
+                break;
+            }
         } // for
         BREAD_CRUMB(L"%s:  5a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
     if (!ShowVolume) {
-        BREAD_CRUMB(L"%s:  6a 1 - Skipping Whole Disk Instance", FuncTag);
+        BREAD_CRUMB(L"%s:  6a 1 - END:- VOID ... Skipping Whole Disk Instance", FuncTag);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        return;
     }
-    else {
-        BREAD_CRUMB(L"%s:  6b 1 - Processing Legacy Boot Instance", FuncTag);
-        if ((Volume->VolName == NULL) ||
-            (StrLen (Volume->VolName) < 1)
-        ) {
-            BREAD_CRUMB(L"%s:  6b 1a 1 - Getting Legacy Boot Instance Name", FuncTag);
-            Volume->VolName = GetVolumeName (Volume);
-        }
-        BREAD_CRUMB(L"%s:  6b 2 - Adding Legacy Boot Instance", FuncTag);
-        AddLegacyEntry (NULL, Volume);
-        BREAD_CRUMB(L"%s:  6b 3", FuncTag);
+
+    BREAD_CRUMB(L"%s:  6b 1 - Processing Legacy Boot Instance", FuncTag);
+    ShowLegacyVolume = TRUE;
+    if ((Volume->VolName == NULL) ||
+        (StrLen (Volume->VolName) < 1)
+    ) {
+        BREAD_CRUMB(L"%s:  6b 1a 1 - Getting Legacy Boot Instance Name", FuncTag);
+        Volume->VolName = GetVolumeName (Volume);
     }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
+        L"Create Legacy Boot Entry for Volume:- '%s'",
+        (Volume->VolName != NULL) ? Volume->VolName : L"** No Name **"
+    );
+    #endif
+
+    BREAD_CRUMB(L"%s:  6b 2 - Adding Legacy Boot Instance", FuncTag);
+    AddLegacyEntry (NULL, Volume);
+    BREAD_CRUMB(L"%s:  6b 3", FuncTag);
 
     BREAD_CRUMB(L"%s:  7 - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -1245,8 +1259,8 @@ VOID ScanLegacyDisc (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for Optical Discs with Mode:- 'Legacy BIOS'"
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"Optical Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1263,6 +1277,7 @@ VOID ScanLegacyDisc (VOID) {
         ScanLegacyUEFI (BBS_CDROM);
     }
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        ShowLegacyVolume = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_OPTICAL) {
@@ -1271,6 +1286,13 @@ VOID ScanLegacyDisc (VOID) {
          } // for
     }
     FirstLegacyScan = FALSE;
+
+    #if REFIT_DEBUG > 0
+    if (!ShowLegacyVolume) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+    ShowLegacyVolume = TRUE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -1288,8 +1310,8 @@ VOID ScanLegacyInternal (VOID) {
     const CHAR16 *FuncTag = L"ScanLegacyInternal";
     #endif
 
-    ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for Internal Disk Volumes with Mode:- 'Legacy BIOS'"
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"Internal Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1304,6 +1326,7 @@ VOID ScanLegacyInternal (VOID) {
        ScanLegacyUEFI (BBS_HARDDISK);
     }
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        ShowLegacyVolume = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_INTERNAL) {
@@ -1312,6 +1335,13 @@ VOID ScanLegacyInternal (VOID) {
         } // for
     }
     FirstLegacyScan = FALSE;
+
+    #if REFIT_DEBUG > 0
+    if (!ShowLegacyVolume) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+    ShowLegacyVolume = TRUE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -1325,8 +1355,8 @@ VOID ScanLegacyExternal (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP,
-        L"Scan for External Disk Volumes with Mode:- 'Legacy BIOS'"
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"External Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
@@ -1345,6 +1375,7 @@ VOID ScanLegacyExternal (VOID) {
         ScanLegacyUEFI (BBS_USB);
     }
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        ShowLegacyVolume = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
@@ -1353,6 +1384,13 @@ VOID ScanLegacyExternal (VOID) {
         } // for
     }
     FirstLegacyScan = FALSE;
+
+    #if REFIT_DEBUG > 0
+    if (!ShowLegacyVolume) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+    ShowLegacyVolume = TRUE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();

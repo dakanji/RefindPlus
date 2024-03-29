@@ -24,7 +24,7 @@ jobs:
     steps:
 
       - name: Handle Cancelled/Duplicate/Invalid/Wierd/Not-Planned Issues
-        uses: actions/stale@v7
+        uses: actions/stale@v9
         with:
           ignore-updates: true
           close-issue-reason: 'completed'
@@ -42,7 +42,7 @@ jobs:
           sleep 8s
 
       - name: Handle Incomplete Issues
-        uses: actions/stale@v7
+        uses: actions/stale@v9
         with:
           ignore-updates: false
           close-issue-reason: 'completed'
@@ -65,7 +65,7 @@ jobs:
           sleep 8s
 
       - name: Handle No-Response Issues
-        uses: actions/stale@v7
+        uses: actions/stale@v9
         with:
           ignore-updates: false
           close-issue-reason: 'completed'
@@ -88,7 +88,7 @@ jobs:
           sleep 8s
 
       - name: Catchall Closer
-        uses: actions/stale@v7
+        uses: actions/stale@v9
         with:
           ignore-updates: false
           close-issue-reason: 'completed'

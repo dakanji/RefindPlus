@@ -628,7 +628,7 @@ EFI_STATUS FindVarsDir (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Locate/Create Emulated Variable Memory for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+        L"Locate/Create Emulated Variable Storage for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
         Status
     );
     #endif
@@ -646,13 +646,13 @@ EFI_STATUS FindVarsDir (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated Variable Memory for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
+            L"Locate/Create Emulated Variable Storage for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
             Status
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID,
-                L"Activate The 'use_nvram' Config Token to Use Hardware Variable Memory Instead"
+                L"Activate The 'use_nvram' Config Token to Use Hardware Variable Storage Instead"
             );
         }
         #endif
@@ -705,10 +705,10 @@ EFI_STATUS EfivarGetRaw (
             }
 
             MsgStr = PoolPrint (
-                L"In Variable Memory (Emulated) ... Could *NOT* Read UEFI Variable:- '%s'",
-                VariableName
+                L"%s Variable Storage (Emulated):- '%r ... %s'",
+                NVRAM_LOG_GET, Status, VariableName
             );
-            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n");
             MY_FREE_POOL(MsgStr);
@@ -725,8 +725,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Variable Memory (Emulated) ... %r %s:- '%s'",
-            Status, NVRAM_LOG_GET, VariableName
+            L"%s Variable Memory (Emulated):- '%r ... %s'",
+            NVRAM_LOG_GET, Status, VariableName
         );
         #endif
 
@@ -772,8 +772,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Variable Memory (Hardware) ... %r %s:- '%s'",
-            Status, NVRAM_LOG_GET, VariableName
+            L"%s Variable Storage (Hardware):- '%r ... %s'",
+            NVRAM_LOG_GET, Status, VariableName
         );
         #endif
 
@@ -791,7 +791,7 @@ EFI_STATUS EfivarGetRaw (
         Status = EFI_LOAD_ERROR;
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable From NVRAM!!");
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Program Coding Error in Geting Item from Variable Storage");
         #endif
     }
 
@@ -891,16 +891,15 @@ EFI_STATUS EfivarSetRaw (
         }
 
         #if REFIT_DEBUG > 0
-        MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Variable Memory (Emulated) ... %r %s:- '%s'",
-            Status, NVRAM_LOG_SET, VariableName
-        );
+            ALT_LOG(1, LOG_THREE_STAR_MID,
+                L"%s Variable Storage (Emulated):- '%r ... %s'",
+                NVRAM_LOG_SET, Status, VariableName
+            );
 
         if (EFI_ERROR(Status)) {
+            MsgStr = L"Activate the ‘use_nvram’ Option to Silence This Warning";
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-
-            LOG_MSG("** WARN: Could *NOT* Save to Emulated Variable Memory:- '%s'", VariableName);
+            LOG_MSG("** WARN: Could *NOT* Save to Variable Memory (Emulated):- '%s'", VariableName);
             LOG_MSG("\n");
             LOG_MSG("         %s", MsgStr);
             LOG_MSG("\n\n");
@@ -920,10 +919,10 @@ EFI_STATUS EfivarSetRaw (
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Variable Memory (Hardware) ... %r %s:- '%s'",
-            Status, NVRAM_LOG_SET, VariableName
-        );
+            ALT_LOG(1, LOG_THREE_STAR_MID,
+                L"%s Variable Storage (Hardware):- '%r ... %s'",
+                NVRAM_LOG_SET, Status, VariableName
+            );
         #endif
     }
 
@@ -1676,7 +1675,13 @@ VOID ScanVolumeBootcode (
         }
 
         if (MbrTableFound) {
-            StrSpacer = (!SkipSpacing) ? L"" : (UseButJoin) ? BUT_JOIN_TXT : AND_JOIN_TXT;
+            if (Volume->HasBootCode) {
+                StrSpacer   =  AND_JOIN_TXT;
+                LogLineType = LOG_LINE_SAME;
+            }
+            else {
+                StrSpacer = (!SkipSpacing) ? L"" : (UseButJoin) ? BUT_JOIN_TXT : AND_JOIN_TXT;
+            }
             ALT_LOG(1, LogLineType, L"%s%s", StrSpacer, PARTITION_TABLE_TXT);
             UseButJoin = FALSE;
         }
@@ -1700,10 +1705,15 @@ VOID UpdateBadgeIcon (
 VOID SetVolumeBadgeIcon (
     IN OUT REFIT_VOLUME *Volume
 ) {
+    if (!AllowGraphicsMode) {
+        // Early Return
+        return;
+    }
+
     if (Volume == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped ... NULL Volume!!"
+            L"Skip VolumeBadge ... NULL Volume"
         );
         #endif
 
@@ -1718,7 +1728,7 @@ VOID SetVolumeBadgeIcon (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Setting VolumeBadge for '%s'",
+        L"Create VolumeBadge for '%s' Menu Entry",
         Volume->VolName
     );
     #endif
@@ -1727,7 +1737,7 @@ VOID SetVolumeBadgeIcon (
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped ... Config Setting is Active:- 'hideui - badges or all'"
+            L"Skip VolumeBadge ... Config Setting is Active:- 'hideui - badges or all'"
         );
         #endif
 
@@ -2373,7 +2383,7 @@ VOID ScanExtendedPartition (
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks From Disk", Status);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
             #endif
 
             break;
@@ -2451,7 +2461,7 @@ VOID VetMultiInstanceAPFS (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN       AppleRecovery;
     CHAR16       *MsgStrA;
-    const CHAR16 *MsgStrB = L"Disabled:- 'APFS macOS Instances - Recovery Tool'"     ;
+    const CHAR16 *MsgStrB = L"Disabled:- 'Every APFS Instance - Recovery Tool'"      ;
     const CHAR16 *MsgStrC = L"Disabled:- 'Synced AFPS Volumes - Apple Hardware Test'";
     const CHAR16 *MsgStrD = L"Disabled:- 'Synced AFPS Volumes - Hide/Unhide Entries'";
 
@@ -2520,11 +2530,9 @@ VOID VetMultiInstanceAPFS (VOID) {
             // DA-TAG: Multiple installations in a single APFS Container
             //         Misc features are disabled
             #if REFIT_DEBUG > 0
-            MsgStrA = L"APFS Container with Multiple macOS Instances Found";
+            MsgStrA = L"Found APFS Container(s) with Multiple macOS Instances";
+            LOG_MSG("\n\n");
             LOG_MSG("INFO: %s", MsgStrA);
-
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
-            LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
 
             if (AppleRecovery) {
                 // Log relevant warning if configured to show Apple Recovery
@@ -2532,14 +2540,14 @@ VOID VetMultiInstanceAPFS (VOID) {
                 LOG_MSG("%s      * %s", OffsetNext, MsgStrB);
             }
 
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
+
             if (GlobalConfig.HiddenTags) {
                 // Log relevant warning if configured to hide tags
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
                 LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
             }
-
-            // Final Spacing
-            LOG_MSG("\n\n");
             #endif
 
             // Break out of loop
@@ -2558,18 +2566,20 @@ VOID VetSyncAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
+    CHAR16 *TmpMsg;
+
+    TmpMsg = L"S Y N C   A P F S   V O L U M E S";
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpMsg);
+    LOG_MSG("\n\n");
+    LOG_MSG("%s", TmpMsg);
+    LOG_MSG("\n");
     #endif
 
     if (PreBootVolumesCount == 0) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (
-            L"Could *NOT* Positively Identify APFS Partitions ... Activating 'disable_apfs_sync' Setting"
-        );
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("\n\n");
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
+        TmpMsg = L"Activated 'disable_apfs_sync' ... Could *NOT* Identify APFS PreBoot Volumes";
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TmpMsg);
+        LOG_MSG("INFO: %s", TmpMsg);
         #endif
 
         // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
@@ -2581,14 +2591,9 @@ VOID VetSyncAPFS (VOID) {
 
     if (!ValidAPFS) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (
-            L"Could *NOT* Get VolUUID/PartGuid on One/More Key APFS Volumes ... Activating 'disable_apfs_sync' Setting"
-        );
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("\n\n");
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
+        TmpMsg = L"Activated 'disable_apfs_sync' ... Could *NOT* Get VolUUID/PartGUID on One/More Key APFS Volumes";
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TmpMsg);
+        LOG_MSG("INFO: %s", TmpMsg);
         #endif
 
         // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
@@ -2599,11 +2604,9 @@ VOID VetSyncAPFS (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"ReMap Potential APFS Volume Groups");
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-    LOG_MSG("\n\n");
-    LOG_MSG("%s:", MsgStr);
-    MY_FREE_POOL(MsgStr);
+    TmpMsg = L"ReMap Potential APFS Volume Groups";
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", TmpMsg);
+    LOG_MSG("%s:", TmpMsg);
 
     for (i = 0; i < SystemVolumesCount; i++) {
         MsgStr = PoolPrint (L"Potential System Volume:- '%s'", SystemVolumes[i]->VolName);
@@ -2664,7 +2667,6 @@ VOID VetSyncAPFS (VOID) {
         LOG_MSG("\n\n");
         LOG_MSG("INFO: %s", MsgStr);
     }
-    LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -2736,6 +2738,7 @@ VOID ScanVolumes (VOID) {
     #endif
 
     CHAR16  *MsgStr;
+    CHAR16  *TmpMsg;
     CHAR16  *PartName;
     CHAR16  *PartGUID;
     CHAR16  *VolumeUUID;
@@ -2748,11 +2751,10 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
     const CHAR16 *ITEMVOLF = L"VOLUME NAME";
 
-    MsgStr = StrDuplicate (L"A S S E S S   D E T E C T E D   V O L U M E S");
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    TmpMsg = L"A S S E S S   D E T E C T E D   V O L U M E S";
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpMsg);
     LOG_MSG("\n\n");
-    LOG_MSG("%s", MsgStr);
-    MY_FREE_POOL(MsgStr);
+    LOG_MSG("%s", TmpMsg);
     #endif
 
     if (SelfVolRun) {
@@ -2778,7 +2780,7 @@ VOID ScanVolumes (VOID) {
             L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)",
             Status
         );
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** %s", MsgStr);
         LOG_MSG("\n\n");
@@ -2805,7 +2807,7 @@ VOID ScanVolumes (VOID) {
             Status
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** WARN: %s", MsgStr);
         LOG_MSG("\n\n");
@@ -2829,8 +2831,8 @@ VOID ScanVolumes (VOID) {
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        /* Exception for LOG_THREE_STAR_SEP */
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"NEXT VOLUME");
+        /* Exception for LOG_LINE_THIN_SEP */
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2846,7 +2848,7 @@ VOID ScanVolumes (VOID) {
                 Status
             );
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            ALT_LOG(1, LOG_THREE_STAR_SEP, L"%!!s", MsgStr);
+            ALT_LOG(1, LOG_LINE_THIN_SEP, L"%!!s", MsgStr);
             LOG_MSG("\n\n");
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -3112,8 +3114,8 @@ MY_MUTELOGGER_SET;
             else {
                 if (Volume->FSType == FS_TYPE_NTFS) {
                     RoleStr = (MyStriCmp (Volume->VolName, L"NTFS Volume"))
-                            ? L" * Type Other Wind"
-                            : L" * Type Named Wind";
+                            ? L" * Type Win Other"
+                            : L" * Type Win Named";
                 }
                 else if (Volume->FSType == FS_TYPE_HFSPLUS) {
                     if (GuidsAreEqual (&GuidHFS, &(Volume->PartTypeGuid))) {
@@ -3310,34 +3312,17 @@ MY_MUTELOGGER_OFF;
         VolumesCount, (VolumesCount == 1) ? L"" : L"s"
     );
     LOG_MSG("INFO: %s", MsgStr); // Skip Line Break
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
         VetSyncAPFS();
     }
-    else {
-        #if REFIT_DEBUG > 0
-        // DA-TAG: if/else structure is important
-        if (!SelfVolRun) {
-            LOG_MSG("\n\n");
-        }
-        else {
-            MsgStr = StrDuplicate (
-                L"Skipped APFS Volume Group Sync ... Config Setting is Active:- 'disable_apfs_sync'"
-            );
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("\n\n");
-            LOG_MSG("INFO: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-        }
-        #endif
-    }
 
     #if REFIT_DEBUG > 0
     MuteLogger = FALSE; /* Explicit For FB Infer */
+    LOG_MSG("\n\n");
     #endif
 } // VOID ScanVolumes()
 
@@ -3359,13 +3344,11 @@ VOID LoadVolumeBadgeIcon (
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         MsgStr = (GlobalConfig.DirectBoot)
-            ? StrDuplicate (L"'DirectBoot' is Active")
-            : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skipped Volume Badge Check ... %s", MsgStr);
-        MY_FREE_POOL(MsgStr);
+            ? L"'DirectBoot' is Active" : L"Screen is in Text Mode";
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skip Volume Badge Check ... %s", MsgStr);
         #endif
 
-        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skipped Check ... DirectBoot or Text Mode is Active)", FuncTag);
+        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skip Check ... DirectBoot or Text Mode is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3376,11 +3359,11 @@ VOID LoadVolumeBadgeIcon (
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped 'VolumeBadge' Check ... Config Setting is Active:- 'hideui - badges/all'"
+            L"Skip VolumeBadge Check ... Config Setting is Active:- 'hideui - badges/all'"
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (Skipped Check ... 'HideUI Badges/All' is Active)", FuncTag);
+        BREAD_CRUMB(L"%s:  A2 - END:- VOID - (Skip Check ... 'HideUI Badges/All' is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3391,11 +3374,11 @@ VOID LoadVolumeBadgeIcon (
     if ((*Volume)->VolBadgeImage) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped Volume Badge Check ... Badge for Volume Already Set"
+            L"Skip VolumeBadge Check ... VolumeBadge Already Set"
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skipped Check ... Image Already Set)", FuncTag);
+        BREAD_CRUMB(L"%s:  A3 - END:- VOID - (Skip Check ... Image Already Set)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3408,9 +3391,7 @@ VOID LoadVolumeBadgeIcon (
 
     #if REFIT_DEBUG > 0
     if (!(*Volume)->VolBadgeImage) {
-        MsgStr = StrDuplicate (L"VolumeBadge *NOT* Found");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MY_FREE_POOL(MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"VolumeBadge *NOT* Found");
     }
     #endif
 
@@ -3437,11 +3418,11 @@ VOID LoadVolumeIcon (
     if (GlobalConfig.HiddenIconsIgnore) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"Skipped '.VolumeIcon' Check ... Config Setting is Active:- 'hidden_icons_ignore'"
+            L"Skip '.VolumeIcon' Check ... Config Setting is Active:- 'hidden_icons_ignore'"
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skipped Check ... HiddenIconsIgnore is Active)", FuncTag);
+        BREAD_CRUMB(L"%s:  A1 - END:- VOID - (Skip Check ... HiddenIconsIgnore is Active)", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -3451,11 +3432,9 @@ VOID LoadVolumeIcon (
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        MsgStr = (GlobalConfig.DirectBoot)
-            ? StrDuplicate (L"'DirectBoot' is Active")
-            : StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skipped '.VolumeIcon' Check ... %s", MsgStr);
-        MY_FREE_POOL(MsgStr);
+        // MsgStr OK below as first use then exit
+        MsgStr = (GlobalConfig.DirectBoot) ? L"'DirectBoot' is Active" : L"Screen is in Text Mode";
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Skip '.VolumeIcon' Check ... %s", MsgStr);
         #endif
 
         BREAD_CRUMB(L"%s:  A2 - END:- VOID - (DirectBoot or Text Mode is Active)", FuncTag);
@@ -3501,13 +3480,13 @@ VOID LoadVolumeIcon (
             #if REFIT_DEBUG > 0
             if (Volume->DiskKind != DISK_KIND_EXTERNAL) {
                 ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Skipped Setting '.VolumeIcon' Icon for '%s' ... Volume *IS NOT* 'Internal'",
+                    L"Skip Setting '.VolumeIcon' Icon for '%s' ... Volume *IS NOT* 'Internal'",
                     Volume->VolName
                 );
             }
             else {
                 ALT_LOG(1, LOG_THREE_STAR_MID,
-                    L"Skipped Setting '.VolumeIcon' Icon for External Volume: '%s' ... Config Setting *IS NOT* Active:- 'hidden_icons_external'",
+                    L"Skip Setting '.VolumeIcon' Icon for External Volume: '%s' ... Config Setting *IS NOT* Active:- 'hidden_icons_external'",
                     Volume->VolName
                 );
             }
@@ -3562,6 +3541,7 @@ EFI_STATUS DirNextEntry (
     #if REFIT_DEBUG > 0
     BOOLEAN FirstRun;
     CHAR16  *MsgStr;
+    CHAR16  *TmpMsg;
     #endif
 
     //#if REFIT_DEBUG > 1
@@ -3608,16 +3588,15 @@ EFI_STATUS DirNextEntry (
                     //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1", FuncTag);
                     if (IterCount > 3) {
                         //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1a 1", FuncTag);
-                        MsgStr = StrDuplicate (L"IterCount > 3 ... Break");
+                        TmpMsg = L"IterCount > 3";
                     }
                     else {
                         //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 1b 1", FuncTag);
-                        MsgStr = StrDuplicate (L"OK ... Break");
+                        TmpMsg = L"OK";
                     }
                     //BREAD_CRUMB(L"%s:  2a 3a 2a 1a 2", FuncTag);
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG(":- '%s'", MsgStr);
-                    MY_FREE_POOL(MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TmpMsg);
+                    LOG_MSG(":- '%s ... Break'", TmpMsg);
                 }
                 #endif
 
@@ -3631,10 +3610,9 @@ EFI_STATUS DirNextEntry (
                 #if REFIT_DEBUG > 0
                 if (!FirstRun) {
                     //BREAD_CRUMB(L"%s:  2a 3a 2b 1a 1", FuncTag);
-                    MsgStr = StrDuplicate (L"NOT OK!!");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG(":- '%s'", MsgStr);
-                    MY_FREE_POOL(MsgStr);
+                    TmpMsg = L"NOT OK!!";
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TmpMsg);
+                    LOG_MSG(":- '%s'", TmpMsg);
                 }
                 #endif
                 //BREAD_CRUMB(L"%s:  2a 3a 2b 2", FuncTag);
@@ -3664,7 +3642,7 @@ EFI_STATUS DirNextEntry (
                 //BREAD_CRUMB(L"%s:  2a 3a 3b 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Resizing DirEntry Buffer From %d to %d Bytes",
+                    L"Resizing DirEntry Buffer from %d to %d Bytes",
                     LastBufferSize, BufferSize
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

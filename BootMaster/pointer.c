@@ -68,9 +68,8 @@ VOID pdInitialize (VOID) {
     EFI_STATUS  EnableStatusMouse;
     CHAR16     *MsgStr;
 
-    MsgStr = StrDuplicate (L"E N A B L E   P O I N T E R   D E V I C E S");
+    MsgStr = StrDuplicate (L"M A N A G E   P O I N T E R   D E V I C E S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
@@ -84,9 +83,11 @@ VOID pdInitialize (VOID) {
         #if REFIT_DEBUG > 0
         // DA-TAG: Use LOG_THREE_STAR_END for this instance
         MsgStr = StrDuplicate (L"Running in Keyboard-Only Mode");
-        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n\n");
         LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -251,6 +252,7 @@ VOID pdInitialize (VOID) {
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("\n\n");
     LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
 } // VOID pdInitialize()

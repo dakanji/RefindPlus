@@ -286,7 +286,7 @@ VOID SetupScreen (VOID) {
         GlobalConfig.RequestedScreenHeight == 0
     ) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("Get Resolution From Mode:");
+        LOG_MSG("Get Resolution from Mode:");
         LOG_MSG("\n");
         #endif
 
@@ -382,7 +382,7 @@ VOID SetupScreen (VOID) {
                 ? L"'DirectBoot' is Active"
                 : L"Screen is in Text Only Mode";
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
+            LOG_MSG("Skip Title Banner Display ... %s", MsgStr);
         }
         else {
             MsgStr = L"Invalid Screen Mode ... Switching to Text Mode";
@@ -772,7 +772,7 @@ VOID BeginExternalScreen (
     if (UseGraphicsMode) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         #if REFIT_DEBUG > 0
-        MsgStr = L"Beginning Child Display with Screen Mode:- 'Graphics'";
+        MsgStr = L"Begin Child Image Display with Screen Mode:- 'Graphics'";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         if (!IsBoot) {
             BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
@@ -787,7 +787,7 @@ VOID BeginExternalScreen (
     else {
         BREAD_CRUMB(L"%s:  3b 1", FuncTag);
         #if REFIT_DEBUG > 0
-        MsgStr = L"Beginning Child Display with Screen Mode:- 'Text'";
+        MsgStr = L"Begin Child Image Display with Screen Mode:- 'Text'";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         if (!IsBoot) {
             BREAD_CRUMB(L"%s:  3b 1a 1", FuncTag);
@@ -1097,7 +1097,7 @@ VOID PauseForKey (VOID) {
     GraphicsScreenDirty = TRUE;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Resuming After Pause");
     #endif
 } // VOID PauseForKey
 
@@ -1663,7 +1663,7 @@ VOID BltClearScreen (
         BREAD_CRUMB(L"%s:  2b 3", FuncTag);
         if (Banner) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Show  Banner",
+            LOG_MSG("%s  - Offer Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
                     ? OffsetNext
                     : L""

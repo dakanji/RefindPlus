@@ -2,7 +2,7 @@
 # Configuration file for the RefindPlus boot manager
 
 ##--------------------------------------------------------------##
-##                        Section 1 of 3                        ##
+##                        Section 1 of 4                        ##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
 ##          New Functionality Provided by RefindPlus            ##
 ##--------------------------------------------------------------##
@@ -236,7 +236,7 @@
 # should typically forward calls from the Console Out Handle GOP to the
 # others transparently. On such models, it only works in this way with
 # GPUs with system firmware support. This option replaces GOP on the
-# Console Out Handle with one from a GPU Handle on such models when
+# Console Out Handle with one from a GFX Handle on such models when
 # running capable GPUs that are not supported by system firmware.
 # NB: This functionality is only available on TianoCore builds.
 #
@@ -563,7 +563,7 @@
 
 
 ##--------------------------------------------------------------##
-##                        Section 2 of 3                        ##
+##                        Section 2 of 4                        ##
 ##                 AMENDED CONFIGURATION ITEMS                  ##
 ##           Existing Features Modified in RefindPlus           ##
 ##--------------------------------------------------------------##
@@ -609,6 +609,31 @@
 # Inactive when commented out (CSR values cannot be set)
 #
 #csr_values 10,77
+
+# Enable mouse support. If active, this option enables the use
+# of the computer's mouse. Note however, that not all computers
+# provide the necessary underlying support, so this feature may
+# not always work. If it does work, an OS or tool can be launched
+# by clicking it with the computer's mouse. Note that this feature
+# is mutually exclusive with the "enable_touch" feature and if both
+# settings are active, the "enable_touch" token will take precedence.
+#
+# Inactive when commented out (Does not enable mouse support)
+#
+#enable_mouse
+
+# Enable touch screen support. If active, this option enables the use
+# of touch screen controls (as on tablets). Note however, that not all
+# tablet EFIs provide the necessary underlying support, so this feature
+# may not always work. If it does work, an OS or tool can be launched by
+# touching it. In a submenu, touching anywhere launches the current item
+# selected. There is currently no way to select a specific submenu item.
+# This option is mutually exclusive with the "enable_mouse" feature and
+# the "enable_touch" option will take precedence when both are active.
+#
+# Inactive when commented out (Does not enable touch screen support)
+#
+#enable_touch
 
 # Hide user interface elements for personal preference or for security:
 #  banner      - RefindPlus title banner (built-in or loaded via "banner")
@@ -782,7 +807,7 @@
 
 
 ##--------------------------------------------------------------##
-##                        Section 3 of 3                        ##
+##                        Section 3 of 4                        ##
 ##                STANDARD CONFIGURATION ITEMS                  ##
 ##                  Unchanged  Functionality                    ##
 ##--------------------------------------------------------------##
@@ -958,31 +983,6 @@
 # Inactive when commented out (Does not try to enable and lock the MSR)
 #
 #enable_and_lock_vmx
-
-# Enable mouse support. If active, this option enables the use
-# of the computer's mouse. Note however, that not all computers
-# provide the necessary underlying support, so this feature may
-# not always work. If it does work, an OS or tool can be launched
-# by clicking it with the computer's mouse. Note that this feature
-# is mutually exclusive with the "enable_touch" feature and if both
-# settings are active, the "enable_touch" token will take precedence.
-#
-# Inactive when commented out (Does not enable mouse support)
-#
-#enable_mouse
-
-# Enable touch screen support. If active, this option enables the use
-# of touch screen controls (as on tablets). Note however, that not all
-# tablet EFIs provide the necessary underlying support, so this feature
-# may not always work. If it does work, an OS or tool can be launched by
-# touching it. In a submenu, touching anywhere launches the current item
-# selected. There is currently no way to select a specific submenu item.
-# This option is mutually exclusive with the "enable_mouse" feature and
-# the "enable_touch" option will take precedence when both are active.
-#
-# Inactive when commented out (Does not enable touch screen support)
-#
-#enable_touch
 
 # Comma-delimited list of strings to treat as if they were numbers for the
 # purpose of kernel version number detection. These strings are matched on a
@@ -1247,6 +1247,14 @@
 #
 #write_systemd_vars
 
+
+##--------------------------------------------------------------##
+##                        Section 4 of 4                        ##
+##                    'END OF FILE' SETTINGS                    ##
+##                      (Modified Features)                     ##
+##--------------------------------------------------------------##
+#
+#
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its tokens appeared at the point of the "include"
 # option. So, to override a setting in the main file, the secondary file

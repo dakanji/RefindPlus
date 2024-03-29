@@ -34,7 +34,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '0'
           include-any-issue-labels: 'Resolved'
-          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          remove-issue-labels: 'Triage, Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -52,7 +52,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Not-Planned'
-          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -71,26 +71,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Cannot-Replicate, Cancelled'
-          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
-          issue-comment: |-
-            This thread is being locked.
-
-            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
-          process-only: 'issues'
-
-      - name: Inter-Step-Pause
-        run: |
-          sleep 48s
-
-      - name: Lock Acknowledged/Known Issues
-        uses: dessant/lock-threads@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-lock-reason: ''
-          add-issue-labels: ''
-          issue-inactive-days: '2'
-          include-any-issue-labels: 'Acknowledged, Known-Issue'
-          remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
+          remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 
@@ -145,8 +126,27 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '3'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Triage, Unclear, Parked, Prorogued, Help-Wanted'
-          remove-issue-labels: 'Stale, Tagged, Queries, Not-Resolved, Uncertain, Accepted'
+          exclude-any-issue-labels: 'Triage, Unclear, Parked, Prorogued, Help-Wanted, Acknowledged, Known-Issue'
+          remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
+          issue-comment: |-
+            This thread is being locked.
+
+            Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
+          process-only: 'issues'
+
+      - name: Inter-Step-Pause
+        run: |
+          sleep 48s
+
+      - name: Lock Acknowledged/Known Issues
+        uses: dessant/lock-threads@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-lock-reason: ''
+          add-issue-labels: ''
+          issue-inactive-days: '40'
+          include-any-issue-labels: 'Acknowledged, Known-Issue'
+          remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
 

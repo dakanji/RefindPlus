@@ -180,7 +180,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     CHAR16                    *Description;
 
     // DA-TAG: Investigate This
-    //         From upstream 'Read the variable. We will never free this data'
+    //         from upstream 'Read the variable. We will never free this data'
     //         Yet data is freed ... oversight?
     Variable = BdsLibGetVariableAndSize (
         VariableName,
