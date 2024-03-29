@@ -168,6 +168,8 @@
 #define ICON_SIZE_MOUSE           (3)
 
 // Minimum resolutions for a screen to be considered High-DPI
+#define EXDPI_LONG             (6400)
+#define EXDPI_SHORT            (4000)
 #define HIDPI_LONG             (2560)
 #define HIDPI_SHORT            (1600)
 #define LOREZ_LIMIT            (1024)

@@ -86,6 +86,7 @@ EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
 
 extern BOOLEAN            IsBoot;
 extern BOOLEAN            IconScaleSet;
+extern BOOLEAN            ExtremeHiDPI;
 extern BOOLEAN            egHasGraphics;
 extern BOOLEAN            ForceTextOnly;
 extern BOOLEAN            FlushFailedTag;
@@ -126,10 +127,19 @@ VOID FixIconScale (VOID) {
 
     // Scale UI Elements as required
     if (GlobalConfig.ScaleUI == 1) {
-        GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-        GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
-        GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
-        GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+        if (ScreenShortest >= EXDPI_SHORT && ScreenLongest >= EXDPI_LONG) {
+            ExtremeHiDPI = TRUE;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 4;
+        }
+        else {
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+        }
     }
     else if (GlobalConfig.ScaleUI == -1) {
         if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
@@ -146,26 +156,31 @@ VOID FixIconScale (VOID) {
         }
     }
     else { // GlobalConfig.ScaleUI == 0 ... Technically any other value
-        if (ScreenShortest > HIDPI_SHORT && ScreenLongest > HIDPI_LONG) {
+        if (ScreenShortest >= EXDPI_SHORT && ScreenLongest >= EXDPI_LONG) {
+            ExtremeHiDPI = TRUE;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 4;
+        }
+        else if (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG) {
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
         }
-        else {
-            if (ScreenLongest < LOREZ_LIMIT || ScreenShortest < LOREZ_LIMIT) {
-                if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
-                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
-                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
-                }
-                else {
-                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
-                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
-                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
-                }
+        else if (ScreenLongest < LOREZ_LIMIT || ScreenShortest < LOREZ_LIMIT) {
+            if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
+            }
+            else {
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
+                GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
+                GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
             }
         }
     } // if/else GlobalConfig.ScaleUI
@@ -360,20 +375,15 @@ VOID SetupScreen (VOID) {
             GlobalConfig.RequestedScreenWidth  = ScreenW;
             GlobalConfig.RequestedScreenHeight = ScreenH;
         }
-
-        if (GlobalConfig.RequestedScreenWidth > 0) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("Set to User Requested Screen Size:");
-            LOG_MSG("\n");
-            #endif
-
-            egSetScreenSize (
-                &(GlobalConfig.RequestedScreenWidth),
-                &(GlobalConfig.RequestedScreenHeight)
-            );
-            egGetScreenSize (&ScreenW, &ScreenH);
-        } // if user requested a particular screen resolution
     }
+
+    if (GlobalConfig.RequestedScreenWidth > 0) {
+        egSetScreenSize (
+            &(GlobalConfig.RequestedScreenWidth),
+            &(GlobalConfig.RequestedScreenHeight)
+        );
+        egGetScreenSize (&ScreenW, &ScreenH);
+    } // if user requested a particular screen resolution
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
@@ -385,7 +395,7 @@ VOID SetupScreen (VOID) {
             LOG_MSG("Skip Title Banner Display ... %s", MsgStr);
         }
         else {
-            MsgStr = L"Invalid Screen Mode ... Switching to Text Mode";
+            MsgStr = L"Invalid Screen Mode ... Switch to Text Mode";
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("WARN: %s", MsgStr);
         }
@@ -422,8 +432,12 @@ VOID SetupScreen (VOID) {
             }
             else if (GlobalConfig.ScaleUI == 1) {
                 MsgStr = (IconScaleSet)
-                    ? L"HiDPI Flag ... Maintain UI Scale"
-                    : L"HiDPI Flag ... Scale UI Elements Up";
+                    ? (ExtremeHiDPI)
+                        ? L"ExDPI Flag ... Maintain UI Scale"
+                        : L"HiDPI Flag ... Maintain UI Scale"
+                    : (ExtremeHiDPI)
+                        ? L"ExDPI Flag ... Scale UI Elements Up"
+                        : L"HiDPI Flag ... Scale UI Elements Up";
             }
             else if (GlobalConfig.ScaleUI == -1) {
                 if (IconScaleSet) {
@@ -448,8 +462,12 @@ VOID SetupScreen (VOID) {
                     ScreenShortest > HIDPI_SHORT
                 ) {
                     MsgStr = (IconScaleSet)
-                        ? L"HiDPI Mode ... Maintain UI Scale"
-                        : L"HiDPI Mode ... Scale UI Elements Up";
+                        ? (ExtremeHiDPI)
+                            ? L"ExDPI Mode ... Maintain UI Scale"
+                            : L"HiDPI Mode ... Maintain UI Scale"
+                        : (ExtremeHiDPI)
+                            ? L"ExDPI Mode ... Scale UI Elements Up"
+                            : L"HiDPI Mode ... Scale UI Elements Up";
                 }
                 else if (
                     ScreenLongest  > LOREZ_LIMIT &&

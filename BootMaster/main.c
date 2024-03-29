@@ -228,6 +228,7 @@ BOOLEAN                OneMainLoop          = FALSE;
 BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                IconScaleSet         = FALSE;
+BOOLEAN                ExtremeHiDPI         = FALSE;
 BOOLEAN                ForceTextOnly        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
 BOOLEAN                FlushFailedTag       = FALSE;
@@ -1970,6 +1971,7 @@ VOID RescanAll (
 
     // Default UI Scale
     IconScaleSet                            =                     FALSE;
+    ExtremeHiDPI                            =                     FALSE;
     GlobalConfig.IconSizes[ICON_SIZE_BIG]   =     DEFAULT_BIG_ICON_SIZE;
     GlobalConfig.IconSizes[ICON_SIZE_BADGE] = DEFAULT_BIG_ICON_SIZE / 4;
     GlobalConfig.IconSizes[ICON_SIZE_SMALL] =   DEFAULT_SMALL_ICON_SIZE;

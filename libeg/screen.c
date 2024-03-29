@@ -1137,10 +1137,13 @@ EFI_STATUS egSetGopMode (
 static
 EFI_STATUS egSetMaxResolution (VOID) {
     EFI_STATUS                            Status;
+    EFI_STATUS                            XStatus;
     UINT32                                Mode;
     UINT32                                Depth;
     UINT32                                Width;
     UINT32                                Height;
+    UINT32                                SumOld;
+    UINT32                                SumNew;
     UINT32                                MaxMode;
     UINT32                                BestMode;
     UINT32                                RefreshRate;
@@ -1152,20 +1155,25 @@ EFI_STATUS egSetMaxResolution (VOID) {
     #endif
 
     if (!GOPDraw) {
-        // Cannot do this in text mode or with UGA.
-        // So get and set basic data, then exit.
-        REFIT_CALL_5_WRAPPER(
-            UGADraw->GetMode, UGADraw,
-            &Width, &Height,
-            &Depth, &RefreshRate
-        );
+        if (UGADraw) {
+            // Cannot do this with UGA.
+            // So get and set basic data, then exit.
+            REFIT_CALL_5_WRAPPER(
+                UGADraw->GetMode, UGADraw,
+                &Width, &Height,
+                &Depth, &RefreshRate
+            );
 
-        GlobalConfig.RequestedScreenWidth  =  Width;
-        GlobalConfig.RequestedScreenHeight = Height;
+            GlobalConfig.RequestedScreenWidth  =  Width;
+            GlobalConfig.RequestedScreenHeight = Height;
+        }
 
         return EFI_UNSUPPORTED;
     }
 
+    XStatus =          EFI_NOT_READY;
+    Info    =                   NULL;
+    SumOld  = SumNew            =  0;
     Width   = Height = BestMode =  0;
     MaxMode = GOPDraw->Mode->MaxMode;
 
@@ -1184,40 +1192,44 @@ EFI_STATUS egSetMaxResolution (VOID) {
             GOPDraw->QueryMode, GOPDraw,
             Mode, &SizeOfInfo, &Info
         );
+        SumNew = Info->VerticalResolution + Info->HorizontalResolution;
         if (!EFI_ERROR(Status)) {
-            if (Height > Info->VerticalResolution ||
-                Width  > Info->HorizontalResolution
-            ) {
-                continue;
+            if (SumNew > SumOld) {
+                BestMode = Mode;
+                SumOld   = SumNew;
+                Height   = Info->VerticalResolution;
+                Width    = Info->HorizontalResolution;
             }
-
-            BestMode = Mode;
-            Height   = Info->VerticalResolution;
-            Width    = Info->HorizontalResolution;
         }
+        if (EFI_ERROR(XStatus)) XStatus = Status;
 
         MY_FREE_POOL(Info);
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (
-        L"%s (Max Rez) Mode:- 'GOP Mode[%02d] on GFX Handle[%02d] @ %d x %d'",
-        (MaxMode > 1) ? L"Best" : L"Only",
-        BestMode, SelectedGOP,
-        Width, Height
-    );
+    if (EFI_ERROR(XStatus)) {
+        MsgStr = PoolPrint (
+            L"%s (Max Rez) Mode ... %r",
+            (MaxMode > 1) ? L"Best" : L"Only",
+            XStatus
+        );
+    }
+    else {
+        MsgStr = PoolPrint (
+            L"%s Mode:- 'GOP Mode[%02d] on GFX Handle[%02d] @ %d x %d'",
+            (MaxMode > 1) ? L"Best (Max Rez)" : L"Only Available",
+            BestMode, SelectedGOP,
+            Width, Height
+        );
+    }
+
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
     #endif
 
-    // Check if requested mode is equal to current mode
-    if (BestMode == GOPDraw->Mode->Mode) {
-        Status         = EFI_SUCCESS;
-        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
-        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
-
+    if (!EFI_ERROR(XStatus) && BestMode == GOPDraw->Mode->Mode) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
             L"Resolution Already Set to %s",
@@ -1228,9 +1240,23 @@ EFI_STATUS egSetMaxResolution (VOID) {
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
+
+        // Explicitly use 'GOPDraw->Mode->Info' below
+        // 'Info' is not available (freed earlier)
+        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
+        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
+
+        // Proceed
+        Status = EFI_SUCCESS;
     }
     else {
-        Status = GopSetModeAndReconnectTextOut (BestMode);
+        if (EFI_ERROR(XStatus)) {
+            Status = XStatus;
+        }
+        else {
+            Status = GopSetModeAndReconnectTextOut (BestMode);
+        }
+
         if (!EFI_ERROR(Status)) {
             egScreenWidth  = Width;
             egScreenHeight = Height;
@@ -1569,6 +1595,8 @@ VOID egInitScreen (VOID) {
     UINTN                                  i;
     UINTN                                  HandleCount;
     UINTN                                  SizeOfInfo;
+    UINT32                                 SumOld;
+    UINT32                                 SumNew;
     UINT32                                 Depth;
     UINT32                                 Width;
     UINT32                                 Height;
@@ -1672,6 +1700,8 @@ VOID egInitScreen (VOID) {
             GopWidth  = 0;
             GopHeight = 0;
             MaxMode   = 0;
+            SumOld    = 0;
+            SumNew    = 0;
             for (i = 0; i < HandleCount; i++) {
                 if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                     #if REFIT_DEBUG > 0
@@ -1713,10 +1743,20 @@ VOID egInitScreen (VOID) {
                             continue;
                         }
 
-                        if (GopWidth  < Info->HorizontalResolution ||
-                            GopHeight < Info->VerticalResolution
-                        ) {
+                        SumNew = Info->VerticalResolution + Info->HorizontalResolution;
+                        if (SumOld >= SumNew) {
+                            #if REFIT_DEBUG > 0
+                            LOG_MSG(
+                                "%s            Ignore GFX Handle[%02d][%02d] @ %5d x %-5d%s",
+                                OffsetNext, i, GopMode,
+                                Info->HorizontalResolution,
+                                Info->VerticalResolution
+                            );
+                            #endif
+                        }
+                        else {
                             OldGop      = TmpGop;
+                            SumOld      = SumNew;
                             GopWidth    = Info->HorizontalResolution;
                             GopHeight   = Info->VerticalResolution;
                             SelectedGOP = i;
@@ -1724,24 +1764,19 @@ VOID egInitScreen (VOID) {
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
                                 "%s       **** Select GFX Handle[%02d][%02d] @ %5d x %-5d%s",
-                                OffsetNext,
-                                i, GopMode,
+                                OffsetNext, i, GopMode,
                                 GopWidth,
                                 GopHeight,
                                 (SelectedOnce) ? L"  :  Discard Previous" : L""
                             );
                             SelectedOnce = TRUE;
                             #endif
-
-                            // Restart Loop
-                            continue;
                         }
 
                         #if REFIT_DEBUG > 0
                         LOG_MSG(
                             "%s            Ignore GFX Handle[%02d][%02d] @ %5d x %-5d",
-                            OffsetNext,
-                            i, GopMode,
+                            OffsetNext, i, GopMode,
                             Info->HorizontalResolution,
                             Info->VerticalResolution
                         );
@@ -2260,7 +2295,6 @@ BOOLEAN egSetScreenSize (
     EFI_STATUS   Status;
     BOOLEAN      ModeSet;
     UINTN        Size;
-    CHAR16      *MsgStr;
     UINT32       ModeNum;
     UINT32       ScreenW;
     UINT32       ScreenH;
@@ -2269,45 +2303,86 @@ BOOLEAN egSetScreenSize (
     UINT32       CurrentModeNum;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG(
-        "Set Screen Size Manually ... H = %d and W = %d",
-        ScreenHeight, ScreenWidth
-    );
-    LOG_MSG("\n");
+    CHAR16      *MsgStr;
+
+
+    MsgStr = StrDuplicate (L"Try Setting User Defined Resolution");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
+    MY_FREE_POOL(MsgStr);
+
+    MsgStr = PoolPrint (L"Target:- '%d x %d'", *ScreenWidth, *ScreenHeight);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
-    if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (
-            L"WARN: ScreenWidth or ScreenHeight is 'NULL' in egSetScreenSize!!"
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s", MsgStr);
-        LOG_MSG("\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        return FALSE;
-    }
-
     ModeSet = FALSE;
-    if (GOPDraw) {
+    if (UGADraw) {
+        if (*ScreenHeight < 1) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (
+                L"Defined 'ScreenHeight' Setting is *NOT* Valid for UGA"
+            );
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+            #endif
+        }
+        else {
+            // Try to use current color depth and refresh rate for new mode.
+            // May not always be the best, but unable to probe for alternatives.
+            REFIT_CALL_5_WRAPPER(
+                UGADraw->GetMode, UGADraw,
+                &ScreenW, &ScreenH,
+                &UgaDepth, &UgaRefreshRate
+            );
+
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Set UGADraw Mode to %d x %d",
+                *ScreenWidth, *ScreenHeight
+            );
+            #endif
+
+            Status = REFIT_CALL_5_WRAPPER(
+                UGADraw->SetMode, UGADraw,
+                ScreenW, ScreenH,
+                UgaDepth, UgaRefreshRate
+            );
+            *ScreenWidth  = (UINTN) ScreenW;
+            *ScreenHeight = (UINTN) ScreenH;
+            if (!EFI_ERROR(Status)) {
+                ModeSet        = TRUE;
+                egScreenWidth  = *ScreenWidth;
+                egScreenHeight = *ScreenHeight;
+            }
+            else {
+                // DA-TAG: Investigate This
+                //         Find a list of supported modes and display it.
+                //
+                //         Below does not appear unless text mode is explicitly set.
+                //         This is just a placeholder pending something better.
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (
+                    L"Error: When Setting %d x %d Resolution ... Unsupported Mode",
+                    *ScreenWidth, *ScreenHeight
+                );
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("\n");
+                LOG_MSG("%s", MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
+            }
+        }
+    }
+    else if (GOPDraw) {
         // GOP mode (UEFI)
         CurrentModeNum = GOPDraw->Mode->Mode;
 
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"GOPDraw Object Found ... Current Mode = %d",
-            CurrentModeNum
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("  - %s", MsgStr);
-        LOG_MSG("\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-
         if (*ScreenHeight == 0) {
-            // User specified a mode number (stored in *ScreenWidth); use it directly
+            // Use user specified mode number (stored in *ScreenWidth) directly
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
                 #if REFIT_DEBUG > 0
@@ -2318,24 +2393,27 @@ BOOLEAN egSetScreenSize (
 
                 ModeSet = TRUE;
             }
-            else if (egGetResFromMode (ScreenWidth, ScreenHeight) &&
-                REFIT_CALL_2_WRAPPER(GOPDraw->SetMode, GOPDraw, ModeNum) == EFI_SUCCESS
+            else if (
+                egGetResFromMode (ScreenWidth, ScreenHeight) &&
+                REFIT_CALL_2_WRAPPER(
+                    GOPDraw->SetMode, GOPDraw, ModeNum
+                ) == EFI_SUCCESS
             ) {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Setting GOP Mode to %d", ModeNum);
-                #endif
-
                 ModeSet = TRUE;
+
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Mode Changed to GOP Mode %02d", ModeNum);
+                #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Could *NOT* Set GOP Mode");
+                MsgStr = PoolPrint (L"Could *NOT* Set GOP Mode %02d", ModeNum);
                 #endif
             }
+
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s", MsgStr);
-            LOG_MSG("\n\n");
+            LOG_MSG("%s    * %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
         }
@@ -2357,28 +2435,25 @@ BOOLEAN egSetScreenSize (
                         REFIT_CALL_2_WRAPPER(GOPDraw->SetMode, GOPDraw, ModeNum) == EFI_SUCCESS
                     )
                 ) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Setting GOP Mode to %d", ModeNum);
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("  - %s", MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-
                     ModeSet = TRUE;
+
+                    #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (L"Mode Changed to GOP Mode %02d", ModeNum);
+                    #endif
                 }
                 else {
-                    MsgStr = StrDuplicate (L"Could *NOT* Set GOP Mode");
-
                     #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("  - %s", MsgStr);
-                    LOG_MSG("\n\n");
+                    MsgStr = (ModeNum == CurrentModeNum)
+                        ? PoolPrint (L"Mode Already at GOP Mode %02d", ModeNum)
+                        : PoolPrint (L"Could *NOT* Set GOP Mode %02d", ModeNum);
                     #endif
-
-                    PrintUglyText (MsgStr, NEXTLINE);
-                    MY_FREE_POOL(MsgStr);
                 }
+
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
 
                 MY_FREE_POOL(Info);
 
@@ -2391,30 +2466,28 @@ BOOLEAN egSetScreenSize (
             egScreenHeight = *ScreenHeight;
         }
         else {
+            #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
                 L"Invalid Resolution Setting Provided ... Try Default Mode"
             );
-
-            #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("\n\n");
             LOG_MSG("%s:", MsgStr);
-            LOG_MSG("\n");
-            #endif
-
-            PrintUglyText (MsgStr, NEXTLINE);
             MY_FREE_POOL(MsgStr);
+            #endif
 
             ModeNum = 0;
             while (ModeNum < GOPDraw->Mode->MaxMode) {
-                #if REFIT_DEBUG > 0
-                LOG_MSG("\n");
-                #endif
-
                 Status = REFIT_CALL_4_WRAPPER(
                     GOPDraw->QueryMode, GOPDraw,
                     ModeNum, &Size, &Info
                 );
-                if (!EFI_ERROR(Status) && (Info != NULL)) {
+                if (EFI_ERROR(Status) || !Info) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Error : Could *NOT* Query GOP Mode");
+                    #endif
+                }
+                else {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
                         L"Available Mode: Mode[%02d][%d x %d]",
@@ -2422,9 +2495,6 @@ BOOLEAN egSetScreenSize (
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("  - %s", MsgStr);
-                    MY_FREE_POOL(MsgStr);
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
@@ -2432,75 +2502,22 @@ BOOLEAN egSetScreenSize (
                         egScreenHeight = Info->VerticalResolution;
                     }
                 }
-                else {
-                    MsgStr = StrDuplicate (L"Error : Could *NOT* Query GOP Mode");
 
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("  - %s", MsgStr);
-                    #endif
-
-                    PrintUglyText (MsgStr, NEXTLINE);
-                    MY_FREE_POOL(MsgStr);
-                }
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("\n");
+                LOG_MSG("  - %s", MsgStr);
+                MY_FREE_POOL(MsgStr);
+                #endif
 
                 ModeNum++;
             } // while
-
-            #if REFIT_DEBUG > 0
-            LOG_MSG("\n\n");
-            #endif
         } // if GOP mode (UEFI)
-    }
-    else if (UGADraw && (*ScreenHeight > 0)) {
-        // UGA mode (EFI 1.x)
-        // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
-        // in all cases, but I do not know how to probe for alternatives.
-        REFIT_CALL_5_WRAPPER(
-            UGADraw->GetMode, UGADraw,
-            &ScreenW, &ScreenH,
-            &UgaDepth, &UgaRefreshRate
-        );
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting UGADraw Mode to %d x %d",
-            *ScreenWidth, *ScreenHeight
-        );
-        #endif
-
-        Status = REFIT_CALL_5_WRAPPER(
-            UGADraw->SetMode, UGADraw,
-            ScreenW, ScreenH,
-            UgaDepth, UgaRefreshRate
-        );
-        *ScreenWidth  = (UINTN) ScreenW;
-        *ScreenHeight = (UINTN) ScreenH;
-        if (!EFI_ERROR(Status)) {
-            ModeSet        = TRUE;
-            egScreenWidth  = *ScreenWidth;
-            egScreenHeight = *ScreenHeight;
-        }
-        else {
-            // TODO: Find a list of supported modes and display it.
-            // NOTE: Below does not actually appear unless we explicitly switch to text mode.
-            // This is just a placeholder until something better can be done.
-            MsgStr = PoolPrint (
-                L"Error Setting %d x %d Resolution ... Unsupported Mode",
-                *ScreenWidth,
-                *ScreenHeight
-            );
-            PrintUglyText (MsgStr, NEXTLINE);
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n");
-
-            #endif
-
-            MY_FREE_POOL(MsgStr);
-        }
     } // if/else if UGADraw
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n\n");
+    #endif
 
     return (ModeSet);
 } // BOOLEAN egSetScreenSize()
@@ -2513,10 +2530,15 @@ BOOLEAN egSetTextMode (
     UINT32 RequestedMode
 ) {
     EFI_STATUS   Status;
+
+    #if REFIT_DEBUG > 0
     UINTN        i;
     UINTN        Width;
     UINTN        Height;
     CHAR16      *MsgStr;
+    BOOLEAN      GotOne;
+    #endif
+
 
     if ((RequestedMode == DONT_CHANGE_TEXT_MODE) ||
         (RequestedMode == gST->ConOut->Mode->Mode)
@@ -2533,69 +2555,55 @@ BOOLEAN egSetTextMode (
     #endif
 
     Status = REFIT_CALL_2_WRAPPER(gST->ConOut->SetMode, gST->ConOut, RequestedMode);
-    if (!EFI_ERROR(Status)) {
-        // Early Return
-        return TRUE;
-    }
-
-    SwitchToText (FALSE);
-
-    MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode!!");
-    PrintUglyText (MsgStr, NEXTLINE);
+    if (!EFI_ERROR(Status)) return TRUE;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("%s", MsgStr);
-    LOG_MSG("\n");
-    #endif
-
+    MsgStr = StrDuplicate (L"Unsupported Text Mode!!'");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("INFO: %s", MsgStr);
     MY_FREE_POOL(MsgStr);
 
-    MsgStr = StrDuplicate (L"Seek Available Modes:");
-    PrintUglyText (MsgStr, NEXTLINE);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Error Setting Text Mode %d ... Available Modes Are:",
-        RequestedMode
-    );
-    LOG_MSG("%s", MsgStr);
-    LOG_MSG("\n");
-    #endif
-
+    MsgStr = StrDuplicate (L"Seek Available Modes");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("%s:", MsgStr);
     MY_FREE_POOL(MsgStr);
 
     i = 0;
+    GotOne = FALSE;
     do {
         Status = REFIT_CALL_4_WRAPPER(
             gST->ConOut->QueryMode, gST->ConOut,
             i, &Width, &Height
         );
         if (!EFI_ERROR(Status)) {
-            MsgStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
-            PrintUglyText (MsgStr, NEXTLINE);
-
-            #if REFIT_DEBUG > 0
+            GotOne = TRUE;
+            MsgStr = PoolPrint (
+                L"Mode %4d (%5d x %-5d)",
+                i, Width, Height
+            );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n");
-            #endif
-
+            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
         }
     } while (++i < gST->ConOut->Mode->MaxMode);
 
-    MsgStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
-    PrintUglyText (MsgStr, NEXTLINE);
+    if (!GotOne) {
+        MsgStr = StrDuplicate (L"No Valid Mode Found!!'");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("\n\n");
+        LOG_MSG("INFO: %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+    }
 
-    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"Using Default Mode:- '%d'", DONT_CHANGE_TEXT_MODE);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("\n\n");
     LOG_MSG("%s", MsgStr);
-    LOG_MSG("\n");
-    #endif
-
-    PauseForKey();
-    SwitchToGraphicsAndClear (TRUE);
+    LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
+    #endif
 
     return FALSE;
 } // BOOLEAN egSetTextMode()

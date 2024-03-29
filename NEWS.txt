@@ -8,6 +8,11 @@
 - Fixes Hidden Entry Handling
   * Some loaders in ESP locations were not hidden when selected on-screen (minus key)
   * Was also the case when full paths were used in `dont_scan_files`
+- Fixes Display Resolution Handling
+  * User defined resolutions were not being properly handled
+    - Only the default, `max`, resolution was considered
+    - This meant that instances with defined resolutions were not properly displayed
+  * Separately, the selected resolution when seeking `max` was not always the actual maximum
 - Improves `MemTest` Handling
   * Updated exclusion from loaders (Row 1 Items)
   * Updated to handle `memtest+{ARCH}.efi` and `memtest86+{ARCH}.efi` files as per upstream
