@@ -73,6 +73,17 @@
 #
 #decline_help_scan
 
+# The "HelpSize" feature always adds additional UI scaling whenever screens
+# with 'ExDPI' resolutions are detected for which the 2x scaling applied for
+# the 'HiDPI' resolutions may not be sufficient. The 'ExDPI' resolutions are
+# currently 6400 x 4000. Separately, the feature allows forcing non-standard
+# or otherwise unsupported screen resolutions; which can help overcome issues
+# where the RefindPlus screen is not displayed (Typically due to EDID issues).
+#
+# The "HelpSize" feature is active when commented out
+#
+#decline_help_size
+
 # The "HelpText" feature uses complementary colours (of the title banner) for text
 # to improve legibility. With custom banners however, the base colour is based on the
 # colour of first pixel in the pixel array (top left pixel). This may not always embody

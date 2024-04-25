@@ -127,7 +127,10 @@ VOID FixIconScale (VOID) {
 
     // Scale UI Elements as required
     if (GlobalConfig.ScaleUI == 1) {
-        if (ScreenShortest >= EXDPI_SHORT && ScreenLongest >= EXDPI_LONG) {
+        if (GlobalConfig.HelpSize        &&
+            ScreenLongest  >= EXDPI_LONG &&
+            ScreenShortest >= EXDPI_SHORT
+        ) {
             ExtremeHiDPI = TRUE;
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
@@ -156,7 +159,10 @@ VOID FixIconScale (VOID) {
         }
     }
     else { // GlobalConfig.ScaleUI == 0 ... Technically any other value
-        if (ScreenShortest >= EXDPI_SHORT && ScreenLongest >= EXDPI_LONG) {
+        if (GlobalConfig.HelpSize        &&
+            ScreenLongest  >= EXDPI_LONG &&
+            ScreenShortest >= EXDPI_SHORT
+        ) {
             ExtremeHiDPI = TRUE;
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;

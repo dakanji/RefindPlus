@@ -3383,6 +3383,20 @@ VOID ReadConfig (
             }
             #endif
         }
+        else if (MyStriCmp (TokenList[0], L"decline_help_size")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.HelpSize = (DeclineSetting) ? FALSE : TRUE;
+
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                if (NotRunBefore) MuteLogger = FALSE;
+                LOG_MSG("%s  - Updated:- 'decline_help_size'", OffsetNext);
+                if (NotRunBefore) MuteLogger = TRUE;
+                UpdatedToken = TRUE;
+
+            }
+            #endif
+        }
         else if (
             MyStriCmp (TokenList[0], L"csr_normalise") ||
             MyStriCmp (TokenList[0], L"normalise_csr")

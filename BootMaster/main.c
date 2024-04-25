@@ -124,6 +124,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ScanAllESP = */ TRUE,
     /* HelpIcon = */ TRUE,
     /* HelpScan = */ TRUE,
+    /* HelpSize = */ TRUE,
     /* HelpText = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,

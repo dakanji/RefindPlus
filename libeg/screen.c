@@ -88,6 +88,7 @@ BOOLEAN egHasGraphics     = FALSE;
 BOOLEAN SetPreferUGA      = FALSE;
 BOOLEAN GotGoodGOP        = FALSE;
 
+UINTN   MinPixelsLine  =   0;
 UINTN   SelectedGOP    =   0;
 UINTN   egScreenWidth  = 800;
 UINTN   egScreenHeight = 600;
@@ -102,6 +103,64 @@ typedef struct {
   EFI_UGA_DRAW_PROTOCOL          Uga;
 } RP_UGA_PROTOCOL;
 
+/**
+  The ForceVideoMode function below was adapted from UefiSeven
+  https://github.com/manatails/uefiseven/blob/b8f0baba63e60e74d4ed3e86b15b76319d316b83/UefiSevenPkg/Platform/UefiSeven/Display.c#L299-L368
+
+  UefiSeven is an EFI loader that emulates int10h interrupts needed for booting Windows 7 under UEFI Class 3 systems.
+
+  The code is licensed and made available under the terms and conditions of the BSD License
+  The full text of the license may be found at http://opensource.org/licenses/bsd-license.php
+**/
+static
+EFI_STATUS ForceVideoMode (
+    IN UINTN      TargetWidth,
+    IN UINTN      TargetHeight
+) {
+    UINT32        HorizontalResolution;
+    UINT32        VerticalResolution;
+    UINT32        PixelsPerScanLine;
+    UINT32        FrameBufferSize;
+    UINT32        ScanlineScale;
+    UINTN         TargetPixelsLine;
+
+    if (GOPDraw == NULL) {
+        return EFI_UNSUPPORTED;
+    }
+
+    if (TargetWidth  == 0 ||
+        TargetHeight == 0
+    ) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    HorizontalResolution = (UINT32) TargetWidth;
+    VerticalResolution   = (UINT32) TargetHeight;
+
+    ScanlineScale = 1;
+    while ((MinPixelsLine * ScanlineScale) < TargetWidth) {
+        ScanlineScale++;
+    }
+
+    TargetPixelsLine  =  MinPixelsLine;
+    PixelsPerScanLine = (MinPixelsLine * ScanlineScale);
+    while (
+        (TargetPixelsLine > 3) &&
+        (TargetPixelsLine % 2) == 0 &&
+        (PixelsPerScanLine - (TargetPixelsLine / 2)) > TargetWidth
+    ) {
+        TargetPixelsLine  -= (TargetPixelsLine / 2);
+        PixelsPerScanLine -= TargetPixelsLine;
+    }
+    FrameBufferSize = PixelsPerScanLine * 4 * VerticalResolution;
+
+    GOPDraw->Mode->Info->HorizontalResolution = HorizontalResolution;
+    GOPDraw->Mode->Info->VerticalResolution   = VerticalResolution;
+    GOPDraw->Mode->Info->PixelsPerScanLine    = PixelsPerScanLine;
+    GOPDraw->Mode->FrameBufferSize            = FrameBufferSize;
+
+    return EFI_SUCCESS;
+} // EFI_STATUS ForceVideoMode()
 
 static
 EFI_STATUS RefitSetConsoleResolutionForProtocol (
@@ -941,7 +1000,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
-    LoopCount = 0;
+    MinPixelsLine = LoopCount   = 0;
     IncrementLoop = OurValidGOP = FALSE;
     for (Mode = 0; Mode <= MaxMode; Mode++) {
         if (IncrementLoop) {
@@ -969,6 +1028,11 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         }
         else {
             OurValidGOP = TRUE;
+            if (MinPixelsLine == 0 ||
+                MinPixelsLine > Info->PixelsPerScanLine
+            ) {
+                MinPixelsLine = Info->PixelsPerScanLine;
+            }
 
             #if REFIT_DEBUG > 0
             switch (Info->PixelFormat) {
@@ -979,21 +1043,21 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                 default:                                    PixelFormatDesc = L"Unknown!";  break;
             } // switch
 
-            // DA-TAG: Alignment of 'Expected Length + 4 Spaces' added before 'PixelFormatDesc' and 'Status'
-            //         Alignment is 'Expected Length + 3 Spaces' for pixel dim and 'Pixels Per Scanned Line'
+            // DA-TAG: Alignment of 'Expected Length + 4 Spaces' added before 'PixelFormatDesc'
+            //         Alignment is 'Expected Length + 3 Spaces' for pixel size and 'Pixels Per Scanned Line'
             LOG_MSG(
-                " @%6d x %-6d( Pixels Per Scanned Line : %-6d| Pixel Format : %s | Query Status : %r )",
+                " @%6d x %-6d( Pixels Per Scanned Line : %-6d| Pixel Format : %s )",
                 Info->HorizontalResolution,
                 Info->VerticalResolution,
                 Info->PixelsPerScanLine,
-                PixelFormatDesc, Status
+                PixelFormatDesc
             );
             #endif
         }
 
         #if REFIT_DEBUG > 0
         if (Mode > 99) {
-            LOG_MSG( ". NB: Real Mode is Mode %02d", Mode);
+            LOG_MSG( " NB: Real Mode is Mode %04d", Mode);
         }
 
         if (LoopCount >= (MaxMode - 1)) {
@@ -1003,6 +1067,18 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
         MY_FREE_POOL(Info);
     } // for
+
+    // DA-TAG: Investigate This
+    //         Seems likely to be closest to target later
+    //
+    // Try to drop to close to 64
+    while (
+        (MinPixelsLine !=   0) &&
+        (MinPixelsLine  > 127) &&
+        (MinPixelsLine  %   2) == 0
+    ) {
+        MinPixelsLine /= 2;
+    }
 
     if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
@@ -2304,6 +2380,7 @@ BOOLEAN egSetScreenSize (
 
     #if REFIT_DEBUG > 0
     CHAR16      *MsgStr;
+    CHAR16      *PixelFormatDesc;
 
 
     MsgStr = StrDuplicate (L"Try Setting User Defined Resolution");
@@ -2402,26 +2479,32 @@ BOOLEAN egSetScreenSize (
                 ModeSet = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Mode Changed to GOP Mode %02d", ModeNum);
+                MsgStr = PoolPrint (
+                    L"Mode Pointed at GOP Mode[%02d]",
+                    ModeNum
+                );
                 #endif
+
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Could *NOT* Set GOP Mode %02d", ModeNum);
+                MsgStr = PoolPrint (
+                    L"Could *NOT* Set GOP Mode[%02d]",
+                    ModeNum
+                );
                 #endif
             }
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s    * %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
         }
         else {
-            // Do a loop through the modes to see if the specified one is available.
-            // Switch to it if so.
+            // Loop through modes to see if the specified
+            // one is available and switch to this if so.
             ModeNum = 0;
-            while (!ModeSet && (ModeNum < GOPDraw->Mode->MaxMode)) {
+            while (!ModeSet && ModeNum < GOPDraw->Mode->MaxMode) {
                 Status = REFIT_CALL_4_WRAPPER(
                     GOPDraw->QueryMode, GOPDraw,
                     ModeNum, &Size, &Info
@@ -2432,25 +2515,33 @@ BOOLEAN egSetScreenSize (
                     (Info->VerticalResolution   == *ScreenHeight) &&
                     (
                         ModeNum == CurrentModeNum ||
-                        REFIT_CALL_2_WRAPPER(GOPDraw->SetMode, GOPDraw, ModeNum) == EFI_SUCCESS
+                        REFIT_CALL_2_WRAPPER(
+                            GOPDraw->SetMode, GOPDraw, ModeNum
+                        ) == EFI_SUCCESS
                     )
                 ) {
                     ModeSet = TRUE;
 
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Mode Changed to GOP Mode %02d", ModeNum);
+                    MsgStr = PoolPrint (
+                        L"Mode Pointed at GOP Mode[%02d]",
+                        ModeNum
+                    );
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = (ModeNum == CurrentModeNum)
-                        ? PoolPrint (L"Mode Already at GOP Mode %02d", ModeNum)
-                        : PoolPrint (L"Could *NOT* Set GOP Mode %02d", ModeNum);
+                    MsgStr = PoolPrint (
+                        L"%s GOP Mode[%02d]",
+                        (ModeNum == CurrentModeNum)
+                            ? L"Mode Already at"
+                            : L"Could *NOT* Set",
+                        ModeNum
+                    );
                     #endif
                 }
 
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s    * %s", OffsetNext, MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -2467,52 +2558,108 @@ BOOLEAN egSetScreenSize (
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (
-                L"Invalid Resolution Setting Provided ... Try Default Mode"
-            );
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("\n\n");
-            LOG_MSG("%s:", MsgStr);
-            MY_FREE_POOL(MsgStr);
+            LOG_MSG("INFO: GOP Mode Matching User Defined Resolution *NOT* Found");
             #endif
 
-            ModeNum = 0;
-            while (ModeNum < GOPDraw->Mode->MaxMode) {
-                Status = REFIT_CALL_4_WRAPPER(
-                    GOPDraw->QueryMode, GOPDraw,
-                    ModeNum, &Size, &Info
-                );
-                if (EFI_ERROR(Status) || !Info) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Error : Could *NOT* Query GOP Mode");
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (
-                        L"Available Mode: Mode[%02d][%d x %d]",
-                        ModeNum,
-                        Info->HorizontalResolution,
-                        Info->VerticalResolution
-                    );
-                    #endif
-
-                    if (ModeNum == CurrentModeNum) {
-                        egScreenWidth  = Info->HorizontalResolution;
-                        egScreenHeight = Info->VerticalResolution;
-                    }
+            if (GlobalConfig.HelpSize) {
+                Status = ForceVideoMode (*ScreenWidth, *ScreenHeight);
+                if (!EFI_ERROR(Status)) {
+                    ModeSet = TRUE;
                 }
 
                 #if REFIT_DEBUG > 0
+                LOG_MSG("%s      Force Mode[%02d] to Match %d x %d Resolution:- '%r'",
+                    OffsetNext, CurrentModeNum,
+                    *ScreenWidth, *ScreenHeight,
+                    Status
+                );
+
+                MsgStr = PoolPrint (L"Analyse Amended Mode[%02d]", CurrentModeNum);
+                LOG_MSG("\n\n");
+                LOG_MSG("%s:", MsgStr);
+                MY_FREE_POOL(MsgStr);
+
+                MsgStr = PoolPrint (
+                    L"01 GOP Mode ... 0x%lx <<< --- >>> 0x%lx Framebuffer",
+                    GOPDraw->Mode->FrameBufferBase,
+                    GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
+                );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("\n");
-                LOG_MSG("  - %s", MsgStr);
+                LOG_MSG("%s  - Summary:- '%s'", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
+
+                switch (GOPDraw->Mode->Info->PixelFormat) {
+                    case PixelRedGreenBlueReserved8BitPerColor: PixelFormatDesc = L"8bit RGB";  break;
+                    case PixelBlueGreenRedReserved8BitPerColor: PixelFormatDesc = L"8bit BGR";  break;
+                    case PixelBitMask:                          PixelFormatDesc = L"BIT Mask";  break;
+                    case PixelBltOnly:                          PixelFormatDesc = L"BLT Only";  break;
+                    default:                                    PixelFormatDesc = L"Unknown!";  break;
+                } // switch
+
+                LOG_MSG("%s    * Mode[%02d]", OffsetNext, CurrentModeNum);
+                LOG_MSG(
+                    " @%6d x %-6d( Pixels Per Scanned Line : %-6d| Pixel Format : %s )",
+                    GOPDraw->Mode->Info->HorizontalResolution,
+                    GOPDraw->Mode->Info->VerticalResolution,
+                    GOPDraw->Mode->Info->PixelsPerScanLine,
+                    PixelFormatDesc
+                );
+                #endif
+            }
+
+            if (ModeSet) {
+                egScreenWidth  = *ScreenWidth;
+                egScreenHeight = *ScreenHeight;
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                MsgStr = StrDuplicate (
+                    L"Set Default Mode"
+                );
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s:", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                ModeNum++;
-            } // while
-        } // if GOP mode (UEFI)
+                ModeNum = 0;
+                while (ModeNum < GOPDraw->Mode->MaxMode) {
+                    Status = REFIT_CALL_4_WRAPPER(
+                        GOPDraw->QueryMode, GOPDraw,
+                        ModeNum, &Size, &Info
+                    );
+                    if (EFI_ERROR(Status) || !Info) {
+                        #if REFIT_DEBUG > 0
+                        MsgStr = StrDuplicate (L"Error : Could *NOT* Query GOP Mode");
+                        #endif
+                    }
+                    else {
+                        #if REFIT_DEBUG > 0
+                        MsgStr = PoolPrint (
+                            L"Available Mode: Mode[%02d][%d x %d]",
+                            ModeNum,
+                            Info->HorizontalResolution,
+                            Info->VerticalResolution
+                        );
+                        #endif
+
+                        if (ModeNum == CurrentModeNum) {
+                            egScreenWidth  = Info->HorizontalResolution;
+                            egScreenHeight = Info->VerticalResolution;
+                        }
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("\n");
+                    LOG_MSG("  - %s", MsgStr);
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+
+                    ModeNum++;
+                } // while
+            } // if/else ModeSet ... Inner
+        } // if/else ModeSet ... Outer
     } // if/else if UGADraw
 
     #if REFIT_DEBUG > 0

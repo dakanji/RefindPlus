@@ -60,6 +60,7 @@ csr_dynamic           |Actively enables or disables the SIP Policy on Macs
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
 decline_help_scan     |Disables feature that skips showing misc typically unwanted loaders
+decline_help_size     |Disables feature that sets additional UI scaling for very high DPI screens
 decline_help_text     |Disables complementary text colours if not required
 decouple_key_f10      |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
 disable_amfi          |Disables AMFI Checks on macOS if required

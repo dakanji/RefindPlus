@@ -509,6 +509,7 @@ typedef struct {
     BOOLEAN                     ScanAllESP;
     BOOLEAN                     HelpIcon;
     BOOLEAN                     HelpScan;
+    BOOLEAN                     HelpSize;
     BOOLEAN                     HelpText;
     BOOLEAN                     NormaliseCSR;
     BOOLEAN                     ShutdownAfterTimeout;

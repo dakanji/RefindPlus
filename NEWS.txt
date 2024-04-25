@@ -1,6 +1,16 @@
 0.14.1.AA (PRE-RELEASE):
 -----------------------
 - Synced with Upstream v0.14.1
+- Adds `HelpSize` Feature
+  * Provides option to force non-standard or otherwise unsupported screen resolutions
+    - This can help work around issues where pre-boot configuration screen are not displayed
+    - The issues are typically EDID related or the auto-selection of incorrect/incompatible resolutions
+    - This aspect of the `HelpSize` feature requires booting into systems that fully support the graphics
+  * An `ExDPI` category for screens with resolutions of `6400 x 4000` or more was created
+    - UI elements are scaled up by four (4) on such screens when UI element scaling is active
+    - UI elements on other `HiDPI` screens are still scaled up by two (2) with UI scaling active
+  * Enabled by default but can be disabled using a new `decline_help_size` configuration token
+    - The new token sets RefindPlus to only apply up to 2x UI element scaling
 - Fixes Potential Memory Conflict
   * Some constants were passed to a function that reallocates memory
   * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
@@ -13,6 +23,7 @@
     - Only the default, `max`, resolution was considered
     - This meant that instances with defined resolutions were not properly displayed
   * Separately, the selected resolution when seeking `max` was not always the actual maximum
+  * Additionally, a `HelpSize` Feature, documented separately, was introduced
 - Improves `MemTest` Handling
   * Updated exclusion from loaders (Row 1 Items)
   * Updated to handle `memtest+{ARCH}.efi` and `memtest86+{ARCH}.efi` files as per upstream
