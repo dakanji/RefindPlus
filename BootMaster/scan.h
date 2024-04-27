@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2020 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -54,13 +54,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #ifndef __SCAN_H_
 #define __SCAN_H_
 
 #define LABEL_GDISK           L"GDisk Tool"
 #define LABEL_GPTSYNC         L"GPTsync Tool"
-#define LABEL_CLEAN_NVRAM     L"Clean NVRAM"
+#define LABEL_CLEAN_NVRAM     L"Clean nvRAM"
 #define LABEL_MEMTEST         L"MemTest Tool"
 #define LABEL_HIDDEN          L"Restore Entries"
 

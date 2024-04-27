@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -1262,7 +1262,7 @@ CHAR16 * EFIAPI DevicePathToStr (
         } // for
 
         // If not found, use a generic function
-        if (!DumpNode) {
+        if (DumpNode == NULL) {
             DumpNode = DevPathNodeUnknown;
         }
 

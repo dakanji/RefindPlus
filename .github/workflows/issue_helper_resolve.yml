@@ -33,19 +33,30 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
-          actions: 'create-comment'
+          actions: 'unlock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item has been addressed in Commit ${{ github.event.inputs.commmit_ref }}.
-
-            Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access the functionality ahead of the next release.
-
-            Use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
 
   issue_resolve_bug2:
     name: Issue - Resolve - Bug2
     needs: [issue_resolve_bug1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item was addressed by Commit ${{ github.event.inputs.commmit_ref }}.
+
+            Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access the functionality ahead of the next release.
+
+  issue_resolve_bug3:
+    name: Issue - Resolve - Bug3
+    needs: [issue_resolve_bug2]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}
@@ -57,9 +68,9 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Bug,Resolved'
 
-  issue_resolve_bug3:
-    name: Issue - Resolve - Bug3
-    needs: [issue_resolve_bug2]
+  issue_resolve_bug4:
+    name: Issue - Resolve - Bug4
+    needs: [issue_resolve_bug3]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}
@@ -69,11 +80,11 @@ jobs:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Unresolved,Acknowledged,Known-Issue'
+          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
 
-  issue_resolve_bug4:
-    name: Issue - Resolve - Bug4
-    needs: [issue_resolve_bug3]
+  issue_resolve_bug5:
+    name: Issue - Resolve - Bug5
+    needs: [issue_resolve_bug4]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}
@@ -94,17 +105,31 @@ jobs:
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+
+  issue_resolve_other2:
+    name: Issue - Resolve - Other2
+    needs: [issue_resolve_other1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
           actions: 'create-comment'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
             This item has been resolved.
 
-            Use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
+            Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access the functionality ahead of the next release.
 
-  issue_resolve_other2:
-    name: Issue - Resolve - Other2
-    needs: [issue_resolve_other1]
+  issue_resolve_other3:
+    name: Issue - Resolve - Other3
+    needs: [issue_resolve_other2]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}
@@ -116,9 +141,9 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Resolved'
 
-  issue_resolve_other3:
-    name: Issue - Resolve - Other3
-    needs: [issue_resolve_other2]
+  issue_resolve_other4:
+    name: Issue - Resolve - Other4
+    needs: [issue_resolve_other3]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}
@@ -128,11 +153,11 @@ jobs:
           actions: 'remove-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Unresolved'
+          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved'
 
-  issue_resolve_other4:
-    name: Issue - Resolve - Other4
-    needs: [issue_resolve_other3]
+  issue_resolve_other5:
+    name: Issue - Resolve - Other5
+    needs: [issue_resolve_other4]
     runs-on: ubuntu-20.04
 
     if: ${{ success() || failure() }}

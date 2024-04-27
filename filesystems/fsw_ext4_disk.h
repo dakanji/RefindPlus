@@ -22,6 +22,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #ifndef _FSW_EXT4_DISK_H_
 #define _FSW_EXT4_DISK_H_
@@ -42,7 +48,7 @@ typedef __u32   __le32;
 typedef __u64   __le64;
 
 //
-// from Linux kernel, fs/ext4/ext4.h
+// From Linux kernel, fs/ext4/ext4.h
 //
 
 /*

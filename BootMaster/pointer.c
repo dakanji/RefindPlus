@@ -125,7 +125,7 @@ VOID pdInitialize (VOID) {
             ProtocolA = AllocatePool (
                 NumPointerHandles * sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*)
             );
-            if (!ProtocolA) {
+            if (ProtocolA == NULL) {
                 #if REFIT_DEBUG > 0
                 EnableStatusTouch = EFI_OUT_OF_RESOURCES;
                 #endif
@@ -182,7 +182,7 @@ VOID pdInitialize (VOID) {
             ProtocolS = AllocatePool (
                 NumPointerHandles * sizeof (EFI_SIMPLE_POINTER_PROTOCOL*)
             );
-            if (!ProtocolS) {
+            if (ProtocolS == NULL) {
                 #if REFIT_DEBUG > 0
                 EnableStatusMouse = EFI_OUT_OF_RESOURCES;
                 #endif
@@ -369,16 +369,16 @@ EFI_STATUS pdUpdateState (VOID) {
     EFI_ABSOLUTE_POINTER_STATE APointerState;
 
 
-    Status = EFI_NOT_READY;
-
     #if defined (EFI32) && defined (__MAKEWITH_GNUEFI)
-    return Status;
+    return EFI_NOT_READY;
     #endif
 
-    if (!PointerAvailable) return Status;
+    if (!PointerAvailable) {
+        return EFI_NOT_READY;
+    }
 
     LastHolding = State.Holding;
-
+    Status = EFI_NOT_READY;
     do {
         for (Index = 0; Index < NumAPointerDevices; Index++) {
             PointerStatus = REFIT_CALL_2_WRAPPER(
@@ -402,13 +402,15 @@ EFI_STATUS pdUpdateState (VOID) {
 #endif
 
                 State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
-
                 Status = EFI_SUCCESS;
+
                 break;
             } // if !EFI_ERROR(PointerStatus)
         } // for
 
-        if (!EFI_ERROR(Status)) break;
+        if (!EFI_ERROR(Status)) {
+            break;
+        }
 
         for (Index = 0; Index < NumSPointerDevices; Index++) {
             PointerStatus = REFIT_CALL_2_WRAPPER(
@@ -454,8 +456,8 @@ EFI_STATUS pdUpdateState (VOID) {
                 }
 
                 State.Holding = SPointerState.LeftButton;
-
                 Status = EFI_SUCCESS;
+
                 break;
             } // if !EFI_ERROR(PointerStatus)
         } // for
@@ -480,10 +482,12 @@ VOID pdDraw (VOID) {
     UINTN Width;
     UINTN Height;
 
-    if (!MouseTouchActive) return;
+    if (!MouseTouchActive) {
+        return;
+    }
 
     MY_FREE_IMAGE(Background);
-    if (MouseImage) {
+    if (MouseImage != NULL) {
         Width  = ((State.X + MouseImage->Width)  > ScreenW)
             ? ScreenW - State.X : MouseImage->Width;
         Height = ((State.Y + MouseImage->Height) > ScreenH)
@@ -493,7 +497,7 @@ VOID pdDraw (VOID) {
             State.X, State.Y,
             Width, Height
         );
-        if (Background) {
+        if (Background != NULL) {
             BltImageCompositeBadge (
                 Background, MouseImage,
                 NULL, State.X, State.Y
@@ -515,9 +519,11 @@ VOID pdClear (VOID) {
     #endif
 
 
-    if (!MouseTouchActive) return;
+    if (!MouseTouchActive) {
+        return;
+    }
 
-    if (Background) {
+    if (Background != NULL) {
         egDrawImage (Background, LastXPos, LastYPos);
         MY_FREE_IMAGE(Background);
     }

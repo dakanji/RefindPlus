@@ -35,7 +35,7 @@
  */
 
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2020 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -44,7 +44,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -69,27 +69,22 @@ typedef struct {
     CHAR16  *End16Ptr;
 } REFIT_FILE;
 
-#define CONFIG_FILE_NAME  L"config.conf"
 #define DONT_SCAN_VOLUMES L"LRS_ESP"
 #define ALSO_SCAN_DIRS    L"boot,@/boot"
 
 // Note: Below is combined with MOK_NAMES and FWUPDATE_NAMES to make default
 #if defined (EFIX64)
 #define DONT_SCAN_FILES \
-L"shim-fedora.efi,shim-centos.efi,PreLoader.efi,TextMode.efi,ebounce.efi,\
-GraphicsConsole.efi,bootmgr.efi,shim.efi,fb.efi,shimx64.efi,fbx64.efi"
+L"shim.efi,shimx64.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi,fbx64.efi"
 #elif defined(EFI32)
 #define DONT_SCAN_FILES \
-L"shim-fedora.efi,shim-centos.efi,PreLoader.efi,TextMode.efi,ebounce.efi,\
-GraphicsConsole.efi,bootmgr.efi,shim.efi,fb.efi,shimia32.efi,fbia32.efi"
+L"shim.efi,shimia32.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi,fbia32.efi"
 #elif defined(EFIAARCH64)
 #define DONT_SCAN_FILES \
-L"shim-fedora.efi,shim-centos.efi,PreLoader.efi,TextMode.efi,ebounce.efi,\
-GraphicsConsole.efi,bootmgr.efi,shim.efi,fb.efi,shimaa64.efi,fbaa64.efi"
+L"shim.efi,shimaa64.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi,fbaa64.efi"
 #else
 #define DONT_SCAN_FILES \
-L"shim-fedora.efi,shim-centos.efi,PreLoader.efi,TextMode.efi,ebounce.efi,\
-GraphicsConsole.efi,bootmgr.efi,shim.efi,fb.efi"
+L"shim.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi"
 #endif
 
 VOID ReadConfig (CHAR16 *FileName);

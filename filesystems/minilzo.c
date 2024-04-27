@@ -30,6 +30,12 @@
  *   the full LZO package can be found at
  *   http://www.oberhumer.com/opensource/lzo/
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #define __LZO_IN_MINILZO 1
 
@@ -4194,7 +4200,10 @@ __lzo_align_gap(const lzo_voidp ptr, lzo_uint size)
 #error "__LZO_UINTPTR_T_IS_POINTER is unsupported"
 #else
     lzo_uintptr_t p, n;
-    if (size < 2) return 0;
+    if (size < 2) {
+        return 0;
+    }
+
     p = __lzo_ptr_linear(ptr);
 #if 0
     n = (((p + size - 1) / size) * size) - p;

@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2023 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -61,36 +61,40 @@
 #include "../EfiLib/GenericBdsLib.h"
 #include "../libeg/libeg.h"
 
-// Tag classifications ... Used in various ways.
-#define TAG_GENERIC               (0)
+// Tag definitions ... Used in various ways.
+#define TAG_BASE                  (0)
+// Tool Tags
 #define TAG_ABOUT                 (1)
 #define TAG_REBOOT                (2)
 #define TAG_SHUTDOWN              (3)
-#define TAG_TOOL                  (4)
-#define TAG_LOADER                (5)
-#define TAG_LEGACY                (6)
-#define TAG_FIRMWARE_LOADER       (7)
-#define TAG_EXIT                  (8)
-#define TAG_SHELL                 (9)
-#define TAG_GPTSYNC              (10)
-#define TAG_LEGACY_UEFI          (11)
-#define TAG_RECOVERY_APPLE       (12)
-#define TAG_RECOVERY_WINDOWS     (13)
-#define TAG_MOK_TOOL             (14)
-#define TAG_FIRMWARE             (15)
-#define TAG_MEMTEST              (16)
-#define TAG_GDISK                (17)
-#define TAG_NETBOOT              (18)
-#define TAG_CSR_ROTATE           (19)
-#define TAG_FWUPDATE_TOOL        (20)
-#define TAG_HIDDEN               (21)
-#define TAG_INSTALL              (22)
-#define TAG_BOOTORDER            (23)
-#define TAG_INFO_NVRAMCLEAN      (24)
-#define TAG_LOAD_NVRAMCLEAN      (25)
-#define NUM_TOOLS                (26)
+#define TAG_EXIT                  (4)
+#define TAG_SHELL                 (5)
+#define TAG_GPTSYNC               (6)
+#define TAG_RECOVERY_APPLE        (7)
+#define TAG_RECOVERY_WINDOWS      (8)
+#define TAG_MOK_TOOL              (9)
+#define TAG_FIRMWARE             (10)
+#define TAG_MEMTEST              (11)
+#define TAG_GDISK                (12)
+#define TAG_NETBOOT              (13)
+#define TAG_CSR_ROTATE           (14)
+#define TAG_FWUPDATE_TOOL        (15)
+#define TAG_HIDDEN               (16)
+#define TAG_BOOTORDER            (17)
+#define TAG_INSTALL              (18)
+#define TAG_NVRAMCLEAN           (19)
+#define NUM_TOOLS                (20)
+// Other Tags
+#define TAG_TOOL                 (21)
+#define TAG_LOADER               (22)
+#define TAG_LEGACY               (23)
+#define TAG_LEGACY_UEFI          (24)
+#define TAG_RESET_NVRAM          (25)
+#define TAG_FIRMWARE_LOADER      (26)
 
-#define NUM_SCAN_OPTIONS         (11)
+
+
+#define NUM_SCAN_OPTIONS         (10)
 
 // OS bit codes (Actual Decimal) ... Used in GlobalConfig.GraphicsFor
 #define GRAPHICS_FOR_OSX          (1)
@@ -322,6 +326,7 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to return to the main screen"
 
 // Other default hint texts
+#define MAIN_MENU_NAME             L"Main Menu"
 #define SELECT_OPTION_HINT         L"Select an option and press 'Enter' to apply the option"
 #define RETURN_MAIN_SCREEN_HINT    L"Press 'ESC', 'BackSpace' or 'SpaceBar' to return to the main screen"
 
@@ -350,7 +355,7 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 
 // Configuration file variables
 #define KERNEL_VERSION L"%v"
-#define MAX_RES_CODE 2147483647 /* 2^31 - 1 */
+//#define MAX_RES_CODE 2147483647 /* 2^31 - 1 */
 
 
 #ifdef __MAKEWITH_TIANO
@@ -437,7 +442,7 @@ typedef struct _refit_menu_screen {
     CHAR16                   **InfoLines;
     UINTN                      EntryCount;        // Total number of entries registered
     REFIT_MENU_ENTRY         **Entries;
-    UINTN                      TimeoutSeconds;
+    INTN                       TimeoutSeconds;
     CHAR16                    *TimeoutText;
     CHAR16                    *Hint1;
     CHAR16                    *Hint2;
@@ -470,68 +475,67 @@ typedef struct {
     BOOLEAN                     DirectBoot;
     BOOLEAN                     CustomScreenBG;
     BOOLEAN                     TextOnly;
-    BOOLEAN                     ScanAllLinux;
     BOOLEAN                     DeepLegacyScan;
-    BOOLEAN                     RescanDXE;
     BOOLEAN                     RansomDrives;
     BOOLEAN                     EnableAndLockVMX;
-    BOOLEAN                     FoldLinuxKernels;
     BOOLEAN                     EnableMouse;
     BOOLEAN                     EnableTouch;
     BOOLEAN                     PersistBootArgs;
-    BOOLEAN                     HiddenTags;
     BOOLEAN                     UseNvram;
     BOOLEAN                     TransientBoot;
     BOOLEAN                     HiddenIconsIgnore;
     BOOLEAN                     HiddenIconsExternal;
     BOOLEAN                     HiddenIconsPrefer;
     BOOLEAN                     UseTextRenderer;
+    BOOLEAN                     PreferUGA;
     BOOLEAN                     PassUgaThrough;
     BOOLEAN                     PassGopThrough;
     BOOLEAN                     SetConsoleGOP;
     BOOLEAN                     ReloadGOP;
     BOOLEAN                     UseDirectGop;
-    BOOLEAN                     ContinueOnWarning;
-    BOOLEAN                     ForceTRIM;
-    BOOLEAN                     DisableCompatCheck;
-    BOOLEAN                     DisableNvramPanicLog;
-    BOOLEAN                     DecoupleKeyF10;
-    BOOLEAN                     DisableAMFI;
-    BOOLEAN                     NvramProtectEx;
-    BOOLEAN                     FollowSymlinks;
-    BOOLEAN                     GzippedLoaders;
-    BOOLEAN                     PreferUGA;
-    BOOLEAN                     SupplyNVME;
-    BOOLEAN                     SupplyAPFS;
-    BOOLEAN                     SupplyUEFI;
-    BOOLEAN                     SyncAPFS;
-    BOOLEAN                     NvramProtect;
-    BOOLEAN                     ScanAllESP;
-    BOOLEAN                     HelpIcon;
-    BOOLEAN                     HelpScan;
-    BOOLEAN                     HelpSize;
-    BOOLEAN                     HelpText;
     BOOLEAN                     NormaliseCSR;
     BOOLEAN                     ShutdownAfterTimeout;
     BOOLEAN                     Install;
     BOOLEAN                     WriteSystemdVars;
     BOOLEAN                     UnicodeCollation;
-    BOOLEAN                     SetAppleFB;
     BOOLEAN                     HandleVentoy;
     BOOLEAN                     MitigatePrimedBuffer;
+    BOOLEAN                     ContinueOnWarning;
+    BOOLEAN                     ForceTRIM;
+    BOOLEAN                     DisableCheckAMFI;
+    BOOLEAN                     DisableCheckCompat;
+    BOOLEAN                     DisableNvramPanicLog;
+    BOOLEAN                     DecoupleKeyF10;
+    BOOLEAN                     NvramProtectEx;
+    BOOLEAN                     FollowSymlinks;
+    BOOLEAN                     GzippedLoaders;
+    BOOLEAN                     SupplyUEFI;
+    BOOLEAN                     SupplyNVME;
+    BOOLEAN                     SupplyAPFS;
+    BOOLEAN                     SyncAPFS;
+    BOOLEAN                     NvramProtect;
+    BOOLEAN                     ScanAllESP;
+    BOOLEAN                     ScanAllLinux;
+    BOOLEAN                     FoldLinuxKernels;
+    BOOLEAN                     RescanDXE;
+    BOOLEAN                     HiddenTags;
+    BOOLEAN                     HelpIcon;
+    BOOLEAN                     HelpScan;
+    BOOLEAN                     HelpSize;
+    BOOLEAN                     HelpText;
+    BOOLEAN                     SetAppleFB;
+    UINTN                       BannerScale;
+    UINTN                       GraphicsFor;
+    UINTN                       LegacyType;
+    UINTN                       RequestedTextMode;
     UINTN                       RequestedScreenWidth;
     UINTN                       RequestedScreenHeight;
     UINTN                       BannerBottomEdge;
-    UINTN                       RequestedTextMode;
     UINTN                       HideUIFlags;
     UINTN                       MaxTags;
-    UINTN                       GraphicsFor;
-    UINTN                       LegacyType;
     UINTN                       ScanDelay;
     UINTN                       SyncNVram;
     UINTN                       MouseSpeed;
-    UINTN                       IconSizes[4];
-    UINTN                       BannerScale;
     UINTN                       NvramVariableLimit;
     INTN                        ScreensaverTime;
     INTN                        Timeout;
@@ -546,8 +550,8 @@ typedef struct {
     REFIT_VOLUME               *DiscoveredRoot;
     EFI_DEVICE_PATH_PROTOCOL   *SelfDevicePath;
     EG_IMAGE                   *ScreenBackground;
-    CHAR16                     *BannerFileName;
     CHAR16                     *ConfigFilename;
+    CHAR16                     *BannerFileName;
     CHAR16                     *SelectionSmallFileName;
     CHAR16                     *SelectionBigFileName;
     CHAR16                     *DefaultSelection;
@@ -561,12 +565,13 @@ typedef struct {
     CHAR16                     *MacOSRecoveryFiles;
     CHAR16                     *DriverDirs;
     CHAR16                     *IconsDir;
+    CHAR16                     *SetBootArgs;
     CHAR16                     *LinuxPrefixes;      // Linux prefixes (e.g., L"vmlinuz,bzImage"
     CHAR16                     *LinuxMatchPatterns; // Linux prefixes PLUS wildcards (e.g., L"vmlinuz*,bzImage*")
-    CHAR16                     *SetBootArgs;
     CHAR16                     *ExtraKernelVersionStrings;
     CHAR16                     *SpoofOSXVersion;
     UINT32_LIST                *CsrValues;
+    UINTN                       IconSizes[4];
     UINTN                       ShowTools[NUM_TOOLS];
     CHAR8                       ScanFor[NUM_SCAN_OPTIONS];
 } REFIT_CONFIG;

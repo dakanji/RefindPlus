@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) 2016, Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -13,6 +13,12 @@
  * either version 2 of the GNU General Public License ("GPL") or BSD license
  * ("BSD").
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #ifndef ZSTD_H
 #define ZSTD_H
@@ -105,7 +111,7 @@ static __attribute__((unused)) ZSTD_ErrorCode ZSTD_getErrorCode(
 /**
  * enum ZSTD_strategy - zstd compression search strategy
  *
- * From faster to stronger.
+ * from faster to stronger.
  */
 typedef enum {
 	ZSTD_fast,

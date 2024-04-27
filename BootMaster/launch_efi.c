@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2024 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -68,25 +68,26 @@
 #endif
 #endif
 
-#if defined (EFIX64)
-#define EFI_STUB_ARCH           0x8664
-#elif defined (EFI32)
-#define EFI_STUB_ARCH           0x014c
+#if defined (EFI32)
+#define EFI_STUB_ARCH           0x0000014c00004550
 #elif defined (EFIAARCH64)
-#define EFI_STUB_ARCH           0xaa64
+#define EFI_STUB_ARCH           0x0000aa6400004550
 #else
+#define EFI_STUB_ARCH           0x0000866400004550 /* Default: Assume EFIX64 */
 #endif
 
 #define APPLE_FAT_BINARY        0x0ef1fab9 /* ID for Apple "fat" binary */
 
 // Amount of a file to read to search for the EFI identifying signatures.
 // Signatures as far in as 3680 (0xE60) have been found, so read a bit more.
-#define EFI_HEADER_SIZE 3800
+#define EFI_HEADER_SIZE 4096
 
 CHAR16         *BootSelection = NULL;
 CHAR16         *ValidText     = L"Invalid Loader";
 
 extern BOOLEAN  IsBoot;
+extern BOOLEAN  ShimFound;
+extern BOOLEAN  SecureFlag;
 
 static
 VOID WarnSecureBootError(
@@ -100,7 +101,7 @@ VOID WarnSecureBootError(
     CHAR16 *MsgStrD;
     CHAR16 *MsgStrE;
 
-    if (Name) {
+    if (Name != NULL) {
         LoaderName = PoolPrint (L"'%s'", Name);
     }
     else {
@@ -114,7 +115,7 @@ VOID WarnSecureBootError(
     PrintUglyText (MsgStrA,                                        NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-    if (Verbose && secure_mode()) {
+    if (SecureFlag && Verbose) {
         MsgStrB = PoolPrint (
             L"This computer is configured with Secure Boot active but %s has failed validation",
             LoaderName
@@ -128,7 +129,7 @@ VOID WarnSecureBootError(
             LoaderName
         );
         MsgStrE = PoolPrint (
-            L" * Use a MOK utility to register %s ('Enroll its Hash') without signing it",
+            L" * Use a MOK utility to register %s ('Enroll Hash') without signing it",
             LoaderName
         );
 
@@ -173,7 +174,7 @@ BOOLEAN ConfirmReboot (
     #endif
 
     ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (!ConfirmRebootMenu) {
+    if (ConfirmRebootMenu == NULL) {
         // Early Return ... Fail
         return FALSE;
     }
@@ -183,7 +184,7 @@ BOOLEAN ConfirmReboot (
     ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
     ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
 
-    RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
+    RetVal = GetMenuEntryYesNo (&ConfirmRebootMenu);
     if (!RetVal) {
         FreeMenuScreen (&ConfirmRebootMenu);
 
@@ -191,13 +192,13 @@ BOOLEAN ConfirmReboot (
         return FALSE;
     }
 
-    DefaultEntry = 1;
+    DefaultEntry = 9999; // Use the Max Index
     Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    MenuExit = RunGenericMenu (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
+    MenuExit = DrawMenuScreen (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmReboot' from RunGenericMenu Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmReboot' from DrawMenuScreen Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -224,15 +225,15 @@ VOID DoEnableAndLockVMX(VOID) {
     UINT32 high_bits;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Attempt to Enable and Lock VMX");
     #endif
 
-    // is VMX active ?
+    // Is VMX active ?
     msr = 0x3a;
     low_bits = high_bits = 0;
     __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
 
-    // enable and lock vmx if not locked
+    // Enable and lock vmx if not locked
     if ((low_bits & 1) == 0) {
         high_bits = 0;
         low_bits = 0x05;
@@ -264,9 +265,9 @@ EFI_STATUS ApfsRecoveryBoot (
     UINTN       Size;
 
     // Set Relevant NVRAM Variable
+    DataNVRAM = NULL;
     InitNVRAM = L"RecoveryModeDisk";
     NameNVRAM = L"internet-recovery-mode";
-    DataNVRAM = NULL;
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
     Status = EfivarSetRaw (
         &AppleBootGuid, NameNVRAM,
@@ -386,9 +387,10 @@ BOOLEAN IsValidLoader (
     BOOLEAN          IsValid;
     BOOLEAN          AppleBinaryFat;
     BOOLEAN          AppleBinaryPlain;
-    UINTN            SignaturePosition;
-    UINTN            Size;
+    UINTN            SignaturePos;
+    UINTN            LoadedSize;
     CHAR8           *Header;
+    UINT64           PESig;
     EFI_FILE_HANDLE  FileHandle;
 
     #if REFIT_DEBUG > 0
@@ -396,7 +398,7 @@ BOOLEAN IsValidLoader (
     #endif
 
     Header = AllocatePool (EFI_HEADER_SIZE);
-    if (!Header) {
+    if (Header == NULL) {
         // DA-TAG: Set ValidText in REL for 'FALSE' outcome
         //         Allows accurate screen message
         ValidText = L"EFI File is *ASSUMED* to be Invalid";
@@ -448,10 +450,11 @@ BOOLEAN IsValidLoader (
             break;
         }
 
-        Size = EFI_HEADER_SIZE;
+        LoadedSize = EFI_HEADER_SIZE;
+
         Status = REFIT_CALL_3_WRAPPER(
             FileHandle->Read, FileHandle,
-            &Size, Header
+            &LoadedSize, Header
         );
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         if (EFI_ERROR(Status)) {
@@ -467,12 +470,11 @@ BOOLEAN IsValidLoader (
 
         // Search for indications that this is a gzipped file.
         // NB: This is currently only used for logging in RefindPlus
-        // and that all loaders at this point are considered invalid.
-        // GZipped loaders are mainly ARM related and focus is on X86_64
-        if (
+        // and that such loaders are considered invalid at this point.
+        // GZipped loaders are mainly for ARM but our focus is on x86.
+        if (GlobalConfig.GzippedLoaders &&
             Header[0] == (CHAR8) 0x1F   &&
-            Header[1] == (CHAR8) 0x8B   &&
-            GlobalConfig.GzippedLoaders
+            Header[1] == (CHAR8) 0x8B
         ) {
             #if REFIT_DEBUG > 0
             AbortReason = L":- 'GZipped Binary'";
@@ -485,17 +487,17 @@ BOOLEAN IsValidLoader (
         }
 
         // Search for standard PE32+ signature
-        SignaturePosition = *((UINT32 *) &Header[0x3c]);
+        PESig        = EFI_STUB_ARCH;
+        SignaturePos = *((UINT32 *) &Header[0x3c]);
         IsValid = (
-            Size == EFI_HEADER_SIZE                                     &&
-            SignaturePosition < (EFI_HEADER_SIZE - 8)                   &&
-            Header[0]                                    == 'M'         &&
-            Header[1]                                    == 'Z'         &&
-            Header[SignaturePosition]                    == 'P'         &&
-            Header[SignaturePosition + 1]                == 'E'         &&
-            Header[SignaturePosition + 2]                ==  0          &&
-            Header[SignaturePosition + 3]                ==  0          &&
-            *((UINT16 *) &Header[SignaturePosition + 4]) ==  EFI_STUB_ARCH
+            Header[0]   == 'M'                   &&
+            Header[1]   == 'Z'                   &&
+            LoadedSize  ==  EFI_HEADER_SIZE      &&
+            SignaturePos < (EFI_HEADER_SIZE - 8) &&
+            CompareMem(
+                &Header[SignaturePos],
+                &PESig, 6
+            ) == 0
         );
         if (IsValid) {
             //LoaderType = LOADER_TYPE_EFI;
@@ -506,7 +508,7 @@ BOOLEAN IsValidLoader (
 
         // Search for Apple's 'Fat' Binary signature
         IsValid = AppleBinaryFat = (
-            *((UINT32 *) &Header[0]) == APPLE_FAT_BINARY
+            *((UINT32 *) Header) == APPLE_FAT_BINARY
         );
         if (IsValid) {
             //LoaderType = LOADER_TYPE_EFI;
@@ -616,7 +618,7 @@ EFI_STATUS StartEFIImage (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
-    if (!Volume) {
+    if (Volume == NULL) {
         ReturnStatus = EFI_INVALID_PARAMETER;
 
         #if REFIT_DEBUG > 0
@@ -640,9 +642,11 @@ EFI_STATUS StartEFIImage (
     else {
         FullLoadOptions = StrDuplicate (LoadOptions);
 
-        // DA-TAG: The last space is also added by the EFI shell and is
+        // DA-TAG: The last space is also added by the uEFI shell and is
         //         significant when passing options to Apple's boot.efi
-        if (OSType == 'M') MergeStrings (&FullLoadOptions, L" ", 0);
+        if (OSType == 'M') {
+            MergeStrings (&FullLoadOptions, L" ", 0);
+        }
     }
 
     MsgStr = PoolPrint (
@@ -669,7 +673,7 @@ EFI_STATUS StartEFIImage (
     MY_FREE_POOL(MsgStr);
 
     do {
-        ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
+        ReturnStatus = Status = EFI_LOAD_ERROR;  // In case list is empty
 
         // DA-TAG: Investigate This
         //         Some EFIs crash if attempting to load drivers for an invalid
@@ -745,7 +749,7 @@ EFI_STATUS StartEFIImage (
         MY_FREE_POOL(DevicePath);
         ReturnStatus = Status;
 
-        if (secure_mode() && ShimLoaded()) {
+        if (SecureFlag && ShimFound) {
             // Load ourself into memory. This is a trick to work around a bug in
             // Shim 0.8, which hooks into gBS->LoadImage() and gBS->StartImage()
             // and then unregisters itself from the UEFI system table when its
@@ -777,7 +781,9 @@ EFI_STATUS StartEFIImage (
             );
         }
 
-        if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
+        if (Status == EFI_ACCESS_DENIED   ||
+            Status == EFI_SECURITY_VIOLATION
+        ) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"'%r' Returned by Secure Boot While Loading %s",
@@ -802,7 +808,9 @@ EFI_STATUS StartEFIImage (
                 &LoadedImageProtocol, (VOID **) &ChildLoadedImage
             );
             if (EFI_ERROR(Status)) {
-                CheckError (Status, L"while Getting LoadedImageProtocol Handle");
+                CheckError (
+                    Status, L"while Getting LoadedImageProtocol Handle"
+                );
 
                 // Unload and Bail Out
                 break;
@@ -817,8 +825,12 @@ EFI_STATUS StartEFIImage (
             //         Re-enable the EFI watchdog timer (optionally)
             //
             // Turn control over to the image
-            if ((GlobalConfig.WriteSystemdVars) &&
-                ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
+            if (GlobalConfig.WriteSystemdVars &&
+                (
+                    OSType == 'L' ||
+                    OSType == 'E' ||
+                    OSType == 'G'
+                )
             ) {
                 // Tell systemd what ESP RefindPlus used
                 EspGUID = GuidAsString (&(SelfVolume->PartGuid));
@@ -854,17 +866,25 @@ EFI_STATUS StartEFIImage (
                 MY_FREE_POOL(EspGUID);
             } // if write systemd UEFI variables
 
-            // DA-TAG: SyncAPFS items are typically no longer required if not loading drivers
-            //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
-            //         These may return to the RefindPlus screen but any issues will be trivial
-            if (!IsDriver) FreeSyncVolumes();
+            // DA-TAG: SyncAPFS items are typically no longer required if
+            //         not loading drivers.  "Typically" as users may put
+            //         uEFI Shell etc in the first row (loaders).
+            //         These may return to the RefindPlus screen
+            //         but any issues will be trivial.
+            if (!IsDriver) {
+                FreeSyncVolumes();
+            }
 
             // Close open file handles
             UninitRefitLib();
 
             #if REFIT_DEBUG > 0
-            ConstMsgStr = (!IsDriver) ? L"Child Image" : L"UEFI Driver";
-            if (!IsDriver) {
+            if (IsDriver) {
+                ConstMsgStr = L"UEFI Driver";
+            }
+            else {
+                ConstMsgStr = L"Child Image";
+
                 ALT_LOG(1, LOG_LINE_NORMAL,
                     L"Launch %s via Loader:- '%s'",
                     ConstMsgStr, ImageTitle
@@ -885,7 +905,10 @@ EFI_STATUS StartEFIImage (
             NewImageHandle = ChildImageHandle;
 
             #if REFIT_DEBUG > 0
-            MsgStrEx = PoolPrint (L"'%r' While Running %s", ReturnStatus, ConstMsgStr);
+            MsgStrEx = PoolPrint (
+                L"'%r' While Running %s",
+                ReturnStatus, ConstMsgStr
+            );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
             if (!IsDriver) {
                 LOG_MSG("%s", MsgStrEx);
@@ -898,37 +921,36 @@ EFI_STATUS StartEFIImage (
                 // Reset IsBoot if required
                 IsBoot = FALSE;
 
-                if (!IsDriver                       &&
-                    ReturnStatus == EFI_NOT_FOUND   &&
-                    FindSubStr (ImageTitle, L"gptsync")
-                ) {
+                MsgStrTmp = L"Returned from Child Image";
+                if (IsDriver) {
+                    MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
+                }
+                else {
+                    MsgStrEx = StrDuplicate (MsgStrTmp);
+
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_SET;
                     #endif
-                    SwitchToText (FALSE);
-                    PauseSeconds (4);
-                    PrintUglyText (L"                                            ", NEXTLINE);
-                    PrintUglyText (L"                                            ", NEXTLINE);
-                    PrintUglyText (L"  Applicable Disks *NOT* Found for GPTSync  ", NEXTLINE);
-                    PrintUglyText (L"           Returning to Main Menu           ", NEXTLINE);
-                    PrintUglyText (L"                                            ", NEXTLINE);
-                    PrintUglyText (L"                                            ", NEXTLINE);
-                    PauseSeconds (4);
+                    if (ReturnStatus == EFI_NOT_FOUND &&
+                        FindSubStr (ImageTitle, L"gptsync")
+                    ) {
+                        SwitchToText (FALSE);
+                        PauseSeconds (4);
+                        PrintUglyText (L"                                            ", NEXTLINE);
+                        PrintUglyText (L"                                            ", NEXTLINE);
+                        PrintUglyText (L"  Applicable Disks *NOT* Found for GPTSync  ", NEXTLINE);
+                        PrintUglyText (L"           Returning to Main Menu           ", NEXTLINE);
+                        PrintUglyText (L"                                            ", NEXTLINE);
+                        PrintUglyText (L"                                            ", NEXTLINE);
+                        PauseSeconds (4);
+                    }
                     #if REFIT_DEBUG > 0
                     MY_MUTELOGGER_OFF;
                     #endif
                 }
-                else {
-                    MsgStrTmp = L"Returned from Child Image";
-                    if (!IsDriver) {
-                        MsgStrEx = StrDuplicate (MsgStrTmp);
-                    }
-                    else {
-                        MsgStrEx = PoolPrint (L"%s:- '%s'", MsgStrTmp, ImageTitle);
-                    }
-                    CheckError (ReturnStatus, MsgStrEx);
-                    MY_FREE_POOL(MsgStrEx);
-                }
+
+                CheckError (ReturnStatus, MsgStrEx);
+                MY_FREE_POOL(MsgStrEx);
             }
 
             // DA-TAG: Exclude TianoCore - START
@@ -948,13 +970,17 @@ EFI_STATUS StartEFIImage (
 
         // DA-TAG: bailout_unload:
         // Unload the image ... we do not care if it works or not
-        if (!IsDriver) REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
+        if (!IsDriver) {
+            REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
+        }
     } while (0); // This 'loop' only runs once
 
     // DA-TAG: bailout:
     MY_FREE_POOL(FullLoadOptions);
 
-    if (!IsDriver) FinishExternalScreen();
+    if (!IsDriver) {
+        FinishExternalScreen();
+    }
 
     return ReturnStatus;
 } // EFI_STATUS StartEFIImage()
@@ -1096,9 +1122,7 @@ VOID RebootIntoLoader (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("\n\n");
-        #endif
 
-        #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -1200,7 +1224,10 @@ VOID StartTool (
 
     IsBoot     = FALSE;
     LoaderPath = Basename (Entry->LoaderPath);
-    MsgStr     = PoolPrint (L"Launch Child (Tool) Image:- '%s'", Entry->me.Title);
+    MsgStr     = PoolPrint (
+        L"Launch Child (Tool) Image:- '%s'",
+        Entry->me.Title
+    );
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1227,9 +1254,7 @@ VOID StartTool (
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
-            #endif
 
-            #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);

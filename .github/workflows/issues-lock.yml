@@ -8,18 +8,19 @@ on:
         required: true
         default: 'all'
   schedule:
-    - cron: '5 10 */5 * *'
+    - cron: '5 15 */5 * *'
 
 permissions:
   issues: write
   pull-requests: write
+  discussions: write
 
 concurrency:
   group: lock
 
 jobs:
 
-  # Lock Threads - https://github.com/dakanji/lock-threads
+  # Lock Threads - https://github.com/dessant/lock-threads
   lock:
     name: Lock Threads
     runs-on: ubuntu-20.04
@@ -43,7 +44,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Invalid/Not-Planned Issues
         uses: dessant/lock-threads@v5
@@ -61,7 +62,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Misc Issues
         uses: dessant/lock-threads@v5
@@ -80,7 +81,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dessant/lock-threads@v5
@@ -93,12 +94,13 @@ jobs:
           remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This item is being locked.
-            Trigger: Apparent Abandonment
+
+            Trigger: Apparent Abandonment.
           process-only: 'issues'
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Unclear Issues
         uses: dessant/lock-threads@v5
@@ -116,7 +118,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Inactive Issues
         uses: dessant/lock-threads@v5
@@ -136,7 +138,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Acknowledged/Known Issues
         uses: dessant/lock-threads@v5
@@ -155,7 +157,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 48s
+          sleep 96s
 
       - name: Lock Declined Pull Requests
         uses: dessant/lock-threads@v5

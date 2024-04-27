@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -55,22 +55,26 @@
 // icns loader module
 //
 
-EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconName, BOOLEAN BootLogo);
+EG_IMAGE * LoadOSIcon (
+    IN CHAR16  *OSIconName OPTIONAL,
+    IN CHAR16  *FallbackIconName,
+    IN BOOLEAN  BootLogo
+);
 
-EG_IMAGE * DummyImage(IN UINTN PixelSize);
+EG_IMAGE * DummyImage (IN UINTN PixelSize);
 
-EG_IMAGE * BuiltinIcon(IN UINTN Id);
+EG_IMAGE * BuiltinIcon (IN UINTN Id);
 
-#define BUILTIN_ICON_FUNC_ABOUT            (0)
-#define BUILTIN_ICON_FUNC_RESET            (1)
-#define BUILTIN_ICON_FUNC_SHUTDOWN         (2)
-#define BUILTIN_ICON_FUNC_EXIT             (3)
-#define BUILTIN_ICON_FUNC_FIRMWARE         (4)
-#define BUILTIN_ICON_FUNC_CSR_ROTATE       (5)
-#define BUILTIN_ICON_FUNC_HIDDEN           (6)
-#define BUILTIN_ICON_FUNC_INSTALL          (7)
-#define BUILTIN_ICON_FUNC_BOOTORDER        (8)
-#define BUILTIN_ICON_TOOL_SHELL            (9)
+#define BUILTIN_ICON_FUNC_ABOUT             (0)
+#define BUILTIN_ICON_FUNC_RESET             (1)
+#define BUILTIN_ICON_FUNC_SHUTDOWN          (2)
+#define BUILTIN_ICON_FUNC_EXIT              (3)
+#define BUILTIN_ICON_FUNC_FIRMWARE          (4)
+#define BUILTIN_ICON_FUNC_CSR_ROTATE        (5)
+#define BUILTIN_ICON_FUNC_HIDDEN            (6)
+#define BUILTIN_ICON_FUNC_INSTALL           (7)
+#define BUILTIN_ICON_FUNC_BOOTORDER         (8)
+#define BUILTIN_ICON_TOOL_SHELL             (9)
 #define BUILTIN_ICON_TOOL_PART             (10)
 #define BUILTIN_ICON_TOOL_RESCUE           (11)
 #define BUILTIN_ICON_TOOL_APPLE_RESCUE     (12)
@@ -87,6 +91,17 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_MOUSE                 (23)
 #define BUILTIN_ICON_TOOL_NVRAMCLEAN       (24)
 #define BUILTIN_ICON_COUNT                 (25)
+
+#define BASE_OS_ICON_MAC                    (0)
+#define BASE_OS_ICON_WIN                    (1)
+#define BASE_OS_ICON_WIN8                   (2)
+#define BASE_OS_ICON_LINUX                  (3)
+#define BASE_OS_ICON_LEGACY                 (4)
+#define BASE_OS_ICON_CLOVER                 (5)
+#define BASE_OS_ICON_OPENCORE               (6)
+#define BASE_OS_ICON_UNKNOWN                (7)
+#define BASE_OS_ICON_DUMMY                  (8)
+#define BASE_OS_ICON_COUNT                  (9)
 
 #endif
 

@@ -24,7 +24,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -228,7 +228,10 @@ HFSGetDescription(CICell ih, char *str, long strMaxLen)
   char *name;
   long flags, time;
 
-  if (HFSInitPartition(ih) == -1)  { return; }
+  if (HFSInitPartition(ih) == -1) {
+      return;
+  }
+
 
   // Fill some crucial data structures by side effect.
   dirIndex = 0;
@@ -441,7 +444,9 @@ long flags, time;
  char              *nodeBuf, *testKey, *entry;
 
 
-if (HFSInitPartition(ih) == -1)  { return; }
+if (HFSInitPartition(ih) == -1) {
+    return;
+}
 
 // Fill some crucial data structures by side effect.
 dirIndex = 0;

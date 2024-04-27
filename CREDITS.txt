@@ -1,7 +1,7 @@
 ===================================================================
-     RefindPlus is a modification of Roderick Smith's rEFInd
-          You can get rEFInd at http://refind.sf.net
-    Roderick Smith's credits for rEFInd are reproduced below:
+        RefindPlus is a fork of Roderick Smith's rEFInd
+          You can get rEFInd at https://refind.sf.net
+    Roderick Smith's credits for rEFInd are reproduced below
 ===================================================================
 
 Although I (Roderick W. Smith) am releasing rEFInd in its current form, the
@@ -21,9 +21,9 @@ Program (C source code and script) files:
 * The Debian project has made a version of rEFIt available that
   incorporates a number of patches, all attributed to Julien BLACHE
   (jblache@debian.org), to enable it to build properly on a Linux system.
-  It was this version of rEFIt that I used as a starting point for creating
-  rEFInd. See http://packages.debian.org/sid/refit for this version of the
-  program.
+  It was this version of rEFIt that I, Roderick W. Smith, used as a starting
+  point for creating rEFInd. See http://packages.debian.org/sid/refit for this
+  version of the program.
 
 * The filesystem drivers released with version 0.4.0 rely on a filesystem
   wrapper created by Christoph Phisterer. They then passed through Oracle's
@@ -70,9 +70,9 @@ Program (C source code and script) files:
   external ipxe.efi and ipxe_discover.efi programs.
 
 * Matthew J. Garrett (mjg@redhat.com) wrote the shim boot loader upon which
-  rEFInd relies for its Secure Boot functionality. I took a few shim
-  functions to help out on the rEFInd side, too; see the mok/mok.c source
-  code file.
+  rEFInd relies for its Secure Boot functionality. I, Roderick W. Smith,
+  took a few shim functions to help out on the rEFInd side, too;
+  see the mok/mok.c source code file.
 
 * James Bottomley (James.Bottomley@HansenPartnership.com) wrote the
   Linux Foundation's PreBootloader, which is an alternative to shim. I've
@@ -83,7 +83,7 @@ Program (C source code and script) files:
 * The PNG support, in the files libeg/lodepng.c and libeg/lodepng.h, is a
   slightly modified version of LodePNG (http://lodev.org/lodepng/) by Lode
   Vandevenne. (The libeg/lodepng_xtra.c file provides some necessary
-  ancillary and interface functions written by me.)
+  ancillary and interface functions written by me, Roderick W. Smith.)
 
 * Pavel Penev contributed the code to enable encrypting rEFInd's locally
   generated signing keys in refind-install.
@@ -103,16 +103,16 @@ Icons and graphics:
   have been scaled or altered in color from their original forms.
 
 * The Debian icon is based on the SVG available from
-  https://commons.wikimedia.org/wiki/File:Debian-OpenLogo.svg. I modified
-  it to fit the general style set by the AwOken icons.
+  https://commons.wikimedia.org/wiki/File:Debian-OpenLogo.svg. I,
+  Roderick W. Smith, modified it to fit the general style set by the AwOken icons.
 
 * The Elementary OS icon is based on the SVG available from
-  https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
-  it to fit the general style set by the AwOken icons.
+  https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I,
+  Roderick W. Smith, modified it to fit the general style set by the AwOken icons.
 
 * Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
   combination of the common refresh/reload icon and the search/find icon.
-  For version 0.9.3, I created a new icon from Erik's basic design concept,
-  but to match the AwOken flat-with-drop-shadow style.
+  For version 0.9.3, I, Roderick W. Smith, created a new icon from Erik's basic
+  design concept, but to match the AwOken flat-with-drop-shadow style.
 
-* Additional icons were created by me.
+* Additional icons were created by me, Roderick W. Smith.

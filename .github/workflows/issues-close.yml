@@ -39,7 +39,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 8s
+          sleep 32s
 
       - name: Handle Incomplete Issues
         uses: actions/stale@v9
@@ -48,9 +48,11 @@ jobs:
           close-issue-reason: 'completed'
           stale-issue-message: |-
             This item has been flagged for closure.
+
             Trigger: Missing Required Information
           close-issue-message: |-
             This item is being closed.
+
             Trigger: Missing Required Information
           days-before-stale: 0
           days-before-close: 3
@@ -62,7 +64,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 8s
+          sleep 32s
 
       - name: Handle No-Response Issues
         uses: actions/stale@v9
@@ -71,9 +73,11 @@ jobs:
           close-issue-reason: 'completed'
           stale-issue-message: |-
             This item has been flagged for closure.
+
             Trigger: Failure to Respond
           close-issue-message: |-
             This item is being closed.
+
             Trigger: Failure to Respond
           days-before-stale: 2
           days-before-close: 3
@@ -85,7 +89,7 @@ jobs:
 
       - name: Inter-Step-Pause
         run: |
-          sleep 8s
+          sleep 32s
 
       - name: Catchall Closer
         uses: actions/stale@v9
@@ -94,9 +98,11 @@ jobs:
           close-issue-reason: 'completed'
           stale-issue-message: |-
             This item has been flagged for closure.
+
             Trigger: Inactivity Threshold
           close-issue-message: |-
             This item is being closed.
+
             Trigger: Inactivity Threshold
           days-before-stale: 30
           days-before-close: 30

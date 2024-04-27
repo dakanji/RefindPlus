@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2021 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -234,7 +234,7 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Set Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -266,8 +266,10 @@ VOID InitScreen (VOID) {
         // DA-TAG: Just to make sure this is set
         AllowGraphicsMode = FALSE;
 
-        if (!GlobalConfig.DirectBoot && GlobalConfig.ScreensaverTime != -1) {
-            DrawScreenHeader (L"Select a Tool or Loader");
+        if (!GlobalConfig.DirectBoot &&
+            GlobalConfig.ScreensaverTime != -1
+        ) {
+            DrawScreenHeader (MAIN_MENU_NAME);
         }
     }
 
@@ -362,7 +364,7 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
+            L"Record *NEW* Current Text Mode Resolution as '%d x %d'",
             ScreenLongest, ScreenShortest
         );
         #endif
@@ -396,7 +398,7 @@ VOID SetupScreen (VOID) {
         if (GlobalConfig.TextOnly) {
             MsgStr = (GlobalConfig.DirectBoot)
                 ? L"'DirectBoot' is Active"
-                : L"Screen is in Text Only Mode";
+                : L"Running in Text Only Mode";
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
             LOG_MSG("Skip Title Banner Display ... %s", MsgStr);
         }
@@ -894,13 +896,20 @@ VOID DrawScreenHeader (
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (i = 0; i < 3; i++) {
         REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, i);
-        if (BlankLine) Print (BlankLine);
+        if (BlankLine) {
+            Print (BlankLine);
+        }
     }
 
     // Print header text
-    if (Title) {
+    if (Title != NULL) {
         REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
-        Print (L"%s", Title);
+        if (MyStriCmp (Title, MAIN_MENU_NAME)) {
+            Print (L"%s  -  Select a Loader or Tool", Title);
+        }
+        else {
+            Print (L"%s", Title);
+        }
     }
 
     // Reposition cursor
@@ -990,7 +999,7 @@ VOID PrintUglyText (
 ) {
     EG_PIXEL BGColor = COLOR_RED;
 
-    if (Text) {
+    if (Text != NULL) {
         if (AppleFirmware &&
             AllowGraphicsMode &&
             egIsGraphicsModeEnabled()
@@ -1222,17 +1231,6 @@ VOID HaltSeconds (
     MY_MUTELOGGER_OFF;
     #endif
 } // VOID HaltSeconds()
-
-#if REFIT_DEBUG > 0
-VOID DebugPause (VOID) {
-    // show console and wait for key
-    SwitchToText (FALSE);
-    PauseForKey();
-
-    // Reset error flag
-    haveError = FALSE;
-} // VOID DebugPause()
-#endif
 
 VOID RefitDeadLoop (VOID) {
     UINTN   index;
@@ -1499,9 +1497,7 @@ VOID BltClearScreen (
         #if REFIT_DEBUG > 0
         if (!IsBoot) {
             LOG_MSG("%s  - Clear Screen",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
-                    ? OffsetNext
-                    : L""
+                (GlobalConfig.LogLevel <= MAXLOGLEVEL) ? OffsetNext : L""
             );
         }
         #endif
@@ -1516,9 +1512,7 @@ VOID BltClearScreen (
         if (!Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Fetch Banner",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
-                    ? OffsetNext
-                    : L""
+                (GlobalConfig.LogLevel <= MAXLOGLEVEL) ? OffsetNext : L""
             );
             #endif
 
@@ -1526,7 +1520,7 @@ VOID BltClearScreen (
                 Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
 
-            if (Banner) {
+            if (Banner != NULL) {
                 MenuBackgroundPixel = Banner->PixelData[0];
 
                 // Using Custom Title Banner
@@ -1617,7 +1611,7 @@ VOID BltClearScreen (
                 }
             } // if/else Banner
 
-            if (Banner) {
+            if (Banner != NULL) {
                 // Compose on background
                 CompImage = egCreateFilledImage (
                     Banner->Width,
@@ -1626,7 +1620,7 @@ VOID BltClearScreen (
                     &MenuBackgroundPixel
                 );
 
-                if (CompImage) {
+                if (CompImage != NULL) {
                     egComposeImage (CompImage, Banner, 0, 0);
                     MY_FREE_IMAGE(Banner);
                     Banner = CompImage;
@@ -1634,7 +1628,7 @@ VOID BltClearScreen (
             }
         } // if !Banner
 
-        if (Banner) {
+        if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Scale Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1658,7 +1652,7 @@ VOID BltClearScreen (
                 NewBanner = NULL;
             }
 
-            if (NewBanner) {
+            if (NewBanner != NULL) {
                 // DA-TAG: See notes in 'egFreeImageQEMU'
                 MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
@@ -1685,7 +1679,7 @@ VOID BltClearScreen (
         }
 
         BREAD_CRUMB(L"%s:  2b 3", FuncTag);
-        if (Banner) {
+        if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Offer Banner",
                 (GlobalConfig.LogLevel <= MAXLOGLEVEL)
@@ -1814,7 +1808,7 @@ VOID BltImageCompositeBadge (
     }
 
     // place the top image
-    if ((TopImage != NULL) && (CompImage != NULL)) {
+    if (TopImage != NULL && CompImage != NULL) {
         CompWidth = TopImage->Width;
 
         if (CompWidth > TotalWidth) {

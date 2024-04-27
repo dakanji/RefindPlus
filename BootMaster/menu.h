@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -140,21 +140,21 @@ VOID AddSubMenuEntry (IN REFIT_MENU_SCREEN *SubScreen, IN REFIT_MENU_ENTRY *SubE
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine, IN BOOLEAN CanFree);
 VOID MainMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
-    IN SCROLL_STATE *State,
-    IN UINTN Function,
-    IN CHAR16 *ParamText
+    IN SCROLL_STATE      *State,
+    IN UINTN              Function,
+    IN CHAR16            *ParamText
 );
 VOID TextMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
-    IN SCROLL_STATE *State,
-    IN UINTN Function,
-    IN CHAR16 *ParamText
+    IN SCROLL_STATE      *State,
+    IN UINTN              Function,
+    IN CHAR16            *ParamText
 );
 VOID GraphicsMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
-    IN SCROLL_STATE *State,
-    IN UINTN Function,
-    IN CHAR16 *ParamText
+    IN SCROLL_STATE      *State,
+    IN UINTN              Function,
+    IN CHAR16            *ParamText
 );
 VOID DisplaySimpleMessage (
     CHAR16 *Message,
@@ -163,15 +163,11 @@ VOID DisplaySimpleMessage (
 
 UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
 UINTN WaitForInput (IN UINTN Timeout);
-UINTN RunGenericMenu (
+UINTN DrawMenuScreen (
     IN     REFIT_MENU_SCREEN   *Screen,
     IN     MENU_STYLE_FUNC      StyleFunc,
     IN OUT INTN                *DefaultEntryIndex,
     OUT    REFIT_MENU_ENTRY  **ChosenEntry
-);
-UINTN RunMenu (
-    IN REFIT_MENU_SCREEN  *Screen,
-    OUT REFIT_MENU_ENTRY **ChosenEntry
 );
 UINTN FindMainMenuItem (
     IN REFIT_MENU_SCREEN *Screen,
@@ -188,8 +184,8 @@ UINTN RunMainMenu (
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);
 CHAR16 * MenuExitInfo (IN UINTN MenuExit);
 
-BOOLEAN GetYesNoMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
-BOOLEAN GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
+BOOLEAN GetMenuEntryYesNo (IN OUT REFIT_MENU_SCREEN **Screen);
+BOOLEAN GetMenuEntryReturn (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN ConfirmSyncNVram (VOID);
 BOOLEAN ConfirmShutdown (VOID);
 BOOLEAN ConfirmRestart (VOID);

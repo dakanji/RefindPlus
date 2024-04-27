@@ -16,17 +16,17 @@
  * Modifications distributed under the preceding terms.
  */
 
+#include "screenmgt.h"
+#include "install.h"
 #include "global.h"
 #include "icns.h"
 #include "lib.h"
-#include "screenmgt.h"
-#include "install.h"
 #include "scan.h"
 #include "menu.h"
 #include "mystrings.h"
 #include "launch_efi.h"
-#include "../include/refit_call_wrapper.h"
 #include "../include/Handle.h"
+#include "../include/refit_call_wrapper.h"
 
 // A linked-list data structure intended to hold a list of all the ESPs
 // on the computer.
@@ -50,7 +50,7 @@ VOID DeleteESPList (
     ESP_LIST *Temp;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting List of ESPs");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Delete List of ESPs");
     #endif
 
     while (AllESPs != NULL) {
@@ -72,27 +72,24 @@ ESP_LIST * FindAllESPs (VOID) {
     EFI_GUID  ESPGuid = ESP_GUID_VALUE;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Searching for ESPs");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Search for ESPs");
     #endif
 
     AllESPs = NULL;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL
-            && (
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT32 ||
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT16 ||
-                Volumes[VolumeIndex]->FSType == FS_TYPE_FAT12
-            )
-            && GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid)
-            && !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)
+        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL             &&
+            GuidsAreEqual  (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
+            !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)
         ) {
             NewESP = AllocateZeroPool (sizeof (ESP_LIST));
-
-            if (NewESP != NULL) {
-                NewESP->Volume  = Volumes[VolumeIndex];
-                NewESP->NextESP = AllESPs;
-                AllESPs         = NewESP;
+            if (NewESP == NULL) {
+                DeleteESPList (AllESPs);
+                break;
             }
+
+            NewESP->Volume  = Volumes[VolumeIndex];
+            NewESP->NextESP = AllESPs;
+            AllESPs         = NewESP;
         }
     } // for
 
@@ -136,7 +133,7 @@ REFIT_VOLUME * PickOneESP (
     ALT_LOG(1, LOG_LINE_NORMAL, L"Prompt User to Select an ESP for Installation");
     #endif
 
-    if (!AllESPs) {
+    if (AllESPs == NULL) {
         DisplaySimpleMessage (L"No Eligible ESPs Found", NULL);
 
         #if REFIT_DEBUG > 0
@@ -180,19 +177,19 @@ REFIT_VOLUME * PickOneESP (
         FsName   = CurrentESP->Volume->FsName;
         VolName  = CurrentESP->Volume->VolName;
 
-        if (PartName && (StrLen (PartName) > 0) &&
-            FsName && (StrLen (FsName) > 0) &&
+        if (PartName != NULL && (StrLen (PartName) > 0) &&
+            FsName != NULL && (StrLen (FsName) > 0) &&
             !MyStriCmp (FsName, PartName)
         ) {
             MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
         }
-        else if (FsName && (StrLen (FsName) > 0)) {
+        else if (FsName != NULL && (StrLen (FsName) > 0)) {
             MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
         }
-        else if (PartName && (StrLen (PartName) > 0)) {
+        else if (PartName != NULL && (StrLen (PartName) > 0)) {
             MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
         }
-        else if (VolName && (StrLen (VolName) > 0)) {
+        else if (VolName != NULL && (StrLen (VolName) > 0)) {
             MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
         }
         else {
@@ -200,7 +197,7 @@ REFIT_VOLUME * PickOneESP (
         }
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Append '%s' to UI List of ESPs");
         #endif
 
         MenuEntryItem->Tag = TAG_RETURN;
@@ -215,17 +212,17 @@ REFIT_VOLUME * PickOneESP (
 
     do {
         ChosenVolume = NULL;
-        if (!GetReturnMenuEntry (&InstallMenu)) {
+        if (!GetMenuEntryReturn (&InstallMenu)) {
             break;
         }
 
         DefaultEntry = 9999; // Use the Max Index
         Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-        MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
+        MenuExit = DrawMenuScreen (InstallMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneESP' from RunGenericMenu Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneESP' from DrawMenuScreen Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -272,7 +269,7 @@ EFI_STATUS RenameFile (
     EFI_FILE_PROTOCOL  *FilePtr;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Rename '%s' to '%s'", OldName, NewName);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Rename '%s' to '%s'", OldName, NewName);
     #endif
 
     Status = REFIT_CALL_5_WRAPPER(
@@ -333,10 +330,10 @@ EFI_STATUS BackupOldFile (
     CHAR16              *NewName;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Backing '%s' Up", FileName);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Back '%s' Up", FileName);
     #endif
 
-    if ((BaseDir == NULL) || (FileName == NULL)) {
+    if (BaseDir == NULL || FileName == NULL) {
         return EFI_INVALID_PARAMETER;
     }
 
@@ -365,7 +362,8 @@ EFI_STATUS CreateDirectories (
     TheDir = NULL;
     FileName = NULL;
     Status = EFI_SUCCESS;
-    while (!EFI_ERROR(Status) &&
+    while (
+        !EFI_ERROR(Status) &&
         (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL
     ) {
         REFIT_CALL_5_WRAPPER(
@@ -560,7 +558,7 @@ EFI_STATUS CopyDrivers (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Scanning %d Volumes for Identifiable Filesystems",
+        L"Scan %d Volumes for Identifiable Filesystems",
         VolumesCount
     );
     #endif
@@ -590,7 +588,7 @@ EFI_STATUS CopyDrivers (
     for (i = 0; i < VolumesCount; i++) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Looking for Driver for Volume # %d, '%s'",
+            L"Look for Driver for Volume %02d:- '%s'",
             i, Volumes[i]->VolName
         );
         #endif
@@ -646,7 +644,7 @@ EFI_STATUS CopyDrivers (
             default: DriverName = NULL;
         } // switch
 
-        if (DriverName) {
+        if (DriverName != NULL) {
             SourceFileName = PoolPrint (
                 L"%s\\%s%s",
                 SourceDirName, DriverName,
@@ -659,7 +657,7 @@ EFI_STATUS CopyDrivers (
             );
 
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Copy Driver for %s", DriverName);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Copy Driver for %s", DriverName);
             #endif
 
             Status = CopyOneFile (
@@ -830,7 +828,7 @@ VOID CreateFallbackCSV (
             INST_REFINDPLUS_NAME
         );
 
-        if (Contents) {
+        if (Contents != NULL) {
             FileSize = StrSize (Contents);
             Status = REFIT_CALL_3_WRAPPER(
                 FilePtr->Write, FilePtr,
@@ -1011,7 +1009,7 @@ EFI_STATUS SetBootDefault (
 
         if (!IsAlreadyFirst) {
             NewBootOrder = AllocateZeroPool ((ListSize + 1) * sizeof (UINT16));
-            if (NewBootOrder) {
+            if (NewBootOrder != NULL) {
                 NewBootOrder[0] = BootNum;
 
                 j = 1;
@@ -1111,7 +1109,7 @@ EFI_STATUS ConstructBootEntry (
     *Size       = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
     *Entry      = Working = AllocateZeroPool (*Size);
 
-    if (!DevicePath || !(*Entry)) {
+    if (DevicePath == NULL || *Entry == NULL) {
         Status = EFI_OUT_OF_RESOURCES;
     }
     else {
@@ -1151,14 +1149,17 @@ VOID InstallRefindPlus (VOID) {
     ESP_LIST      *AllESPs;
     REFIT_VOLUME  *SelectedESP; // Do not free
 
-    AllESPs     = FindAllESPs();
-    SelectedESP = PickOneESP (AllESPs);
-
-    if (!SelectedESP) {
+    AllESPs = FindAllESPs();
+    if (AllESPs == NULL) {
         return;
     }
 
-    MsgStr = L"Installing RefindPlus to an ESP";
+    SelectedESP = PickOneESP (AllESPs);
+    if (SelectedESP == NULL) {
+        return;
+    }
+
+    MsgStr = L"Install RefindPlus to an ESP";
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
@@ -1233,7 +1234,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
 
     for (i = 0; i < ListSize; i++) {
         VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-        if (!VarName) {
+        if (VarName == NULL) {
             break;
         }
 
@@ -1244,7 +1245,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
 
         if (!EFI_ERROR(Status)) {
             L = AllocateZeroPool (sizeof (BOOT_ENTRY_LIST));
-            if (L) {
+            if (L != NULL) {
                L->BootEntry.BootNum = BootOrder[i];
                L->BootEntry.Options = (UINT32) Contents[0];
                L->BootEntry.Size    = (UINT16) Contents[2];
@@ -1317,7 +1318,7 @@ UINTN ConfirmBootOptionOperation (
     #endif
 
     ConfirmBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (!ConfirmBootOptionMenu) {
+    if (ConfirmBootOptionMenu == NULL) {
         // Early Return ... Fail
         return EFI_BOOT_OPTION_DO_NOTHING;
     }
@@ -1338,7 +1339,7 @@ UINTN ConfirmBootOptionOperation (
     }
     AddMenuInfoLine (ConfirmBootOptionMenu, CheckString, FALSE);
 
-    RetVal = GetYesNoMenuEntry (&ConfirmBootOptionMenu);
+    RetVal = GetMenuEntryYesNo (&ConfirmBootOptionMenu);
     if (!RetVal) {
         FreeMenuScreen (&ConfirmBootOptionMenu);
 
@@ -1346,13 +1347,13 @@ UINTN ConfirmBootOptionOperation (
         return EFI_BOOT_OPTION_DO_NOTHING;
     }
 
-    DefaultEntry = 1;
+    DefaultEntry = 9999; // Use the Max Index
     Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    MenuExit = RunGenericMenu (ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+    MenuExit = DrawMenuScreen (ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' from RunGenericMenu Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' from DrawMenuScreen Call on '%s'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1392,7 +1393,7 @@ UINTN PickOneBootOption (
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if (!Entries) {
+    if (Entries == NULL) {
         DisplaySimpleMessage (L"Firmware BootOrder List is Empty", NULL);
 
         // Early Return
@@ -1425,8 +1426,8 @@ UINTN PickOneBootOption (
     do {
         MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
         FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
-        if ((Filename != NULL) && (StrLen (Filename) > 0)) {
-            if ((Volume != NULL) && (Volume->VolName != NULL)) {
+        if (Filename != NULL && StrLen (Filename) > 0) {
+            if (Volume != NULL && Volume->VolName != NULL) {
                 MenuEntryItem->Title = PoolPrint (
                     L"Boot%04x - %s - %s on %s",
                     Entries->BootEntry.BootNum,
@@ -1463,17 +1464,17 @@ UINTN PickOneBootOption (
 
     do {
         Operation = EFI_BOOT_OPTION_DO_NOTHING;
-        if (!GetReturnMenuEntry (&PickBootOptionMenu)) {
+        if (!GetMenuEntryReturn (&PickBootOptionMenu)) {
             break;
         }
 
         DefaultEntry = 9999; // Use the Max Index
         Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-        MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+        MenuExit = DrawMenuScreen (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneBootOption' from RunGenericMenu Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneBootOption' from DrawMenuScreen Call on '%s'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1511,7 +1512,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
     CHAR16     *VarName;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries from Internal BootOrder List");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Delete Invalid Boot Entries from Internal BootOrder List");
     #endif
 
     Status = EfivarGetRaw (

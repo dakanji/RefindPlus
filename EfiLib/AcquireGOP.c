@@ -2,7 +2,7 @@
  * AcquireGOP.c
  * Installs GOP by reloading a copy of the GPU's OptionROM from RAM
  *
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2020 Joe van Tunen (joevt@shaw.ca)
  * Portions Copyright (c) 2004-2008 The Intel Corporation
  *
@@ -215,8 +215,13 @@ EFI_STATUS ReloadOptionROM (
         RomBarOffset = RomBarOffset + ImageSize;
         ImageIndex++;
 
-        if (EFI_ERROR(ReturnStatus)) ReturnStatus = Status;
-    } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN) RomBar) < RomSize));
+        if (EFI_ERROR(ReturnStatus)) {
+            ReturnStatus = Status;
+        }
+    } while (
+        (Pcir->Indicator & 0x80) == 0x00 &&
+        (RomBarOffset - (UINTN) RomBar) < RomSize
+    );
 
     return ReturnStatus;
 } // EFI_STATUS ReloadOptionROM()
@@ -271,7 +276,7 @@ EFI_STATUS ReissueGOP (VOID) {
             continue;
         }
 
-        if (!PciIo->RomImage || !PciIo->RomSize) {
+        if (PciIo->RomImage == NULL || PciIo->RomSize == 0) {
             if (EFI_ERROR(ReturnStatus)) {
                 ReturnStatus = EFI_NOT_FOUND;
             }
@@ -369,7 +374,7 @@ EFI_STATUS AcquireGOP (VOID) {
                 break;
             }
 
-            if (!PciIo->RomImage || !PciIo->RomSize) {
+            if (PciIo->RomImage == NULL || PciIo->RomSize == 0) {
                 if (EFI_ERROR(ReturnStatus)) {
                     ReturnStatus = EFI_NOT_FOUND;
                 }

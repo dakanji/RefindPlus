@@ -18,7 +18,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -97,7 +97,7 @@ CHAR8 * GetTiming (VOID) {
 
 	mTimingTxt[0] = '\0';
 
-	if (mMemLog && mMemLog->TscFreqSec != 0) {
+	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
 		CurrentTsc = AsmReadTsc();
 
 		dTStartMs = DivU64x64Remainder (
@@ -153,7 +153,9 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     static BOOLEAN  SkipLog = FALSE;
 
     // Return if Logging is Disabled.
-    if (SkipLog) return EFI_NOT_READY;
+    if (SkipLog) {
+        return EFI_NOT_READY;
+    }
 
     // Try to use existing MEM_LOG.
     Status = REFIT_CALL_3_WRAPPER(
@@ -174,7 +176,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
     // Set up and publish new MEM_LOG.
     mMemLog = AllocateZeroPool ( sizeof (MEM_LOG) );
-    if (!mMemLog) {
+    if (mMemLog == NULL) {
         // Disable logging.
         SkipLog = TRUE;
 
@@ -183,7 +185,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     }
 
     mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
-    if (!mMemLog->Buffer) {
+    if (mMemLog->Buffer == NULL) {
         MY_FREE_POOL(mMemLog);
 
         // Disable logging.
@@ -222,7 +224,8 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         (
             PciRead8 (
                 PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)
-            ) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0
+            ) & B_ICH_LPC_ACPI_CNT_ACPI_EN
+        ) == 0
     ) {
         TimerAddr = 0;
 
@@ -238,7 +241,8 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
                 PciRead16 (
                     PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE)
                 )
-            ) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
+            ) & B_ICH_LPC_ACPI_BASE_BAR
+        ) + R_ACPI_PM1_TMR;
 
         if (TimerAddr < 9) {
             TimerAddr = 0;
@@ -377,10 +381,14 @@ VOID EFIAPI MemLogVA (
     UINTN           DataWritten;
     CHAR8           *LastMessage;
 
-    if (!Format) return;
+    if (Format == NULL) {
+        return;
+    }
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) return;
+    if (EFI_ERROR(Status)) {
+        return;
+    }
 
     // Check if buffer can accept MEM_LOG_MAX_LINE_SIZE chars.
     // Increase buffer if not.
@@ -398,7 +406,9 @@ VOID EFIAPI MemLogVA (
             mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE,
             mMemLog->Buffer
         );
-        if (!mMemLog->Buffer) return;
+        if (mMemLog->Buffer == NULL) {
+            return;
+        }
 
         mMemLog->BufferSize += MEM_LOG_INITIAL_SIZE;
         mMemLog->Cursor = mMemLog->Buffer + Offset;
@@ -430,7 +440,9 @@ VOID EFIAPI MemLogVA (
     mMemLog->Cursor += DataWritten;
 
     // Pass this last message to callback if defined.
-    if (mMemLog->Callback) mMemLog->Callback(DebugMode, LastMessage);
+    if (mMemLog->Callback) {
+        mMemLog->Callback(DebugMode, LastMessage);
+    }
 
     // Also write to standard debug device.
     DebugPrint (DEBUG_INFO, LastMessage);
@@ -455,7 +467,10 @@ VOID EFIAPI MemLog (
 ) {
     VA_LIST           Marker;
 
-    if (!Format) return;
+
+    if (!Format) {
+        return;
+    }
 
     VA_START(Marker, Format);
     MemLogVA (Timing, DebugMode, Format, Marker);
@@ -470,9 +485,11 @@ CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) return NULL;
+    if (EFI_ERROR(Status)) {
+        return NULL;
+    }
 
-    return (mMemLog) ? mMemLog->Buffer : NULL;
+    return (mMemLog != NULL) ? mMemLog->Buffer : NULL;
 }
 
 
@@ -483,9 +500,11 @@ UINTN EFIAPI GetMemLogLen (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) return 0;
+    if (EFI_ERROR(Status)) {
+        return 0;
+    }
 
-    return (mMemLog) ? mMemLog->Cursor - mMemLog->Buffer : 0;
+    return (mMemLog != NULL) ? mMemLog->Cursor - mMemLog->Buffer : 0;
 }
 
 /**
@@ -497,7 +516,9 @@ VOID EFIAPI SetMemLogCallback (
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) return;
+    if (EFI_ERROR(Status)) {
+        return;
+    }
 
     mMemLog->Callback = Callback;
 }
@@ -509,7 +530,9 @@ UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR(Status)) return 0;
+    if (EFI_ERROR(Status)) {
+        return 0;
+    }
 
     return mMemLog->TscFreqSec;
 }

@@ -97,7 +97,9 @@ VOID egPrepareFont (VOID) {
             BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE, &TextFontColor);
         }
     }
-    if (BaseFontImage != NULL) FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
+    if (BaseFontImage != NULL) {
+        FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
+    }
 } // static VOID egPrepareFont();
 
 UINTN egGetFontHeight (VOID) {
@@ -115,7 +117,9 @@ UINTN egComputeTextWidth (
     UINTN Width = 0;
 
     egPrepareFont();
-    if (Text != NULL) Width = FontCellWidth * StrLen (Text);
+    if (Text != NULL) {
+        Width = FontCellWidth * StrLen (Text);
+    }
 
     return Width;
 } // UINTN egComputeTextWidth()
@@ -127,8 +131,12 @@ VOID egMeasureText (
 ) {
     egPrepareFont();
 
-    if (Height != NULL) *Height = BaseFontImage->Height;
-    if (Width  != NULL) *Width  = StrLen (Text) * FontCellWidth;
+    if (Height != NULL) {
+        *Height = BaseFontImage->Height;
+    }
+    if (Width != NULL) {
+        *Width  = StrLen (Text) * FontCellWidth;
+    }
 } // VOID egMeasureText()
 
 VOID egRenderText (
@@ -141,6 +149,7 @@ VOID egRenderText (
     EG_IMAGE        *FontImage;
     EG_PIXEL        *BufferPtr;
     EG_PIXEL        *FontPixelData;
+    EG_PIXEL         OurFont = {0xFF, 0xFF, 0xFF, 0};
     UINTN            BufferLineOffset;
     UINTN            FontLineOffset;
     UINTN            TextLength;
@@ -150,7 +159,9 @@ VOID egRenderText (
     static EG_IMAGE *LightFontImage = NULL;
 
     // Early Return if nothing was passed
-    if (Text == NULL) return;
+    if (Text == NULL) {
+        return;
+    }
 
     egPrepareFont();
 
@@ -162,17 +173,22 @@ VOID egRenderText (
     }
 
     if (BGBrightness >= 128) {
-        if (DarkFontImage == NULL) DarkFontImage = egCopyImage (BaseFontImage);
-        if (DarkFontImage == NULL) return;
+        if (DarkFontImage == NULL) {
+            DarkFontImage = egCopyImage (BaseFontImage);
+        }
+        if (DarkFontImage == NULL) {
+            return;
+        }
 
         FontImage = DarkFontImage;
     }
     else {
         if (LightFontImage == NULL) {
             LightFontImage = egCopyImage (BaseFontImage);
-            if (LightFontImage == NULL) return;
+            if (LightFontImage == NULL) {
+                return;
+            }
 
-            EG_PIXEL OurFont = {0xFF, 0xFF, 0xFF, 0};
             if (DefaultBanner || GlobalConfig.HelpText) {
                 OurFont = FontComplement();
             }

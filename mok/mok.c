@@ -43,6 +43,12 @@
  * (http://tianocore.sf.net) and are Copyright 2009-2012 Intel
  * Corporation.
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #include "global.h"
 #include "mok.h"
@@ -50,88 +56,107 @@
 #include "../BootMaster/lib.h"
 #include "../BootMaster/screenmgt.h"
 
+BOOLEAN ShimFound  = FALSE;
+BOOLEAN SecureFlag = FALSE;
 
 /*
  * Check whether we are in Secure Boot and user mode
  */
 BOOLEAN secure_mode (VOID) {
-    EFI_STATUS  status;
-    EFI_GUID    global_var = EFI_GLOBAL_VARIABLE;
-    UINTN       charsize;
-    UINT8      *sb        = NULL;
-    UINT8      *setupmode = NULL;
+    EFI_STATUS  Status;
+    EFI_GUID    GlobalVar = EFI_GLOBAL_VARIABLE;
+    UINTN       CharSize;
+    UINT8      *SetupMode = NULL;
+    UINT8      *Sec       = NULL;
 
     static BOOLEAN DoneOnce   = FALSE;
-    static BOOLEAN SecureMode = FALSE;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
+
 
     if (DoneOnce) {
-        return SecureMode;
+        return SecureFlag;
     }
 
-    status = EfivarGetRaw (
-        &global_var, L"SecureBoot",
-        (VOID **) &sb, &charsize
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    Status = EfivarGetRaw (
+        &GlobalVar, L"SecureBoot",
+        (VOID **) &Sec, &CharSize
     );
-    /* FIXME - more paranoia here? */
-    if (status != EFI_SUCCESS ||
-        charsize != sizeof (CHAR8) ||
-        *sb != 1
+
+    /* FIXME - More paranoia here? */
+    if (*Sec != 1         ||
+        EFI_ERROR(Status) ||
+        CharSize != sizeof (CHAR8)
     ) {
-        SecureMode = FALSE;
+        SecureFlag = FALSE;
     }
     else {
-        status = EfivarGetRaw (
-            &global_var, L"SetupMode",
-            (VOID **) &setupmode, &charsize
+        Status = EfivarGetRaw (
+            &GlobalVar, L"SetupMode",
+            (VOID **) &SetupMode, &CharSize
         );
-        if (status == EFI_SUCCESS &&
-            charsize == sizeof (CHAR8) &&
-            *setupmode == 1
+        if (*SetupMode == 1    &&
+            !EFI_ERROR(Status) &&
+            CharSize == sizeof (CHAR8)
         ) {
-            SecureMode = FALSE;
+            SecureFlag = FALSE;
         }
         else {
-            SecureMode = TRUE;
+            SecureFlag = TRUE;
         }
     }
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
 
     DoneOnce = TRUE;
 
-    MY_FREE_POOL(sb);
-    MY_FREE_POOL(setupmode);
+    MY_FREE_POOL(Sec);
+    MY_FREE_POOL(SetupMode);
 
-    return SecureMode;
+    return SecureFlag;
 } // secure_mode()
 
 // Returns TRUE if the shim program is available to verify binaries,
 // FALSE if not
 BOOLEAN ShimLoaded (VOID) {
+    EFI_STATUS   Status;
     SHIM_LOCK   *shim_lock;
-    EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
+    EFI_GUID     ShimLockGuid = SHIM_LOCK_GUID;
 
-    return (
-        REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol, &ShimLockGuid,
-            NULL, (VOID **) &shim_lock
-        ) == EFI_SUCCESS
+
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->LocateProtocol, &ShimLockGuid,
+        NULL, (VOID **) &shim_lock
     );
+
+    ShimFound = (!EFI_ERROR(Status)) ? TRUE : FALSE;
+
+    return ShimFound;
 } // ShimLoaded()
 
 // The following is based on the grub_linuxefi_secure_validate() function in Fedora's
 // version of GRUB 2.
 // Returns TRUE if the specified data is validated by Shim's MOK, FALSE otherwise
 BOOLEAN ShimValidate (
-    VOID *data,
-    UINT32 size
+    VOID   *data,
+    UINT32  size
 ) {
     SHIM_LOCK   *shim_lock;
     EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
-    if ((data != NULL) &&
-        (REFIT_CALL_3_WRAPPER(
-            gBS->LocateProtocol, &ShimLockGuid,
-            NULL, (VOID **) &shim_lock
-        ) == EFI_SUCCESS)
+    if (data != NULL &&
+        (
+            REFIT_CALL_3_WRAPPER(
+                gBS->LocateProtocol, &ShimLockGuid,
+                NULL, (VOID **) &shim_lock
+            ) == EFI_SUCCESS
+        )
     ) {
         if (!shim_lock) {
             return FALSE;

@@ -31,7 +31,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -72,7 +72,7 @@
 #define BTRFS_DEFAULT_BLOCK_SIZE 4096
 #define GRUB_BTRFS_SIGNATURE "_BHRfS_M"
 
-/* From http://www.oberhumer.com/opensource/lzo/lzofaq.php
+/* from http://www.oberhumer.com/opensource/lzo/lzofaq.php
  * LZO will expand incompressible data by a little amount. I still haven't
  * computed the exact values, but I suggest using these formulas for
  * a worst-case expansion calculation:
@@ -445,8 +445,7 @@ static fsw_status_t btrfs_read_superblock (struct fsw_volume *vol, struct btrfs_
             fsw_block_release(vol, superblock_pos[i], buffer);
             break;
         }
-        if (i == 0 || fsw_u64_le_swap (sb->generation) > fsw_u64_le_swap (sb_out->generation))
-        {
+        if (i == 0 || fsw_u64_le_swap (sb->generation) > fsw_u64_le_swap (sb_out->generation)) {
             fsw_memcpy (sb_out, sb, sizeof (*sb));
             total_blocks = fsw_u64_le_swap (sb->this_device.size) >> 12;
         }
@@ -1297,7 +1296,9 @@ begin_direct_read:
         size -= csize;
         buf = (uint8_t *) buf + csize;
         addr += csize;
-        if (challoc) FreePool (chunk);
+        if (challoc) {
+            FreePool (chunk);
+        }
         challoc = 0;
 	if(stripe_table)
 	    fsw_free(stripe_table);

@@ -614,7 +614,7 @@ fsw_status_t fsw_dnode_lookup_path(struct fsw_dnode *dno,
 
             } else if (fsw_streq_cstr(&lookup_name, "..")) {   // parent directory
                 if (dno->parent == NULL) {
-                    // We cannot go up from the root directory. Caution: Certain apps like the EFI shell
+                    // We cannot go up from the root directory. Caution: Certain apps like the uEFI shell
                     // rely on this behaviour!
                     status = FSW_NOT_FOUND;
                     goto errorexit;

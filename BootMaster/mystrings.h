@@ -24,7 +24,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -47,47 +47,86 @@ typedef struct _string_list {
 
 // DA-TAG: See here for more if needed:
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
-BOOLEAN FindSubStr (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
-BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
-BOOLEAN MyStriCmp (IN const CHAR16 *String1, IN const CHAR16 *String2);
-BOOLEAN TruncateString (CHAR16 *TheString, UINTN Limit);
-BOOLEAN LimitStringLength (CHAR16 *TheString, UINTN Limit);
-BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 *List);
-BOOLEAN IsIn (IN CHAR16 *SmallString, IN CHAR16 *List);
-BOOLEAN IsListItem (IN CHAR16 *SmallString, IN CHAR16 *List);
-BOOLEAN IsInSubstring (IN CHAR16 *BigString, IN CHAR16 *List);
-BOOLEAN IsListItemSubstringIn (IN CHAR16 *BigString, IN CHAR16 *List);
 BOOLEAN IsValidHex (CHAR16 *Input);
 BOOLEAN IsGuid (CHAR16 *UnknownString);
+BOOLEAN IsIn (IN CHAR16 *SmallString, IN CHAR16 *List);
+BOOLEAN TruncateString (CHAR16 *TheString, UINTN Limit);
+BOOLEAN LimitStringLength (CHAR16 *TheString, UINTN Limit);
+BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
+BOOLEAN IsListItem (IN CHAR16 *SmallString, IN CHAR16 *List);
+BOOLEAN IsInSubstring (IN CHAR16 *BigString, IN CHAR16 *List);
+BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 *List);
+BOOLEAN FindSubStr (
+    IN CHAR16 *RawString,
+    IN CHAR16 *RawStrCharSet
+);
+BOOLEAN IsListItemSubstringIn (
+    IN CHAR16 *BigString,
+    IN CHAR16 *List
+);
 BOOLEAN ReplaceSubstring (
     IN OUT CHAR16 **MainString,
     IN     CHAR16  *SearchString,
     IN     CHAR16  *ReplString
 );
+BOOLEAN MyStriCmp (
+    IN const CHAR16 *String1,
+    IN const CHAR16 *String2
+);
 BOOLEAN MyStrBegins (
-    IN CHAR16 *FirstString,
-    IN CHAR16 *SecondString
+    IN const CHAR16 *String1,
+    IN const CHAR16 *String2
 );
 
 CHAR16 * GetTimeString (VOID);
-CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
 CHAR16 * FindNumbers (IN CHAR16 *InString);
 CHAR16 * GuidAsString (EFI_GUID *GuidData);
-CHAR16 * FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
 CHAR16 * SanitiseString (CHAR16 *InString);
+CHAR16 * MyStrStr (
+    IN CHAR16 *String,
+    IN CHAR16 *StrCharSet
+);
+CHAR16 * FindCommaDelimited (
+    IN CHAR16 *InString,
+    IN UINTN   Index
+);
 CHAR16 * MyAsciiStrCopyToUnicode (
     IN  CHAR8   *AsciiString,
     IN  UINTN    Length
 );
+CHAR16 * GetSubStrAfter (
+    IN CHAR16 *Delimiter,
+    IN CHAR16 *String
+);
 
+VOID ToUpper (IN OUT CHAR16 *MyString);
+VOID ToLower (IN OUT CHAR16 *MyString);
 VOID DeleteStringList (STRING_LIST *StringList);
-VOID ToUpper (CHAR16 *MyString);
-VOID ToLower (CHAR16 * MyString);
-VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
-VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, IN CHAR16 AddChar);
-VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
-VOID MergeUniqueWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
-VOID MergeUniqueItems (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
+VOID MergeWords (
+    IN OUT CHAR16 **MergeTo,
+    IN     CHAR16  *InString,
+    IN     CHAR16   AddChar
+);
+VOID MergeUniqueWords (
+    IN OUT CHAR16 **MergeTo,
+    IN     CHAR16  *InString,
+    IN     CHAR16   AddChar
+);
+VOID MergeUniqueItems (
+    IN OUT CHAR16 **MergeTo,
+    IN     CHAR16  *InString,
+    IN     CHAR16   AddChar
+);
+VOID MergeStrings (
+    IN OUT CHAR16 **First,
+    IN     CHAR16  *Second,
+    IN     CHAR16   AddChar
+);
+VOID MergeUniqueStrings (
+    IN OUT CHAR16 **First,
+    IN     CHAR16  *Second,
+    IN     CHAR16   AddChar
+);
 VOID MyUnicodeFilterString (
     IN OUT CHAR16   *String,
     IN     BOOLEAN   SingleLine

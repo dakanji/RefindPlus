@@ -436,7 +436,7 @@ fsw_efi_DriverBinding_Start(
  * call for the FSW core.
  *
  * We assume that all file handles on the volume have been closed before
- * the driver is stopped. At least with the EFI shell, that is actually the
+ * the driver is stopped. At least with the uEFI shell, that is actually the
  * case; it closes all file handles between commands.
  */
 

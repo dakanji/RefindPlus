@@ -16,7 +16,7 @@
  */
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -413,7 +413,7 @@ EFI_STATUS BdsCreateLegacyBootOption (
     Buffer = NULL;
 
     NewBootOrderList = AllocateZeroPool (*BootOrderListSize + sizeof (UINT16));
-    if (NULL == NewBootOrderList) {
+    if (NewBootOrderList == NULL) {
         MY_FREE_POOL(NewBbsDevPathNode);
         MY_FREE_POOL(CurrentBbsDevPath);
 

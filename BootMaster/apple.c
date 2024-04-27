@@ -316,19 +316,19 @@ VOID RotateCsrValue (
     if (TargetCsr == 0) {
         // Set target CSR value to NULL
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Clearing SIP to 'NULL' from '0x%04x'",
+            L"Clear SIP to 'NULL' from '0x%04x'",
             CurrentValue
         );
     }
     else if (CurrentValue == 0) {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' from 'NULL'",
+            L"Set SIP to '0x%04x' from 'NULL'",
             TargetCsr
         );
     }
     else {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Setting SIP to '0x%04x' from '0x%04x'",
+            L"Set SIP to '0x%04x' from '0x%04x'",
             CurrentValue, TargetCsr
         );
     }
@@ -448,10 +448,10 @@ typedef struct EfiAppleSetOsInterface {
     EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
 } EfiAppleSetOsInterface;
 
-// Function to tell the firmware that macOS is being launched. This is
-// required to work around problems on some Macs that do not fully
-// initialize some hardware (especially video displays) when third-party
-// OSes are launched in EFI mode.
+// Function to tell the firmware that macOS is being launched.
+// This is required to work around problems on some Macs that
+// do not fully initialize hardware such as video displays
+// when third-party OSes are launched in EFI mode.
 EFI_STATUS SetAppleOSInfo (VOID) {
     EFI_STATUS               Status;
     EFI_GUID                 apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
@@ -459,27 +459,16 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     CHAR8                   *MacVersionStr      = NULL;
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
-    if (GlobalConfig.SpoofOSXVersion == NULL) {
-        // Early Return ... Treat as success
-        return EFI_SUCCESS;
-    }
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &apple_set_os_guid,
         NULL, (VOID **) &SetOs
     );
-    if (EFI_ERROR(Status) || SetOs == NULL) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Not a Mac ... Not Setting macOS Information"
-        );
-        #endif
-
-        // Early Return ... Treat as success
-        return EFI_SUCCESS;
-    }
-
-    if (SetOs->Version == 0) {
+    if (
+        EFI_ERROR(Status) ||
+        SetOs == NULL     ||
+        SetOs->Version == 0
+    ) {
         // Early Return ... Treat as success
         return EFI_SUCCESS;
     }
@@ -510,7 +499,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     #endif
 
     UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
-    Status = REFIT_CALL_1_WRAPPER(SetOs->SetOsVersion, MacVersionStr );
+    Status = REFIT_CALL_1_WRAPPER(SetOs->SetOsVersion, MacVersionStr);
 
     MY_FREE_POOL(MacVersionStr);
     MY_FREE_POOL(AppleVersionOS);
@@ -521,7 +510,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     }
 
     if (SetOs->Version >= 2) {
-        REFIT_CALL_1_WRAPPER(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc." );
+        REFIT_CALL_1_WRAPPER(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
     }
 
     return EFI_SUCCESS;
@@ -960,13 +949,13 @@ EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
         return EFI_UNSUPPORTED;
     }
 
-    if (!This            ||
-        !FramebufferBase ||
-        !FramebufferSize ||
-        !ScreenRowBytes  ||
-        !ScreenWidth     ||
-        !ScreenHeight    ||
-        !ScreenDepth
+    if (This            == NULL ||
+        FramebufferBase == NULL ||
+        FramebufferSize ==    0 ||
+        ScreenRowBytes  ==    0 ||
+        ScreenWidth     ==    0 ||
+        ScreenHeight    ==    0 ||
+        ScreenDepth     ==    0
     ) {
         return EFI_INVALID_PARAMETER;
     }
@@ -975,15 +964,12 @@ EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
         gBS->HandleProtocol, gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR (Status) || GraphicsOutput->Mode->Info == NULL) {
         return EFI_UNSUPPORTED;
     }
 
     Mode = GraphicsOutput->Mode;
     Info = Mode->Info;
-    if (Info == NULL) {
-        return EFI_UNSUPPORTED;
-    }
 
     // DA-TAG: This is a bit inaccurate as it assumes 32-bit BPP but will do for most cases.
     *FramebufferBase = Mode->FrameBufferBase;
@@ -998,7 +984,6 @@ EFI_STATUS EFIAPI RefitAppleFramebufferGetInfo (
 
 VOID RefitAppleFbInfoInstallProtocol (VOID) {
     EFI_STATUS                       Status;
-    BOOLEAN                          ProcessThis;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL *Protocol;
 
     #if REFIT_DEBUG > 0
@@ -1012,18 +997,13 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
     };
 
 
-    ProcessThis = (
-        AppleFirmware        &&
-        GlobalConfig.SetAppleFB
-    );
-
     #if REFIT_DEBUG > 0
     MsgStr = L"Update Base AppleFramebuffers";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
 
-    if (!ProcessThis) {
+    if (!GlobalConfig.SetAppleFB) {
         Status = EFI_NOT_STARTED;
     }
     else {
@@ -1031,26 +1011,26 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
             gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
             NULL, (VOID *) &Protocol
         );
-    }
 
-    #if REFIT_DEBUG > 0
-    if (EFI_ERROR (Status)) {
-        MsgStr = L"Get Old AppleFramebuffers";
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-        LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
-    }
-    #endif
+        #if REFIT_DEBUG > 0
+        if (EFI_ERROR (Status)) {
+            MsgStr = L"Get Old AppleFramebuffers";
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+            LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
+        }
+        #endif
 
-    if (!EFI_ERROR (Status)) {
-        Status = EFI_ALREADY_STARTED;
-    }
-    else if (ProcessThis) {
-        UninitRefitLib();
-        Status = REFIT_CALL_4_WRAPPER(
-            gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
-            &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
-        );
-        ReinitRefitLib();
+        if (!EFI_ERROR (Status)) {
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            UninitRefitLib();
+            Status = REFIT_CALL_4_WRAPPER(
+                gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+                &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
+            );
+            ReinitRefitLib();
+        }
     }
 
     #if REFIT_DEBUG > 0

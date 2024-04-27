@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2020 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -171,7 +171,7 @@ CHAR16 * FindInitrd (
             }
 
             BREAD_CRUMB(L"%s:  8a 2a 3", FuncTag);
-            if (CurrentInitrdName) {
+            if (CurrentInitrdName != NULL) {
                 BREAD_CRUMB(L"%s:  8a 2a 3a 1", FuncTag);
                 CurrentInitrdName->Value = PoolPrint (L"%s%s", Path, DirEntry->FileName);
 
@@ -197,11 +197,11 @@ CHAR16 * FindInitrd (
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
     InitrdName = NULL;
-    if (InitrdNames) {
+    if (InitrdNames != NULL) {
         BREAD_CRUMB(L"%s:  9a 1", FuncTag);
         if (InitrdNames->Next == NULL) {
             BREAD_CRUMB(L"%s:  9a 1a 1", FuncTag);
-            InitrdName = StrDuplicate (InitrdNames -> Value);
+            InitrdName = StrDuplicate (InitrdNames->Value);
         }
         else {
             BREAD_CRUMB(L"%s:  9b 1", FuncTag);
@@ -240,7 +240,7 @@ CHAR16 * FindInitrd (
             }
 
             BREAD_CRUMB(L"%s:  9b 3", FuncTag);
-            if (MaxSharedInitrd) {
+            if (MaxSharedInitrd != NULL) {
                 BREAD_CRUMB(L"%s:  9b 3a 1", FuncTag);
                 InitrdName = StrDuplicate (MaxSharedInitrd->Value);
             }
@@ -357,12 +357,12 @@ CHAR16 * GetMainLinuxOptions (
     InitrdName = FindInitrd (LoaderPath, Volume);
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (InitrdName) {
+    if (InitrdName != NULL) {
         BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         KernelVersion = FindNumbers (InitrdName);
 
         BREAD_CRUMB(L"%s:  3a 2", FuncTag);
-        if (Options) {
+        if (Options != NULL) {
             BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
             ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
             BREAD_CRUMB(L"%s:  3a 2a 2", FuncTag);
@@ -372,7 +372,7 @@ CHAR16 * GetMainLinuxOptions (
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
     FullOptions = NULL;
-    if (InitrdName || Options) {
+    if (InitrdName != NULL || Options != NULL) {
         BREAD_CRUMB(L"%s:  4a 1", FuncTag);
         FullOptions = AddInitrdToOptions (Options, InitrdName);
         BREAD_CRUMB(L"%s:  4a 2", FuncTag);
@@ -405,8 +405,10 @@ VOID ParseReleaseFile (
     CHAR16      **TokenList;
     REFIT_FILE    File;
 
-    if ((Volume == NULL) || (FileName == NULL) ||
-        (OSIconName == NULL) || (*OSIconName == NULL)
+    if (Volume == NULL ||
+        FileName == NULL ||
+        OSIconName == NULL ||
+        *OSIconName == NULL
     ) {
         return;
     }
@@ -449,7 +451,7 @@ VOID GuessLinuxDistribution (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
     BREAD_CRUMB(L"%s:  2 - Input OSIconNameList = %s", FuncTag,
-        (*OSIconName) ? *OSIconName : L"NULL"
+        (*OSIconName != NULL) ? *OSIconName : L"NULL"
     );
 
     // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.

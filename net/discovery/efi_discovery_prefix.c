@@ -18,7 +18,7 @@
  */
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -78,10 +78,10 @@ uri * try_getting_next_server (
 
 	/* Fetch next server and filename */
 	filename = fetch_next_server_and_filename (NULL);
-	if (!filename) {
+	if (filename == NULL) {
 		goto err_filename;
 	}
-	if (! uri_has_path (filename)) {
+	if (!uri_has_path (filename)) {
 		/* Ignore empty filename */
 		uri_put (filename);
 		filename = NULL;

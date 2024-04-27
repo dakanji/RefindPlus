@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -113,7 +113,7 @@ EFI_STATUS BdsLibConnectDevicePath (
                     // may now be found.
                     // EFI_SUCCESS means a driver was dispatched
                     // EFI_NOT_FOUND means no new drivers were dispatched
-                    Status = (gDS) ? gDS->Dispatch() : EFI_NOT_FOUND;
+                    Status = (gDS != NULL) ? gDS->Dispatch() : EFI_NOT_FOUND;
                 }
 #endif
 
@@ -180,14 +180,16 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     CHAR16                    *Description;
 
     // DA-TAG: Investigate This
-    //         from upstream 'Read the variable. We will never free this data'
+    //         From upstream 'Read the variable. We will never free this data'
     //         Yet data is freed ... oversight?
     Variable = BdsLibGetVariableAndSize (
         VariableName,
         &gEfiGlobalVariableGuid,
         &VariableSize
     );
-    if (!Variable) return NULL;
+    if (Variable == NULL) {
+        return NULL;
+    }
 
     // Notes: careful defined the variable of Boot#### or
     // Driver####, consider use some macro to abstract the code
@@ -216,7 +218,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     // The Console variables may have multiple device paths,
     // so make an Entry for each one.
     Option = AllocateZeroPool (sizeof (BDS_COMMON_OPTION));
-    if (!Option) {
+    if (Option == NULL) {
         MY_FREE_POOL(Variable);
 
         return NULL;
@@ -224,7 +226,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
 
     Option->Signature  = BDS_LOAD_OPTION_SIGNATURE;
     Option->DevicePath = AllocateZeroPool (GetDevicePathSize (DevicePath));
-    if (!Option->DevicePath) {
+    if (Option->DevicePath == NULL) {
         MY_FREE_POOL(Option);
         MY_FREE_POOL(Variable);
 
@@ -234,7 +236,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     CopyMem (Option->DevicePath, DevicePath, GetDevicePathSize (DevicePath));
     Option->Attribute   = Attribute;
     Option->Description = AllocateZeroPool (StrSize (Description));
-    if (!Option->Description) {
+    if (Option->Description == NULL) {
         MY_FREE_POOL(Option->DevicePath);
         MY_FREE_POOL(Option);
         MY_FREE_POOL(Variable);
@@ -244,7 +246,7 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
 
     CopyMem (Option->Description, Description, StrSize (Description));
     Option->LoadOptions = AllocateZeroPool (LoadOptionsSize);
-    if (!Option->LoadOptions) {
+    if (Option->LoadOptions == NULL) {
         MY_FREE_POOL(Option->DevicePath);
         MY_FREE_POOL(Option->Description);
         MY_FREE_POOL(Option);

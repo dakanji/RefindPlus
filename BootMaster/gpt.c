@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -45,13 +45,13 @@ GPT_DATA * AllocateGptData (VOID) {
     GPT_DATA *GptData;
 
     GptData = AllocateZeroPool (sizeof (GPT_DATA));
-    if (!GptData) {
+    if (GptData == NULL) {
         // Early Return
         return NULL;
     }
 
     GptData->Header = AllocateZeroPool (sizeof (GPT_HEADER));
-    if (!GptData->Header) {
+    if (GptData->Header == NULL) {
         ClearGptData (GptData);
 
         // Early Return
@@ -59,7 +59,7 @@ GPT_DATA * AllocateGptData (VOID) {
     }
 
     GptData->ProtectiveMBR = AllocateZeroPool (sizeof (MBR_RECORD));
-    if (!GptData->ProtectiveMBR) {
+    if (GptData->ProtectiveMBR == NULL) {
         ClearGptData (GptData);
     }
 
@@ -71,7 +71,7 @@ GPT_DATA * AllocateGptData (VOID) {
 VOID ClearGptData (
     GPT_DATA *Data
 ) {
-    if (!Data) {
+    if (Data == NULL) {
         // Early Return
         return;
     }
@@ -156,7 +156,7 @@ EFI_STATUS ReadGptData (
     UINTN       i;
     GPT_DATA   *GptData; // Temporary storage ... Tansferred to *Data later
 
-    if ((Volume == NULL) || (Data == NULL)) {
+    if (Volume == NULL || Data == NULL) {
         // Early Return
         return EFI_INVALID_PARAMETER;
     }
@@ -278,7 +278,7 @@ GPT_ENTRY * FindPartWithGuid (
     GPT_ENTRY *Found;
     GPT_DATA  *GptData;
 
-    if (!Guid || !gPartitions) {
+    if (Guid == NULL || gPartitions == NULL) {
         // Early Return
         return NULL;
     }
@@ -294,7 +294,7 @@ GPT_ENTRY * FindPartWithGuid (
             }
 
             Found = AllocateZeroPool (sizeof (GPT_ENTRY));
-            if (!Found) {
+            if (Found == NULL) {
                 // Early Return
                 return NULL;
             }
@@ -312,7 +312,7 @@ GPT_ENTRY * FindPartWithGuid (
 VOID ForgetPartitionTables (VOID) {
     GPT_DATA  *Next;
 
-    while (gPartitions) {
+    while (gPartitions != NULL) {
         Next = gPartitions->NextEntry;
         ClearGptData (gPartitions);
         gPartitions = Next;
@@ -331,7 +331,7 @@ VOID AddPartitionTable (
     GptData = NULL;
     Status = ReadGptData (Volume, &GptData);
     if (EFI_ERROR(Status)) {
-        if (GptData) {
+        if (GptData != NULL) {
             ClearGptData (GptData);
         }
 
@@ -339,13 +339,13 @@ VOID AddPartitionTable (
         return;
     }
 
-    if (!gPartitions) {
+    if (gPartitions == NULL) {
         gPartitions = GptData;
     }
     else {
         GptList = gPartitions;
 
-        while (GptList->NextEntry) {
+        while (GptList->NextEntry != NULL) {
             GptList = GptList->NextEntry;
         } // while
 

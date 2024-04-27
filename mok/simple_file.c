@@ -3,6 +3,12 @@
  *
  * see COPYING file
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #include <global.h>
 #include "../include/refit_call_wrapper.h"
@@ -153,8 +159,9 @@ EFI_STATUS simple_file_read_all (
    fi = (void *)buf;
 
 
-   efi_status = uefi_call_wrapper(file->GetInfo, 4, file, &FILE_INFO,
-                   size, fi);
+   efi_status = uefi_call_wrapper(
+       file->GetInfo, 4, file, &FILE_INFO, size, fi
+   );
    if (efi_status != EFI_SUCCESS) {
       Print(L"Failed to get file info\n");
       return efi_status;
@@ -163,7 +170,7 @@ EFI_STATUS simple_file_read_all (
    *size = fi->FileSize;
 
    *buffer = AllocatePool(*size);
-   if (!*buffer) {
+   if (*buffer == NULL) {
       Print(L"Failed to allocate buffer of size %d\n", *size);
       return EFI_OUT_OF_RESOURCES;
    }

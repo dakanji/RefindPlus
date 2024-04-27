@@ -11,9 +11,15 @@
     - UI elements on other `HiDPI` screens are still scaled up by two (2) with UI scaling active
   * Enabled by default but can be disabled using a new `decline_help_size` configuration token
     - The new token sets RefindPlus to only apply up to 2x UI element scaling
+- Fixes Legacy BIOS Boot on Certified UEFI Class 2 Macs
+  * Optimisations for speed had potentially disabled legacy BIOS boot on some Macs
+  * This bug was introduced in v0.13.3.AB (Commit 66dbed0)
 - Fixes Potential Memory Conflict
-  * Some constants were passed to a function that reallocates memory
-  * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
+  * Eliminated buffer overrun in handling `showtools`
+    - The configuration resulted in a oversized memory allocation
+  * Potential Memory Conflict
+    - Some constants were passed to a function that reallocates memory
+    - This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
     - Extended in v0.14.0.AB (Commit 5cb1ed9)
 - Fixes Hidden Entry Handling
   * Some loaders in ESP locations were not hidden when selected on-screen (minus key)
@@ -24,12 +30,38 @@
     - This meant that instances with defined resolutions were not properly displayed
   * Separately, the selected resolution when seeking `max` was not always the actual maximum
   * Additionally, a `HelpSize` Feature, documented separately, was introduced
+- Fixes `SyncNVram` Handling
+    * The feature was not functional on macOS boots
+- Fixes `HelpScan` Handling
+  * Rationalises implementation
+    - Could be applied, when disabled, to some items that should be excluded
+- Improves License Presentation
+  * Rationalises presentation to make clear it is on GPLv3/Later
 - Improves `MemTest` Handling
   * Updated exclusion from loaders (Row 1 Items)
   * Updated to handle `memtest+{ARCH}.efi` and `memtest86+{ARCH}.efi` files as per upstream
-- Improves Misc Handling
-  * Restructured config File into four (4) sections
+- Improves `ProtectNvram` Handling
+  * Now also blocks the `CurrentPolicy` and `CurrentActivePolicy` variables
+- Improves `HelpIcon` Handling
+  * The following `OS Icons` are now cached on first load and reused as required afterwards when this feature is active
+    - List is "os_mac", "os_win", "os_win8", "os_linux", "os_legacy", "os_clover", "os_opencore", "os_unknown", and "dummy image"
+    - List is stored in `TableBuiltinIconOS`
+  * Supplements the existing caching of items covered by `BuiltinIconTable`
+    - The `BuiltinIconTable` item caching always happens with or without the `HelpIcon` feature
+- Improves `Misc` Handling
+  * Restructured config file into four (4) sections
   * Completed LodePNG 20230410 update started in v0.14.0.AC
+  * The `TimeoutSeconds` item in `REFIT_MENU_SCREEN` was changed to `INTN`
+    - Follow on from fix to `Timeout` item in `REFIT_CONFIG` previously changed to `INTN`
+    - The original fix for `SilentBoot/DirectBoot` was incomplete (Commit 78d6138 in v0.13.2.AH)
+  * Applied misc micro optimisation for speed
+    - Restructured search pattern for config tokens
+    - Optimised `LoadDrivers` function
+  * Misc fixes for running in `TextOnly` mode
+  * Adjusted `AppleFramebuffer` handling to eliminate unneeded cycles
+- Renames Misc Configuration Tokens
+  * `disable_amfi` to `disable_check_amfi`
+  * `disable_compat_check` to `disable_check_compat`
 
 
 0.14.0.AC (06 FEB 2024):
@@ -999,11 +1031,10 @@
 
 0.13.2.AA (06 Apr 2021):
 -----------------------
-- Syncs with Upstream Post v0.13.2 Updates
+- Synced with Upstream v0.13.2
   * Minimises Reading of `HiddenTools` Variable
   * Fixes Menu Keystroke Event
     Could cause RefindPlus to hang when processing keystrokes in menus
-- Syncs with Upstream v0.13.2
   * Misc Improvements (Skips items already implemented in RefindPlus)
   * Does not adopt upstream changes to non-volatile variable storage
   * Identifies JFS volumes if a third-party JFS driver is installed
@@ -1075,15 +1106,14 @@
 
 0.13.1.AA (02 Mar 2021):
 -----------------------
-- Syncs with Upstream Post v0.13.1 Updates
+- Synced with Upstream v0.13.1
   * Adds icon for Manjaro Linux
-- Syncs with Upstream v0.13.1
   * Fixes bug that can cause issues with disabled manual boot stanza referencing unreadable volumes
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
   * Records selected EFI-based reboot options in the PreviousBoot variable
   * Implements support for setting systemd`s LoaderDevicePartUUID UEFI variable
   * Re-interpretes partial icon scaling fix implemented upstream
-- Syncs with Upstream v0.13.0
+- Synced with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
   * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection
   * This was implemented upstream in a new `MyLibLocateProtocol` function
@@ -1202,7 +1232,7 @@
   * Hence RefindPlus can now provide bootscreen when running any GPU with GOP
   * The bootscreen will also be available to other tools, such as OpenCore, when chain-loaded from RefindPlus.
 - Clears buffered key strokes on main menu
-  * This prevents immediately booting into a selected option on return from tools such as the UEFI Shell
+  * This prevents immediately booting into a selected option on return from tools such as the uEFI Shell
 - Encodes screenshots as PNG files instead of the previous large BMP files
 - Save screenshots to the RefindPlus ESP when RefindPlus is run from an ESP
   * Previously saved to the first ESP found which could be a different ESP
@@ -1279,7 +1309,7 @@
   * This bug appeared in v0.12.0.B
 - Implements BootKicker Feature from OpenCore
   * This allows loading the Apple Boot Screen directly from Refind which may be
-    useful in getting the environment for full EFI Shell support.
+    useful in getting the environment for full uEFI Shell support.
   * Requires GOP Capable Fully Compatible GPUs
 - Implements Clean NVRAM Feature from OpenCore
   * Allows resetting the NVRAM Directly from Refind
@@ -1294,7 +1324,7 @@
 - Implements Direct GOP Renderer from OpenCore
 - Changes Default `text_renderer` Status to FALSE
 - Forces `text_renderer` Configuration Setting to `True` on Switch To Text
-- Permits Running EFI Shell from `BOOT/tools_x64` folder
+- Permits Running uEFI Shell from `BOOT/tools_x64` folder
 - Permits Running Memtest from standard locations
 - Permits using `Memtest.efi` filename in addition to existing `Memtest86.efi`
 
@@ -1335,7 +1365,7 @@
   * This allows Boot Screen on Operating Systems such as macOS v10.4 (Tiger) that use old EFIBoot processes
 - Implements BuiltinText Renderer from OpenCore
   * This fixes Text Mode on units with broken text display implementations such as Classic MacPros.
-  * This allows running EFI Shell on such units.
+  * This allows running uEFI Shell on such units.
 - Includes all macOS SIP Values for CSR Rotation (Thanks, Github User @startergo)
   * This implements the actual macOS default value of 877 in place of the previously defined value of 77.
   * This allows disabling SIP on, and booting with caveats, pre-release versions of macOS v11.x (Big Sur)

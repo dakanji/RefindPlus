@@ -34,7 +34,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2022-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -102,9 +102,10 @@ BOOLEAN line_edit (
     MsgStr = L"Use Cursor Keys to Edit, 'ESC' to Exit, 'Enter' to Boot with Edited Options";
     REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, MsgStr);
 
-    if (!line_in) {
+    if (line_in == NULL) {
         line_in = L"";
     }
+
     line = AllocateZeroPool (sizeof (CHAR16) * (StrLen (line_in) + 1));
     if (line == NULL) {
         // Early Return

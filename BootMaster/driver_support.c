@@ -46,7 +46,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2017 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2017 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -390,7 +390,6 @@ EFI_STATUS ConnectAllDriversToAllControllers (
             &HandleBuffer,
             &HandleType
         );
-
         if (EFI_ERROR(Status)) {
             break;
         }
@@ -473,7 +472,6 @@ VOID ConnectFilesystemDriver (
         &gEfiDiskIoProtocolGuid, NULL,
         &HandleCount, &Handles
     );
-
     if (EFI_ERROR(Status) || HandleCount == 0) {
         return;
     }
@@ -681,6 +679,7 @@ BOOLEAN LoadDrivers (VOID) {
     UINTN        CurFound;
     CHAR16      *Directory;
     CHAR16      *SelfDirectory;
+    CHAR16      *BaseDirectory;
     EFI_HANDLE  *DriversListAll;
     EFI_HANDLE  *DriversListProg;
     EFI_HANDLE  *DriversListUser;
@@ -708,19 +707,31 @@ BOOLEAN LoadDrivers (VOID) {
     #endif
 
 
-    SelfDirectory = NULL;
     DriversListProg = DriversListUser = DriversListAll = NULL;
     NumFound = CurFound = i = 0;
 
-    while ((CurFound == 0) && (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
-        CleanUpPathNameSlashes (Directory);
-        if (SelfDirPath) {
-            SelfDirectory = StrDuplicate (SelfDirPath);
-        }
+    if (SelfDirPath == NULL) {
+        SelfDirectory = NULL;
+    }
+    else {
+        SelfDirectory = StrDuplicate (SelfDirPath);
         CleanUpPathNameSlashes (SelfDirectory);
-        MergeStrings (&SelfDirectory, Directory, L'\\');
+    }
 
-        CurFound = ScanDriverDir (SelfDirectory, &DriversListProg);
+    while (
+        CurFound == 0 &&
+        (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL
+    ) {
+        CleanUpPathNameSlashes (Directory);
+        if (SelfDirectory == NULL) {
+            BaseDirectory = StrDuplicate (Directory);
+        }
+        else {
+            BaseDirectory = StrDuplicate (SelfDirectory);
+            MergeStrings (&BaseDirectory, Directory, L'\\');
+        }
+
+        CurFound = ScanDriverDir (BaseDirectory, &DriversListProg);
         if (CurFound > 0) {
             // We only process one default folder
             // Increment 'NumFound' and exit loop if drivers were found
@@ -730,7 +741,7 @@ BOOLEAN LoadDrivers (VOID) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
                 L"'%s' ... Program Default Driver Folder:- '%s'",
-                MsgNotFound, SelfDirectory
+                MsgNotFound, BaseDirectory
             );
             LOG_MSG(
                 "%s  - %s",
@@ -743,7 +754,7 @@ BOOLEAN LoadDrivers (VOID) {
         }
 
         MY_FREE_POOL(Directory);
-        MY_FREE_POOL(SelfDirectory);
+        MY_FREE_POOL(BaseDirectory);
     } // while
 
     // Scan additional user-specified driver directories.
@@ -759,20 +770,17 @@ BOOLEAN LoadDrivers (VOID) {
         while ((Directory = FindCommaDelimited (GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes (Directory);
             if (StrLen (Directory) > 0) {
-                if (SelfDirPath) {
-                    SelfDirectory = StrDuplicate (SelfDirPath);
-                }
-                CleanUpPathNameSlashes (SelfDirectory);
-
-                if (MyStrBegins (SelfDirectory, Directory)) {
-                    MY_FREE_POOL(SelfDirectory);
-                    SelfDirectory = StrDuplicate (Directory);
+                if (SelfDirectory == NULL ||
+                    MyStrBegins (SelfDirectory, Directory)
+                ) {
+                    BaseDirectory = StrDuplicate (Directory);
                 }
                 else {
-                    MergeStrings (&SelfDirectory, Directory, L'\\');
+                    BaseDirectory = StrDuplicate (SelfDirectory);
+                    MergeStrings (&BaseDirectory, Directory, L'\\');
                 }
 
-                CurFound = ScanDriverDir (SelfDirectory, &DriversListUser);
+                CurFound = ScanDriverDir (BaseDirectory, &DriversListUser);
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
@@ -780,7 +788,7 @@ BOOLEAN LoadDrivers (VOID) {
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_LINE_NORMAL,
                         L"'%s' ... User Defined Driver Folder:- '%s'",
-                        MsgNotFound, SelfDirectory
+                        MsgNotFound, BaseDirectory
                     );
                     LOG_MSG(
                         "%s  - %s",
@@ -794,9 +802,10 @@ BOOLEAN LoadDrivers (VOID) {
             }
 
             MY_FREE_POOL(Directory);
-            MY_FREE_POOL(SelfDirectory);
+            MY_FREE_POOL(BaseDirectory);
         } // while
     }
+    MY_FREE_POOL(SelfDirectory);
 
     #if REFIT_DEBUG > 0
     LOG_MSG("\n\n");
@@ -817,7 +826,7 @@ BOOLEAN LoadDrivers (VOID) {
     if (NumFound > 0 && GlobalConfig.RansomDrives) {
         HandleSize = sizeof (EFI_HANDLE) * 16;
         /* Program Default Folders - START */
-        if (DriversListProg) {
+        if (DriversListProg != NULL) {
             i = 0;
             while (DriversListProg[i] != NULL) {
                 ++i;
@@ -830,7 +839,7 @@ BOOLEAN LoadDrivers (VOID) {
             }
 
             for (k = 0; k < i; k++) {
-                if (!DriversListProg[k]) {
+                if (DriversListProg[k] == NULL) {
                     // Safety valve to exclude NULL
                     // NULL Termination Added Later
                     continue;
@@ -842,7 +851,7 @@ BOOLEAN LoadDrivers (VOID) {
         /* Program Default Folders - END */
 
         /* User Defined Folders - START */
-        if (DriversListUser) {
+        if (DriversListUser != NULL) {
             i = 0;
             while (DriversListUser[i] != NULL) {
                 ++i;
@@ -864,7 +873,7 @@ BOOLEAN LoadDrivers (VOID) {
             }
 
             for (k = 0; k < i; k++) {
-                if (!DriversListUser[k]) {
+                if (DriversListUser[k] == NULL) {
                     // Safety valve to exclude NULL
                     // NULL Termination Added Later
                     continue;
@@ -875,7 +884,7 @@ BOOLEAN LoadDrivers (VOID) {
         }
         /* User Defined Folders - END */
 
-        if (DriversListAll) {
+        if (DriversListAll != NULL) {
             DriversListAll[DriversIndex] = NULL; // Terminate Array
 
             // DA-TAG: Do not free 'DriversListXYZ'

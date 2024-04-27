@@ -8,7 +8,8 @@
   * Modified for RefindPlus
   * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
   *
-  * Modifications distributed under the preceding terms.
+  * THIS PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
  **/
 
 #include "../../include/tiano_includes.h"
@@ -61,7 +62,7 @@ CHAR16 * GetAltMonth (VOID) {
         case  9: AltMonth = L"r";  break;
         case 10: AltMonth = L"t";  break;
         case 11: AltMonth = L"v";  break;
-        default: AltMonth = L"x";  break;
+        default: AltMonth = L"x";
     } // switch
 
     return AltMonth;
@@ -72,30 +73,30 @@ CHAR16 * GetAltHour (VOID) {
     CHAR16 *AltHour;
 
     switch (NowHour) {
-        case  0: AltHour = L"a";  break;
-        case  1: AltHour = L"b";  break;
-        case  2: AltHour = L"c";  break;
-        case  3: AltHour = L"d";  break;
-        case  4: AltHour = L"e";  break;
-        case  5: AltHour = L"f";  break;
-        case  6: AltHour = L"g";  break;
-        case  7: AltHour = L"h";  break;
-        case  8: AltHour = L"i";  break;
-        case  9: AltHour = L"j";  break;
-        case 10: AltHour = L"k";  break;
-        case 11: AltHour = L"m";  break;
-        case 12: AltHour = L"n";  break;
-        case 13: AltHour = L"p";  break;
-        case 14: AltHour = L"q";  break;
-        case 15: AltHour = L"r";  break;
-        case 16: AltHour = L"s";  break;
-        case 17: AltHour = L"t";  break;
-        case 18: AltHour = L"u";  break;
-        case 19: AltHour = L"v";  break;
-        case 20: AltHour = L"w";  break;
-        case 21: AltHour = L"x";  break;
-        case 22: AltHour = L"y";  break;
-        default: AltHour = L"z";  break;
+        case  0: AltHour = L"a";   break;
+        case  1: AltHour = L"b";   break;
+        case  2: AltHour = L"c";   break;
+        case  3: AltHour = L"d";   break;
+        case  4: AltHour = L"e";   break;
+        case  5: AltHour = L"f";   break;
+        case  6: AltHour = L"g";   break;
+        case  7: AltHour = L"h";   break;
+        case  8: AltHour = L"i";   break;
+        case  9: AltHour = L"j";   break;
+        case 10: AltHour = L"k";   break;
+        case 11: AltHour = L"m";   break;
+        case 12: AltHour = L"n";   break;
+        case 13: AltHour = L"p";   break;
+        case 14: AltHour = L"q";   break;
+        case 15: AltHour = L"r";   break;
+        case 16: AltHour = L"s";   break;
+        case 17: AltHour = L"t";   break;
+        case 18: AltHour = L"u";   break;
+        case 19: AltHour = L"v";   break;
+        case 20: AltHour = L"w";   break;
+        case 21: AltHour = L"x";   break;
+        case 22: AltHour = L"y";   break;
+        default: AltHour = L"z";
     } // switch
 
     return AltHour;
@@ -109,7 +110,9 @@ CHAR16 * GetDateString (VOID) {
 
     static CHAR16 *DateStr = NULL;
 
-    if (DateStr) return DateStr;
+    if (DateStr != NULL) {
+        return DateStr;
+    }
 
     ourYear  = (NowYear % 100);
     ourMonth = GetAltMonth();
@@ -138,15 +141,19 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         gBS->HandleProtocol, gImageHandle,
         &gEfiLoadedImageProtocolGuid, (VOID **) &LoadedImage
     );
-    if (EFI_ERROR(Status) || !LoadedImage->DeviceHandle) return NULL;
+    if (EFI_ERROR(Status) || LoadedImage->DeviceHandle == NULL) {
+        return NULL;
+    }
 
     // DA-TAG: Always get 'mRootDir' each time
     //
-    // Get mRootDir from device we are loaded from
+    // Get mRootDir from the device we are loaded from
     mRootDir = EfiLibOpenRoot (LoadedImage->DeviceHandle);
-    if (!mRootDir) return NULL;
+    if (mRootDir == NULL) {
+        return NULL;
+    }
 
-    if (!mDebugLog) {
+    if (mDebugLog == NULL) {
         DateStr = GetDateString();
         mDebugLog = PoolPrint (L"EFI\\%s.log", DateStr);
         MY_FREE_POOL(DateStr);
@@ -192,7 +199,9 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
             Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
         }
 
-        if (EFI_ERROR(Status)) mRootDir = LogProtocol = NULL;
+        if (EFI_ERROR(Status)) {
+            mRootDir = LogProtocol = NULL;
+        }
     }
 
     // DA-TAG: Do not set 'mRootDir' to NULL here
@@ -214,7 +223,9 @@ VOID SaveMessageToDebugLogFile (
 
     // Get/Open Logfile
     LogFile = GetDebugLogFile();
-    if (!LogFile) return;
+    if (LogFile == NULL) {
+        return;
+    }
 
     if (GlobalConfig.LogLevel < MINLOGLEVEL) {
         // DA-TAG: Undocumented feature
@@ -235,7 +246,11 @@ VOID SaveMessageToDebugLogFile (
         }
     }
 
-    if (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL) return;
+    if (DelMsgLog &&
+        GlobalConfig.LogLevel < MINLOGLEVEL
+    ) {
+        return;
+    }
 
     // Get File Info for LogFile
     Info = EfiLibFileInfo (LogFile);
@@ -275,21 +290,29 @@ VOID WayPointer (
     UINTN TmpLogLevelStore;
 
     // Abort if Kernel has started
-    if (gKernelStarted) return;
+    if (gKernelStarted) {
+        return;
+    }
 
     // Abort if no Message
-    if (!Msg) return;
+    if (Msg == NULL) {
+        return;
+    }
 
     // Stash and swap LogLevel
     // Needed to force DeepLogger on LogLevel 0
     TmpLogLevelStore = GlobalConfig.LogLevel;
-    if (GlobalConfig.LogLevel < 1) GlobalConfig.LogLevel = 1;
+    if (GlobalConfig.LogLevel < 1) {
+        GlobalConfig.LogLevel = 1;
+    }
 
     // Call DeepLogger
     gLogTemp = StrDuplicate (Msg);
     LogLineType = (TmpLogLevelStore == 0) ? LOG_LINE_EXIT : LOG_LINE_BASE;
     DeepLoggger (1, LogLineType, &gLogTemp);
-    if (TmpLogLevelStore != 0) ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    if (TmpLogLevelStore != 0) {
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    }
 
     // Restore LogLevel if changed
     GlobalConfig.LogLevel = TmpLogLevelStore;
@@ -308,31 +331,42 @@ VOID DeepLoggger (
     BOOLEAN  LongStr;
     BOOLEAN  EarlyReturn;
 
-    if (!(*Msg)) return;
+    if (*Msg == NULL) {
+        return;
+    }
 
-    // Make sure we are able to write
+    // Ensure we are allowed to write logs
     EarlyReturn = (
-        REFIT_DEBUG <= MINLOGLEVEL
-        || GlobalConfig.LogLevel < level
-        || GlobalConfig.LogLevel == MINLOGLEVEL
-        || (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL)
-        || ((type != LOG_LINE_FORENSIC) && (NativeLogger || MuteLogger))
+        REFIT_DEBUG <= MINLOGLEVEL           ||
+        GlobalConfig.LogLevel < level        ||
+        GlobalConfig.LogLevel == MINLOGLEVEL ||
+        (
+            DelMsgLog &&
+            GlobalConfig.LogLevel < MINLOGLEVEL
+        ) || (
+            type != LOG_LINE_FORENSIC &&
+            (MuteLogger || NativeLogger)
+        )
     );
 
-    if (REFIT_DEBUG > MAXLOGLEVEL && type == LOG_BLOCK_SEP && !MuteLogger) {
+    if (!MuteLogger           &&
+        type == LOG_BLOCK_SEP &&
+        REFIT_DEBUG > MAXLOGLEVEL
+    ) {
         EarlyReturn = FALSE;
     }
+
     if (EarlyReturn) {
         MY_FREE_POOL(*Msg);
 
         return;
     }
 
-    OurPad = (PadStr) ? PadStr : L"[ ";
+    OurPad = (PadStr != NULL) ? PadStr : L"[ ";
 
     // Truncate message at MAXLOGLEVEL and lower (if required)
     if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {
-        Limit = 213;
+        Limit   = 213;
         LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
@@ -371,7 +405,7 @@ VOID DeepLoggger (
     FormatMsg = AllocatePool (
         (StrLen (Tmp) + 1) * sizeof (CHAR8)
     );
-    if (FormatMsg) {
+    if (FormatMsg != NULL) {
         // Use Native Logging
         UseMsgLog = TRUE;
 
@@ -393,13 +427,18 @@ VOID EFIAPI DebugLog (
     ...
 ) {
     // Abort if Kernel has started
-    if (gKernelStarted) return;
+    if (gKernelStarted) {
+        return;
+    }
 
-    // Make sure writing is allowed/possible
-    if (MuteLogger
-        || REFIT_DEBUG < 1
-        || FormatString == NULL
-        || (DelMsgLog && GlobalConfig.LogLevel < MINLOGLEVEL)
+    // Ensure we are allowed to write logs
+    if (MuteLogger           ||
+        REFIT_DEBUG < 1      ||
+        FormatString == NULL ||
+        (
+            DelMsgLog &&
+            GlobalConfig.LogLevel < MINLOGLEVEL
+        )
     ) {
         return;
     }
@@ -407,7 +446,12 @@ VOID EFIAPI DebugLog (
     // Abort on higher log levels if not forcing
     if (!UseMsgLog) {
         UseMsgLog = NativeLogger;
-        if (!UseMsgLog && GlobalConfig.LogLevel > MINLOGLEVEL) return;
+
+        if (!UseMsgLog &&
+            GlobalConfig.LogLevel > MINLOGLEVEL
+        ) {
+            return;
+        }
     }
 
     // Print message to log buffer
@@ -426,12 +470,16 @@ VOID LogPadding (
     UINTN   PadPos;
 
     // Abort if Kernel has started
-    if (gKernelStarted) return;
+    if (gKernelStarted) {
+        return;
+    }
 
     // Abort on MuteLogger
-    if (MuteLogger) return;
+    if (MuteLogger) {
+        return;
+    }
 
-    if (!PadStr) {
+    if (PadStr == NULL) {
         PadStr = StrDuplicate (L"[ ");
 
         // Early Return
@@ -479,7 +527,9 @@ VOID EFIAPI MemLogCallback (
     IN CHAR8 *LastMessage
 ) {
     #if REFIT_DEBUG > 0
-    if (DebugMode >= 1) SaveMessageToDebugLogFile (LastMessage);
+    if (DebugMode >= 1) {
+        SaveMessageToDebugLogFile (LastMessage);
+    }
     #endif
 
     return;

@@ -9,7 +9,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -21,6 +21,43 @@
 
 BOOLEAN NestedStrStr = FALSE;
 
+
+/*++
+ *
+ * Routine Description:
+ *
+ *  Return the substring after a supplied delimiter.
+ *
+ * Arguments:
+ *
+ *  Delimiter  - Null-terminated string to search for as delimiter.
+ *  String     - Null-terminated string to search for a Substring.
+ *
+ * Returns:
+ *  The address of the matching substring after the delimiter
+ *  or the original string if the delimiter was not found.
+ * --*/
+CHAR16 * GetSubStrAfter (
+    IN CHAR16 *Delimiter,
+    IN CHAR16 *String
+) {
+    CHAR16 *Substring;
+
+
+    if (String == NULL) {
+        return NULL;
+    }
+
+    Substring = MyStrStr (String, Delimiter);
+    if (Substring == NULL) {
+        return String;
+    }
+
+    // Move past delimiter
+    Substring += StrLen (Delimiter);
+    return Substring;
+} // CHAR16 * GetSubStrAfter
+
 BOOLEAN StriSubCmp (
     IN CHAR16 *SmallStr,
     IN CHAR16 *BigStr
@@ -31,7 +68,7 @@ BOOLEAN StriSubCmp (
     BOOLEAN Terminate;
     BOOLEAN Found;
 
-    if (!SmallStr || !BigStr) {
+    if (SmallStr == NULL || BigStr == NULL) {
         return FALSE;
     }
 
@@ -66,45 +103,45 @@ BOOLEAN StriSubCmp (
 // case-sensitive comparisons.
 // Returns TRUE if strings are identical, FALSE otherwise.
 BOOLEAN MyStriCmp (
-    IN const CHAR16 *FirstString,
-    IN const CHAR16 *SecondString
+    IN const CHAR16 *String1,
+    IN const CHAR16 *String2
 ) {
-    if (!FirstString || !SecondString) {
+    if (String1 == NULL || String2 == NULL) {
         return FALSE;
     }
 
-    while ((*FirstString != L'\0') &&
-        ((*FirstString & ~0x20) == (*SecondString & ~0x20))
+    while ((*String1 != L'\0') &&
+        ((*String1 & ~0x20) == (*String2 & ~0x20))
     ) {
-        FirstString++;
-        SecondString++;
+        String1++;
+        String2++;
     } // while
 
-    return (*FirstString == *SecondString);
+    return (*String1 == *String2);
 } // BOOLEAN MyStriCmp()
 
-// As MyStriCmp but only checks whether SecondString starts with FirstString
+// As MyStriCmp but only checks whether String2 starts with String1
 // Returns TRUE on match, FALSE otherwise.
 BOOLEAN MyStrBegins (
-    IN CHAR16 *FirstString,
-    IN CHAR16 *SecondString
+    IN const CHAR16 *String1,
+    IN const CHAR16 *String2
 ) {
     BOOLEAN StrBegins;
 
-    if (!FirstString || !SecondString) {
+    if (String1 == NULL || String2 == NULL) {
         return FALSE;
     }
 
     StrBegins = FALSE;
-    while (*FirstString != L'\0') {
-        if ((*FirstString & ~0x20) != (*SecondString & ~0x20)) {
+    while (*String1 != L'\0') {
+        if ((*String1 & ~0x20) != (*String2 & ~0x20)) {
             StrBegins = FALSE;
 
             break;
         }
 
-        FirstString++;
-        SecondString++;
+        String1++;
+        String2++;
         StrBegins = TRUE;
     } // while
 
@@ -143,7 +180,7 @@ CHAR16 * MyStrStr (
         StrCharSet ? StrCharSet : L"NULL",
         String     ? String     : L"NULL"
     );
-    if ((String == NULL) || (StrCharSet == NULL)) {
+    if (String == NULL || StrCharSet == NULL) {
         BREAD_CRUMB(L"%s:  return 'NULL'", FuncTag);
         LOG_DECREMENT();
         if (!NestedStrStr) LOG_SEP(L"X");
@@ -156,12 +193,12 @@ CHAR16 * MyStrStr (
 
     //BREAD_CRUMB(L"%s:  3 - WHILE LOOP:- START", FuncTag);
     while ((*String != L'\0') && (*StrCharSet != L'\0')) {
-        if (*String++ != *StrCharSet) {
-            String     = ++Src;
-            StrCharSet = Sub;
+        if (*String++ == *StrCharSet) {
+            StrCharSet++;
         }
         else {
-            StrCharSet++;
+            String     = ++Src;
+            StrCharSet = Sub;
         }
     } // while
     //BREAD_CRUMB(L"%s:  4 - WHILE LOOP:- END", FuncTag);
@@ -208,7 +245,7 @@ BOOLEAN FindSubStr (
         RawStrCharSet ? RawStrCharSet : L"NULL",
         RawString     ? RawString     : L"NULL"
     );
-    if ((RawString == NULL) || (RawStrCharSet == NULL)) {
+    if (RawString == NULL || RawStrCharSet == NULL) {
         BREAD_CRUMB(L"%s:  return 'FALSE'", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -297,7 +334,7 @@ CHAR8 * MyAsciiStrStr (
         SearchStringTmp = SearchString;
         FirstMatch = String;
 
-        while ((*String == *SearchStringTmp) && (*String != '\0')) {
+        while (*String == *SearchStringTmp && *String != '\0') {
             String++;
             SearchStringTmp++;
         }
@@ -319,14 +356,15 @@ CHAR8 * MyAsciiStrStr (
 // Convert input string to all-lowercase.
 // DO NOT USE the standard StrLwr() function, as it is broken on some EFIs!
 VOID ToLower (
-    CHAR16 *MyString
+    IN OUT CHAR16 *MyString
 ) {
-    UINTN i = 0;
+    UINTN i;
 
-    if (!MyString) {
+    if (MyString == NULL) {
         return;
     }
 
+    i = 0;
     while (MyString[i] != L'\0') {
         if ((MyString[i] >= L'A') && (MyString[i] <= L'Z')) {
             MyString[i] = MyString[i] - L'A' + L'a';
@@ -337,14 +375,15 @@ VOID ToLower (
 
 // Convert input string to all-uppercase.
 VOID ToUpper (
-    CHAR16 *MyString
+    IN OUT CHAR16 *MyString
 ) {
-    UINTN i = 0;
+    UINTN i;
 
-    if (!MyString) {
+    if (MyString == NULL) {
         return;
     }
 
+    i = 0;
     while (MyString[i] != L'\0') {
         if ((MyString[i] >= L'a') && (MyString[i] <= L'z')) {
             MyString[i] = MyString[i] - L'a' + L'A';
@@ -367,13 +406,13 @@ VOID MergeStrings (
     IN     CHAR16  *Second,
     IN     CHAR16   AddChar
 ) {
-    UINTN   Length1;
-    UINTN   Length2;
-    CHAR16 *NewString;
+    UINTN           Length1;
+    UINTN           Length2;
+    CHAR16         *NewString;
 
     #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"MergeStrings";
-    CHAR16 *MsgStr;
+    const CHAR16   *FuncTag = L"MergeStrings";
+    CHAR16         *MsgStr;
 
     MsgStr = PoolPrint (
         L"Add '%s' to the end of '%s' (%s Separator)",
@@ -402,14 +441,7 @@ VOID MergeStrings (
     Length1 = StrLen (*First);
 
     //BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (Second == NULL) {
-        //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
-        Length2 = 0;
-    }
-    else {
-        //BREAD_CRUMB(L"%s:  3b 1", FuncTag);
-        Length2 = StrLen (Second);
-    }
+    Length2 = (Second != NULL) ? StrLen (Second) : 0;
 
     //BREAD_CRUMB(L"%s:  4", FuncTag);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
@@ -417,7 +449,7 @@ VOID MergeStrings (
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     if (NewString) {
         //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
-        if ((*First != NULL) && (Length1 == 0)) {
+        if (*First != NULL && Length1 == 0) {
             //BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
             MY_FREE_POOL(*First);
         }
@@ -522,7 +554,7 @@ VOID MergeUniqueStrings (
     }
 
     //BREAD_CRUMB(L"%s:  5", FuncTag);
-    if ((*First != NULL) && (Length1 == 0)) {
+    if (*First != NULL && Length1 == 0) {
         //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
         MY_FREE_POOL(*First);
     }
@@ -554,8 +586,9 @@ VOID MergeUniqueStrings (
             i = 0;
             TestStr = NULL;
 
-            while (!SkipMerge
-                && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
+            while (
+                !SkipMerge &&
+                (TestStr = FindCommaDelimited (NewString, i++)) != NULL
             ) {
                 //BREAD_CRUMB(L"%s:  8a 2a 1a 1 - WHILE LOOP:- START", FuncTag);
                 NestedStrStr = TRUE;
@@ -605,7 +638,7 @@ VOID MergeWords (
     CHAR16  *Temp, *Word, *p;
     BOOLEAN  LineFinished;
 
-    if (!InString) {
+    if (InString == NULL) {
         return;
     }
 
@@ -649,7 +682,7 @@ VOID MergeUniqueWords (
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished;
 
-    if (!InString) {
+    if (InString == NULL) {
         return;
     }
 
@@ -693,7 +726,7 @@ VOID MergeUniqueItems (
     UINTN   i;
     CHAR16 *Item;
 
-    if (!InString) {
+    if (InString == NULL) {
         return;
     }
 
@@ -712,7 +745,7 @@ CHAR16 * SanitiseString (
     CHAR16  *OutString;
     BOOLEAN  LineFinished;
 
-    if (!InString) {
+    if (InString == NULL) {
         return NULL;
     }
 
@@ -749,7 +782,7 @@ CHAR16 * SanitiseString (
         MY_FREE_POOL(Temp);
     }
 
-    if (!OutString) {
+    if (OutString == NULL) {
         OutString = StrDuplicate (InString);
     }
 
@@ -765,15 +798,15 @@ BOOLEAN LimitStringLength (
     CHAR16 *TheString,
     UINTN    Limit
 ) {
-    if (TheString == NULL) {
-        return FALSE;
-    }
-
     UINTN     i;
     CHAR16   *SubString;
     CHAR16   *TempString;
     BOOLEAN   HasChanged;
     BOOLEAN   WasTruncated;
+
+    if (TheString == NULL) {
+        return FALSE;
+    }
 
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"LimitStringLength";
@@ -879,10 +912,12 @@ CHAR16 * FindNumbers (
     // Find extra_kernel_version_strings
     EndOfElement = i = 0;
     ExtraFound = NULL;
-    while ((ExtraFound == NULL) &&
-        (LookFor = FindCommaDelimited (GlobalConfig.ExtraKernelVersionStrings, i++))
+    while (
+        ExtraFound == NULL &&
+        (LookFor = FindCommaDelimited (GlobalConfig.ExtraKernelVersionStrings, i++)) != NULL
     ) {
-        if ((ExtraFound = MyStrStr (InString, LookFor))) {
+        ExtraFound = MyStrStr (InString, LookFor);
+        if (ExtraFound != NULL) {
             StartOfElement = ExtraFound - InString;
             EndOfElement   = StartOfElement + StrLen (LookFor) - 1;
         }
@@ -927,14 +962,18 @@ UINTN NumCharsInCommon (
     IN CHAR16 *String1,
     IN CHAR16 *String2
 ) {
-    UINTN Count = 0;
-    if ((String1 == NULL) || (String2 == NULL)) {
+    UINTN Count;
+
+
+    if (String1 == NULL || String2 == NULL) {
         return 0;
     }
 
-    while (String1[Count] != L'\0'
-        && String2[Count] != L'\0'
-        && String1[Count] == String2[Count]
+    Count = 0;
+    while (
+        String1[Count] != L'\0'      &&
+        String2[Count] != L'\0'      &&
+        String1[Count] == String2[Count]
     ) {
         Count++;
     } // while
@@ -1005,7 +1044,7 @@ CHAR16 * FindCommaDelimited (
     } // while
 
     FoundString = NULL;
-    if (Index == 0) {
+    if (Index == 0)  {
         FoundString = StrDuplicate (&InString[StartPos]);
     }
 
@@ -1020,16 +1059,18 @@ CHAR16 * FindCommaDelimited (
 // Modifies the *List string, but not the *ToDelete string!
 // Returns TRUE if the item was deleted, FALSE otherwise.
 BOOLEAN DeleteItemFromCsvList (
-    CHAR16 *ToDelete,
-    CHAR16 *List
+    CHAR16  *ToDelete,
+    CHAR16  *List
 ) {
-    CHAR16 *Found;
-    CHAR16 *Comma;
+    CHAR16  *Found;
+    CHAR16  *Comma;
+    BOOLEAN  Retval;
 
-    if ((ToDelete == NULL) || (List == NULL)) {
+    if (ToDelete == NULL || List == NULL) {
         return FALSE;
     }
 
+    Retval = FALSE;
     Found = MyStrStr (List, ToDelete);
     if (Found) {
         Comma = MyStrStr (Found, L",");
@@ -1050,10 +1091,10 @@ BOOLEAN DeleteItemFromCsvList (
             }
         }
 
-        return TRUE;
+        Retval = TRUE;
     }
 
-    return FALSE;
+    return Retval;
 } // BOOLEAN DeleteItemFromCsvList()
 
 // Replaced by IsListItem.
@@ -1062,7 +1103,7 @@ BOOLEAN IsIn (
     IN CHAR16 *SmallString,
     IN CHAR16 *List
 ) {
-    if (!SmallString || !List) {
+    if (SmallString == NULL || List == NULL) {
         return FALSE;
     }
 
@@ -1075,7 +1116,7 @@ BOOLEAN IsInSubstring (
     IN CHAR16 *BigString,
     IN CHAR16 *List
 ) {
-    if (!BigString || !List) {
+    if (BigString == NULL || List == NULL) {
         return FALSE;
     }
 
@@ -1092,13 +1133,16 @@ BOOLEAN IsListItem (
     BOOLEAN   Found;
     CHAR16   *OneElement;
 
-    if (!SmallString || !List) {
+    if (SmallString == NULL || List == NULL) {
         return FALSE;
     }
 
     i = 0;
     Found = FALSE;
-    while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
+    while (
+        !Found &&
+        (OneElement = FindCommaDelimited (List, i++)) != NULL
+    ) {
         if (MyStriCmp (OneElement, SmallString)) {
             Found = TRUE;
         }
@@ -1119,16 +1163,18 @@ BOOLEAN IsListItemSubstringIn (
     UINTN    ElementLength, i;
     CHAR16  *OneElement;
 
-    if (!BigString || !List) {
+    if (BigString == NULL || List == NULL) {
         return FALSE;
     }
 
     i = 0;
     Found = FALSE;
-    while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
+    while (
+        !Found &&
+        (OneElement = FindCommaDelimited (List, i++)) != NULL
+    ) {
         ElementLength = StrLen (OneElement);
-        if (
-            ElementLength > 0                   &&
+        if (ElementLength > 0                   &&
             ElementLength <= StrLen (BigString) &&
             StriSubCmp (OneElement, BigString)
         ) {
@@ -1169,7 +1215,7 @@ BOOLEAN ReplaceSubstring (
         ReplString   ? ReplString   : L"NULL",
         *MainString  ? *MainString  : L"NULL"
     );
-    if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
+    if (*MainString == NULL || SearchString == NULL || ReplString == NULL) {
         BREAD_CRUMB(L"%s:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1193,7 +1239,7 @@ BOOLEAN ReplaceSubstring (
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
     NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen (*MainString));
-    if (!NewString) {
+    if (NewString == NULL) {
         BREAD_CRUMB(L"%s:  4a - END:- return BOOLEAN 'FALSE' ... Out of Resources!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1272,14 +1318,17 @@ UINT64 StrToHex (
     UINT64 retval;
     CHAR16 a;
 
-    if ((Input == NULL) || (NumChars == 0) || (NumChars > 16)) {
+    if (Input == NULL ||
+        NumChars == 0 ||
+        NumChars > 16
+    ) {
         return 0;
     }
 
     NumDone = 0;
     retval = 0x00;
     InputLength = StrLen (Input);
-    while ((Pos <= InputLength) && (NumDone < NumChars)) {
+    while (Pos <= InputLength && NumDone < NumChars) {
         a = Input[Pos];
 
         if ((a >= '0') && (a <= '9')) {

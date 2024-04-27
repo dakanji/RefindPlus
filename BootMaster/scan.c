@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2023 Roderick W. Smith
+ * Modifications for rEFInd Copyright (c) 2012-2023 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -76,8 +76,8 @@ BOOLEAN  LogNewLine      = FALSE;
 #endif
 
 BOOLEAN  HasMacOS        = FALSE;
+BOOLEAN  DisplayLoader   = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
-BOOLEAN  FirstLoaderScan = FALSE;
 
 // Structure used to hold boot loader filenames and time stamps
 // in a linked list ... For sorting entries within a directory.
@@ -145,9 +145,9 @@ VOID VetCSR (VOID) {
 
 static
 CHAR16 * GetShowName (
-    CHAR16                 *LinuxName
+    CHAR16 *LinuxName
 ) {
-    CHAR16                 *ShowName;
+    CHAR16 *ShowName;
 
     // DA-TAG: Do *NOT* Free 'ShowName'
     if (MyStriCmp (LinuxName, L"LinuxMint")) {
@@ -180,51 +180,58 @@ REFIT_MENU_SCREEN * CopyMenuScreen (
     UINTN              i;
     REFIT_MENU_SCREEN *NewEntry;
 
-    NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
 
-    if ((Entry != NULL) && (NewEntry != NULL)) {
-        NewEntry->Title = (Entry->Title) ? StrDuplicate (Entry->Title) : NULL;
-
-        if (Entry->TitleImage != NULL) {
-            NewEntry->TitleImage = egCopyImage (Entry->TitleImage);
-        }
-
-        NewEntry->InfoLineCount = Entry->InfoLineCount;
-        if (NewEntry->InfoLineCount > 0) {
-            NewEntry->InfoLines = (CHAR16 **) AllocateZeroPool (
-                Entry->InfoLineCount * (sizeof (CHAR16 *))
-            );
-            for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
-                NewEntry->InfoLines[i] = (Entry->InfoLines[i])
-                    ? StrDuplicate (Entry->InfoLines[i]) : NULL;
-            } // for
-        }
-
-        NewEntry->EntryCount = Entry->EntryCount;
-        if (NewEntry->EntryCount > 0) {
-            NewEntry->Entries = (REFIT_MENU_ENTRY **) AllocateZeroPool (
-                Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY *))
-            );
-            for (i = 0; i < Entry->EntryCount && NewEntry->Entries; i++) {
-                AddMenuEntryCopy (NewEntry, Entry->Entries[i]);
-            } // for
-        }
-
-        NewEntry->TimeoutSeconds =  Entry->TimeoutSeconds;
-        NewEntry->TimeoutText    = (Entry->TimeoutText)
-            ? StrDuplicate (Entry->TimeoutText) : NULL;
-
-        NewEntry->Hint1 = (Entry->Hint1) ? StrDuplicate (Entry->Hint1) : NULL;
-        NewEntry->Hint2 = (Entry->Hint2) ? StrDuplicate (Entry->Hint2) : NULL;
+    if (Entry == NULL) {
+        return NULL;
     }
 
-    return (NewEntry);
+    NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (NewEntry == NULL) {
+        return NULL;
+    }
+
+    NewEntry->Title = (Entry->Title != NULL)
+        ? StrDuplicate (Entry->Title) : NULL;
+
+    if (Entry->TitleImage != NULL) {
+        NewEntry->TitleImage = egCopyImage (Entry->TitleImage);
+    }
+
+    NewEntry->InfoLineCount = Entry->InfoLineCount;
+    if (NewEntry->InfoLineCount > 0) {
+        NewEntry->InfoLines = (CHAR16 **) AllocateZeroPool (
+            Entry->InfoLineCount * sizeof (CHAR16 *)
+        );
+        for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
+            NewEntry->InfoLines[i] = (Entry->InfoLines[i] != NULL)
+                ? StrDuplicate (Entry->InfoLines[i]) : NULL;
+        } // for
+    }
+
+    NewEntry->EntryCount = Entry->EntryCount;
+    if (NewEntry->EntryCount > 0) {
+        NewEntry->Entries = (REFIT_MENU_ENTRY **) AllocateZeroPool (
+            Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY *))
+        );
+        for (i = 0; i < Entry->EntryCount && NewEntry->Entries; i++) {
+            AddMenuEntryCopy (NewEntry, Entry->Entries[i]);
+        } // for
+    }
+
+    NewEntry->TimeoutSeconds =  Entry->TimeoutSeconds;
+    NewEntry->TimeoutText    = (Entry->TimeoutText != NULL)
+        ? StrDuplicate (Entry->TimeoutText) : NULL;
+
+    NewEntry->Hint1 = (Entry->Hint1 != NULL) ? StrDuplicate (Entry->Hint1) : NULL;
+    NewEntry->Hint2 = (Entry->Hint2 != NULL) ? StrDuplicate (Entry->Hint2) : NULL;
+
+    return NewEntry;
 } // REFIT_MENU_SCREEN * CopyMenuScreen()
 
 // Creates a copy of a menu entry. Intended to enable moving a stack-based
-// menu entry (such as the ones for the "reboot" and "exit" functions) to
-// to the heap. This enables easier deletion of the whole set of menu
-// entries when re-scanning.
+// menu entry (such as the ones for the "reboot" and "exit" functions)
+// to the heap. This enables easier deletion of the whole set
+// of menu entries when re-scanning.
 // Returns a pointer to the copy of the menu entry.
 REFIT_MENU_ENTRY * CopyMenuEntry (
     REFIT_MENU_ENTRY *Entry
@@ -254,11 +261,11 @@ REFIT_MENU_ENTRY * CopyMenuEntry (
     return (NewEntry);
 } // REFIT_MENU_ENTRY * CopyMenuEntry()
 
-// Creates a new LOADER_ENTRY data structure and populates it with
-// default values from the specified Entry, or NULL values if Entry
-// is unspecified (NULL).
-// Returns a pointer to the new data structure, or NULL if it
-// couldn't be allocated
+// Creates a new LOADER_ENTRY data structure and populates
+// it with default values from the specified Entry,
+// or NULL values if Entry is unspecified (NULL).
+// Returns a pointer to the new data structure,
+// or NULL if it could not be allocated
 LOADER_ENTRY * InitializeLoaderEntry (
     IN LOADER_ENTRY *Entry
 ) {
@@ -270,28 +277,29 @@ LOADER_ENTRY * InitializeLoaderEntry (
         return NULL;
     }
 
-    NewEntry->Enabled             = TRUE;
-    NewEntry->UseGraphicsMode     = FALSE;
-    NewEntry->EfiLoaderPath       = NULL;
-    NewEntry->me.Title            = NULL;
+    NewEntry->Enabled             =       TRUE;
+    NewEntry->UseGraphicsMode     =      FALSE;
+    NewEntry->EfiLoaderPath       =       NULL;
+    NewEntry->me.Title            =       NULL;
     NewEntry->me.Tag              = TAG_LOADER;
-    NewEntry->OSType              = 0;
-    NewEntry->EfiBootNum          = 0;
+    NewEntry->OSType              =          0;
+    NewEntry->EfiBootNum          =          0;
+
     if (Entry == NULL) {
-        NewEntry->Volume          = NULL;
-        NewEntry->LoaderPath      = NULL;
-        NewEntry->LoadOptions     = NULL;
-        NewEntry->InitrdPath      = NULL;
-        NewEntry->EfiLoaderPath   = NULL;
+        NewEntry->Volume          =       NULL;
+        NewEntry->LoaderPath      =       NULL;
+        NewEntry->LoadOptions     =       NULL;
+        NewEntry->InitrdPath      =       NULL;
+        NewEntry->EfiLoaderPath   =       NULL;
     }
     else {
         NewEntry->EfiBootNum      =  Entry->EfiBootNum;
         NewEntry->UseGraphicsMode =  Entry->UseGraphicsMode;
-        NewEntry->Volume          = (Entry->Volume       ) ?                      Entry->Volume         : NULL;
-        NewEntry->LoaderPath      = (Entry->LoaderPath   ) ? StrDuplicate        (Entry->LoaderPath)    : NULL;
-        NewEntry->InitrdPath      = (Entry->InitrdPath   ) ? StrDuplicate        (Entry->InitrdPath)    : NULL;
-        NewEntry->LoadOptions     = (Entry->LoadOptions  ) ? StrDuplicate        (Entry->LoadOptions)   : NULL;
-        NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
+        NewEntry->Volume          = (Entry->Volume        != NULL) ?                      Entry->Volume         : NULL;
+        NewEntry->LoaderPath      = (Entry->LoaderPath    != NULL) ? StrDuplicate        (Entry->LoaderPath)    : NULL;
+        NewEntry->InitrdPath      = (Entry->InitrdPath    != NULL) ? StrDuplicate        (Entry->InitrdPath)    : NULL;
+        NewEntry->LoadOptions     = (Entry->LoadOptions   != NULL) ? StrDuplicate        (Entry->LoadOptions)   : NULL;
+        NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath != NULL) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
     }
 
     return NewEntry;
@@ -299,11 +307,11 @@ LOADER_ENTRY * InitializeLoaderEntry (
 
 // Prepare a REFIT_MENU_SCREEN data structure for a subscreen entry. This sets up
 // the default entry that launches the boot loader using the same options as the
-// main Entry does. Subsequent options can be added by the calling function.
-// If a subscreen already exists in the Entry that is passed to this function,
+// Main Entry. Subsequent options can be added by the calling function.
+// If a subscreen already exists in the Entry passed to this function,
 // it is left unchanged and a pointer to it is returned.
-// Returns a pointer to the new subscreen data structure, or NULL if there
-// were problems allocating memory.
+// Returns a pointer to the new subscreen data structure,
+// or NULL if there were problems with allocating memory.
 REFIT_MENU_SCREEN * InitializeSubScreen (
     IN LOADER_ENTRY *Entry
 ) {
@@ -316,6 +324,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     CHAR16                 *DisplayName;
+    BOOLEAN                 CheckFlag;
     BOOLEAN                 Found;
     LOADER_ENTRY           *SubEntry;
     REFIT_MENU_SCREEN      *SubScreen;
@@ -325,8 +334,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     #endif
 
 
-    FileName = Basename (Entry->LoaderPath);
-    if (Entry->me.SubScreen) {
+    if (Entry->me.SubScreen != NULL) {
         // Existing subscreen ... Early Return ... Add new entry later.
         return CopyMenuScreen (Entry->me.SubScreen);
     }
@@ -346,8 +354,9 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
     }
 
-    TmpStr = (Entry->Title != NULL) ? Entry->Title  : FileName;
-    TmpName = (DisplayName) ? DisplayName : Entry->Volume->VolName;
+    FileName = (Entry->LoaderPath != NULL) ? Basename (Entry->LoaderPath) : NULL;
+    TmpStr   = (Entry->Title      != NULL) ? Entry->Title                 : FileName;
+    TmpName  = (DisplayName       != NULL) ? DisplayName                  : Entry->Volume->VolName;
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         TmpStr,
@@ -357,15 +366,24 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         SetVolType (TmpStr, TmpName, Entry->Volume->FSType)
     );
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Build Subscreen:- '%s'", SubScreen->Title);
-    #endif
+    do {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_THREE_STAR_MID,
+            L"Build SubScreen:- '%s'",
+            SubScreen->Title
+        );
+        #endif
 
-    SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
 
-    // Default entry
-    SubEntry = InitializeLoaderEntry (Entry);
-    if (SubEntry != NULL) {
+        // Default entry
+        SubEntry = InitializeLoaderEntry (Entry);
+        if (SubEntry == NULL) {
+            break;
+        }
+
+        NameOS = NULL;
+
         // DA-TAG: Do not free 'NameOS'
         if (0);
         else if (Entry->OSType == 'M') {
@@ -373,26 +391,47 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 ? L"Instance: macOS Installer"
                 : L"Instance: macOS";
         }
-        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"Legacy")) NameOS = L"Instance: Windows (Legacy)";
-        else if (Entry->OSType == 'W' && FindSubStr (SubScreen->Title, L"UEFI"  )) NameOS = L"Instance: Windows (UEFI)"  ;
-        else if (Entry->OSType == 'W'                                            ) NameOS = L"Instance: Windows"         ;
-        else if (Entry->OSType == 'X'                                            ) NameOS = L"Instance: XoM"             ;
-        else if (Entry->OSType == 'E'                                            ) NameOS = L"Instance: Elilo"           ;
-        else if (Entry->OSType == 'R'                                            ) NameOS = L"Instance: rEFit Variant"   ;
-        else if (FindSubStr (SubScreen->Title, L"OpenCore"                      )) NameOS = L"Instance: OpenCore"        ;
-        else if (FindSubStr (SubScreen->Title, L"Clover"                        )) NameOS = L"Instance: Clover"          ;
-        else if (Entry->OSType == 'L' || Entry->OSType == 'G') {
+        else if (Entry->OSType == 'W') {
+            if (MyStrStr (SubScreen->Title, L"Legacy")) {
+                NameOS = (MyStrStr (SubScreen->Title, L"Legacy -"))
+                    ? L"Instance: Windows (Legacy - NT/XP)"
+                    : L"Instance: Windows (Legacy)";
+            }
+            else if (MyStrStr (SubScreen->Title, L"UEFI")) {
+                NameOS = L"Instance: Windows (UEFI)";
+            }
+            else {
+                NameOS = L"Instance: Windows";
+            }
+        }
+        else if (Entry->OSType == 'X'                    ) NameOS = L"Instance: XoM"          ;
+        else if (Entry->OSType == 'E'                    ) NameOS = L"Instance: Elilo"        ;
+        else if (Entry->OSType == 'R'                    ) NameOS = L"Instance: rEFit Variant";
+        else if (MyStrStr (SubScreen->Title, L"OpenCore")) NameOS = L"Instance: OpenCore"     ;
+        else if (MyStrStr (SubScreen->Title, L"Clover"  )) NameOS = L"Instance: Clover"       ;
+        else if (
+            Entry->OSType == 'L' ||
+            Entry->OSType == 'G'
+        ) {
             Found = FALSE;
+
             #if REFIT_DEBUG > 0
             MY_MUTELOGGER_SET;
             #endif
-            if (GlobalConfig.HelpScan                          &&
-                !FindSubStr (SubScreen->Title, L"vmlinuz")     &&
-                !FindSubStr (SubScreen->Title, L"bzImage")     &&
+            CheckFlag = (
+                GlobalConfig.HelpScan                      &&
+                !FindSubStr (SubScreen->Title, L"vmlinuz") &&
+                !FindSubStr (SubScreen->Title, L"bzImage") &&
                 !FindSubStr (SubScreen->Title, L"Manual Stanza:")
-            ) {
+            );
+            #if REFIT_DEBUG > 0
+            MY_MUTELOGGER_OFF;
+            #endif
+
+            if (CheckFlag) {
                 i = 0;
-                while (!Found &&
+                while (
+                    !Found &&
                     (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
                 ) {
                     // DA-TAG: Do *NOT* Free 'ShowName'
@@ -401,22 +440,25 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                     SearchName = PoolPrint (L"- %s", ShowName);
                     if (FindSubStr (SubScreen->Title, SearchName)) {
                         MY_FREE_POOL(DisplayName);
+
                         if (Entry->OSType == 'L') {
-                            DisplayName = PoolPrint (L"Instance: Linux - %s", ShowName);
+                            DisplayName = PoolPrint (
+                                L"Instance: Linux - %s", ShowName
+                            );
                         }
                         else {
-                            DisplayName = PoolPrint (L"Instance: Linux - %s via Grub", ShowName);
+                            DisplayName = PoolPrint (
+                                L"Instance: Linux - %s via Grub", ShowName
+                            );
                         }
+
                         NameOS = DisplayName;
-                        Found = TRUE;
+                        Found  =        TRUE;
                     }
                     MY_FREE_POOL(LinuxName);
                     MY_FREE_POOL(SearchName);
                 } // while
             }
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
 
             if (!Found) {
                 if (Entry->OSType == 'L') {
@@ -426,8 +468,9 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                     NameOS = L"Instance: Grub";
                 }
             }
-        }
-        else {
+        } // else if Entry->OSType == 'L'
+
+        if (NameOS == NULL) {
             NameOS = Entry->Title;
         }
 
@@ -444,12 +487,13 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         }
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-    }
+    } while (0); // This 'loop' only runs once
 
     SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
-    SubScreen->Hint2 = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
-        ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
-        : StrDuplicate (SUBSCREEN_HINT2);
+    SubScreen->Hint2 = StrDuplicate (
+        (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
+            ? SUBSCREEN_HINT2_NO_EDITOR : SUBSCREEN_HINT2
+    );
 
     MY_FREE_POOL(FileName);
     MY_FREE_POOL(DisplayName);
@@ -458,16 +502,16 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
 
 VOID GenerateSubScreen (
-    IN OUT LOADER_ENTRY *Entry,
-    IN     REFIT_VOLUME *Volume,
-    IN     BOOLEAN       GenerateReturn
+    IN OUT LOADER_ENTRY     *Entry,
+    IN     REFIT_VOLUME     *Volume,
+    IN     BOOLEAN           GenerateReturn
 ) {
     UINTN                    i;
     UINTN                    TokenCount;
     CHAR16                  *InitrdName;
     CHAR16                  *KernelVersion;
     CHAR16                 **TokenList;
-    BOOLEAN                  UseSystemVolume;
+    BOOLEAN                  UseSystemAPFS;
     REFIT_FILE              *File;
     LOADER_ENTRY            *SubEntry;
     REFIT_VOLUME            *DiagnosticsVolume;
@@ -479,7 +523,7 @@ VOID GenerateSubScreen (
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START MAIN", FuncTag);
+    BREAD_CRUMB(L"%s:  A - MAIN START", FuncTag);
 
     // Create the submenu
     if (StrLen (Entry->Title) == 0) {
@@ -552,7 +596,7 @@ VOID GenerateSubScreen (
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
-            } // Safe mode allowed
+            } // if !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)
 
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
@@ -569,14 +613,16 @@ VOID GenerateSubScreen (
                     SubEntry->UseGraphicsMode = FALSE;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
                 }
-            } // single-user mode allowed
+            } // if !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)
 
             // Check for Apple hardware diagnostics
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)) {
-                UseSystemVolume = FALSE;
+                UseSystemAPFS = FALSE;
                 // DA-TAG: Investigate This
                 //         Is SingleAPFS really needed?
-                //         Play safe and add it for now
+                //         Play safe and add it for now.
+                //         SingleAPFS is TRUE by default.
+                //         Including when no APFS present.
                 if (SingleAPFS) {
                     if (GlobalConfig.SyncAPFS                    &&
                         Volume->FSType  == FS_TYPE_APFS          &&
@@ -587,14 +633,14 @@ VOID GenerateSubScreen (
                                 &(SystemVolumes[i]->PartGuid),
                                 &(Volume->PartGuid))
                             ) {
-                                UseSystemVolume = TRUE;
+                                UseSystemAPFS = TRUE;
                                 break;
                             }
                         } // for
                     }
                 }
 
-                DiagnosticsVolume = (UseSystemVolume) ? SystemVolumes[i] : Volume;
+                DiagnosticsVolume = (UseSystemAPFS) ? SystemVolumes[i] : Volume;
                 if (FileExists (DiagnosticsVolume->RootDir, MACOSX_DIAGNOSTICS)) {
                     SubEntry = InitializeLoaderEntry (Entry);
                     if (SubEntry != NULL) {
@@ -615,7 +661,7 @@ VOID GenerateSubScreen (
             File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
 
             BREAD_CRUMB(L"%s:  2", FuncTag);
-            if (File) {
+            if (File != NULL) {
                 BREAD_CRUMB(L"%s:  2a 1", FuncTag);
                 KernelVersion = FindNumbers (Entry->LoaderPath);
 
@@ -625,21 +671,24 @@ VOID GenerateSubScreen (
                 BREAD_CRUMB(L"%s:  2a 3", FuncTag);
                 if (TokenCount >= 2) {
                     BREAD_CRUMB(L"%s:  2a 3a 1", FuncTag);
-                    ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+                    ReplaceSubstring (
+                        &(TokenList[1]), KERNEL_VERSION, KernelVersion
+                    );
                 }
 
                 BREAD_CRUMB(L"%s:  2a 4", FuncTag);
                 // First entry requires special processing, since it was initially set
                 // up with a default title but correct options by InitializeSubScreen(),
                 // earlier.
-                if ((TokenCount > 1)             &&
-                    (SubScreen->Entries != NULL) &&
-                    (SubScreen->Entries[0] != NULL)
+                if (TokenCount > 1                &&
+                    SubScreen->Entries    != NULL &&
+                    SubScreen->Entries[0] != NULL
                 ) {
                     BREAD_CRUMB(L"%s:  2a 4a 1", FuncTag);
                     MY_FREE_POOL(SubScreen->Entries[0]->Title);
                     SubScreen->Entries[0]->Title = StrDuplicate (
-                        (TokenList[0]) ? TokenList[0] : L"Load Instance: Linux"
+                        (TokenList[0] != NULL)
+                            ? TokenList[0] : L"Load Instance: Linux"
                     );
                 }
                 BREAD_CRUMB(L"%s:  2a 5", FuncTag);
@@ -652,7 +701,9 @@ VOID GenerateSubScreen (
                 while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
                     LOG_SEP(L"X");
                     BREAD_CRUMB(L"%s:  2a 7a 1 - WHILE LOOP:- START", FuncTag);
-                    ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+                    ReplaceSubstring (
+                        &(TokenList[1]), KERNEL_VERSION, KernelVersion
+                    );
 
                     BREAD_CRUMB(L"%s:  2a 7a 2", FuncTag);
                     SubEntry = InitializeLoaderEntry (Entry);
@@ -660,15 +711,18 @@ VOID GenerateSubScreen (
                     BREAD_CRUMB(L"%s:  2a 7a 3", FuncTag);
                     if (SubEntry != NULL) {
                         BREAD_CRUMB(L"%s:  2a 7a 3a 1", FuncTag);
-                        SubEntry->me.Title = TokenList[0]
-                            ? StrDuplicate (TokenList[0])
-                            : StrDuplicate (L"Load Instance: Linux");
+                        SubEntry->me.Title = StrDuplicate (
+                            (TokenList[0] != NULL)
+                                ? TokenList[0] : L"Load Instance: Linux"
+                        );
 
                         BREAD_CRUMB(L"%s:  2a 7a 3a 2", FuncTag);
                         MY_FREE_POOL(SubEntry->LoadOptions);
 
                         BREAD_CRUMB(L"%s:  2a 7a 3a 3", FuncTag);
-                        SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+                        SubEntry->LoadOptions = AddInitrdToOptions (
+                            TokenList[1], InitrdName
+                        );
 
                         BREAD_CRUMB(L"%s:  2a 7a 3a 4", FuncTag);
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
@@ -766,30 +820,34 @@ VOID GenerateSubScreen (
             BREAD_CRUMB(L"%s:  A2 - OSType X:- END", FuncTag);
         } // Entries for xom.efi
 
+        BREAD_CRUMB(L"%s:  B", FuncTag);
         do {
             LOG_SEP(L"X");
-            BREAD_CRUMB(L"%s:  Z 1 - START", FuncTag);
+            BREAD_CRUMB(L"%s:  B 1", FuncTag);
             if (GenerateReturn) {
-                BREAD_CRUMB(L"%s:  Z 1a 1", FuncTag);
-                if (!GetReturnMenuEntry (&SubScreen)) {
-                    BREAD_CRUMB(L"%s:  Z 1a 1a 1 - Resource Exhaustion!!", FuncTag);
+                BREAD_CRUMB(L"%s:  B 1a 1", FuncTag);
+                if (!GetMenuEntryReturn (&SubScreen)) {
+                    BREAD_CRUMB(L"%s:  B 1a 1a 1 - Resource Exhaustion!!", FuncTag);
                     FreeMenuScreen (&SubScreen);
-                    BREAD_CRUMB(L"%s:  Z 1a 1a 2", FuncTag);
+                    BREAD_CRUMB(L"%s:  B 1a 1a 2", FuncTag);
 
                     break;
                 }
+                BREAD_CRUMB(L"%s:  B 1a 2", FuncTag);
             }
+            BREAD_CRUMB(L"%s:  B 2 - END", FuncTag);
             Entry->me.SubScreen = SubScreen;
         } while (0); // This 'loop' only runs once
 
-        BREAD_CRUMB(L"%s:  B END MAIN - VOID", FuncTag);
+        BREAD_CRUMB(L"%s:  A MAIN END - VOID", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
     }
 } // VOID GenerateSubScreen()
 
-// Sets a few defaults for a loader entry -- mainly the icon, but also the OS type
-// code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
+// Sets a few defaults for a loader entry -- mainly the icon,
+// but also the OS type code and shortcut letter.
+// For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
 VOID SetLoaderDefaults (
     IN LOADER_ENTRY *Entry,
@@ -810,6 +868,7 @@ VOID SetLoaderDefaults (
     CHAR16                  ShortcutLetter;
     BOOLEAN                 GotFlag;
     BOOLEAN                 MacFlag;
+    BOOLEAN                 GotUEFI;
     BOOLEAN                 GetImage;
     BOOLEAN                 VetVolIcon;
     BOOLEAN                 FoundVentoy;
@@ -827,73 +886,72 @@ VOID SetLoaderDefaults (
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-    NameClues = Basename (LoaderPath);
+
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    PathOnly = FindPath (LoaderPath);
+    if (LoaderPath == NULL) {
+        NameClues = NULL;
+        PathOnly  = NULL;
+    }
+    else {
+        NameClues = Basename (LoaderPath);
+        PathOnly  = FindPath (LoaderPath);
+    }
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
     ShortcutLetter =     0;
-    ThisIconName   =  NULL;
-    OSIconName     =  NULL;
-    GotFlag        = FALSE;
-    MacFlag        = FALSE;
-    if (!AllowGraphicsMode) {
-        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In SetLoaderDefaults ... Skip Icon Load in %s Mode",
-            (GlobalConfig.DirectBoot)
-                ? L"DirectBoot"
-                : L"Text Screen"
-        );
-        #endif
-    }
-    else {
-        VetVolIcon = FALSE;
+    TargetName     =  NULL;
+    FoundVentoy    = FALSE;
+    if (AllowGraphicsMode) {
+        ThisIconName = OSIconName =  NULL;
+        VetVolIcon   = MacFlag    = FALSE;
+        GotFlag      = GotUEFI    = FALSE;
 
-        BREAD_CRUMB(L"%s:  3b 1", FuncTag);
+        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
         if (Volume->DiskKind == DISK_KIND_NET) {
-            BREAD_CRUMB(L"%s:  3b 1a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
             MergeStrings (&NameClues, Entry->me.Title, L' ');
         }
         else {
-            BREAD_CRUMB(L"%s:  3b 1b 0", FuncTag);
-            if (!Entry->me.BadgeImage) {
-                BREAD_CRUMB(L"%s:  3b 1b 0a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 1b 0", FuncTag);
+            if (Entry->me.Image == NULL) {
+                BREAD_CRUMB(L"%s:  3a 1b 0a 1", FuncTag);
                 LoadVolumeBadgeIcon (&Volume);
-                BREAD_CRUMB(L"%s:  3b 1b 0a 2", FuncTag);
-                if (Volume->VolBadgeImage) {
-                    BREAD_CRUMB(L"%s:  33b 1b 0a 2a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 0a 2", FuncTag);
+                if (Volume->VolBadgeImage != NULL) {
+                    BREAD_CRUMB(L"%s:  3a 1b 0a 2a 1", FuncTag);
                     Entry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
+                    BREAD_CRUMB(L"%s:  3a 1b 0a 2a 2", FuncTag);
                 }
-                BREAD_CRUMB(L"%s:  3b 1b 0a 3", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 0a 3", FuncTag);
             }
 
-            BREAD_CRUMB(L"%s:  3b 1b 1", FuncTag);
-            if (AllowGraphicsMode && !Entry->me.Image &&
-                !GlobalConfig.HiddenIconsIgnore &&
-                GlobalConfig.HiddenIconsPrefer
+            BREAD_CRUMB(L"%s:  3a 1b 1", FuncTag);
+            if (Entry->me.Image == NULL        &&
+                GlobalConfig.HiddenIconsPrefer &&
+                !GlobalConfig.HiddenIconsIgnore
             ) {
-                BREAD_CRUMB(L"%s:  3b 1b 1a 1", FuncTag);
-                if (!Volume->VolIconImage) {
-                    BREAD_CRUMB(L"%s:  3b 1b 1a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 1a 1", FuncTag);
+                if (Volume->VolIconImage == NULL) {
+                    BREAD_CRUMB(L"%s:  3a 1b 1a 1a 1", FuncTag);
                     LoadVolumeIcon (Volume);
                     VetVolIcon = TRUE;
+                    BREAD_CRUMB(L"%s:  3a 1b 1a 1a 2", FuncTag);
                 }
-                BREAD_CRUMB(L"%s:  3b 1b 1a 2", FuncTag);
-                if (Volume->VolIconImage) {
+                BREAD_CRUMB(L"%s:  3a 1b 1a 2", FuncTag);
+                if (Volume->VolIconImage != NULL) {
                     // Use ".VolumeIcon" image icon for loader
                     // Takes precedence all over options
-                    BREAD_CRUMB(L"%s:  3b 1b 1a 2a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  3a 1b 1a 2a 1", FuncTag);
                     Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                    BREAD_CRUMB(L"%s:  3a 1b 1a 2a 2", FuncTag);
                 }
-                BREAD_CRUMB(L"%s:  3b 1b 1a 3", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 1a 3", FuncTag);
             }
 
-            BREAD_CRUMB(L"%s:  3b 1b 2", FuncTag);
-            if (AllowGraphicsMode && !Entry->me.Image) {
-                BREAD_CRUMB(L"%s:  3b 1b 2a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 1b 2", FuncTag);
+            if (Entry->me.Image == NULL) {
+                BREAD_CRUMB(L"%s:  3a 1b 2a 1", FuncTag);
                 #if REFIT_DEBUG > 0
                 if (!GlobalConfig.HiddenIconsIgnore &&
                     GlobalConfig.HiddenIconsPrefer
@@ -904,17 +962,17 @@ VOID SetLoaderDefaults (
                 }
                 #endif
 
-                BREAD_CRUMB(L"%s:  3b 1b 2a 2", FuncTag);
-                if (LoaderPath &&
+                BREAD_CRUMB(L"%s:  3a 1b 2a 2", FuncTag);
+                if (LoaderPath != NULL &&
                     FindSubStr (LoaderPath, L"System\\Library\\CoreServices")
                 ) {
-                    BREAD_CRUMB(L"%s:  3b 1b 2a 2a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  3a 1b 2a 2a 1", FuncTag);
                     MacFlag = TRUE;
                 }
 
-                BREAD_CRUMB(L"%s:  3b 1b 2a 3", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 2a 3", FuncTag);
                 if (GlobalConfig.HelpIcon) {
-                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  3a 1b 2a 3a 1", FuncTag);
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_THREE_STAR_MID,
                         L"Skip Bootloader Directory Icon Search ... Config Setting *IS NOT* Active:- 'decline_help_icon'"
@@ -922,9 +980,17 @@ VOID SetLoaderDefaults (
                     #endif
                 }
                 else {
-                    NoExtension = StripEfiExtension (NameClues);
+                    BREAD_CRUMB(L"%s:  3a 1b 2a 3b 0", FuncTag);
+                    if (NameClues == NULL) {
+                        BREAD_CRUMB(L"%s:  3a 1b 2a 3b 0a 1", FuncTag);
+                        NoExtension = NULL;
+                    }
+                    else {
+                        BREAD_CRUMB(L"%s:  3a 1b 2a 3b 0b 1", FuncTag);
+                        NoExtension = StripEfiExtension (NameClues);
+                    }
 
-                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1", FuncTag);
+                    BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1", FuncTag);
                     if (NoExtension != NULL) {
                         // Locate custom icon for loader
                         // Takes precedence over the "hints" in OSIconName variable
@@ -932,58 +998,54 @@ VOID SetLoaderDefaults (
                         ALT_LOG(1, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
                         #endif
 
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 1", FuncTag);
-                        if (!Entry->me.Image) {
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 1a 1", FuncTag);
-                            Entry->me.Image = egLoadIconAnyType (
-                                Volume->RootDir,
-                                PathOnly,
-                                NoExtension,
-                                GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                            );
-                        }
+                        BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 1", FuncTag);
+                        Entry->me.Image = egLoadIconAnyType (
+                            Volume->RootDir,
+                            PathOnly, NoExtension,
+                            GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                        );
 
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2", FuncTag);
-                        if (!Entry->me.Image &&
+                        BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2", FuncTag);
+                        if (Entry->me.Image == NULL &&
                             !GlobalConfig.HiddenIconsIgnore
                         ) {
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1", FuncTag);
-                            if (!Volume->VolIconImage) {
-                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 1", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 1", FuncTag);
+                            if (Volume->VolIconImage == NULL) {
+                                BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 1a 1", FuncTag);
                                 if (!VetVolIcon) {
-                                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 1a 1", FuncTag);
+                                    BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 1a 1a 1", FuncTag);
                                     LoadVolumeIcon (Volume);
                                 }
-                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 1a 2", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 1a 2", FuncTag);
                             }
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 2", FuncTag);
-                            if (Volume->VolIconImage) {
+
+                            BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 2", FuncTag);
+                            if (Volume->VolIconImage != NULL) {
                                 // Use ".VolumeIcon" image icon for loader
                                 // no other icon type in bootloader directory
-                                BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 2a 1", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 2a 1", FuncTag);
                                 Entry->me.Image = egCopyImage (Volume->VolIconImage);
                             }
-                            BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 2a 3", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 2a 3", FuncTag);
                         }
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 3", FuncTag);
 
                         MY_FREE_POOL(NoExtension);
-                        BREAD_CRUMB(L"%s:  3b 1b 2a 3a 1b 4", FuncTag);
+                        BREAD_CRUMB(L"%s:  3a 1b 2a 3b 1a 3", FuncTag);
                     }  // if NoExtension != NULL
-                    BREAD_CRUMB(L"%s:  3b 1b 2a 3a 2", FuncTag);
-                } // if !GlobalConfig.HelpIcon
-                BREAD_CRUMB(L"%s:  3b 1b 2a 4", FuncTag);
-            } // if !Entry->me.Image
+                    BREAD_CRUMB(L"%s:  3a 1b 2a 3b 2", FuncTag);
+                } // if/else GlobalConfig.HelpIcon
+                BREAD_CRUMB(L"%s:  3a 1b 2a 4", FuncTag);
+            } // if Entry->me.Image == NULL
 
             // Begin creating icon "hints" from last part of loader dir path
-            BREAD_CRUMB(L"%s:  3b 1b 3", FuncTag);
-            if (Entry->me.Image) {
-                BREAD_CRUMB(L"%s:  3b 1b 3a 1", FuncTag);
+            BREAD_CRUMB(L"%s:  3a 1b 3", FuncTag);
+            if (Entry->me.Image != NULL) {
+                BREAD_CRUMB(L"%s:  3a 1b 3a 1", FuncTag);
                 GotFlag = TRUE;
             }
             else {
                 #if REFIT_DEBUG > 0
-                BREAD_CRUMB(L"%s:  3b 1b 3b 1", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 3b 1", FuncTag);
                 if (Entry->me.Image == NULL) {
                     ALT_LOG(1, LOG_LINE_NORMAL,
                         L"Create Icon Hint from Loader Path:- '%s'",
@@ -991,381 +1053,508 @@ VOID SetLoaderDefaults (
                     );
                 }
                 #endif
-            }
 
-            BREAD_CRUMB(L"%s:  3b 1b 4", FuncTag);
-            OSIconName = FindLastDirName (LoaderPath);
+                BREAD_CRUMB(L"%s:  3a 1b 3b 2", FuncTag);
+                OSIconName = FindLastDirName (LoaderPath);
 
-            BREAD_CRUMB(L"%s:  3b 1b 5", FuncTag);
-            if (OSIconName == NULL) {
-                BREAD_CRUMB(L"%s:  3b 1b 5a 1", FuncTag);
-                ThisIconName = NULL;
-            }
-            else {
-                BREAD_CRUMB(L"%s:  3b 1b 5b 1", FuncTag);
-                ShortcutLetter = OSIconName[0];
-                ThisIconName   = StrDuplicate (OSIconName);
-            }
-
-            BREAD_CRUMB(L"%s:  3b 1b 6", FuncTag);
-            // Add every "word" in the filesystem and partition names, delimited by
-            // spaces, dashes (-), underscores (_), or colons (:), to the list of
-            // hints to be used in searching for OS icons.
-            if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
-                MergeFsName = TRUE;
-
-                BREAD_CRUMB(L"%s:  3b 1b 6a 1", FuncTag);
-                if (FindSubStr (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
-                    BREAD_CRUMB(L"%s:  3b 1b 6a 1a 1", FuncTag);
-                    MergeFsName = FALSE;
-                }
-
-                BREAD_CRUMB(L"%s:  3b 1b 6a 2", FuncTag);
-                if (MergeFsName) {
-                    BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1", FuncTag);
-                    if (Entry->me.Image == NULL) {
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 1", FuncTag);
-                        TargetName = Volume->FsName;
-
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2", FuncTag);
-                        i = 0;
-                        FoundVentoy = FALSE;
-                        while (
-                            !FoundVentoy &&
-                            GlobalConfig.HandleVentoy &&
-                            (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
-                        ) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
-                            if (MyStrBegins (VentoyName, TargetName)) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
-                                FoundVentoy = TRUE;
-                                TargetName  = L"ventoy";
-                            }
-                            MY_FREE_POOL(VentoyName);
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
-                        } // while
-
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 3", FuncTag);
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Merge Hints Based on Filesystem Name:- '%s'",
-                            TargetName
-                        );
-                        #endif
-
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 4", FuncTag);
-                        if (!FoundVentoy) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 4a 1", FuncTag);
-                            MergeUniqueWords (&OSIconName, TargetName, L',');
-                        }
-                        else {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 4b 1", FuncTag);
-                            MY_FREE_POOL(OSIconName);
-                            OSIconName = StrDuplicate (TargetName);
-                        }
-
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2a 1a 5", FuncTag);
-                    } // if Entry->me.Image == NULL
-                    BREAD_CRUMB(L"%s:  3b 1b 6a 2a 2", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 3b 3", FuncTag);
+                if (OSIconName != NULL                  &&
+                    GlobalConfig.HelpIcon               &&
+                    !MyStriCmp (OSIconName, L"BOOT")    &&
+                    !MyStriCmp (OSIconName, L"CoreServices")
+                ) {
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 3a 1", FuncTag);
+                    ShortcutLetter = OSIconName[0];
+                    ThisIconName   = StrDuplicate (OSIconName);
                 }
                 else {
-                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1", FuncTag);
-                    if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1", FuncTag);
-                        DisplayName = NULL;
-                        if (GlobalConfig.SyncAPFS                    &&
-                            Volume->FSType  == FS_TYPE_APFS          &&
-                            Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
-                        ) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 1", FuncTag);
-                            DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 1a 2", FuncTag);
-                        }
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 3b 1", FuncTag);
+                    if (OSIconName != NULL) {
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 3b 1a 1", FuncTag);
+                        MY_FREE_POOL(OSIconName);
+                    }
+                    ThisIconName = NULL;
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 3b 2", FuncTag);
+                }
 
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 3b 4", FuncTag);
+                // Add every "word" in the filesystem and partition names, delimited by
+                // spaces, dashes (-), underscores (_), or colons (:), to the list of
+                // hints to be used in searching for OS icons.
+                if (Volume->FsName != NULL &&
+                    Volume->FsName[0] != L'\0'
+                ) {
+                    MergeFsName = TRUE;
+
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 1", FuncTag);
+                    if (GlobalConfig.SyncAPFS              &&
+                        FindSubStr (Volume->FsName, L"PreBoot")
+                    ) {
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 1a 1", FuncTag);
+                        MergeFsName = FALSE;
+                    }
+
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2", FuncTag);
+                    if (MergeFsName) {
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1", FuncTag);
                         if (Entry->me.Image == NULL) {
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 1", FuncTag);
-                            TargetName = (DisplayName)
-                                ? DisplayName
-                                : Volume->VolName;
-
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1", FuncTag);
                             i = 0;
-                            FoundVentoy = FALSE;
                             while (
+                                !FoundVentoy &&
                                 GlobalConfig.HandleVentoy &&
-                                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                             ) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Volume", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
                                 if (MyStrBegins (VentoyName, TargetName)) {
-                                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 1a 1 - Found Ventoy Volume ... Set Ventoy Icon", FuncTag);
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
                                     FoundVentoy = TRUE;
                                     TargetName  = L"ventoy";
                                 }
                                 MY_FREE_POOL(VentoyName);
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 2a 2 - WHILE LOOP:- END", FuncTag);
-
-                                if (FoundVentoy) break;
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1a 2 - WHILE LOOP:- END", FuncTag);
                             } // while
 
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 3", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2", FuncTag);
+                            if (TargetName == NULL) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1", FuncTag);
+                                if (GlobalConfig.HelpIcon &&
+                                    (
+                                        MyStriCmp (Volume->FsName, L"EFI") ||
+                                        MyStriCmp (Volume->FsName, L"ESP") ||
+                                        MyStriCmp (Volume->FsName, L"EFI System Partition")
+                                    )
+                                ) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1a 1", FuncTag);
+                                    GotUEFI = TRUE;
+                                }
+                                else {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 1", FuncTag);
+                                    if (Volume->FsName != NULL) {
+                                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 1a 1", FuncTag);
+                                        TargetName = Volume->FsName;
+                                    }
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 2", FuncTag);
+                                }
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 2", FuncTag);
+                            } // if TargetName == NULL
+
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 3", FuncTag);
                             #if REFIT_DEBUG > 0
-                            ALT_LOG(1, LOG_LINE_NORMAL,
-                                L"Merge Hints Based on Volume Name:- '%s'",
-                                TargetName
-                            );
+                            if (TargetName != NULL) {
+                                ALT_LOG(1, LOG_LINE_NORMAL,
+                                    L"Merge Hints Based on Name of Filesystem:- '%s'",
+                                    TargetName
+                                );
+                            }
                             #endif
 
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 4", FuncTag);
-                            if (!FoundVentoy) {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 4a 1", FuncTag);
-                                MergeUniqueWords (&OSIconName, TargetName, L',');
-                            }
-                            else {
-                                BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 4b 1", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4", FuncTag);
+                            if (FoundVentoy) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4a 1", FuncTag);
                                 MY_FREE_POOL(OSIconName);
                                 OSIconName = StrDuplicate (TargetName);
                             }
-                            BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 2a 5", FuncTag);
+                            else {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4b 1", FuncTag);
+                                if (GlobalConfig.HelpIcon) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4b 1a 1", FuncTag);
+                                    MergeUniqueItems (&OSIconName, TargetName, L',');
+                                }
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4b 2", FuncTag);
+                                MergeUniqueWords (&OSIconName, TargetName, L',');
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4b 3", FuncTag);
+                            }
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 5", FuncTag);
                         } // if Entry->me.Image == NULL
-                        BREAD_CRUMB(L"%s:  3b 1b 6a 2b 1a 3", FuncTag);
-                        MY_FREE_POOL(DisplayName);
-                    } // if Volume->VolName
-                    BREAD_CRUMB(L"%s:  3b 1b 6a 2b 2", FuncTag);
-                } // if/else MergeFsName
-
-                BREAD_CRUMB(L"%s:  3b 1b 6a 3", FuncTag);
-            } // if Volume->FsName
-
-            BREAD_CRUMB(L"%s:  3b 1b 7", FuncTag);
-            if (Volume->PartName && Volume->PartName[0] != L'\0') {
-                BREAD_CRUMB(L"%s:  3b 1b 7a 1", FuncTag);
-                if (AllowGraphicsMode && !Entry->me.Image) {
-                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 1", FuncTag);
-                    TargetName = Volume->PartName;
-
-                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2", FuncTag);
-                    i = 0;
-                    FoundVentoy = FALSE;
-                    while (
-                        !FoundVentoy &&
-                        GlobalConfig.HandleVentoy &&
-                        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
-                    ) {
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
-                        if (MyStrBegins (VentoyName, TargetName)) {
-                            BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
-                            FoundVentoy = TRUE;
-                            TargetName  = L"ventoy";
-                        }
-                        MY_FREE_POOL(VentoyName);
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 2a 2 - WHILE LOOP:- END", FuncTag);
-                    } // while
-                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 3", FuncTag);
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Merge Hints Based on Partition Name:- '%s'",
-                        TargetName
-                    );
-                    #endif
-
-                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4", FuncTag);
-                    if (!FoundVentoy) {
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4a 1", FuncTag);
-                        MergeUniqueWords (&OSIconName, TargetName, L',');
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 2", FuncTag);
                     }
                     else {
-                        BREAD_CRUMB(L"%s:  3b 1b 7a 1a 4b 1", FuncTag);
-                        MY_FREE_POOL(OSIconName);
-                        OSIconName = StrDuplicate (TargetName);
-                    }
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1", FuncTag);
+                        if (Volume->VolName != NULL &&
+                            Volume->VolName[0] != L'\0'
+                        ) {
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 1", FuncTag);
+                            DisplayName = NULL;
+                            if (GlobalConfig.SyncAPFS                    &&
+                                Volume->FSType  == FS_TYPE_APFS          &&
+                                Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
+                            ) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 1a 1", FuncTag);
+                                DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 1a 2", FuncTag);
+                            }
 
-                    BREAD_CRUMB(L"%s:  3b 1b 7a 1a 5", FuncTag);
-                    MergeUniqueWords (&OSIconName, TargetName, L',');
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2", FuncTag);
+                            if (Entry->me.Image == NULL) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 1", FuncTag);
+                                TargetName = (DisplayName != NULL)
+                                    ? DisplayName : Volume->VolName;
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2", FuncTag);
+                                i = 0;
+                                while (
+                                    GlobalConfig.HandleVentoy &&
+                                    (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
+                                ) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2a 1 - WHILE LOOP:- START ... Check for Ventoy Volume", FuncTag);
+                                    if (MyStrBegins (VentoyName, TargetName)) {
+                                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2a 1a 1 - Found Ventoy Volume ... Set Ventoy Icon", FuncTag);
+                                        FoundVentoy =      TRUE;
+                                        TargetName  = L"ventoy";
+                                    }
+                                    MY_FREE_POOL(VentoyName);
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2a 2 - WHILE LOOP:- END", FuncTag);
+
+                                    if (FoundVentoy) {
+                                        break;
+                                    }
+                                } // while
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 3", FuncTag);
+                                #if REFIT_DEBUG > 0
+                                if (TargetName != NULL) {
+                                    ALT_LOG(1, LOG_LINE_NORMAL,
+                                        L"Merge Hints Based on Name of Volume:- '%s'",
+                                        TargetName
+                                    );
+                                }
+                                #endif
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4", FuncTag);
+                                if (FoundVentoy) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4a 1", FuncTag);
+                                    MY_FREE_POOL(OSIconName);
+                                    OSIconName = StrDuplicate (TargetName);
+                                }
+                                else {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4b 1", FuncTag);
+                                    if (GlobalConfig.HelpIcon) {
+                                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 4b 1a 1", FuncTag);
+                                        MergeUniqueItems (&OSIconName, TargetName, L',');
+                                    }
+
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4b 2", FuncTag);
+                                    MergeUniqueWords (&OSIconName, TargetName, L',');
+
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4b 3", FuncTag);
+                                }
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 5", FuncTag);
+                            } // if Entry->me.Image == NULL
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 3", FuncTag);
+                            MY_FREE_POOL(DisplayName);
+                        } // if Volume->VolName
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 2", FuncTag);
+                    } // if/else MergeFsName
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 3", FuncTag);
+                } // if Volume->FsName
+
+                BREAD_CRUMB(L"%s:  3a 1b 3b 5", FuncTag);
+                if (!FoundVentoy             &&
+                    Volume->PartName != NULL &&
+                    Volume->PartName[0] != L'\0'
+                ) {
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1", FuncTag);
+                    TargetName = NULL;
+                    if (Entry->me.Image == NULL) {
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 1", FuncTag);
+                        i = 0;
+                        while (
+                            !FoundVentoy              &&
+                            GlobalConfig.HandleVentoy &&
+                            (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
+                        ) {
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
+                            if (MyStrBegins (VentoyName, Volume->PartName)) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 1a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
+                                FoundVentoy = TRUE;
+                                TargetName  = L"ventoy";
+                            }
+                            MY_FREE_POOL(VentoyName);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 1a 2 - WHILE LOOP:- END", FuncTag);
+                        } // while
+
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2", FuncTag);
+                        if (!FoundVentoy &&
+                            !MyStriCmp (Volume->FsName, Volume->PartName)
+                        ) {
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1", FuncTag);
+                            if (GlobalConfig.HelpIcon &&
+                                (
+                                    MyStriCmp (Volume->PartName, L"EFI") ||
+                                    MyStriCmp (Volume->PartName, L"ESP") ||
+                                    MyStriCmp (Volume->PartName, L"EFI System Partition")
+                                )
+                            ) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1a 1", FuncTag);
+                                GotUEFI = TRUE;
+                            }
+                            else if (
+                                !GlobalConfig.HelpIcon ||
+                                (
+                                    Volume->PartName != NULL &&
+                                    !MyStrStr (Volume->PartName, L"Untitled")
+                                )
+                            ) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1b 1", FuncTag);
+                                TargetName = Volume->PartName;
+                            }
+
+                            #if REFIT_DEBUG > 0
+                            if (TargetName != NULL) {
+                                ALT_LOG(1, LOG_LINE_NORMAL,
+                                    L"Merge Hints Based on Name of Partition:- '%s'",
+                                    TargetName
+                                );
+                            }
+                            #endif
+
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2", FuncTag);
+                            if (FoundVentoy) {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2a 1", FuncTag);
+                                MY_FREE_POOL(OSIconName);
+                                OSIconName = StrDuplicate (TargetName);
+                            }
+                            else {
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 1", FuncTag);
+                                if (GlobalConfig.HelpIcon) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 1a 1", FuncTag);
+                                    MergeUniqueItems (&OSIconName, TargetName, L',');
+                                }
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 2", FuncTag);
+                                MergeUniqueWords (&OSIconName, TargetName, L',');
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 3", FuncTag);
+                            }
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 3", FuncTag);
+                        }
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 3", FuncTag);
+                    }
+                    BREAD_CRUMB(L"%s:  3a 1b 3b 5a 2", FuncTag);
                 }
-                BREAD_CRUMB(L"%s:  3b 1b 7a 2", FuncTag);
-            }
-            BREAD_CRUMB(L"%s:  3b 1b 8", FuncTag);
+                BREAD_CRUMB(L"%s:  3a 1b 3b 6", FuncTag);
+            } // if/else Entry->me.Image != NULL
+            BREAD_CRUMB(L"%s:  3a 1b 4", FuncTag);
         } // if/else Volume->DiskKind == DISK_KIND_NET
-        BREAD_CRUMB(L"%s:  3b 2", FuncTag);
-    }
+
+        GetImage = (Entry->me.Image == NULL) ? TRUE : FALSE;
+        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+    } // if AllowGraphicsMode
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
-    GetImage = (AllowGraphicsMode && !Entry->me.Image);
+    if (!AllowGraphicsMode) {
+        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        GetImage = FALSE;
+    }
 
     // Detect specific loaders
     BREAD_CRUMB(L"%s:  5", FuncTag);
     TmpIconName = NULL;
-    if (FindSubStr (LoaderPath, MACOSX_LOADER_PATH)) {
-        BREAD_CRUMB(L"%s:  5a 1", FuncTag);
-        if (FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
-            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf") ||
-            FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
-            FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
+    if (!FoundVentoy) {
+        BREAD_CRUMB(L"%s:  5a A", FuncTag);
+        if (FindSubStr (LoaderPath, MACOSX_LOADER_PATH)) {
+            BREAD_CRUMB(L"%s:  5a 1", FuncTag);
+            if (FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
+                FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf") ||
+                FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
+                FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
+            ) {
+                BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
+                if (GetImage) {
+                    MergeUniqueStrings (&TmpIconName, L"refind", L',');
+                }
+
+                BREAD_CRUMB(L"%s:  5a 1a 2", FuncTag);
+                Entry->OSType  = 'R';
+                ShortcutLetter = 'R';
+            }
+            else {
+                BREAD_CRUMB(L"%s:  5a 1b 1", FuncTag);
+                if (GetImage) {
+                    MergeUniqueStrings (&TmpIconName, L"mac", L',');
+                }
+
+                BREAD_CRUMB(L"%s:  5a 1b 2", FuncTag);
+                Entry->OSType  = 'M';
+                ShortcutLetter = 'M';
+                Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+            }
+            BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        }
+        else if (
+            MyStriCmp (NameClues, L"bootmgfw.efi") ||
+            MyStriCmp (NameClues, L"bootmgr.efi")  ||
+            MyStriCmp (NameClues, L"cdboot.efi")   ||
+            MyStriCmp (NameClues, L"bkpbootmgfw.efi")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
-            if (GetImage) MergeUniqueStrings (&TmpIconName, L"refind", L',');
+            BREAD_CRUMB(L"%s:  5b 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"win,win8", L',');
+            }
 
-            BREAD_CRUMB(L"%s:  5a 1a 2", FuncTag);
-            Entry->OSType = 'R';
-            ShortcutLetter = 'R';
+            BREAD_CRUMB(L"%s:  5b 2", FuncTag);
+            Entry->OSType  = 'W';
+            ShortcutLetter = 'W';
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
         }
-        else {
-            BREAD_CRUMB(L"%s:  5a 1b 1", FuncTag);
-            if (GetImage) MergeUniqueStrings (&TmpIconName, L"mac", L',');
+        else if (IsListItemSubstringIn (NameClues, GlobalConfig.LinuxPrefixes)) {
+            BREAD_CRUMB(L"%s:  5c 1", FuncTag);
+            if (Volume->DiskKind != DISK_KIND_NET) {
+                BREAD_CRUMB(L"%s:  5c 1a 1", FuncTag);
+                GuessLinuxDistribution (&TmpIconName, Volume, LoaderPath);
 
-            BREAD_CRUMB(L"%s:  5a 1b 2", FuncTag);
-            Entry->OSType = 'M';
-            ShortcutLetter = 'M';
-            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+                BREAD_CRUMB(L"%s:  5c 1a 2", FuncTag);
+                Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
+            }
+
+            BREAD_CRUMB(L"%s:  5c 2", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"linux", L',');
+            }
+            GotFlag       = TRUE;
+            Entry->OSType =  'L';
+
+            BREAD_CRUMB(L"%s:  5c 3", FuncTag);
+            if (ShortcutLetter == 0) {
+                BREAD_CRUMB(L"%s:  5c 3a 1", FuncTag);
+                ShortcutLetter = 'L';
+            }
+
+            BREAD_CRUMB(L"%s:  5c 4", FuncTag);
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
         }
-        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
-    }
-    else if (
-        MyStriCmp (NameClues, L"bootmgfw.efi") ||
-        MyStriCmp (NameClues, L"bootmgr.efi")  ||
-        MyStriCmp (NameClues, L"cdboot.efi")   ||
-        MyStriCmp (NameClues, L"bkpbootmgfw.efi")
-    ) {
-        BREAD_CRUMB(L"%s:  5b 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"win8", L',');
+        else if (FindSubStr (NameClues, L"grub")) {
+            BREAD_CRUMB(L"%s:  5d 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"grub,linux", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5b 2", FuncTag);
-        Entry->OSType = 'W';
-        ShortcutLetter = 'W';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    }
-    else if (IsListItemSubstringIn (NameClues, GlobalConfig.LinuxPrefixes)) {
-        BREAD_CRUMB(L"%s:  5c 1", FuncTag);
-        if (Volume->DiskKind != DISK_KIND_NET) {
-            BREAD_CRUMB(L"%s:  5c 1a 1", FuncTag);
-            GuessLinuxDistribution (&TmpIconName, Volume, LoaderPath);
-
-            BREAD_CRUMB(L"%s:  5c 1a 2", FuncTag);
-            Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
+            BREAD_CRUMB(L"%s:  5d 2", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'G';
+            ShortcutLetter =  'G';
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
         }
+        else if (MyStriCmp (NameClues, L"opencore")) {
+            BREAD_CRUMB(L"%s:  5e 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"opencore", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5c 2", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"linux", L',');
-        GotFlag       = TRUE;
-        Entry->OSType =  'L';
-
-        BREAD_CRUMB(L"%s:  5c 3", FuncTag);
-        if (ShortcutLetter == 0) {
-            BREAD_CRUMB(L"%s:  5c 3a 1", FuncTag);
-            ShortcutLetter = 'L';
+            BREAD_CRUMB(L"%s:  5e 2", FuncTag);
+            GotFlag = TRUE;
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
         }
+        else if (MyStriCmp (NameClues, L"clover")) {
+            BREAD_CRUMB(L"%s:  5f 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"clover", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5c 4", FuncTag);
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-    }
-    else if (FindSubStr (NameClues, L"grub")) {
-        BREAD_CRUMB(L"%s:  5d 1", FuncTag);
-        if (GetImage) MergeUniqueItems (&TmpIconName, L"grub,linux", L',');
-
-        BREAD_CRUMB(L"%s:  5d 2", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'G';
-        ShortcutLetter =  'G';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
-    }
-    else if (MyStriCmp (NameClues, L"opencore")) {
-        BREAD_CRUMB(L"%s:  5e 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"opencore", L',');
-
-        BREAD_CRUMB(L"%s:  5e 2", FuncTag);
-        GotFlag = TRUE;
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
-    }
-    else if (MyStriCmp (NameClues, L"clover")) {
-        BREAD_CRUMB(L"%s:  5f 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"clover", L',');
-
-        BREAD_CRUMB(L"%s:  5f 2", FuncTag);
-        GotFlag = TRUE;
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
-    }
-    else if (FindSubStr (LoaderPath, L"refindplus")) {
-        BREAD_CRUMB(L"%s:  5g 1", FuncTag);
-        if (GetImage) MergeUniqueItems (&TmpIconName, L"refindplus,refind,refit", L',');
-
-        BREAD_CRUMB(L"%s:  5g 2", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'R';
-        ShortcutLetter =  'R';
-    }
-    else if (FindSubStr (LoaderPath, L"refind")) {
-        BREAD_CRUMB(L"%s:  5h 1 - A", FuncTag);
-        if (GetImage) MergeUniqueItems (&TmpIconName, L"refind,refit", L',');
-
-        BREAD_CRUMB(L"%s:  5h 2 - A", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'R';
-        ShortcutLetter =  'R';
-    }
-    else if (FindSubStr (LoaderPath, L"refit")) {
-        BREAD_CRUMB(L"%s:  5i 1 - B", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"refit", L',');
-
-        BREAD_CRUMB(L"%s:  5i 2 - B", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'R';
-        ShortcutLetter =  'R';
-    }
-    else if (MyStriCmp (NameClues, L"diags.efi")) {
-        BREAD_CRUMB(L"%s:  5j 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"hwtest", L',');
-    }
-    else if (
-        MyStriCmp (NameClues, L"e.efi")     ||
-        MyStriCmp (NameClues, L"elilo.efi") ||
-        FindSubStr (NameClues, L"elilo")
-    ) {
-        BREAD_CRUMB(L"%s:  5k 1", FuncTag);
-        if (GetImage) MergeUniqueItems (&TmpIconName, L"elilo,linux", L',');
-        GotFlag        = TRUE;
-        Entry->OSType  =  'E';
-
-        BREAD_CRUMB(L"%s:  5k 2", FuncTag);
-        if (ShortcutLetter == 0) {
-            BREAD_CRUMB(L"%s:  5f 2a 1", FuncTag);
-            ShortcutLetter = 'L';
+            BREAD_CRUMB(L"%s:  5f 2", FuncTag);
+            GotFlag = TRUE;
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
         }
+        else if (FindSubStr (LoaderPath, L"refindplus")) {
+            BREAD_CRUMB(L"%s:  5g 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"refindplus,refind,refit", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5k 3", FuncTag);
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-    }
-    else if (MyStriCmp (NameClues, L"xom.efi")) {
-        BREAD_CRUMB(L"%s:  5l 1", FuncTag);
-        if (GetImage) MergeUniqueItems (&TmpIconName, L"xom,win,win8", L',');
+            BREAD_CRUMB(L"%s:  5g 2", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'R';
+            ShortcutLetter =  'R';
+        }
+        else if (FindSubStr (LoaderPath, L"refind")) {
+            BREAD_CRUMB(L"%s:  5h 1 - A", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"refind,refit", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5l 2", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'X';
-        ShortcutLetter =  'W';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    }
-    else if (FindSubStr (NameClues, L"ipxe")) {
-        BREAD_CRUMB(L"%s:  5m 1", FuncTag);
-        if (GetImage) MergeUniqueStrings (&TmpIconName, L"network", L',');
+            BREAD_CRUMB(L"%s:  5h 2 - A", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'R';
+            ShortcutLetter =  'R';
+        }
+        else if (FindSubStr (LoaderPath, L"refit")) {
+            BREAD_CRUMB(L"%s:  5i 1 - B", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"refit", L',');
+            }
 
-        BREAD_CRUMB(L"%s:  5m 2", FuncTag);
-        GotFlag        = TRUE;
-        Entry->OSType  =  'N';
-        ShortcutLetter =  'N';
+            BREAD_CRUMB(L"%s:  5i 2 - B", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'R';
+            ShortcutLetter =  'R';
+        }
+        else if (MyStriCmp (NameClues, L"diags.efi")) {
+            BREAD_CRUMB(L"%s:  5j 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueStrings (&TmpIconName, L"hwtest", L',');
+            }
+        }
+        else if (
+            MyStriCmp (NameClues, L"e.efi")     ||
+            MyStriCmp (NameClues, L"elilo.efi") ||
+            FindSubStr (NameClues, L"elilo")
+        ) {
+            BREAD_CRUMB(L"%s:  5k 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"elilo,linux", L',');
+            }
+            GotFlag        = TRUE;
+            Entry->OSType  =  'E';
+
+            BREAD_CRUMB(L"%s:  5k 2", FuncTag);
+            if (ShortcutLetter == 0) {
+                BREAD_CRUMB(L"%s:  5f 2a 1", FuncTag);
+                ShortcutLetter = 'L';
+            }
+
+            BREAD_CRUMB(L"%s:  5k 3", FuncTag);
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+        }
+        else if (MyStriCmp (NameClues, L"xom.efi")) {
+            BREAD_CRUMB(L"%s:  5l 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"xom,win8,win", L',');
+            }
+
+            BREAD_CRUMB(L"%s:  5l 2", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'X';
+            ShortcutLetter =  'W';
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+        }
+        else if (FindSubStr (NameClues, L"ipxe")) {
+            BREAD_CRUMB(L"%s:  5m 1", FuncTag);
+            if (GetImage) {
+                MergeUniqueItems (&TmpIconName, L"network", L',');
+            }
+
+            BREAD_CRUMB(L"%s:  5m 2", FuncTag);
+            GotFlag        = TRUE;
+            Entry->OSType  =  'N';
+            ShortcutLetter =  'N';
+        }
+        BREAD_CRUMB(L"%s:  5a B", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
-    if (GetImage) {
+    if (GetImage && TmpIconName != NULL) {
         BREAD_CRUMB(L"%s:  6a 1", FuncTag);
         if (!GlobalConfig.HelpIcon) {
             BREAD_CRUMB(L"%s:  6a 1a 1", FuncTag);
-            MergeUniqueStrings (&OSIconName, TmpIconName, L',');
+            MergeUniqueItems (&OSIconName, TmpIconName, L',');
             MY_FREE_POOL(TmpIconName);
         }
         else {
             BREAD_CRUMB(L"%s:  6a 1b 1", FuncTag);
-            MergeUniqueStrings (&TmpIconName, OSIconName, L',');
+            MergeUniqueItems (&TmpIconName, OSIconName, L',');
             MY_FREE_POOL(OSIconName);
             OSIconName = TmpIconName;
         }
@@ -1373,14 +1562,23 @@ VOID SetLoaderDefaults (
     }
 
     BREAD_CRUMB(L"%s:  7", FuncTag);
-    if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
+    if (ShortcutLetter >= 'a' &&
+        ShortcutLetter <= 'z'
+    ) {
         BREAD_CRUMB(L"%s:  7a 1", FuncTag);
-        ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
+        ShortcutLetter = ShortcutLetter - 'a' + 'A'; // Convert to uppercase
     }
 
     BREAD_CRUMB(L"%s:  8", FuncTag);
     Entry->me.ShortcutLetter = ShortcutLetter;
     if (GetImage) {
+        BREAD_CRUMB(L"%s:  8a 0", FuncTag);
+        if (GotUEFI) {
+            BREAD_CRUMB(L"%s:  8a 0a 1", FuncTag);
+            MergeUniqueItems (&OSIconName, L"uefi", L',');
+            BREAD_CRUMB(L"%s:  8a 0a 2", FuncTag);
+        }
+
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
             L"Locate Icon Based on Hint String:- '%s'",
@@ -1396,13 +1594,16 @@ VOID SetLoaderDefaults (
         ) {
             BREAD_CRUMB(L"%s:  8a 1a 1", FuncTag);
             i = 0;
-            while (!GotFlag && (Temp = FindCommaDelimited (OSIconName, i++)) != NULL) {
+            while (
+                !GotFlag &&
+                (Temp = FindCommaDelimited (OSIconName, i++)) != NULL
+            ) {
                 LOG_SEP(L"X");
                 BREAD_CRUMB(L"%s:  8a 1a 1a 1 - WHILE LOOP:- START", FuncTag);
                 if (IsListItem (Temp, BASE_LINUX_DISTROS)) {
                     BREAD_CRUMB(L"%s:  8a 1a 1a 1a 1", FuncTag);
                     GotFlag = TRUE;
-                    MergeUniqueStrings (&OSIconName, L"linux", L',');
+                    MergeUniqueItems (&OSIconName, L"linux", L',');
                     BREAD_CRUMB(L"%s:  8a 1a 1a 1a 1", FuncTag);
                 }
                 MY_FREE_POOL(Temp);
@@ -1412,8 +1613,10 @@ VOID SetLoaderDefaults (
             } // while
             BREAD_CRUMB(L"%s:  8a 1a 2", FuncTag);
         }
-        Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
+
         BREAD_CRUMB(L"%s:  8a 2", FuncTag);
+        Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
+        BREAD_CRUMB(L"%s:  8a 3", FuncTag);
     }
 
     BREAD_CRUMB(L"%s:  9", FuncTag);
@@ -1507,19 +1710,18 @@ LOADER_ENTRY * AddEfiLoaderEntry (
     LOADER_ENTRY  *Entry;
 
     Entry = InitializeLoaderEntry (NULL);
-    if (!Entry) {
+    if (Entry == NULL) {
         return NULL;
     }
-
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
-    FullTitle = (!LoaderTitle)
-        ? NULL
-        : PoolPrint (L"Reboot to %s", LoaderTitle);
+
+    FullTitle = (LoaderTitle != NULL)
+        ? PoolPrint (L"Reboot to %s", LoaderTitle) : NULL;
 
     Entry->me.Row        = Row;
     Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-    Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Instance: Unknown");
-    Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Instance: Unknown"); // without "Reboot to"
+    Entry->me.Title      = StrDuplicate ((FullTitle   != NULL) ? FullTitle   : L"Instance: Unknown");
+    Entry->Title         = StrDuplicate ((LoaderTitle != NULL) ? LoaderTitle : L"Instance: Unknown"); // without "Reboot to"
     Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
     TempStr              = DevicePathToStr (EfiLoaderPath);
 
@@ -1535,13 +1737,11 @@ LOADER_ENTRY * AddEfiLoaderEntry (
     MergeUniqueWords (&OSIconName, Entry->me.Title, L',');
     MergeUniqueStrings (&OSIconName, L"Unknown", L',');
 
-    Entry->me.Image = (Icon)
-        ? egCopyImage (Icon)
-        : LoadOSIcon (OSIconName, NULL, FALSE);
+    Entry->me.Image = (Icon != NULL)
+        ? egCopyImage (Icon) : LoadOSIcon (OSIconName, NULL, FALSE);
 
     Entry->me.BadgeImage = (Row == 0)
-        ? BuiltinIcon (BUILTIN_ICON_VOL_EFI)
-        : NULL;
+        ? BuiltinIcon (BUILTIN_ICON_VOL_EFI) : NULL;
 
     MY_FREE_POOL(OSIconName);
 
@@ -1552,7 +1752,6 @@ LOADER_ENTRY * AddEfiLoaderEntry (
     Entry->Enabled     = TRUE;
 
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
-
 
     return Entry;
 } // LOADER_ENTRY * AddEfiLoaderEntry()
@@ -1581,49 +1780,8 @@ LOADER_ENTRY * AddLoaderEntry (
 
 
     if (!VolumeScanAllowed (Volume, TRUE, FALSE)) {
-        // Early Return
         return NULL;
     }
-
-    DisplayName = NULL;
-    if (Volume->FSType == FS_TYPE_APFS) {
-        // DA-TAG: Limit to TianoCore
-        #ifdef __MAKEWITH_TIANO
-        if (GlobalConfig.SyncAPFS) {
-            if (Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT) {
-                DisplayName = GetVolumeGroupName (LoaderPath, Volume);
-                if (!DisplayName) {
-                    // Do not display this PreBoot Volume Menu Entry
-                    return NULL;
-                }
-
-                FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
-                if (FoundPreBootName) {
-                    MY_FREE_POOL(DisplayName);
-                }
-                else {
-                    FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
-                    if (FoundPreBootName) {
-                        MY_FREE_POOL(DisplayName);
-                    }
-                    else {
-                        if (!SingleAPFS &&
-                            IsListItem (DisplayName, GlobalConfig.DontScanVolumes)
-                        ) {
-                            MY_FREE_POOL(DisplayName);
-
-                            // Early Return on PreBoot of Blocked APFS Volume
-                            return NULL;
-                        }
-
-                        MY_FREE_POOL(Volume->VolName);
-                        Volume->VolName = PoolPrint (L"PreBoot - %s", DisplayName);
-                    }
-                }
-            }
-        }
-        #endif
-    } // if/else if Volume->FSType
 
     Entry = InitializeLoaderEntry (NULL);
     if (Entry == NULL) {
@@ -1635,7 +1793,7 @@ LOADER_ENTRY * AddLoaderEntry (
 
     CleanUpPathNameSlashes (LoaderPath);
 
-    if (LoaderTitle) {
+    if (LoaderTitle != NULL) {
         Entry->Title = StrDuplicate (LoaderTitle);
     }
     else {
@@ -1649,7 +1807,8 @@ LOADER_ENTRY * AddLoaderEntry (
             }
 
             i = 0;
-            while (!Found &&
+            while (
+                !Found &&
                 GlobalConfig.HelpScan &&
                 (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
             ) {
@@ -1660,12 +1819,9 @@ LOADER_ENTRY * AddLoaderEntry (
                     // DA-TAG: Do *NOT* Free 'ShowName'
                     ShowName = GetShowName (LinuxName);
 
-                    if (!GotGrub) {
-                        Entry->Title = PoolPrint (L"Instance: Linux - %s", ShowName);
-                    }
-                    else {
-                        Entry->Title = PoolPrint (L"Instance: Linux - %s via Grub", ShowName);
-                    }
+                    Entry->Title = (!GotGrub)
+                        ? PoolPrint (L"Instance: Linux - %s", ShowName)
+                        : PoolPrint (L"Instance: Linux - %s via Grub", ShowName);
                 }
                 MY_FREE_POOL(LinuxName);
                 MY_FREE_POOL(SearchName);
@@ -1677,8 +1833,46 @@ LOADER_ENTRY * AddLoaderEntry (
         }
     } // if/else LoaderTitle
 
+    DisplayName = NULL;
+
+    // DA-TAG: Limit to TianoCore
+    #ifdef __MAKEWITH_TIANO
+    if (Volume->FSType == FS_TYPE_APFS && GlobalConfig.SyncAPFS) {
+        if (Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT) {
+            DisplayName = GetVolumeGroupName (LoaderPath, Volume);
+            if (DisplayName == NULL) {
+                return NULL;
+            }
+
+            FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
+            if (FoundPreBootName) {
+                MY_FREE_POOL(DisplayName);
+            }
+            else {
+                FoundPreBootName = FindSubStr (DisplayName, L"PreBoot");
+                if (FoundPreBootName) {
+                    MY_FREE_POOL(DisplayName);
+                }
+                else {
+                    if (!SingleAPFS &&
+                        IsListItem (DisplayName, GlobalConfig.DontScanVolumes)
+                    ) {
+                        MY_FREE_POOL(DisplayName);
+
+                        // Early Return on PreBoot of Blocked APFS Volume
+                        return NULL;
+                    }
+
+                    MY_FREE_POOL(Volume->VolName);
+                    Volume->VolName = PoolPrint (L"PreBoot - %s", DisplayName);
+                }
+            }
+        }
+    }
+    #endif
+
     #if REFIT_DEBUG > 0
-    if (DisplayName) {
+    if (DisplayName != NULL) {
         ALT_LOG(1, LOG_THREE_STAR_MID, L"Synced PreBoot:- '%s'", DisplayName);
     }
     ALT_LOG(1, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
@@ -1687,8 +1881,8 @@ LOADER_ENTRY * AddLoaderEntry (
 
     SetVolumeBadgeIcon (Volume);
 
-    TmpName = (DisplayName) ? DisplayName : Volume->VolName;
-    Entry->me.Title = (DisplayName || Volume->VolName)
+    TmpName         = (DisplayName != NULL) ? DisplayName : Volume->VolName;
+    Entry->me.Title = (DisplayName != NULL || Volume->VolName != NULL)
         ? PoolPrint (
             L"Load %s%s%s%s%s",
             Entry->Title,
@@ -1699,17 +1893,13 @@ LOADER_ENTRY * AddLoaderEntry (
         )
         : PoolPrint (
             L"Load %s",
-            (LoaderTitle) ? LoaderTitle : LoaderPath
+            (LoaderTitle != NULL) ? LoaderTitle : LoaderPath
         );
     Entry->me.Row = 0;
     Entry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
 
-    if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
-        Entry->LoaderPath = StrDuplicate (L"\\");
-    }
-    else {
-        Entry->LoaderPath = NULL;
-    }
+    Entry->LoaderPath = (LoaderPath != NULL && (LoaderPath[0] != L'\\'))
+        ? StrDuplicate (L"\\") : NULL;
 
     MergeUniqueStrings (&(Entry->LoaderPath), LoaderPath, 0);
     Entry->Volume = Volume;
@@ -1718,9 +1908,9 @@ LOADER_ENTRY * AddLoaderEntry (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    TmpName = (DisplayName)
+    TmpName = (DisplayName != NULL)
         ? DisplayName
-        : (Volume->VolName)
+        : (Volume->VolName != NULL)
             ? Volume->VolName
             : Entry->LoaderPath;
     LOG_MSG(
@@ -1774,7 +1964,8 @@ INTN TimeComp (
     if (Time1InSeconds < Time2InSeconds) {
         return (-1);
     }
-    else if (Time1InSeconds > Time2InSeconds) {
+
+    if (Time1InSeconds > Time2InSeconds) {
         return (1);
     }
 
@@ -1802,11 +1993,19 @@ LOADER_LIST * AddLoaderListEntry (
     else {
         PrevEntry   = NULL;
         LatestEntry = CurrentEntry = LoaderList;
-        LinuxRescue = (StriSubCmp (L"vmlinuz-0-rescue", NewEntry->FileName)) ? TRUE : FALSE;
+        LinuxRescue = (StriSubCmp (L"vmlinuz-0-rescue", NewEntry->FileName))
+            ? TRUE : FALSE;
 
-        while ((CurrentEntry != NULL) &&
+        while (
+            CurrentEntry != NULL &&
             !StriSubCmp (L"vmlinuz-0-rescue", CurrentEntry->FileName) &&
-            (LinuxRescue || (TimeComp (&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))
+            (
+                LinuxRescue ||
+                TimeComp (
+                    &(NewEntry->TimeStamp),
+                    &(CurrentEntry->TimeStamp)
+                ) < 0
+            )
         ) {
             PrevEntry   = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
@@ -1832,7 +2031,7 @@ VOID CleanUpLoaderList (
 ) {
     struct LOADER_LIST *Temp;
 
-    if (!LoaderList) {
+    if (LoaderList == NULL) {
         return;
     }
 
@@ -1851,24 +2050,18 @@ CHAR16 * SetVolKind (
 ) {
     CHAR16 *RetVal;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
 
-    MY_MUTELOGGER_SET;
-    #endif
-    RetVal = L"";
     if (0);
-    else if (VolumeFSType == FS_TYPE_FAT32          ) RetVal = L""          ;
-    else if (VolumeFSType == FS_TYPE_FAT16          ) RetVal = L""          ;
-    else if (VolumeFSType == FS_TYPE_FAT12          ) RetVal = L""          ;
-    else if (VolumeFSType == FS_TYPE_EXFAT          ) RetVal = L""          ;
-    else if (MyStriCmp  (VolumeName,   L"EFI"      )) RetVal = L""          ;
-    else if (MyStriCmp  (VolumeName,   L"ESP"      )) RetVal = L""          ;
-    else if (FindSubStr (VolumeName,   L"Partition")) RetVal = L""          ;
-    else if (FindSubStr (InstanceName, L"Instance:")) RetVal = L"Volume:- " ;
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
+    else if (VolumeFSType == FS_TYPE_FAT32        ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_FAT16        ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_FAT12        ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_EXFAT        ) RetVal = L""         ;
+    else if (MyStriCmp (VolumeName,  L"EFI"      )) RetVal = L""         ;
+    else if (MyStriCmp (VolumeName,  L"ESP"      )) RetVal = L""         ;
+    else if (MyStrStr (VolumeName,   L"Volume"   )) RetVal = L""         ;
+    else if (MyStrStr (VolumeName,   L"Partition")) RetVal = L""         ;
+    else if (MyStrStr (InstanceName, L"Instance:")) RetVal = L"Volume:- ";
+    else                                            RetVal = L""         ;
 
     return RetVal;
 } // CHAR16 * SetVolKind()
@@ -1878,18 +2071,11 @@ CHAR16 * SetVolJoin (
 ) {
     CHAR16 *RetVal;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
 
-    MY_MUTELOGGER_SET;
-    #endif
-    RetVal = L" on ";
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" )) RetVal = L""     ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode")) RetVal = L" for ";
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
+    else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""     ;
+    else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for ";
+    else                                                   RetVal = L" on " ;
 
     return RetVal;
 } // CHAR16 * SetVolJoin()
@@ -1900,16 +2086,13 @@ CHAR16 * SetVolFlag (
 ) {
     CHAR16 *RetVal;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
 
-    MY_MUTELOGGER_SET;
-    #endif
-    RetVal = VolumeName;
-    if (FindSubStr (InstanceName, L"Manual Stanza:")) RetVal = L"";
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
+    if (MyStrStr (InstanceName, L"Manual Stanza:")) {
+        RetVal = L"";
+    }
+    else {
+        RetVal = VolumeName;
+    }
 
     return RetVal;
 } // CHAR16 * SetVolFlag()
@@ -1921,30 +2104,23 @@ CHAR16 * SetVolType (
 ) {
     CHAR16 *RetVal;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
 
-    MY_MUTELOGGER_SET;
-    #endif
-    RetVal = L"";
     if (0);
-    else if (FindSubStr (InstanceName, L"Manual Stanza:" ))   RetVal = L""                 ;
-    else if (FindSubStr (VolumeName,   L"Partition"      ))   RetVal = L""                 ;
-    else if (FindSubStr (VolumeName,   L"Volume"         ))   RetVal = L""                 ;
-    else if (MyStriCmp  (VolumeName,   L"ESP"            ))   RetVal = L""                 ;
-    else if (MyStriCmp  (VolumeName,   L"EFI"            ))   RetVal = L" System Partition";
-    else if (MyStriCmp  (VolumeName,   L"BOOTCAMP"       ))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"(Legacy)"       ))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"Legacy Bootcode"))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"vmlinuz-"       ))   RetVal = L" Partition"       ;
-    else if (MyStriCmp  (InstanceName, L"bzImage-"       ))   RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT32                )   RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT16                )   RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT12                )   RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_EXFAT                )   RetVal = L" Partition"       ;
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
-    #endif
+    else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""                 ;
+    else if (MyStrStr  (VolumeName,   L"Partition"      )) RetVal = L""                 ;
+    else if (MyStrStr  (VolumeName,   L"Volume"         )) RetVal = L""                 ;
+    else if (MyStriCmp (VolumeName,   L"ESP"            )) RetVal = L""                 ;
+    else if (MyStriCmp (VolumeName,   L"EFI"            )) RetVal = L" System Partition";
+    else if (MyStriCmp (VolumeName,   L"BOOTCAMP"       )) RetVal = L" Partition"       ;
+    else if (MyStriCmp (InstanceName, L"(Legacy"        )) RetVal = L" Partition"       ;
+    else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" Partition"       ;
+    else if (MyStriCmp (InstanceName, L"vmlinuz-"       )) RetVal = L" Partition"       ;
+    else if (MyStriCmp (InstanceName, L"bzImage-"       )) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT32               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT16               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT12               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_EXFAT               ) RetVal = L" Partition"       ;
+    else                                                   RetVal = L""                 ;
 
     return RetVal;
 } // CHAR16 * SetVolType()
@@ -1970,6 +2146,15 @@ BOOLEAN ShouldScan (
     BOOLEAN                 FoundVentoy;
 
 
+    if (GlobalConfig.NvramProtect &&
+        (
+            MyStrBegins (L"EFI\\APPLE",   Path) ||
+            MyStrBegins (L"\\EFI\\APPLE", Path)
+        )
+    ) {
+        return FALSE;
+    }
+
     if (MyStriCmp (Path, SelfDirPath) &&
         Volume->DeviceHandle == SelfVolume->DeviceHandle
     ) {
@@ -1994,19 +2179,21 @@ BOOLEAN ShouldScan (
                 MY_FREE_POOL(TmpVolNameA);
                 MY_FREE_POOL(TmpVolNameB);
             }
-            if (!ScanIt) return FALSE;
+
+            if (!ScanIt) {
+                return FALSE;
+            }
         }
     }
 
-    if (!ScanIt) {
+    if (GlobalConfig.HandleVentoy && !ScanIt) {
         FoundVentoy = FALSE;
         if (MyStriCmp (Path, L"EFI\\BOOT") &&
             FileExists (Volume->RootDir, FALLBACK_FULLNAME)
         ) {
             i = 0;
             while (
-                GlobalConfig.HandleVentoy &&
-                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+                (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
             ) {
                 if (MyStrBegins (VentoyName, Volume->VolName) ||
                     MyStrBegins (VentoyName, Volume->FsName)  ||
@@ -2016,11 +2203,17 @@ BOOLEAN ShouldScan (
                 }
                 MY_FREE_POOL(VentoyName);
 
-                if (FoundVentoy) break;
+                if (FoundVentoy) {
+                    break;
+                }
             } // while
         }
 
         return FoundVentoy;
+    }
+
+    if (!ScanIt) {
+        return FALSE;
     }
 
     // See if Path includes an explicit volume declaration that is NOT Volume.
@@ -2038,9 +2231,13 @@ BOOLEAN ShouldScan (
     }
     MY_FREE_POOL(PathCopy);
 
+    if (!ScanIt) {
+        return FALSE;
+    }
+
     // See if Volume is in GlobalConfig.DontScanDirs.
     i = 0;
-    while ((DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))) {
+    while ((DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++)) != NULL) {
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
         if (VolName == NULL) {
@@ -2048,18 +2245,19 @@ BOOLEAN ShouldScan (
                 ScanIt = FALSE;
             }
         }
-        else {
-            if (VolumeMatchesDescription (Volume, VolName)
-                && MyStriCmp (DontScanDir, Path)
-            ) {
-                ScanIt = FALSE;
-            }
+        else if (
+            MyStriCmp (DontScanDir, Path)          &&
+            VolumeMatchesDescription (Volume, VolName)
+        ) {
+            ScanIt = FALSE;
         }
 
-        MY_FREE_POOL(DontScanDir);
         MY_FREE_POOL(VolName);
+        MY_FREE_POOL(DontScanDir);
 
-        if (!ScanIt) break;
+        if (!ScanIt) {
+            break;
+        }
     } // while
 
     return ScanIt;
@@ -2129,9 +2327,9 @@ BOOLEAN DuplicatesFallback (
     AreIdentical = FALSE;
     if (FallbackSize == FileSize) {
         // Do full check as could be identical
-        FileContents = AllocatePool (FileSize);
+        FileContents     = AllocatePool (FileSize);
         FallbackContents = AllocatePool (FallbackSize);
-        if (FileContents && FallbackContents) {
+        if (FileContents != NULL && FallbackContents != NULL) {
             Status = REFIT_CALL_3_WRAPPER(
                 FileHandle->Read, FileHandle,
                 &FileSize, FileContents
@@ -2231,6 +2429,20 @@ BOOLEAN ScanLoaderDir (
 
     #if REFIT_DEBUG > 0
     BOOLEAN                  CheckMute = FALSE;
+
+    MY_MUTELOGGER_SET;
+    #endif
+    ShouldScanThis = ShouldScan (Volume, Path);
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    if (!ShouldScanThis) {
+        return FALSE;
+    }
+
+
+    #if REFIT_DEBUG > 0
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ScanLoaderDir";
     #endif
@@ -2246,9 +2458,8 @@ BOOLEAN ScanLoaderDir (
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
     FoundFallbackDuplicate = FALSE;
-    if ((!SelfDirPath || !Path ||
-        (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
-        (!InSelfPath)) && (ShouldScan (Volume, Path))
+    if (!InSelfPath || SelfDirPath != NULL || Path != NULL ||
+        (InSelfPath && Volume->DeviceHandle != SelfVolume->DeviceHandle)
     ) {
         LoaderList = NULL;
 
@@ -2362,9 +2573,9 @@ BOOLEAN ScanLoaderDir (
 
         //BREAD_CRUMB(L"%s:  2a 3", FuncTag);
         if (LoaderList != NULL) {
-            IsLinux     = FALSE;
+            IsLinux     =      FALSE;
             NewLoader   = LoaderList;
-            FirstKernel = NULL;
+            FirstKernel =       NULL;
 
             //LOG_SEP(L"X");
             //BREAD_CRUMB(L"%s:  2a 3a 1", FuncTag);
@@ -2374,12 +2585,16 @@ BOOLEAN ScanLoaderDir (
                 IsLinux = IsListItemSubstringIn (NewLoader->FileName, GlobalConfig.LinuxPrefixes);
 
                 //BREAD_CRUMB(L"%s:  2a 3a 1a 2", FuncTag);
-                if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
+                if (IsLinux                    &&
+                    FirstKernel != NULL        &&
+                    GlobalConfig.FoldLinuxKernels
+                ) {
                     //BREAD_CRUMB(L"%s:  2a 3a 1a 2a 1", FuncTag);
                     AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
                 }
                 else {
                     //BREAD_CRUMB(L"%s:  2a 3a 1a 2b 1", FuncTag);
+                    DisplayLoader = TRUE;
                     LatestEntry = AddLoaderEntry (
                         NewLoader->FileName,
                         NULL, Volume,
@@ -2387,7 +2602,7 @@ BOOLEAN ScanLoaderDir (
                         TRUE
                     );
                     //BREAD_CRUMB(L"%s:  2a 3a 1a 2b 2", FuncTag);
-                    if (IsLinux && (FirstKernel == NULL)) {
+                    if (IsLinux && FirstKernel == NULL) {
                         //BREAD_CRUMB(L"%s:  2a 3a 1a 2b 2a 1", FuncTag);
                         FirstKernel = LatestEntry;
                     }
@@ -2402,7 +2617,7 @@ BOOLEAN ScanLoaderDir (
             //BREAD_CRUMB(L"%s:  2a 3a 2", FuncTag);
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 //BREAD_CRUMB(L"%s:  2a 3a 2a 1", FuncTag);
-                GetReturnMenuEntry (&FirstKernel->me.SubScreen);
+                GetMenuEntryReturn (&FirstKernel->me.SubScreen);
                 //BREAD_CRUMB(L"%s:  2a 3a 2a 2", FuncTag);
             }
 
@@ -2422,7 +2637,7 @@ BOOLEAN ScanLoaderDir (
             Status != EFI_INVALID_PARAMETER
         ) {
             //BREAD_CRUMB(L"%s:  2a 5a 1", FuncTag);
-            if (Path) {
+            if (Path != NULL) {
                 //BREAD_CRUMB(L"%s:  2a 5a 1a 1", FuncTag);
                 Message = PoolPrint (
                     L"While Scanning the '%s' Directory on '%s'",
@@ -2444,7 +2659,7 @@ BOOLEAN ScanLoaderDir (
             MY_FREE_POOL(Message);
         }
         //BREAD_CRUMB(L"%s:  2a 6", FuncTag);
-    } // if !SelfDirPath
+    } // if !InSelfPath
 
     BREAD_CRUMB(L"%s:  3 - END:- return BOOLEAN FoundFallbackDuplicate = '%s'", FuncTag,
         FoundFallbackDuplicate ? L"TRUE" : L"FALSE"
@@ -2477,8 +2692,8 @@ CHAR16 * RuniPXEDiscover (
         return NULL;
     }
 
-    boot_info = NULL;
-    boot_info_size = 0;
+    boot_info      = NULL;
+    boot_info_size =    0;
     REFIT_CALL_3_WRAPPER(
         gBS->StartImage, iPXEHandle,
         &boot_info_size, &boot_info
@@ -2501,15 +2716,15 @@ VOID ScanNetboot (VOID) {
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"IPXE Boot Options");
     #endif
 
-    if (FileExists (SelfVolume->RootDir, IPXE_NAME) &&
-        FileExists (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
+    if (FileExists (SelfVolume->RootDir, IPXE_NAME)             &&
+        FileExists (SelfVolume->RootDir, IPXE_DISCOVER_NAME)    &&
         IsValidLoader (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         IsValidLoader (SelfVolume->RootDir, IPXE_NAME)
     ) {
         Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
         if (Location != NULL && FileExists (SelfVolume->RootDir, IPXE_NAME)) {
             NetVolume = CopyVolume (SelfVolume);
-            if (NetVolume) {
+            if (NetVolume != NULL) {
                 NetVolume->DiskKind = DISK_KIND_NET;
 
                 MY_FREE_IMAGE(NetVolume->VolBadgeImage);
@@ -2519,6 +2734,7 @@ VOID ScanNetboot (VOID) {
                 MY_FREE_POOL(NetVolume->VolName);
                 MY_FREE_POOL(NetVolume->FsName);
 
+                DisplayLoader = TRUE;
                 Temp = StrDuplicate(IPXE_NAME);
                 AddLoaderEntry (Temp, Location, NetVolume, TRUE, FALSE);
                 MY_FREE_POOL(Temp);
@@ -2551,13 +2767,17 @@ BOOLEAN ScanMacOsLoader (
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
     if (FileExists (Volume->RootDir, FullFileName) &&
-        !FilenameIn (Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)
+        !FilenameIn (
+            Volume, PathName,
+            L"boot.efi", GlobalConfig.DontScanFiles
+        )
     ) {
-        if (FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
-            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf") ||
-            FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
-            FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
+        if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf")     ||
+            FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")     ||
+            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\config.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\RefindPlus\\refind.conf")
         ) {
+            DisplayLoader = TRUE;
             AddLoaderEntry (FullFileName, L"Instance: RefindPlus", Volume, TRUE, FALSE);
         }
         else {
@@ -2576,6 +2796,7 @@ BOOLEAN ScanMacOsLoader (
                     ? L"Instance: macOS Installer"
                     : L"Instance: macOS";
 
+                DisplayLoader = TRUE;
                 AddLoaderEntry (FullFileName, NameOS, Volume, TRUE, FALSE);
             }
         }
@@ -2627,7 +2848,7 @@ VOID ScanEfiFiles (
     FoundVentoy = FALSE;
     while (
         GlobalConfig.HandleVentoy &&
-        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++))
+        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
     ) {
         if (MyStrBegins (VentoyName, Volume->VolName) ||
             MyStrBegins (VentoyName, Volume->FsName)  ||
@@ -2637,7 +2858,9 @@ VOID ScanEfiFiles (
         }
         MY_FREE_POOL(VentoyName);
 
-        if (FoundVentoy) break;
+        if (FoundVentoy) {
+            break;
+        }
     } // while
 
     // Skip Volumes in 'DontScanVolumes' List
@@ -2731,8 +2954,6 @@ VOID ScanEfiFiles (
     );
     #endif
 
-    FirstLoaderScan = FALSE;
-
     //BREAD_CRUMB(L"%s:  5", FuncTag);
     MatchPatterns = StrDuplicate (LOADER_MATCH_PATTERNS);
     if (GlobalConfig.ScanAllLinux && GlobalConfig.LinuxMatchPatterns) {
@@ -2791,7 +3012,7 @@ VOID ScanEfiFiles (
         //BREAD_CRUMB(L"%s:  6a 5", FuncTag);
         DirIterClose (&EfiDirIter);
 
-        // check for XOM
+        // Check for XOM
         //BREAD_CRUMB(L"%s:  6a 6", FuncTag);
         FileName = StrDuplicate (L"System\\Library\\CoreServices\\xom.efi");
 
@@ -2800,6 +3021,7 @@ VOID ScanEfiFiles (
             !FilenameIn (Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
         ) {
             //BREAD_CRUMB(L"%s:  6a 7a 1", FuncTag);
+            DisplayLoader = TRUE;
             AddLoaderEntry (FileName, L"Instance: Windows XP (XoM)", Volume, TRUE, FALSE);
 
             //BREAD_CRUMB(L"%s:  6a 7a 2", FuncTag);
@@ -2815,7 +3037,7 @@ VOID ScanEfiFiles (
     } // if ShouldScan MACOSX_LOADER_DIR
 
     //BREAD_CRUMB(L"%s:  7", FuncTag);
-    // check for Microsoft boot loader/menu
+    // Check for Microsoft boot loader/menu
     if (ShouldScan (Volume, L"EFI\\Microsoft\\Boot")) {
         FoundBRBackup = FALSE;
 
@@ -2832,14 +3054,15 @@ VOID ScanEfiFiles (
             )
         ) {
             //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
-            // Boot Repair Backup
+            FoundBRBackup = DisplayLoader = TRUE;
+
+            // Add Repair Backup
             AddLoaderEntry (
                 FileName, L"Instance: UEFI Windows (BRBackup)",
                 Volume, TRUE, FALSE
             );
 
             //BREAD_CRUMB(L"%s:  7a 2a 2", FuncTag);
-            FoundBRBackup = TRUE;
             if (DuplicatesFallback (Volume, FileName)) {
                 //BREAD_CRUMB(L"%s:  7a 2a 2a 1", FuncTag);
                 ScanFallbackLoader = FALSE;
@@ -2858,6 +3081,7 @@ VOID ScanEfiFiles (
                 GlobalConfig.DontScanFiles
             )
         ) {
+            DisplayLoader = TRUE;
             TmpMsg = (FoundBRBackup)
                 ? L"Instance: Assumed UEFI Windows (Potentially GRUB)"
                 : L"Instance: Windows (UEFI)";
@@ -2885,46 +3109,44 @@ VOID ScanEfiFiles (
 
     //BREAD_CRUMB(L"%s:  10", FuncTag);
     while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
-        Extension = FindExtension (EfiDirEntry->FileName);
-
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  10a 1 - WHILE LOOP:- START", FuncTag);
-        if (EfiDirEntry->FileName[0] == '.'             ||
-            MyStriCmp (Extension,             L".log" ) ||
-            MyStriCmp (Extension,             L".txt" ) ||
-            MyStriCmp (Extension,             L".png" ) ||
-            MyStriCmp (Extension,             L".bmp" ) ||
-            MyStriCmp (Extension,             L".jpg" ) ||
-            MyStriCmp (Extension,             L".jpeg") ||
-            MyStriCmp (Extension,             L".icns") ||
-            MyStriCmp (EfiDirEntry->FileName, L"tools")
-        ) {
-            //BREAD_CRUMB(L"%s:  10a 1a 1 - WHILE LOOP:- CONTINUE (Skipping This ... Invalid Item:- '%s')", FuncTag,
-            //    EfiDirEntry->FileName
-            //);
-            //LOG_SEP(L"X");
+        do {
+            //BREAD_CRUMB(L"%s:  10a 1a 1", FuncTag);
+            Extension = FindExtension (EfiDirEntry->FileName);
 
-            // Skip this ... Does not contain boot loaders or is scanned later
-            MY_FREE_POOL(Extension);
-            MY_FREE_POOL(EfiDirEntry);
+            //BREAD_CRUMB(L"%s:  10a 1a 2", FuncTag);
+            if (EfiDirEntry->FileName[0] == '.'             ||
+                MyStriCmp (Extension,             L".log" ) ||
+                MyStriCmp (Extension,             L".txt" ) ||
+                MyStriCmp (Extension,             L".png" ) ||
+                MyStriCmp (Extension,             L".bmp" ) ||
+                MyStriCmp (Extension,             L".jpg" ) ||
+                MyStriCmp (Extension,             L".jpeg") ||
+                MyStriCmp (Extension,             L".icns") ||
+                MyStriCmp (EfiDirEntry->FileName, L"tools")
+            ) {
+                // Skip ... Not boot loader or scanned later
+                break;
+            }
 
-            continue;
-        }
+            //BREAD_CRUMB(L"%s:  10a 1a 3", FuncTag);
+            FileName = PoolPrint (L"EFI\\%s", EfiDirEntry->FileName);
+
+            //BREAD_CRUMB(L"%s:  10a 1a 4", FuncTag);
+            if (ScanLoaderDir (Volume, FileName, MatchPatterns)) {
+                //BREAD_CRUMB(L"%s:  10a 1a 4a 1", FuncTag);
+                ScanFallbackLoader = FALSE;
+            }
+            MY_FREE_POOL(FileName);
+            //BREAD_CRUMB(L"%s:  10a 1a 5", FuncTag);
+        } while (0); // This 'loop' only runs once
 
         //BREAD_CRUMB(L"%s:  10a 2", FuncTag);
-        FileName = PoolPrint (L"EFI\\%s", EfiDirEntry->FileName);
-
-        //BREAD_CRUMB(L"%s:  10a 3", FuncTag);
-        if (ScanLoaderDir (Volume, FileName, MatchPatterns)) {
-            //BREAD_CRUMB(L"%s:  10a 3a 1", FuncTag);
-            ScanFallbackLoader = FALSE;
-        }
-
-        MY_FREE_POOL(FileName);
         MY_FREE_POOL(Extension);
         MY_FREE_POOL(EfiDirEntry);
 
-        //BREAD_CRUMB(L"%s:  10a 4 - WHILE LOOP:- END", FuncTag);
+        //BREAD_CRUMB(L"%s:  10a 3 - WHILE LOOP:- END", FuncTag);
         //LOG_SEP(L"X");
     } // while
 
@@ -2957,8 +3179,9 @@ VOID ScanEfiFiles (
         CleanUpPathNameSlashes (SelfPath);
 
         //BREAD_CRUMB(L"%s:  13a 3", FuncTag);
-        if ((Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) &&
-            DuplicatesFallback (Volume, SelfPath)
+        if (DuplicatesFallback (Volume, SelfPath) &&
+            Volume->DeviceHandle == SelfLoadedImage->DeviceHandle
+
         ) {
             //BREAD_CRUMB(L"%s:  13a 3a 1", FuncTag);
             ScanFallbackLoader = FALSE;
@@ -2971,8 +3194,9 @@ VOID ScanEfiFiles (
     // Scan user-specified (or additional default) directories.
     i = 0;
     VolName = NULL;
-    while (ScanFallbackLoader
-        && (Directory = FindCommaDelimited (GlobalConfig.AlsoScan, i++)) != NULL
+    while (
+        ScanFallbackLoader &&
+        (Directory = FindCommaDelimited (GlobalConfig.AlsoScan, i++)) != NULL
     ) {
         //LOG_SEP(L"X");
         //BREAD_CRUMB(L"%s:  14a 1 - WHILE LOOP:- START", FuncTag);
@@ -2987,7 +3211,9 @@ VOID ScanEfiFiles (
             Length = StrLen (Directory);
 
             //BREAD_CRUMB(L"%s:  14a 1a 4", FuncTag);
-            if ((Length > 0) && ScanLoaderDir (Volume, Directory, MatchPatterns)) {
+            if (Length > 0 &&
+                ScanLoaderDir (Volume, Directory, MatchPatterns)
+            ) {
                 //BREAD_CRUMB(L"%s:  14a 1a 4a 1", FuncTag);
                 ScanFallbackLoader = FALSE;
             }
@@ -3007,8 +3233,8 @@ VentoyJump:
     //BREAD_CRUMB(L"%s:  16", FuncTag);
     // Create an entry for fallback loaders
     if (ScanFallbackLoader &&
-        FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&
         ShouldScan (Volume, L"EFI\\BOOT") &&
+        FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
         //BREAD_CRUMB(L"%s:  16a 1", FuncTag);
@@ -3022,7 +3248,8 @@ VentoyJump:
         }
 
         //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
-        Temp = StrDuplicate(FALLBACK_FULLNAME);
+        DisplayLoader = TRUE;
+        Temp = StrDuplicate (FALLBACK_FULLNAME);
         AddLoaderEntry (Temp, TmpMsg, Volume, TRUE, FALSE);
         MY_FREE_POOL(Temp);
         //BREAD_CRUMB(L"%s:  16a 2", FuncTag);
@@ -3050,14 +3277,20 @@ VOID ScanInternal (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    FirstLoaderScan = TRUE;
+    DisplayLoader = FALSE;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {
             ScanEfiFiles (Volumes[VolumeIndex]);
         }
     } // for
 
-    FirstLoaderScan = FALSE;
+    #if REFIT_DEBUG > 0
+    if (!DisplayLoader) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+
+    DisplayLoader = FALSE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -3081,14 +3314,20 @@ VOID ScanExternal (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    FirstLoaderScan = TRUE;
+    DisplayLoader = FALSE;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_EXTERNAL) {
             ScanEfiFiles (Volumes[VolumeIndex]);
         }
     } // for
 
-    FirstLoaderScan = FALSE;
+    #if REFIT_DEBUG > 0
+    if (!DisplayLoader) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+
+    DisplayLoader = FALSE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -3112,13 +3351,20 @@ VOID ScanOptical (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    FirstLoaderScan = TRUE;
+    DisplayLoader = FALSE;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_OPTICAL) {
             ScanEfiFiles (Volumes[VolumeIndex]);
         }
     } // for
-    FirstLoaderScan = FALSE;
+
+    #if REFIT_DEBUG > 0
+    if (!DisplayLoader) {
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
+    }
+    #endif
+
+    DisplayLoader = FALSE;
 
     BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
     LOG_DECREMENT();
@@ -3181,7 +3427,9 @@ VOID ScanFirmwareDefined (
     if (GlobalConfig.DontScanFirmware) {
         // Only merge 'GlobalConfig.DontScanFirmware' is not empty
         if (DontScanFirmware) {
-            MergeUniqueItems (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
+            MergeUniqueItems (
+                &DontScanFirmware, GlobalConfig.DontScanFirmware, L','
+            );
         }
         else {
             DontScanFirmware = StrDuplicate (GlobalConfig.DontScanFirmware);
@@ -3190,7 +3438,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"Excluding UEFI Shell from Scan");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Excluding uEFI Shell from Scan");
         #endif
 
         if (DontScanFirmware) {
@@ -3214,7 +3462,7 @@ VOID ScanFirmwareDefined (
     ThisEntry   = BootEntries;
     FoundIt     = FALSE;
 
-    while (ThisEntry) {
+    while (ThisEntry != NULL) {
         ScanIt = FALSE;
 
         if (!DontScanFirmware) {
@@ -3227,7 +3475,10 @@ VOID ScanFirmwareDefined (
         }
         else {
             i = 0;
-            while (!ScanIt && (OneElement = FindCommaDelimited (MatchThis, i++))) {
+            while (
+                !ScanIt &&
+                (OneElement = FindCommaDelimited (MatchThis, i++)) != NULL
+            ) {
                 if (StriSubCmp (OneElement, ThisEntry->BootEntry.Label) &&
                     !IsListItemSubstringIn (ThisEntry->BootEntry.Label, DontScanFirmware)
                 ) {
@@ -3314,14 +3565,16 @@ LOADER_ENTRY * AddToolEntry (
     LOADER_ENTRY *Entry;
 
     Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-    if (!Entry) return NULL;
+    if (Entry == NULL) {
+        return NULL;
+    }
 
-    Entry->me.Title          = (LoaderTitle) ? LoaderTitle : StrDuplicate (L"Unknown Tool");
+    Entry->me.Title          = (LoaderTitle != NULL) ? LoaderTitle : StrDuplicate (L"Unknown Tool");
     Entry->me.Tag            = TAG_TOOL;
     Entry->me.Row            = 1;
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = egCopyImage (Image);
-    Entry->LoaderPath        = (LoaderPath) ? LoaderPath : NULL;
+    Entry->LoaderPath        = (LoaderPath != NULL) ? LoaderPath : NULL;
     Entry->Volume            = Volume;
     Entry->UseGraphicsMode   = UseGraphicsMode;
 
@@ -3349,6 +3602,7 @@ VOID ScanForBootloaders (VOID) {
     UINTN     KeyNum;
     CHAR16   *MsgStr;
     CHAR16   *LogSection;
+    BOOLEAN   LogNewLine;
     BOOLEAN   TmpLevel;
     #endif
 
@@ -3358,7 +3612,7 @@ VOID ScanForBootloaders (VOID) {
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     MsgStr = StrDuplicate (L"S E E K   I N S T A N C E   L O A D E R S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Update Hidden Entry List");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Loop Through 'ScanFor' List");
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
@@ -3386,8 +3640,9 @@ VOID ScanForBootloaders (VOID) {
 
     // Update NVRAM boot manager list if this is UEFI legacy type unit,
     // scanning for legacy loaders and deep legacy scan is active
-    if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) &&
-        ScanForLegacy && GlobalConfig.DeepLegacyScan
+    if (ScanForLegacy                            &&
+        GlobalConfig.DeepLegacyScan              &&
+        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI
     ) {
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();
@@ -3408,7 +3663,7 @@ VOID ScanForBootloaders (VOID) {
 
         // Add hidden tags to two GlobalConfig.DontScan* variables.
         HiddenTags = ReadHiddenTags (L"HiddenTags");
-        if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
+        if (HiddenTags && StrLen (HiddenTags) > 0) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
@@ -3422,7 +3677,7 @@ VOID ScanForBootloaders (VOID) {
         MY_FREE_POOL(HiddenTags);
 
         HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-        if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
+        if (HiddenLegacy && StrLen (HiddenLegacy) > 0) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
@@ -3446,11 +3701,9 @@ VOID ScanForBootloaders (VOID) {
         if (GlobalConfig.DontScanFiles) {
             DontScanItem = NULL;
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanFiles, i)) != NULL) {
-                DeleteItem = (FindSubStr (DontScanItem, L"PreBoot:"))
-                    ? TRUE
-                    : (MyStriCmp (DontScanItem, L"PreBoot"))
-                        ? TRUE
-                        : FALSE;
+                DeleteItem = (!FindSubStr (DontScanItem, L"PreBoot:"))
+                    ? (MyStriCmp (DontScanItem, L"PreBoot")) ? TRUE : FALSE
+                    : TRUE;
 
                 if (!DeleteItem) {
                     i++;
@@ -3466,10 +3719,9 @@ VOID ScanForBootloaders (VOID) {
 
         if (GlobalConfig.DontScanDirs) {
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanDirs, i)) != NULL) {
-                DeleteItem = (FindSubStr (DontScanItem, L"PreBoot:"))
-                    ? TRUE
-                    : (MyStriCmp (DontScanItem, L"PreBoot"))
-                        ? TRUE : FALSE;
+                DeleteItem = (!FindSubStr (DontScanItem, L"PreBoot:"))
+                    ? (MyStriCmp (DontScanItem, L"PreBoot")) ? TRUE : FALSE
+                    : TRUE;
 
                 if (!DeleteItem) {
                     i++;
@@ -3487,9 +3739,7 @@ VOID ScanForBootloaders (VOID) {
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanVolumes, i)) != NULL) {
                 DeleteItem = (FindSubStr (DontScanItem, L"PreBoot:"))
                     ? TRUE
-                    : (MyStriCmp (DontScanItem, L"PreBoot"))
-                        ? TRUE
-                        : FALSE;
+                    : (MyStriCmp (DontScanItem, L"PreBoot")) ? TRUE : FALSE;
 
                 if (!DeleteItem) {
                     i++;
@@ -3529,7 +3779,11 @@ VOID ScanForBootloaders (VOID) {
         } // switch
     } // for
 
-    // scan for loaders and tools, add them to the menu
+    #if REFIT_DEBUG > 0
+    LogNewLine = FALSE;
+    #endif
+
+    // Scan for loaders and tools, add them to the menu
     for (i = 0; i <= SetOptions; i++) {
         switch (GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
@@ -3657,13 +3911,17 @@ VOID ScanForBootloaders (VOID) {
         GlobalConfig.DontScanDirs = OrigDontScanDirs;
     }
 
-    if (MainMenu->EntryCount < 1) {
+    if (MainMenu->EntryCount == 0) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could *NOT* Locate Valid Instance Loaders");
         TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
-        if (TmpLevel) GlobalConfig.LogLevel = 1;
+        if (TmpLevel) {
+            GlobalConfig.LogLevel = 1;
+        }
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        if (TmpLevel) GlobalConfig.LogLevel = 0;
+        if (TmpLevel) {
+            GlobalConfig.LogLevel = 0;
+        }
         MY_FREE_POOL(MsgStr);
         #endif
     }
@@ -3692,7 +3950,9 @@ VOID ScanForBootloaders (VOID) {
         #endif
 
         for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
-            if (i > 9) break;
+            if (i > 9) {
+                break;
+            }
 
             if (i < 9) {
                 #if REFIT_DEBUG > 0
@@ -3779,7 +4039,7 @@ BOOLEAN IsValidTool (
         #endif
 
         DontScanTools = ReadHiddenTags (L"HiddenTools");
-        gHiddenTools  = (DontScanTools)
+        gHiddenTools  = (DontScanTools != NULL)
             ? StrDuplicate (DontScanTools)
             : StrDuplicate (L"NotSet");
 
@@ -3826,7 +4086,10 @@ BOOLEAN IsValidTool (
     SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
     i = 0;
-    while (retval && (DontScanThis = FindCommaDelimited (DontScanTools, i++))) {
+    while (
+        retval &&
+        (DontScanThis = FindCommaDelimited (DontScanTools, i++)) != NULL
+    ) {
         SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
 
         if (MyStriCmp (TestFileName, DontFileName) &&
@@ -3999,7 +4262,7 @@ VOID ScanForTools (VOID) {
 
     if (GlobalConfig.DirectBoot) {
         #if REFIT_DEBUG > 0
-        LogSection = L"Skip Loading Tool Options ... 'DirectBoot' is Active";
+        LogSection = L"INFO: Tool Options:- Skip ... 'DirectBoot' is Active";
         ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -4027,8 +4290,8 @@ VOID ScanForTools (VOID) {
             case TAG_INSTALL:              break;
             case TAG_GDISK:                break;
             case TAG_GPTSYNC:              break;
-            case TAG_INFO_NVRAMCLEAN:      break;
             case TAG_MEMTEST:              break;
+            case TAG_NVRAMCLEAN:           break;
             case TAG_HIDDEN:               break;
             case TAG_MOK_TOOL:             break;
             case TAG_NETBOOT:              break;
@@ -4043,7 +4306,7 @@ VOID ScanForTools (VOID) {
     } // for
     if (ToolTotal == 0) {
         #if REFIT_DEBUG > 0
-        LogSection = L"Skip Loading Tool Options ...  Empty 'showtools' List";
+        LogSection = L"INFO: Tool Options:- Skip ... Empty 'showtools' List";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -4082,7 +4345,7 @@ VOID ScanForTools (VOID) {
             case TAG_INSTALL:          ToolName = L"Install RefindPlus";    break;
             case TAG_GDISK:            ToolName = LABEL_GDISK          ;    break;
             case TAG_GPTSYNC:          ToolName = LABEL_GPTSYNC        ;    break;
-            case TAG_INFO_NVRAMCLEAN:  ToolName = LABEL_CLEAN_NVRAM    ;    break;
+            case TAG_NVRAMCLEAN:       ToolName = LABEL_CLEAN_NVRAM    ;    break;
             case TAG_MEMTEST:          ToolName = LABEL_MEMTEST        ;    break;
             case TAG_HIDDEN:           ToolName = LABEL_HIDDEN         ;    break;
             case TAG_MOK_TOOL:         ToolName = L"MOK Protocol"      ;    break;
@@ -4090,7 +4353,7 @@ VOID ScanForTools (VOID) {
             case TAG_REBOOT:           ToolName = L"System Restart"    ;    break;
             case TAG_RECOVERY_APPLE:   ToolName = L"Recovery (Mac)"    ;    break;
             case TAG_RECOVERY_WINDOWS: ToolName = L"Recovery (Win)"    ;    break;
-            case TAG_SHELL:            ToolName = L"UEFI Shell"        ;    break;
+            case TAG_SHELL:            ToolName = L"uEFI Shell"        ;    break;
             case TAG_SHUTDOWN:         ToolName = L"System Shutdown"   ;    break;
             default:                                                     continue;
         } // switch
@@ -4102,13 +4365,13 @@ VOID ScanForTools (VOID) {
 
         FoundTool = FALSE;
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_INFO_NVRAMCLEAN:
+            case TAG_NVRAMCLEAN:
                 MenuEntryPreCleanNvram = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryPreCleanNvram) {
                     FoundTool = TRUE;
 
                     MenuEntryPreCleanNvram->Title          = StrDuplicate (ToolName);
-                    MenuEntryPreCleanNvram->Tag            = TAG_INFO_NVRAMCLEAN;
+                    MenuEntryPreCleanNvram->Tag            = TAG_NVRAMCLEAN;
                     MenuEntryPreCleanNvram->Row            = 1;
                     MenuEntryPreCleanNvram->ShortcutDigit  = 0;
                     MenuEntryPreCleanNvram->ShortcutLetter = 0;
@@ -4273,7 +4536,7 @@ VOID ScanForTools (VOID) {
                 }
                 else {
                     MenuEntryHiddenTags = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                    if (!MenuEntryHiddenTags) {
+                    if (MenuEntryHiddenTags == NULL) {
                         #if REFIT_DEBUG > 0
                         if (!FoundTool) {
                             ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
@@ -4325,7 +4588,7 @@ VOID ScanForTools (VOID) {
                     osind = *(UINT64 *) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         MenuEntryFirmware = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                        if (!MenuEntryFirmware) {
+                        if (MenuEntryFirmware == NULL) {
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Could *NOT* Load Tool:- '%s'", ToolName);
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -4367,50 +4630,49 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
-                    // DA-TAG: Do not free 'FileName'
-                    //         If used in 'AddToolEntry'
                     if (!IsValidTool (SelfVolume, FileName)) {
                         MY_FREE_POOL(FileName);
+
+                        continue;
                     }
-                    else {
-                        // DA-TAG: Do not free 'Description'
-                        //         Used in 'AddToolEntry'
-                        Description = PoolPrint (
-                            L"%s on %s%s via %s",
-                            ToolName,
-                            SelfVolume->VolName,
-                            SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                            FileName
-                        );
 
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Add '%s' Tag:- '%s' on '%s'",
-                            ToolName, FileName,
-                            SelfVolume->VolName
-                        );
-                        #endif
+                    // DA-TAG: Do not free 'Description' or 'FileName'
+                    //         Used in 'AddToolEntry'
+                    Description = PoolPrint (
+                        L"%s on %s%s via %s",
+                        ToolName,
+                        SelfVolume->VolName,
+                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
+                        FileName
+                    );
 
-                        FoundTool = TRUE;
-                        AddToolEntry (
-                            SelfVolume, FileName,
-                            Description,
-                            BuiltinIcon (BUILTIN_ICON_TOOL_SHELL),
-                            'S', FALSE
-                        );
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Add '%s' Tag:- '%s' on '%s'",
+                        ToolName, FileName,
+                        SelfVolume->VolName
+                    );
+                    #endif
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (OtherFind) {
-                            LOG_MSG("%s%s", OffsetNext, Spacer);
-                        }
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
+                    FoundTool = TRUE;
+                    AddToolEntry (
+                        SelfVolume, FileName,
+                        Description,
+                        BuiltinIcon (BUILTIN_ICON_TOOL_SHELL),
+                        'S', FALSE
+                    );
 
-                        OtherFind = TRUE;
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    if (OtherFind) {
+                        LOG_MSG("%s%s", OffsetNext, Spacer);
                     }
+                    LOG_MSG("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+
+                    OtherFind = TRUE;
                 } // while
 
                 if (!FoundTool) {
@@ -4438,46 +4700,47 @@ VOID ScanForTools (VOID) {
                     //         If used in 'AddToolEntry'
                     if (!IsValidTool (SelfVolume, FileName)) {
                         MY_FREE_POOL(FileName);
+
+                        continue;
                     }
-                    else {
-                        // DA-TAG: Do not free 'Description'
-                        //         Used in 'AddToolEntry'
-                        Description = PoolPrint (
-                            L"%s on %s%s via %s",
-                            ToolName,
-                            SelfVolume->VolName,
-                            SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                            FileName
-                        );
 
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Add '%s' Tag:- '%s' on '%s'",
-                            ToolName, FileName,
-                            SelfVolume->VolName
-                        );
-                        #endif
+                    // DA-TAG: Do not free 'Description' or 'FileName'
+                    //         Used in 'AddToolEntry'
+                    Description = PoolPrint (
+                        L"%s on %s%s via %s",
+                        ToolName,
+                        SelfVolume->VolName,
+                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
+                        FileName
+                    );
 
-                        FoundTool = TRUE;
-                        AddToolEntry (
-                            SelfVolume, FileName,
-                            Description,
-                            BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                            'P', FALSE
-                        );
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Add '%s' Tag:- '%s' on '%s'",
+                        ToolName, FileName,
+                        SelfVolume->VolName
+                    );
+                    #endif
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (OtherFind) {
-                            LOG_MSG("%s%s", OffsetNext, Spacer);
-                        }
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
+                    FoundTool = TRUE;
+                    AddToolEntry (
+                        SelfVolume, FileName,
+                        Description,
+                        BuiltinIcon (BUILTIN_ICON_TOOL_PART),
+                        'P', FALSE
+                    );
 
-                        OtherFind = TRUE;
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    if (OtherFind) {
+                        LOG_MSG("%s%s", OffsetNext, Spacer);
                     }
+                    LOG_MSG("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+
+                    OtherFind = TRUE;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -4498,46 +4761,47 @@ VOID ScanForTools (VOID) {
                     //         If used in 'AddToolEntry'
                     if (!IsValidTool (SelfVolume, FileName)) {
                         MY_FREE_POOL(FileName);
+
+                        continue;
                     }
-                    else {
-                        // DA-TAG: Do not free 'Description'
-                        //         Used in 'AddToolEntry'
-                        Description = PoolPrint (
-                            L"%s on %s%s via %s",
-                            ToolName,
-                            SelfVolume->VolName,
-                            SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                            FileName
-                        );
 
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Add '%s' Tag:- '%s' on '%s'",
-                            ToolName, FileName,
-                            SelfVolume->VolName
-                        );
-                        #endif
+                    // DA-TAG: Do not free 'Description' or 'FileName'
+                    //         Used in 'AddToolEntry'
+                    Description = PoolPrint (
+                        L"%s on %s%s via %s",
+                        ToolName,
+                        SelfVolume->VolName,
+                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
+                        FileName
+                    );
 
-                        FoundTool = TRUE;
-                        AddToolEntry (
-                            SelfVolume, FileName,
-                            Description,
-                            BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                            'G', FALSE
-                        );
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Add '%s' Tag:- '%s' on '%s'",
+                        ToolName, FileName,
+                        SelfVolume->VolName
+                    );
+                    #endif
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (OtherFind) {
-                            LOG_MSG("%s%s", OffsetNext, Spacer);
-                        }
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
+                    FoundTool = TRUE;
+                    AddToolEntry (
+                        SelfVolume, FileName,
+                        Description,
+                        BuiltinIcon (BUILTIN_ICON_TOOL_PART),
+                        'G', FALSE
+                    );
 
-                        OtherFind = TRUE;
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    if (OtherFind) {
+                        LOG_MSG("%s%s", OffsetNext, Spacer);
                     }
+                    LOG_MSG("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+
+                    OtherFind = TRUE;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -4558,46 +4822,47 @@ VOID ScanForTools (VOID) {
                     //         If used in 'AddToolEntry'
                     if (!IsValidTool (SelfVolume, FileName)) {
                         MY_FREE_POOL(FileName);
+
+                        continue;
                     }
-                    else {
-                        // DA-TAG: Do not free 'Description'
-                        //         Used in 'AddToolEntry'
-                        Description = PoolPrint (
-                            L"%s on %s%s via %s",
-                            ToolName,
-                            SelfVolume->VolName,
-                            SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                            FileName
-                        );
 
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_LINE_NORMAL,
-                            L"Add '%s' Tag:- '%s' on '%s'",
-                            ToolName, FileName,
-                            SelfVolume->VolName
-                        );
-                        #endif
+                    // DA-TAG: Do not free 'Description' or 'FileName'
+                    //         Used in 'AddToolEntry'
+                    Description = PoolPrint (
+                        L"%s on %s%s via %s",
+                        ToolName,
+                        SelfVolume->VolName,
+                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
+                        FileName
+                    );
 
-                        FoundTool = TRUE;
-                        AddToolEntry (
-                            SelfVolume, FileName,
-                            Description,
-                            BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
-                            'N', FALSE
-                        );
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Add '%s' Tag:- '%s' on '%s'",
+                        ToolName, FileName,
+                        SelfVolume->VolName
+                    );
+                    #endif
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (OtherFind) {
-                            LOG_MSG("%s%s", OffsetNext, Spacer);
-                        }
-                        LOG_MSG("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
+                    FoundTool = TRUE;
+                    AddToolEntry (
+                        SelfVolume, FileName,
+                        Description,
+                        BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
+                        'N', FALSE
+                    );
 
-                        OtherFind = TRUE;
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    if (OtherFind) {
+                        LOG_MSG("%s%s", OffsetNext, Spacer);
                     }
+                    LOG_MSG("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+
+                    OtherFind = TRUE;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -4628,7 +4893,7 @@ VOID ScanForTools (VOID) {
                             RecoverVol = RefitGetAppleDiskLabel (HfsRecovery[VolumeIndex]);
                             #endif
 
-                            VolumeTag = (RecoverVol)
+                            VolumeTag = (RecoverVol != NULL)
                                 ? PoolPrint (L"HFS+ Recovery : %s", RecoverVol)
                                 : StrDuplicate (L"HFS+ Recovery : Recovery HD");
 
@@ -4721,7 +4986,7 @@ VOID ScanForTools (VOID) {
                         } // for k = 0
                         #endif
 
-                        VolumeTag = (RecoverVol)
+                        VolumeTag = (RecoverVol != NULL)
                             ? PoolPrint (L"APFS Instance : %s", RecoverVol)
                             : StrDuplicate (L"APFS Instance : Recovery");
                         #if REFIT_DEBUG > 0
@@ -4945,7 +5210,7 @@ VOID ScanForTools (VOID) {
                 }
 
                 MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (!MenuEntryRotateCsr) {
+                if (MenuEntryRotateCsr == NULL) {
                     BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
                     LOG_DECREMENT();
                     LOG_SEP(L"X");
@@ -4971,7 +5236,7 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_INSTALL:
                 MenuEntryInstall = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (!MenuEntryInstall) {
+                if (MenuEntryInstall == NULL) {
                     BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
                     LOG_DECREMENT();
                     LOG_SEP(L"X");
@@ -4997,7 +5262,7 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_BOOTORDER:
                 MenuEntryBootorder = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (!MenuEntryBootorder) {
+                if (MenuEntryBootorder == NULL) {
                     BREAD_CRUMB(L"%s:  C - END:- VOID ... Resource Exhaution!", FuncTag);
                     LOG_DECREMENT();
                     LOG_SEP(L"X");

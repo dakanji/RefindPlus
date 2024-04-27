@@ -19,6 +19,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+ /*
+  * Modified for RefindPlus
+  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  *
+  * Modifications distributed under the preceding terms.
+  */
 
 #include "fsw_core.h"
 
@@ -1031,14 +1037,19 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 	int bsz;
 
 	err = fsw_ntfs_dnode_get_lcn(vol, dno, vcn, &lcn);
-	if (err != FSW_SUCCESS) break;
+	if (err != FSW_SUCCESS) {
+        break;
+    }
 
 	err = fsw_block_get(&vol->g, lcn, 0, (void **) &block);
-	if (err != FSW_SUCCESS) break;
+    if (err != FSW_SUCCESS) {
+        break;
+    }
 
 	bsz = (1<<vol->clbits) - boff;
-	if(bsz > size)
+	if (bsz > size) {
 	    bsz = size;
+    }
 
 	fsw_memcpy(buf, block+boff, bsz);
 	fsw_block_release(&vol->g, lcn, block);
@@ -1049,9 +1060,9 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 	boff = 0;
 	vcn++;
     }
-    if(size==0 && zsize > 0) {
-	fsw_memzero(buf, zsize);
-	ret += zsize;
+    if (size==0 && zsize > 0) {
+	    fsw_memzero(buf, zsize);
+	    ret += zsize;
     }
     return ret;
 }

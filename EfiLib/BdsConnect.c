@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -57,7 +57,10 @@ static
 VOID UpdatePreferUGA (VOID) {
     static BOOLEAN GotStatusUGA = FALSE;
 
-    if (GotStatusUGA) return;
+    if (GotStatusUGA) {
+        return;
+    }
+
     if (GlobalConfig.PreferUGA && egInitUGADraw(FALSE)) {
         SetPreferUGA = TRUE;
     }
@@ -218,7 +221,9 @@ EFI_STATUS ScanDeviceHandles (
                 gBS->OpenProtocolInformation, (*HandleBuffer)[k],
                 ProtocolGuidArray[ProtocolIndex], &OpenInfo, &OpenInfoCount
             );
-            if (EFI_ERROR(Status)) continue;
+            if (EFI_ERROR(Status)) {
+                continue;
+            }
 
             for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
                 if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
@@ -283,14 +288,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16               *GopDevicePathStr;
     CHAR16               *StrDevicePath;
+    CHAR16               *DeviceDataTmp;
     CHAR16               *DeviceData;
     CHAR16               *FillStr;
     CHAR16               *MsgStr;
     CHAR16               *TmpStr;
     UINTN                 HexIndex;
     UINTN                 AllHandleCountTrigger;
-
-    BOOLEAN CheckMute = FALSE;
     #endif
 
 
@@ -534,19 +538,32 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                if (FoundGOP && GopDevicePathStr != NULL) {
-                    StrDevicePath = ConvertDevicePathToText (
-                        DevicePathFromHandle (AllHandleBuffer[i]),
-                        FALSE, FALSE
-                    );
+                if (FoundGOP) {
+                    DeviceDataTmp = StrDevicePath = NULL;
+                    // DA-TAG; Do not change if/else arrangement below
+                    if (GopDevicePathStr != NULL) {
+                        StrDevicePath = ConvertDevicePathToText (
+                            DevicePathFromHandle (AllHandleBuffer[i]),
+                            FALSE, FALSE
+                        );
 
-                    if (StrStr (GopDevicePathStr, StrDevicePath)) {
-                        DeviceData = PoolPrint (
-                            L"%s : Leverages GOP",
-                            DeviceData
+                        if (MyStrStr (GopDevicePathStr, StrDevicePath)) {
+                            DeviceDataTmp = DeviceData;
+                            DeviceData    = PoolPrint (
+                                L"%s : Leverages GOP",
+                                DeviceDataTmp
+                            );
+                        }
+                    }
+                    else if (MyStriCmp (DeviceData, L"GraphicsFX Card")) {
+                        DeviceDataTmp = DeviceData;
+                        DeviceData    = PoolPrint (
+                            L"%s : Leverages GOP (Assumed)",
+                            DeviceDataTmp
                         );
                     }
 
+                    MY_FREE_POOL(DeviceDataTmp);
                     MY_FREE_POOL(StrDevicePath);
                 }
                 #endif
@@ -563,9 +580,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     DeviceData = StrDuplicate (L"");
                 }
                 else {
-                    MY_MUTELOGGER_SET;
-                    if (FindSubStr (DeviceData, L"Monitor Display") ||
-                        FindSubStr (DeviceData, L"GraphicsFX Card")
+                    if (MyStrBegins (L"Monitor Display", DeviceData) ||
+                        MyStrBegins (L"GraphicsFX Card", DeviceData)
                     ) {
                         FillStr = L"  x  ";
                     }
@@ -585,7 +601,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     else {
                         FillStr = L"  -  ";
                     }
-                    MY_MUTELOGGER_OFF;
                 }
                 #endif
 
