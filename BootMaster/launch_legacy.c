@@ -987,9 +987,8 @@ VOID AddLegacyEntryUEFI (
 } // static VOID AddLegacyEntryUEFI()
 
 /**
-    Scan for legacy BIOS targets on machines that implement EFI_LEGACY_BIOS_PROTOCOL.
-    In testing, protocol has not been implemented on Macs but has been implemented on
-      most UEFI PCs. Restricts output to disks of the specified DiskType.
+    Scan for legacy BIOS targets on machines with EFI_LEGACY_BIOS_PROTOCOL.
+    Restricts output to disks of the specified 'DiskType'.
 */
 static
 VOID ScanLegacyUEFI (
@@ -1332,10 +1331,13 @@ VOID ScanLegacyDisc (VOID) {
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     FirstLegacyScan = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+    if (
+        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
+    ) {
         ScanLegacyUEFI (BBS_CDROM);
     }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1) {
         DisplayLoader = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
@@ -1380,12 +1382,15 @@ VOID ScanLegacyInternal (VOID) {
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     FirstLegacyScan = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+    if (
+        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
+    ) {
        // DA-TAG: This also picks USB flash drives up.
        //         Try to find a way to differentiate.
        ScanLegacyUEFI (BBS_HARDDISK);
     }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1) {
         DisplayLoader = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
@@ -1429,13 +1434,16 @@ VOID ScanLegacyExternal (VOID) {
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
     FirstLegacyScan = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+    if (
+        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
+    ) {
         // DA-TAG: Investigate This
         //         This does not actually do anything useful.
         //         Leaving in hope of fixing later.
         ScanLegacyUEFI (BBS_USB);
     }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1) {
         DisplayLoader = FALSE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
@@ -1463,24 +1471,33 @@ VOID FindLegacyBootType (VOID) {
     EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    // UEFI-style legacy BIOS support is only available with some EFI implementations
+
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios
     );
     if (!EFI_ERROR(Status)) {
-        GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
-
-        // Early Return
-        return;
+        // Assume UEFI Class 2 Unit - Enable
+        GlobalConfig.LegacyType = (AppleFirmware)
+            ? LEGACY_TYPE_MAC2 : LEGACY_TYPE_UEFI;
     }
-
-    // Macs have their own system. If the firmware vendor code contains the
-    //   string "Apple", assume it is available. Note that this overrides the
-    //   UEFI type, and might yield false positives if the vendor string
-    //   contains "Apple" as part of something bigger, so this is not perfect.
-    GlobalConfig.LegacyType = (AppleFirmware)
-        ? LEGACY_TYPE_MAC : LEGACY_TYPE_NONE;
+    else if (
+        !AppleFirmware ||
+        (
+            GlobalConfig.LegacySync        &&
+            (gST->Hdr.Revision >> 16U) > 1 &&
+            (gBS->Hdr.Revision >> 16U) > 1 &&
+            (gRT->Hdr.Revision >> 16U) > 1
+        )
+    ) {
+        // Assume UEFI Class 3 Unit - Disable
+        GlobalConfig.LegacyType = (AppleFirmware)
+            ? LEGACY_TYPE_MAC3 : LEGACY_TYPE_NONE;
+    }
+    else {
+        // 'LegacySync' is Off or Other uEFI Mac - Enable
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
+    }
 } // VOID FindLegacyBootType()
 
 // Warn user if legacy OS scans are enabled but
@@ -1506,7 +1523,9 @@ VOID WarnIfLegacyProblems (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  A - START", FuncTag);
 
-    if (GlobalConfig.LegacyType != LEGACY_TYPE_NONE) {
+    if (GlobalConfig.LegacyType != LEGACY_TYPE_NONE &&
+        GlobalConfig.LegacyType != LEGACY_TYPE_MAC3
+    ) {
         BREAD_CRUMB(L"%s:  A1 - END:- VOID ... Early Return", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1548,13 +1567,14 @@ VOID WarnIfLegacyProblems (VOID) {
     }
     #endif
 
-    TxtMsg = L"** WARN: Legacy BIOS Boot Issues                               ";
+    TxtMsg = L"WARN: Legacy BIOS Boot Issues                                  ";
     Spacer = L"                                                               ";
     MsgStr = L"Your 'scanfor' config line specifies scanning for one or more  \n"
              L"legacy (BIOS) boot options but this *IS NOT* possible as your  \n"
              L"computer lacks the required Compatibility Support Module (CSM) \n"
              L"or because Legacy BIOS Boot has been disabled in your firmware.";
-    ExtMsg = L"You can try the RefindPlus 'disable_legacy_sync' config option.";
+    ExtMsg = L"Remove the legacy (BIOS) boot settings from the 'scanfor' list.\n"
+             L"  - Items to remove from list: hdbios, biosexternal and cdbios.";
 
     #if REFIT_DEBUG > 0
     if (TmpLevel) {

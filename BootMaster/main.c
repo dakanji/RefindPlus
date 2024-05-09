@@ -129,6 +129,7 @@ REFIT_CONFIG GlobalConfig = {
     .FoldLinuxKernels          =                    TRUE,
     .RescanDXE                 =                    TRUE,
     .HiddenTags                =                    TRUE,
+    .LegacySync                =                    TRUE,
     .HelpIcon                  =                    TRUE,
     .HelpScan                  =                    TRUE,
     .HelpSize                  =                    TRUE,
@@ -2586,11 +2587,15 @@ VOID LogBasicInfo (VOID) {
     LOG_MSG("\n");
 
     /* Compat Support Module Type */
+    if (AppleFirmware && !GlobalConfig.LegacySync) {
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
+    }
     switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC:  MsgStr = StrDuplicate (L"Mac-Style");  break;
-        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"); break;
-        case LEGACY_TYPE_NONE: MsgStr = StrDuplicate (L"Absent");     break;
-        default:               MsgStr = StrDuplicate (L"Unknown");    break; // Just in case
+        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Mac-Style"        ); break;
+        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac"); break;
+        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent on Mac"    ); break;
+        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"       ); break;
+        default:               MsgStr = StrDuplicate (L"Absent"           );
     }
     LOG_MSG("Compat Support Module:- '%s'", MsgStr);
     LOG_MSG("\n\n");
@@ -2700,7 +2705,7 @@ EFI_STATUS EFIAPI efi_main (
     FindLegacyBootType();
 
     /* Set Default Scan Pattern */
-    (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
+    (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1)
         ? CopyMem (GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS)
         : CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
 
@@ -2871,6 +2876,8 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
     LOG_MSG("%s      HelpScan:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpScan        ));
     LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon        ));
+    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
+
     LOG_MSG("%s      TextOnly:- ",         OffsetNext                               );
     if (ForceTextOnly) {
         LOG_MSG("'Forced'"                                                          );
@@ -2879,8 +2886,16 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("'%s'", (GlobalConfig.TextOnly) ? L"Active" : L"Inactive"           );
     }
 
-    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
     LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
+
+    LOG_MSG("%s      LegacySync:- ",       OffsetNext                               );
+    if (!AppleFirmware) {
+        LOG_MSG("'Disabled'"                                                        );
+    }
+    else {
+        LOG_MSG("'%s'", (GlobalConfig.LegacySync) ? L"Enabled" : L"Inactive"        );
+    }
+
     LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP      ));
     LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot      ));
 

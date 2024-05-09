@@ -1,6 +1,14 @@
 0.14.1.AA (PRE-RELEASE):
 -----------------------
 - Synced with Upstream v0.14.1
+- Adds `LegacySync` Feature
+  * RefindPlus previously assumed all Macs were capable of legacy BIOS boot
+    - This was from code that went in upstream in 2012 when this was a reasonable working assumption
+      * However, Macs later became UEFI certified and the last Intel Macs appear to be UEFI Class 3+
+      * UEFI Class 3/3+ devices do not support legacy BIOS boot
+    - This feature attempts to categorise Macs and allow/disallow legacy boot accordingly
+  * Enabled by default but can be disabled using a new `disable_legacy_sync` configuration token
+    - Disabling might be needed if a Mac is mis-categorised and legacy BIOS boot wrongly prevented
 - Adds `HelpSize` Feature
   * Provides option to force non-standard or otherwise unsupported screen resolutions
     - This can help work around issues where pre-boot configuration screen are not displayed
@@ -51,6 +59,9 @@
 - Improves `Misc` Handling
   * Restructured config file into four (4) sections
   * Completed LodePNG 20230410 update started in v0.14.0.AC
+  * Renames the `cd` item under the `scanfor` config token as `cdbios`
+    - Provides clarity that this is a `BIOS` scan option
+    - Maintains compatibility with existing settings including upstream
   * The `TimeoutSeconds` item in `REFIT_MENU_SCREEN` was changed to `INTN`
     - Follow on from fix to `Timeout` item in `REFIT_CONFIG` previously changed to `INTN`
     - The original fix for `SilentBoot/DirectBoot` was incomplete (Commit 78d6138 in v0.13.2.AH)

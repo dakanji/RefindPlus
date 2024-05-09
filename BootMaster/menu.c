@@ -3389,11 +3389,18 @@ BOOLEAN HideLegacyTag (
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && LegacyLoader->me.Title) {
+    if (LegacyLoader->me.Title  != NULL &&
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC1
+    ) {
         Name = StrDuplicate (LegacyLoader->me.Title);
     }
-    else if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) &&
-        LegacyLoader->BdsOption && LegacyLoader->BdsOption->Description
+    else if (
+        LegacyLoader->BdsOption              != NULL &&
+        LegacyLoader->BdsOption->Description != NULL &&
+        (
+            GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
+            GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
+        )
     ) {
         Name = StrDuplicate (LegacyLoader->BdsOption->Description);
     }

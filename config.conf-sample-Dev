@@ -169,6 +169,15 @@
 #
 #disable_apfs_sync
 
+# RefindPlus previously assumed all Macs were capable of legacy BIOS boot.
+# While this was accurate for some time, some later Macs are UEFI Class 3
+# devices that do not support legacy BIOS boot. The "LegacySync" feature
+# attempts to categorise Intel Macs to allow/disallow legacy BIOS boot.
+#
+# The "LegacySync" feature is active when commented out
+#
+#disable_legacy_sync
+
 # Disable kernel panic logging to the nvRAM. macOS may save kernel panic logs in
 # the nvRAM under certain conditions which can increase wear and tear on legacy
 # Mac nvRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
@@ -702,6 +711,28 @@
 #resolution 1440 900
 #resolution 3
 
+# Which types of boot loaders to search, and in what order to display them:
+#  external      - External EFI disk based boot loaders ... USB/eSATA etc.
+#  internal      - Internal EFI disk based boot loaders ... HDD/SSD etc.
+#  optical       - EFI optical discs ... CD/DVD etc.
+#  netboot       - EFI network (IPXE) boot options
+#  biosexternal  - BIOS external boot loaders
+#  hdbios        - BIOS disk based boot loaders
+#  cdbios        - BIOS optical disc boot loaders
+#  firmware      - Boot EFI programs set in the firmware nvRAM
+#  manual        - Use the stanzas lower in this configuration file
+#
+# NOTES:
+# 1. The legacy BIOS options require firmware support.
+#    This support is not present on all computers.
+# 2. The netboot option is experimental.
+#    It requires the "ipxe.efi" and "ipxe_discover.efi" files.
+#
+# On UEFI PC, the default setting is internal,external,optical,manual
+# On Mac, the default is internal,hdbios,external,biosexternal,optical,cdbios,manual
+#
+#scanfor internal,external,optical,manual
+
 # Blank screen and show different solid colours after the specified
 # number of seconds without input. Screen is restored on keypresses
 # (Excluding keys such as "Shift", "Control", "Alt", and "Option").
@@ -1118,26 +1149,6 @@
 # Uses graphics screen mode when commented out
 #
 #textonly
-
-# Which types of boot loaders to search, and in what order to display them:
-#  internal      - internal EFI disk-based boot loaders
-#  external      - external EFI disk-based boot loaders
-#  optical       - EFI optical discs (CD, DVD, etc.)
-#  netboot       - EFI network (PXE) boot options
-#  hdbios        - BIOS disk-based boot loaders
-#  biosexternal  - BIOS external boot loaders (USB, eSATA, etc.)
-#  cd            - BIOS optical-disc boot loaders
-#  manual        - use stanzas later in this configuration file
-#  firmware      - boot EFI programs set in the firmware's nvRAM
-# Note that the legacy BIOS options require firmware support, which is
-# not present on all computers.
-# The netboot option is experimental and relies on the ipxe.efi and
-# ipxe_discover.efi program files.
-#
-# On UEFI PC, the default setting is internal,external,optical,manual
-# On Mac, the default is internal,hdbios,external,biosexternal,optical,cd,manual
-#
-#scanfor internal,external,optical,manual
 
 # Scan for Linux kernels that lack a ".efi" filename extension. This
 # is useful for better integration with Linux distributions that provide

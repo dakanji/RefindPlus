@@ -3391,6 +3391,18 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.HelpSize = (DeclineSetting) ? FALSE : TRUE;
         }
+        else if (MyStriCmp (TokenList[0], L"disable_legacy_sync")) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.LegacySync = (DeclineSetting) ? FALSE : TRUE;
+        }
         else if (MyStriCmp (TokenList[0], L"follow_symlinks")) {
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {

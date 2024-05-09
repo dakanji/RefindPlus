@@ -1455,7 +1455,7 @@ VOID ScanVolumeBootcode (
         SAMPLE_SIZE, Buffer
     );
 
-    if (GlobalConfig.LegacyType != LEGACY_TYPE_MAC) {
+    if (GlobalConfig.LegacyType != LEGACY_TYPE_MAC1) {
         #if REFIT_DEBUG > 0
         if (SelfVolRun && ScanMBR) {
             MsgStr = L"Could *NOT* Read Boot Sector on Item Below";
@@ -1600,7 +1600,7 @@ VOID ScanVolumeBootcode (
     if (Volume->HasBootCode) {
         // Verify Windows boot sector on Macs
         if (Volume->FSType          == FS_TYPE_NTFS  &&
-            GlobalConfig.LegacyType == LEGACY_TYPE_MAC
+            GlobalConfig.LegacyType == LEGACY_TYPE_MAC1
         ) {
             Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
         }
@@ -2312,7 +2312,7 @@ VOID ScanVolume (
 
     if (Volume->HasBootCode                      &&
         Volume->FSType          == FS_TYPE_NTFS  &&
-        GlobalConfig.LegacyType == LEGACY_TYPE_MAC
+        GlobalConfig.LegacyType == LEGACY_TYPE_MAC1
     ) {
         // VBR boot code found on NTFS, but volume is not actually bootable
         // on Mac unless there are actual boot file, so check for them.

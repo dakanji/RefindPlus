@@ -107,8 +107,10 @@
 
 // Type of Legacy Boot support detected
 #define LEGACY_TYPE_NONE          (0)
-#define LEGACY_TYPE_MAC           (1)
-#define LEGACY_TYPE_UEFI          (2)
+#define LEGACY_TYPE_MAC1          (1)
+#define LEGACY_TYPE_MAC2          (2)
+#define LEGACY_TYPE_MAC3          (3)
+#define LEGACY_TYPE_UEFI          (4)
 
 // Flags how a loader entry was added to a menu
 #define DISCOVERY_TYPE_UNKNOWN    (0)
@@ -519,6 +521,7 @@ typedef struct {
     BOOLEAN                     FoldLinuxKernels;
     BOOLEAN                     RescanDXE;
     BOOLEAN                     HiddenTags;
+    BOOLEAN                     LegacySync;
     BOOLEAN                     HelpIcon;
     BOOLEAN                     HelpScan;
     BOOLEAN                     HelpSize;
