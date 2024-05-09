@@ -23,9 +23,9 @@
 # is done when RefindPlus is loaded but users can manually toggle the set
 # values "ON" or "OFF" by using the "Rotate CSR" tool on the main menu.
 # The following options are available:
-#   1    - Always Enable SIP (and SSV on macOS 11.x or later)
+#   1    - Always Enable SIP/SSV
 #   0    - Take no Action
-#  -1    - Always Disable SIP (and SSV on macOS 11.x or later when configured in "csr_values")
+#  -1    - Always Disable SIP/SSV
 #
 # NOTES:
 # 1. This rotates the values defined under the 'csr_values' configuration token.
@@ -544,7 +544,7 @@
 #   - opencore-version (macOS boots ... including installers)
 #
 # This token accepts these options:
-#   0    - Sync is not attempted                       (Default/Base Option:- Y)
+#   0    - Sync is never attempted                     (Default/Base Option:- Y)
 #   1    - Sync when current boot not as previous boot (Confirm Before Sync:- N)
 #   2    - Sync when current boot not as previous boot (Confirm Before Sync:- Y)
 #   3    - Sync before every boot                      (Confirm Before Sync:- Y)
@@ -1416,7 +1416,7 @@ menuentry "Windows 7" {
     loader \EFI\Microsoft\Boot\bootmgfw.efi
 }
 
-# uEFI shells are programs just like boot loaders, and can be
+# As with boot loaders, uEFI shells are programs that can be
 # launched in the same way. A shell can be passed the name of
 # a script that it is to run on the "options" line. The script
 # could initialise hardware and then launch an OS, or it could

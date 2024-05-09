@@ -69,7 +69,7 @@ ESP_LIST * FindAllESPs (VOID) {
     ESP_LIST *AllESPs;
     ESP_LIST *NewESP;
     UINTN     VolumeIndex;
-    EFI_GUID  ESPGuid = ESP_GUID_VALUE;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Search for ESPs");
@@ -78,7 +78,7 @@ ESP_LIST * FindAllESPs (VOID) {
     AllESPs = NULL;
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL             &&
-            GuidsAreEqual  (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
+            GuidsAreEqual  (&(Volumes[VolumeIndex]->PartTypeGuid), &GuidESP) &&
             !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)
         ) {
             NewESP = AllocateZeroPool (sizeof (ESP_LIST));

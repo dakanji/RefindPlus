@@ -861,7 +861,7 @@ VOID SetLoaderDefaults (
     CHAR16                 *OSIconName;
     CHAR16                 *TmpIconName;
     CHAR16                 *ThisIconName;
-    CHAR16                 *TargetName;
+    CHAR16                 *TargetName; // Do *NOT* Free
     CHAR16                 *DisplayName;
     CHAR16                 *NoExtension;
     CHAR16                 *VentoyName;
@@ -1084,14 +1084,16 @@ VOID SetLoaderDefaults (
                 if (Volume->FsName != NULL &&
                     Volume->FsName[0] != L'\0'
                 ) {
-                    MergeFsName = TRUE;
-
                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 1", FuncTag);
                     if (GlobalConfig.SyncAPFS              &&
                         FindSubStr (Volume->FsName, L"PreBoot")
                     ) {
                         BREAD_CRUMB(L"%s:  3a 1b 3b 4a 1a 1", FuncTag);
                         MergeFsName = FALSE;
+                    }
+                    else {
+                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 1b 1", FuncTag);
+                        MergeFsName = TRUE;
                     }
 
                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2", FuncTag);
@@ -1101,12 +1103,12 @@ VOID SetLoaderDefaults (
                             BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1", FuncTag);
                             i = 0;
                             while (
-                                !FoundVentoy &&
+                                !FoundVentoy              &&
                                 GlobalConfig.HandleVentoy &&
                                 (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                             ) {
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
-                                if (MyStrBegins (VentoyName, TargetName)) {
+                                if (MyStrBegins (VentoyName, Volume->FsName)) {
                                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 1a 1a 1 - Found ... Set Ventoy Icon", FuncTag);
                                     FoundVentoy = TRUE;
                                     TargetName  = L"ventoy";
@@ -1120,23 +1122,25 @@ VOID SetLoaderDefaults (
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1", FuncTag);
                                 if (GlobalConfig.HelpIcon &&
                                     (
-                                        MyStriCmp (Volume->FsName, L"EFI") ||
-                                        MyStriCmp (Volume->FsName, L"ESP") ||
-                                        MyStriCmp (Volume->FsName, L"EFI System Partition")
+                                        (
+                                            GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)
+                                        ) || (
+                                            MyStriCmp (Volume->FsName, L"EFI") ||
+                                            MyStriCmp (Volume->FsName, L"ESP") ||
+                                            MyStriCmp (Volume->FsName, L"EFI System Partition")
+                                        )
                                     )
                                 ) {
                                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1a 1", FuncTag);
                                     GotUEFI = TRUE;
                                 }
-                                else {
-                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 1", FuncTag);
-                                    if (Volume->FsName != NULL) {
-                                        BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 1a 1", FuncTag);
-                                        TargetName = Volume->FsName;
-                                    }
-                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 1b 2", FuncTag);
-                                }
+
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 2", FuncTag);
+                                if (Volume->FsName != NULL) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 2a 1", FuncTag);
+                                    TargetName = Volume->FsName;
+                                }
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 2a 3", FuncTag);
                             } // if TargetName == NULL
 
                             BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2a 1a 3", FuncTag);
@@ -1173,7 +1177,8 @@ VOID SetLoaderDefaults (
                     }
                     else {
                         BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1", FuncTag);
-                        if (Volume->VolName != NULL &&
+                        if (!FoundVentoy            &&
+                            Volume->VolName != NULL &&
                             Volume->VolName[0] != L'\0'
                         ) {
                             BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 1", FuncTag);
@@ -1196,6 +1201,7 @@ VOID SetLoaderDefaults (
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2", FuncTag);
                                 i = 0;
                                 while (
+                                    !FoundVentoy              &&
                                     GlobalConfig.HandleVentoy &&
                                     (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                                 ) {
@@ -1207,13 +1213,25 @@ VOID SetLoaderDefaults (
                                     }
                                     MY_FREE_POOL(VentoyName);
                                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 2a 2 - WHILE LOOP:- END", FuncTag);
-
-                                    if (FoundVentoy) {
-                                        break;
-                                    }
                                 } // while
 
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 3", FuncTag);
+                                if (GlobalConfig.HelpIcon &&
+                                    (
+                                        (
+                                            GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)
+                                        ) || (
+                                            MyStriCmp (TargetName, L"EFI") ||
+                                            MyStriCmp (TargetName, L"ESP") ||
+                                            MyStriCmp (TargetName, L"EFI System Partition")
+                                        )
+                                    )
+                                ) {
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 3a 1", FuncTag);
+                                    GotUEFI = TRUE;
+                                }
+
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4", FuncTag);
                                 #if REFIT_DEBUG > 0
                                 if (TargetName != NULL) {
                                     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1223,7 +1241,7 @@ VOID SetLoaderDefaults (
                                 }
                                 #endif
 
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 5", FuncTag);
                                 if (FoundVentoy) {
                                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4a 1", FuncTag);
                                     MY_FREE_POOL(OSIconName);
@@ -1241,7 +1259,7 @@ VOID SetLoaderDefaults (
 
                                     BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 4b 3", FuncTag);
                                 }
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 5", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 2a 6", FuncTag);
                             } // if Entry->me.Image == NULL
                             BREAD_CRUMB(L"%s:  3a 1b 3b 4a 2b 1a 3", FuncTag);
                             MY_FREE_POOL(DisplayName);
@@ -1283,25 +1301,29 @@ VOID SetLoaderDefaults (
                             BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1", FuncTag);
                             if (GlobalConfig.HelpIcon &&
                                 (
-                                    MyStriCmp (Volume->PartName, L"EFI") ||
-                                    MyStriCmp (Volume->PartName, L"ESP") ||
-                                    MyStriCmp (Volume->PartName, L"EFI System Partition")
+                                    (
+                                        GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)
+                                    ) || (
+                                        MyStriCmp (Volume->PartName, L"EFI") ||
+                                        MyStriCmp (Volume->PartName, L"ESP") ||
+                                        MyStriCmp (Volume->PartName, L"EFI System Partition")
+                                    )
                                 )
                             ) {
                                 BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1a 1", FuncTag);
                                 GotUEFI = TRUE;
                             }
-                            else if (
-                                !GlobalConfig.HelpIcon ||
-                                (
-                                    Volume->PartName != NULL &&
-                                    !MyStrStr (Volume->PartName, L"Untitled")
-                                )
+
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2", FuncTag);
+                            if (!FoundVentoy             &&
+                                Volume->PartName != NULL &&
+                                !MyStrStr (Volume->PartName, L"Untitled")
                             ) {
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 1b 1", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2a 1", FuncTag);
                                 TargetName = Volume->PartName;
                             }
 
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 3", FuncTag);
                             #if REFIT_DEBUG > 0
                             if (TargetName != NULL) {
                                 ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1311,25 +1333,25 @@ VOID SetLoaderDefaults (
                             }
                             #endif
 
-                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4", FuncTag);
                             if (FoundVentoy) {
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2a 1", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4a 1", FuncTag);
                                 MY_FREE_POOL(OSIconName);
                                 OSIconName = StrDuplicate (TargetName);
                             }
                             else {
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 1", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4b 1", FuncTag);
                                 if (GlobalConfig.HelpIcon) {
-                                    BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 1a 1", FuncTag);
+                                    BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4b 1a 1", FuncTag);
                                     MergeUniqueItems (&OSIconName, TargetName, L',');
                                 }
 
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 2", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4b 2", FuncTag);
                                 MergeUniqueWords (&OSIconName, TargetName, L',');
 
-                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 2b 3", FuncTag);
+                                BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 4b 3", FuncTag);
                             }
-                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 3", FuncTag);
+                            BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 2a 5", FuncTag);
                         }
                         BREAD_CRUMB(L"%s:  3a 1b 3b 5a 1a 3", FuncTag);
                     }
@@ -1713,13 +1735,13 @@ LOADER_ENTRY * AddEfiLoaderEntry (
     if (Entry == NULL) {
         return NULL;
     }
-    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
 
     FullTitle = (LoaderTitle != NULL)
         ? PoolPrint (L"Reboot to %s", LoaderTitle) : NULL;
 
     Entry->me.Row        = Row;
     Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     Entry->me.Title      = StrDuplicate ((FullTitle   != NULL) ? FullTitle   : L"Instance: Unknown");
     Entry->Title         = StrDuplicate ((LoaderTitle != NULL) ? LoaderTitle : L"Instance: Unknown"); // without "Reboot to"
     Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
@@ -1788,8 +1810,6 @@ LOADER_ENTRY * AddLoaderEntry (
         // Early Return
         return NULL;
     }
-
-    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
 
     CleanUpPathNameSlashes (LoaderPath);
 
@@ -1895,13 +1915,15 @@ LOADER_ENTRY * AddLoaderEntry (
             L"Load %s",
             (LoaderTitle != NULL) ? LoaderTitle : LoaderPath
         );
+
     Entry->me.Row = 0;
     Entry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
+    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
 
     Entry->LoaderPath = (LoaderPath != NULL && (LoaderPath[0] != L'\\'))
         ? StrDuplicate (L"\\") : NULL;
-
     MergeUniqueStrings (&(Entry->LoaderPath), LoaderPath, 0);
+
     Entry->Volume = Volume;
     SetLoaderDefaults (Entry, LoaderPath, Volume);
     GenerateSubScreen (Entry, Volume, SubScreenReturn);
@@ -1962,11 +1984,11 @@ INTN TimeComp (
         + ((INT64) (Time2->Year - 1998) * 32140800);
 
     if (Time1InSeconds < Time2InSeconds) {
-        return (-1);
+        return -1;
     }
 
     if (Time1InSeconds > Time2InSeconds) {
-        return (1);
+        return 1;
     }
 
     return 0;
@@ -2007,7 +2029,7 @@ LOADER_LIST * AddLoaderListEntry (
                 ) < 0
             )
         ) {
-            PrevEntry   = CurrentEntry;
+            PrevEntry    = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
         } // while
 
@@ -2052,16 +2074,16 @@ CHAR16 * SetVolKind (
 
 
     if (0);
-    else if (VolumeFSType == FS_TYPE_FAT32        ) RetVal = L""         ;
-    else if (VolumeFSType == FS_TYPE_FAT16        ) RetVal = L""         ;
-    else if (VolumeFSType == FS_TYPE_FAT12        ) RetVal = L""         ;
-    else if (VolumeFSType == FS_TYPE_EXFAT        ) RetVal = L""         ;
-    else if (MyStriCmp (VolumeName,  L"EFI"      )) RetVal = L""         ;
-    else if (MyStriCmp (VolumeName,  L"ESP"      )) RetVal = L""         ;
-    else if (MyStrStr (VolumeName,   L"Volume"   )) RetVal = L""         ;
-    else if (MyStrStr (VolumeName,   L"Partition")) RetVal = L""         ;
-    else if (MyStrStr (InstanceName, L"Instance:")) RetVal = L"Volume:- ";
-    else                                            RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_FAT32         ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_FAT16         ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_FAT12         ) RetVal = L""         ;
+    else if (VolumeFSType == FS_TYPE_EXFAT         ) RetVal = L""         ;
+    else if (MyStriCmp (VolumeName,   L"EFI"      )) RetVal = L""         ;
+    else if (MyStriCmp (VolumeName,   L"ESP"      )) RetVal = L""         ;
+    else if (MyStrStr  (VolumeName,   L"Volume"   )) RetVal = L""         ;
+    else if (MyStrStr  (VolumeName,   L"Partition")) RetVal = L""         ;
+    else if (MyStrStr  (InstanceName, L"Instance:")) RetVal = L"Volume:- ";
+    else                                             RetVal = L""         ;
 
     return RetVal;
 } // CHAR16 * SetVolKind()
@@ -2073,9 +2095,9 @@ CHAR16 * SetVolJoin (
 
 
     if (0);
-    else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""     ;
-    else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for ";
-    else                                                   RetVal = L" on " ;
+    else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""      ;
+    else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for " ;
+    else                                                   RetVal = L" from ";
 
     return RetVal;
 } // CHAR16 * SetVolJoin()
@@ -2193,6 +2215,7 @@ BOOLEAN ShouldScan (
         ) {
             i = 0;
             while (
+                !FoundVentoy &&
                 (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
             ) {
                 if (MyStrBegins (VentoyName, Volume->VolName) ||
@@ -2202,10 +2225,6 @@ BOOLEAN ShouldScan (
                     FoundVentoy = TRUE;
                 }
                 MY_FREE_POOL(VentoyName);
-
-                if (FoundVentoy) {
-                    break;
-                }
             } // while
         }
 
@@ -2760,9 +2779,9 @@ BOOLEAN ScanMacOsLoader (
     CHAR16   *PathName;
     CHAR16   *FileName;
     BOOLEAN   AddThisEntry;
-    BOOLEAN   ScanFallbackLoader;
+    BOOLEAN   CheckFallback;
 
-    ScanFallbackLoader = TRUE;
+    CheckFallback                 = TRUE;
     VolName = PathName = FileName = NULL;
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
@@ -2802,7 +2821,7 @@ BOOLEAN ScanMacOsLoader (
         }
 
         if (DuplicatesFallback (Volume, FullFileName)) {
-            ScanFallbackLoader = FALSE;
+            CheckFallback = FALSE;
         }
     }
 
@@ -2810,7 +2829,7 @@ BOOLEAN ScanMacOsLoader (
     MY_FREE_POOL(PathName);
     MY_FREE_POOL(FileName);
 
-    return ScanFallbackLoader;
+    return CheckFallback;
 } // static BOOLEAN ScanMacOsLoader()
 
 static
@@ -2847,6 +2866,7 @@ VOID ScanEfiFiles (
     i = 0;
     FoundVentoy = FALSE;
     while (
+        !FoundVentoy              &&
         GlobalConfig.HandleVentoy &&
         (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
     ) {
@@ -2857,10 +2877,6 @@ VOID ScanEfiFiles (
             FoundVentoy = TRUE;
         }
         MY_FREE_POOL(VentoyName);
-
-        if (FoundVentoy) {
-            break;
-        }
     } // while
 
     // Skip Volumes in 'DontScanVolumes' List
@@ -3385,11 +3401,11 @@ VOID ScanFirmwareDefined (
     IN CHAR16   *MatchThis,
     IN EG_IMAGE *Icon
 ) {
+    EFI_STATUS       Status;
     UINTN            i;
     CHAR16          *OneElement;
     CHAR16          *DontScanFirmware;
     BOOLEAN          ScanIt;
-    BOOLEAN          FoundIt;
     BOOT_ENTRY_LIST *ThisEntry;
     BOOT_ENTRY_LIST *BootEntries;
 
@@ -3459,8 +3475,8 @@ VOID ScanFirmwareDefined (
     #endif
 
     BootEntries = FindBootOrderEntries();
-    ThisEntry   = BootEntries;
-    FoundIt     = FALSE;
+    ThisEntry   =            BootEntries;
+    Status      =          EFI_NOT_FOUND;
 
     while (ThisEntry != NULL) {
         ScanIt = FALSE;
@@ -3496,7 +3512,7 @@ VOID ScanFirmwareDefined (
             );
             #endif
 
-            FoundIt = TRUE;
+            Status  = EFI_SUCCESS;
             AddEfiLoaderEntry (
                 ThisEntry->BootEntry.DevPath,
                 ThisEntry->BootEntry.Label,
@@ -3513,8 +3529,7 @@ VOID ScanFirmwareDefined (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_END,
-        L"Evaluate Firmware Defined Options ... Relevant Options:- '%s'",
-        (FoundIt) ? L"Added" : L"None"
+        L"Evaluate and Add Firmware Defined Options:- '%r'", Status
     );
     #endif
 
@@ -3666,7 +3681,7 @@ VOID ScanForBootloaders (VOID) {
         if (HiddenTags && StrLen (HiddenTags) > 0) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
+                L"Merge HiddenTags into 'Dont Scan Files':- '%s'",
                 HiddenTags
             );
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -3680,7 +3695,7 @@ VOID ScanForBootloaders (VOID) {
         if (HiddenLegacy && StrLen (HiddenLegacy) > 0) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
+                L"Merge HiddenLegacy into 'Dont Scan Volumes':- '%s'",
                 HiddenLegacy
             );
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");

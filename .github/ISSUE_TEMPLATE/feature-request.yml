@@ -29,4 +29,9 @@ body:
     id: extra-info
     attributes:
       label: Additional Context
-      description: Add any additional context that may facilitate understanding and implementing the feature
+      description: |
+        Add any additional context that may facilitate understanding and implementing the feature
+      placeholder: |
+        You can attach files by dragging/dropping them on this field.
+        You can also add screenshots to aid understanding the problem.
+        Screenshots can be saved by pressing the F10 key in RefindPlus.

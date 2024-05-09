@@ -35,16 +35,16 @@ Definitions beginning with "V_" are meaningful values of bits within the registe
 /// IchAcpiCntr   Control for the ICH's ACPI Counter.
 ///@{
 #define R_ICH_LPC_ACPI_BASE                   0x40
-#define   B_ICH_LPC_ACPI_BASE_BAR                 0x0000FF80
+#define B_ICH_LPC_ACPI_BASE_BAR               0x0000FF80
 #define R_ICH_LPC_ACPI_CNT                    0x44
-#define   B_ICH_LPC_ACPI_CNT_ACPI_EN              0x80
+#define B_ICH_LPC_ACPI_CNT_ACPI_EN            0x80
 ///@}
 
 /// IchAcpiTimer  The ICH's ACPI Timer.
 ///@{
 #define R_ACPI_PM1_TMR                        0x08
-#define   V_ACPI_TMR_FREQUENCY                    3579545
-#define   V_ACPI_PM1_TMR_MAX_VAL                  0x1000000 ///< The timer is 24 bit overflow.
+#define V_ACPI_TMR_FREQUENCY                  3579545
+#define V_ACPI_PM1_TMR_MAX_VAL                0x1000000 ///< The timer is 24 bit overflow.
 ///@}
 
 /// Macro to generate the PCI address of any given ICH Register.

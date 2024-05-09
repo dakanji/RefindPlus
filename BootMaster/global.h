@@ -186,6 +186,7 @@
 #endif
 
 #define DEFAULT_ICONS_DIR     L"icons"
+#define HIDDEN_TAG_DELIMITER  L" @@ "
 
 // NVRAM ACCESS FLAGS
 #define ACCESS_FLAGS_FULL   EFI_VARIABLE_NON_VOLATILE|EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
@@ -604,9 +605,10 @@ extern BOOLEAN                  DevicePresence;
 extern EFI_FILE_PROTOCOL       *SelfDir;
 extern EFI_FILE_PROTOCOL       *SelfRootDir;
 
+extern EFI_GUID                 GuidESP;
 extern EFI_GUID                 GlobalGuid;
-extern EFI_GUID                 RefindPlusGuid;
 extern EFI_GUID                 AppleBootGuid;
+extern EFI_GUID                 RefindPlusGuid;
 extern EFI_GUID                 gEfiLegacyBootProtocolGuid;
 
 extern EFI_HANDLE               SelfImageHandle;

@@ -3,7 +3,8 @@
 # RefindPlus
 ## Overview
 RefindPlus is a boot manager for Mac and PC.
-It is a fork of [rEFInd](https://www.rodsbooks.com/refind) that incorporates several fixes and additional features.
+
+It is a fork of the [rEFInd Boot Manager](https://www.rodsbooks.com/refind) incorporating several fixes and additional features.
 
 The main development focus is on the following units:
 - **MacPro3,1**: Early 2008 Mac Pro
@@ -108,7 +109,7 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
 - **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
-    - When run on Mac Firmware, RefindPlus will additionally trigger nvRAM garbage collection
+    - When run on Apple firmware, RefindPlus will additionally trigger nvRAM garbage collection
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates when running macOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `csr_normalise` token.
 - **"timeout" Token:** The default is no timeout unless explicitly set.

@@ -116,7 +116,7 @@ BOOLEAN CheckError (IN EFI_STATUS Status, IN CHAR16 *where);
 extern EFI_STATUS
 EfiLibLocateProtocol (
    IN  EFI_GUID    *ProtocolGuid,
-   OUT VOID        **Interface
+   OUT VOID       **Interface
 );
 
 
@@ -140,7 +140,7 @@ extern EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (IN EFI_FILE_HANDLE   Root);
 
 extern VOID *
 EfiReallocatePool (
-   IN VOID                 *OldPool,
+   IN VOID                *OldPool,
    IN UINTN                OldSize,
    IN UINTN                NewSize
 );

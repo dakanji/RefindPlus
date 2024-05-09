@@ -1,13 +1,13 @@
 /*++
 
-Copyright (c) 2005, Intel Corporation                                                         
-All rights reserved. This program and the accompanying materials                          
-are licensed and made available under the terms and conditions of the BSD License         
-which accompanies this distribution. The full text of the license may be found at         
-http://opensource.org/licenses/bsd-license.php                                            
-                                                                                          
-THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+Copyright (c) 2005, Intel Corporation
+All rights reserved. This program and the accompanying materials
+are licensed and made available under the terms and conditions of the BSD License
+which accompanies this distribution. The full text of the license may be found at
+http://opensource.org/licenses/bsd-license.php
+
+THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 Module Name:
 
@@ -16,7 +16,7 @@ Module Name:
 Abstract:
 
   Infomation about the handle function.
- 
+
 Revision History
 
 --*/
@@ -45,22 +45,22 @@ EfiLibFileSystemInfo (
 
 EFI_STATUS
 LibGetManagedChildControllerHandles (
-  EFI_HANDLE  DriverBindingHandle,
-  EFI_HANDLE  ControllerHandle,
-  UINTN       *ChildControllerHandleCount,
+  EFI_HANDLE    DriverBindingHandle,
+  EFI_HANDLE    ControllerHandle,
+  UINTN        *ChildControllerHandleCount,
   EFI_HANDLE  **ChildControllerHandleBuffer
   );
 
 EFI_STATUS
 LibGetManagedControllerHandles (
-  EFI_HANDLE  DriverBindingHandle,
-  UINTN       *ControllerHandleCount,
+  EFI_HANDLE    DriverBindingHandle,
+  UINTN        *ControllerHandleCount,
   EFI_HANDLE  **ControllerHandleBuffer
   );
 
 EFI_STATUS
 LibGetChildControllerHandles (
-  EFI_HANDLE  ControllerHandle,
+  EFI_HANDLE   ControllerHandle,
   UINTN       *HandleCount,
   EFI_HANDLE  **HandleBuffer
   );
@@ -87,23 +87,23 @@ EFI_STATUS
 LibLocateHandleByDiskSignature (
   IN UINT8                          MBRType,
   IN UINT8                          SignatureType,
-  IN VOID                           *Signature,
-  IN OUT UINTN                      *NoHandles,
-  OUT EFI_HANDLE                    **Buffer
+  IN VOID                          *Signature,
+  IN OUT UINTN                     *NoHandles,
+  OUT EFI_HANDLE                  **Buffer
   );
 
 EFI_STATUS
 LibLocateHandle (
-  IN EFI_LOCATE_SEARCH_TYPE         SearchType,
-  IN EFI_GUID                       * Protocol OPTIONAL,
+  IN EFI_LOCATE_SEARCH_TYPE          SearchType,
+  IN EFI_GUID                       *Protocol OPTIONAL,
   IN VOID                           *SearchKey OPTIONAL,
   IN OUT UINTN                      *NoHandles,
-  OUT EFI_HANDLE                    **Buffer
+  OUT EFI_HANDLE                   **Buffer
   );
 
 EFI_STATUS
 LibLocateProtocol (
-  IN  EFI_GUID    *ProtocolGuid,
+  IN  EFI_GUID     *ProtocolGuid,
   OUT VOID        **Interface
   );
 

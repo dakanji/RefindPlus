@@ -30,16 +30,16 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 
 typedef struct _GNUEFI_PE_COFF_LOADER_IMAGE_CONTEXT {
-   UINT64                            ImageAddress;
-   UINT64                            ImageSize;
-   UINT64                            EntryPoint; 
-   UINTN                             SizeOfHeaders;
-   UINT16                            ImageType;
-   UINT16                            NumberOfSections;
+   UINT64                             ImageAddress;
+   UINT64                             ImageSize;
+   UINT64                             EntryPoint;
+   UINTN                              SizeOfHeaders;
+   UINT16                             ImageType;
+   UINT16                             NumberOfSections;
    EFI_IMAGE_SECTION_HEADER          *FirstSection;
    EFI_IMAGE_DATA_DIRECTORY          *RelocDir;
    EFI_IMAGE_DATA_DIRECTORY          *SecDir;
-   UINT64                            NumberOfRvaAndSizes;
+   UINT64                             NumberOfRvaAndSizes;
    EFI_IMAGE_OPTIONAL_HEADER_UNION   *PEHdr;
 } GNUEFI_PE_COFF_LOADER_IMAGE_CONTEXT;
 

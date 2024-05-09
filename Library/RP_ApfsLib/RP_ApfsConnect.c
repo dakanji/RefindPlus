@@ -144,7 +144,7 @@ EFI_STATUS ApfsStartDriver (
     OcDisconnectDriversOnHandle (PrivateData->LocationInfo.ControllerHandle);
 
     if (!AppleFirmware) {
-        // Connect all devices on Non-Apple Firmware.
+        // Connect all devices on Non-Apple firmware.
         // REF: https://github.com/acidanthera/bugtracker/issues/960
         OcConnectDrivers();
     }

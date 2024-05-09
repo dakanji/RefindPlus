@@ -1068,15 +1068,15 @@ UINTN DrawMenuScreen (
             TimeSinceKeystroke =     0;
         }
         else if (!EFI_ERROR(PointerStatus)) {
+            PointerActive      = TRUE;
+            TimeSinceKeystroke =    0;
+
             if (StyleFunc != MainMenuStyle && pdGetState().Press) {
                 // Prevent user from getting stuck on submenus
                 // Only the 'About' screen is currently reachable without a keyboard
                 MenuExit = MENU_EXIT_ENTER;
                 break;
             }
-
-            PointerActive      = TRUE;
-            TimeSinceKeystroke =    0;
         }
         else {
             if (HaveTimeout && TimeoutCountdown == 0) {
@@ -3259,68 +3259,82 @@ BOOLEAN HideEfiTag (
     AddMenuInfoLine (HideEfiMenu, L"Hide EFI Entry Below?",    FALSE);
     AddMenuInfoLine (HideEfiMenu, PoolPrint (L"%s", TempPath),  TRUE);
 
-    TagHidden = GetMenuEntryYesNo (&HideEfiMenu);
-    if (!TagHidden) {
-        FreeMenuScreen (&HideEfiMenu);
+    do {
+        TagHidden = GetMenuEntryYesNo (&HideEfiMenu);
+        if (!TagHidden) {
+            FreeMenuScreen (&HideEfiMenu);
 
-        // Early Return
-        return FALSE;
-    }
+            break;
+        }
 
-    DefaultEntry = 9999; // Use the Max Index
-    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    MenuExit = DrawMenuScreen (
-        HideEfiMenu, Style,
-        &DefaultEntry, &ChosenOption
-    );
+        DefaultEntry = 9999; // Use the Max Index
+        Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+        MenuExit = DrawMenuScreen (
+            HideEfiMenu, Style,
+            &DefaultEntry, &ChosenOption
+        );
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'HideEfiTag' from DrawMenuScreen Call on '%s'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
-    #endif
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) in 'HideEfiTag' from DrawMenuScreen Call on '%s'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+        );
+        #endif
 
-    if (MenuExit != MENU_EXIT_ENTER        ||
-        MyStriCmp (ChosenOption->Title, L"No")
-    ) {
-        TagHidden = FALSE;
-    }
-    else {
-        TagHidden  = TRUE;
+        if (MenuExit != MENU_EXIT_ENTER        ||
+            MyStriCmp (ChosenOption->Title, L"No")
+        ) {
+            TagHidden = FALSE;
+        }
+        else {
+            TagHidden  = TRUE;
 
-        do {
-            if (GotVolName && MyLoadPath) {
-                FullPath = TempPath;
-                break;
+            //do {
+                //if (GotVolName && MyLoadPath) {
+                //    FullPath = TempPath;
+                //    break;
+                //}
+
+                TestVolume = NULL;
+                GuidStr    = GuidAsString (&Loader->Volume->PartGuid);
+                FindVolume (&TestVolume, GuidStr);
+
+                if (TestVolume != NULL && TestVolume->RootDir != NULL) {
+                    if (!GotVolName) {
+                        FullPath = PoolPrint (L"%s:", GuidStr);
+                    }
+                    else {
+                        FullPath = PoolPrint (
+                            L"%s%s%s:",
+                            Loader->Volume->VolName,
+                            HIDDEN_TAG_DELIMITER, GuidStr
+                        );
+                    }
+
+                    if (MyLoadPath) {
+                        MergeStrings (
+                            &FullPath,
+                            Loader->LoaderPath,
+                            (Loader->LoaderPath[0] == L'\\' ? L'\0' : L'\\')
+                        );
+                    }
+                }
+                else if (GotVolName) {
+                    FullPath = PoolPrint (L"%s:", Loader->Volume->VolName);
+                }
+                else {
+                    FullPath = NULL;
+                }
+
+                MY_FREE_POOL(GuidStr);
+            //} while (0); // This 'loop' only runs once
+
+            if (FullPath != NULL) {
+                AddToHiddenTags (VarName, FullPath);
             }
-
-            TestVolume = NULL;
-            GuidStr    = GuidAsString (&Loader->Volume->PartGuid);
-
-            if (FindVolume (&TestVolume, GuidStr) &&
-                TestVolume->RootDir != NULL
-            ) {
-                FullPath = PoolPrint (L"%s:", GuidStr);
-                MergeStrings (
-                    &FullPath,
-                    Loader->LoaderPath,
-                    (Loader->LoaderPath[0] == L'\\' ? L'\0' : L'\\')
-                );
-            }
-            else if (GotVolName) {
-                FullPath = PoolPrint (L"%s:", Loader->Volume->VolName);
-            }
-            else {
-                FullPath = StrDuplicate (L":");
-            }
-
-            MY_FREE_POOL(GuidStr);
-        } while (0); // This 'loop' only runs once
-
-        AddToHiddenTags (VarName, FullPath);
-        MY_FREE_POOL(FullPath);
-    }
+            MY_FREE_POOL(FullPath);
+        }
+    } while (0); // This 'loop' only runs once
 
     MY_FREE_POOL(TempPath);
 

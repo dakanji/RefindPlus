@@ -44,11 +44,11 @@
 // Seems to have been replaced by ParseHandleDatabaseByRelationshipWithType(), but the latter is not working for me.
 EFI_STATUS
 LibScanHandleDatabase (
-  EFI_HANDLE  DriverBindingHandle, OPTIONAL
-  UINT32      *DriverBindingHandleIndex, OPTIONAL
-  EFI_HANDLE  ControllerHandle, OPTIONAL
-  UINT32      *ControllerHandleIndex, OPTIONAL
-  UINTN       *HandleCount,
+  EFI_HANDLE    DriverBindingHandle      OPTIONAL,
+  UINT32       *DriverBindingHandleIndex OPTIONAL,
+  EFI_HANDLE    ControllerHandle         OPTIONAL,
+  UINT32       *ControllerHandleIndex    OPTIONAL,
+  UINTN        *HandleCount,
   EFI_HANDLE  **HandleBuffer,
   UINT32      **HandleType
   );

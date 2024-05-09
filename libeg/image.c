@@ -409,13 +409,13 @@ EFI_STATUS egFindESP (
     EFI_STATUS   Status;
     EFI_HANDLE  *Handles;
     UINTN        i, HandleCount;
-    EFI_GUID     ESPGuid = ESP_GUID_VALUE;
+
 
     HandleCount = 0;
     *RootDir = NULL;
     Status = LibLocateHandle (
         ByProtocol,
-        &ESPGuid, NULL,
+        &GuidESP, NULL,
         &HandleCount, &Handles
     );
     if (!EFI_ERROR(Status)) {

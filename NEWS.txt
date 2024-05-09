@@ -23,15 +23,10 @@
   * Optimisations for speed had potentially disabled legacy BIOS boot on some Macs
   * This bug was introduced in v0.13.3.AB (Commit 66dbed0)
 - Fixes Potential Memory Conflict
-  * Eliminated buffer overrun in handling `showtools`
-    - The configuration resulted in a oversized memory allocation
   * Potential Memory Conflict
     - Some constants were passed to a function that reallocates memory
     - This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
     - Extended in v0.14.0.AB (Commit 5cb1ed9)
-- Fixes Hidden Entry Handling
-  * Some loaders in ESP locations were not hidden when selected on-screen (minus key)
-  * Was also the case when full paths were used in `dont_scan_files`
 - Fixes Display Resolution Handling
   * User defined resolutions were not being properly handled
     - Only the default, `max`, resolution was considered
@@ -41,6 +36,16 @@
 - Fixes `HelpScan` Handling
   * Rationalises implementation
     - Could be applied, when disabled, to some items that should be excluded
+- Improves `SystemdVars` Handling
+  * The LoaderDevicePartUUID UEFI Variable is writen to vRAM and not nvRAM
+  * See: https://sf.net/p/refind/discussion/general/thread/d8dad2c475/
+- Improves `HiddenTags` Handling
+  * Shows volumes names along with GUID where only the GUID would have previously been shown
+    - Allows human friendly instance identification when viewing the `Restore Entries` screen
+  * Breaks backward compatibility with upstream when tags are hidden in RefindPlus
+    - Tags hidden upstream remain forward compatible with RefindPlus
+  * Fixes situation where some loaders in ESP locations were not hidden when selected on-screen (minus key)
+    - Was also the case when full paths were used in `dont_scan_files`
 - Improves License Presentation
   * Rationalises presentation to make clear it is on GPLv3/Later
 - Improves `MemTest` Handling

@@ -77,8 +77,8 @@ body:
       label: Debug Log
       description: |
         Please run the RefindPlus 'DBG' efi and add debug logs.
-        Kindly attach logs and do not paste the contents directly.
-        You can attach logs by dragging/dropping on the field below.
+        Please attach log files and do not paste their contents.
+        Attach log files by dragging/dropping on the field below.
       placeholder: |
         Reports not requiring log files are typically best under Discussions.
         Reports without log files will be automatically closed in most cases.

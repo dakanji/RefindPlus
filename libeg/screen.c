@@ -986,11 +986,10 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     MY_FREE_POOL(MsgStr);
 
     MsgStr = PoolPrint (
-        L"%02d GOP Mode%s ... 0x%lx %s 0x%lx Framebuffer",
+        L"%02d GOP Mode%s ... 0x%lx <<< -- >>> 0x%lx Framebuffer",
         MaxMode,
         (MaxMode != 1) ? L"s" : L"",
         GOPDraw->Mode->FrameBufferBase,
-        (MaxMode != 1) ? L"<<< -- >>>" : L"<<< --- >>>",
         GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

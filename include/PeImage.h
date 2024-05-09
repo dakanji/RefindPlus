@@ -728,13 +728,13 @@ typedef struct {
 ///
 typedef struct {
   UINT16                    Signature;            ///< The signature for TE format = "VZ".
-  UINT16                    Machine;              ///< from the original file header.
-  UINT8                     NumberOfSections;     ///< from the original file header.
-  UINT8                     Subsystem;            ///< from original optional header.
+  UINT16                    Machine;              ///< From the original file header.
+  UINT8                     NumberOfSections;     ///< From the original file header.
+  UINT8                     Subsystem;            ///< From original optional header.
   UINT16                    StrippedSize;         ///< Number of bytes we removed from the header.
   UINT32                    AddressOfEntryPoint;  ///< Offset to entry point -- from original optional header.
-  UINT32                    BaseOfCode;           ///< from original image -- required for ITP debug.
-  UINT64                    ImageBase;            ///< from original file header.
+  UINT32                    BaseOfCode;           ///< From original image -- required for ITP debug.
+  UINT64                    ImageBase;            ///< From original file header.
   EFI_IMAGE_DATA_DIRECTORY  DataDirectory[2];     ///< Only base relocation and debug directory.
 } EFI_TE_IMAGE_HEADER;
 

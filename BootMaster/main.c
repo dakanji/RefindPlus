@@ -592,7 +592,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         BlockUEFI = FALSE;
     }
     else {
-        // DA-TAG: Always block UEFI Win stuff on Apple Firmware
+        // DA-TAG: Always block UEFI Win stuff on Apple firmware
         //         That is, without considering storage volatility
         BlockUEFI = (
             AppleFirmware && (
@@ -854,7 +854,7 @@ EFI_STATUS FilterCSR (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Normalise CSR ... %r", Status);
-    LOG_MSG("%s    * Normalise CSR ... %r", OffsetNext, Status);
+    LOG_MSG("%s    * Status:- %r' ... Normalise CSR", OffsetNext, Status);
     #endif
 
     return Status;
@@ -2036,6 +2036,13 @@ VOID RescanAll (
     if (TmpLevel) {
         GlobalConfig.LogLevel = 0;
     }
+
+    // Force LogLevel 0
+    ThislogLevel = GlobalConfig.LogLevel;
+    TmpLevel = (ThislogLevel > 0) ? TRUE : FALSE;
+    if (TmpLevel) {
+        GlobalConfig.LogLevel = 0;
+    }
     #endif
 
     // Default UI Scale
@@ -2068,11 +2075,17 @@ VOID RescanAll (
     // Read Config
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
+
+    // Reset LogLevel
+    if (TmpLevel) {
+        GlobalConfig.LogLevel = ThislogLevel;
+    }
     #endif
+
     ReadConfig (GlobalConfig.ConfigFilename);
 
     #if REFIT_DEBUG > 0
-    // Force LogLevel 0
+    // Re-Force LogLevel 0
     ThislogLevel = GlobalConfig.LogLevel;
     TmpLevel = (ThislogLevel > 0) ? TRUE : FALSE;
     if (TmpLevel) {
@@ -2264,7 +2277,7 @@ VOID SetConfigFilename (
             }
             else {
                 MY_FREE_POOL(FileName);
-                
+
                 MsgStr = L"** WARN: Specified Config File *NOT* Found";
                 #if REFIT_DEBUG > 0
                 LOG_MSG("%s", MsgStr);
@@ -2530,7 +2543,7 @@ VOID LogBasicInfo (VOID) {
             else {
                 if (AppleFirmware) {
                     // DA-TAG: Investigate This
-                    //         Do not log output on Apple Firmware
+                    //         Do not log output on Apple firmware
                     //         Currently gives inaccurate output
                     LOG_MSG("%s** Redacted Invalid Output from QVI **", OffsetNext);
                 }
@@ -2654,6 +2667,7 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN            RunOurTool;
     BOOLEAN            MokProtocol;
     BOOLEAN            FoundVentoy;
+    BOOLEAN            ForceContinue;
     BOOLEAN            MainLoopRunning;
     BOOLEAN            FoundInstallerMac;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
@@ -2666,7 +2680,6 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     CHAR16            *SelfGUID;
-    BOOLEAN            ForceContinue;
 
     #if REFIT_DEBUG > 1
     UINTN              ThislogLevel;
@@ -3151,7 +3164,11 @@ EFI_STATUS EFIAPI efi_main (
     // Further bootstrap (now with config available)
     SetupScreen();
 
+    ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
+    GlobalConfig.ContinueOnWarning = TRUE;
     WarnIfLegacyProblems();
+    GlobalConfig.ContinueOnWarning = ForceContinue;
+    ForceContinue = FALSE;
 
     #if REFIT_DEBUG > 0
     /* Disable Forced Native Logging */
@@ -3247,9 +3264,6 @@ EFI_STATUS EFIAPI efi_main (
 
     // Show Inconsistent UEFI 2.x Implementation Warning
     #if REFIT_DEBUG > 0
-    // Prime ForceContinue
-    ForceContinue = FALSE;
-
     if (WarnMissingQVInfo) {
         SwitchToText (FALSE);
 
@@ -4126,6 +4140,7 @@ EFI_STATUS EFIAPI efi_main (
                 else {
                     i = 0;
                     while (
+                        !FoundVentoy               &&
                         GlobalConfig.HandleVentoy &&
                         (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                     ) {
@@ -4133,10 +4148,6 @@ EFI_STATUS EFIAPI efi_main (
                             FoundVentoy = TRUE;
                         }
                         MY_FREE_POOL(VentoyName);
-
-                        if (FoundVentoy) {
-                            break;
-                        }
                     } // while
 
                     #if REFIT_DEBUG > 0

@@ -300,7 +300,7 @@ EFI_STATUS ApfsRecoveryBoot (
 
     Status = ConstructBootEntry (
         Entry->Volume->DeviceHandle,
-        Basename (Entry->EfiLoaderPath),
+        Basename (DevicePathToStr (Entry->EfiLoaderPath)),
         L"Mac Recovery",
         (CHAR8**) &Entry->EfiLoaderPath,
         &Size
@@ -517,7 +517,7 @@ BOOLEAN IsValidLoader (
             break;
         }
 
-        // Allow plain binaries on Apple Firmware
+        // Allow plain binaries on Apple firmware
         IsValid = AppleBinaryPlain = AppleFirmware;
         if (IsValid) {
             //LoaderType = LOADER_TYPE_EFI;
@@ -848,7 +848,7 @@ EFI_STATUS StartEFIImage (
 
                 Status = EfivarSetRaw (
                     &SystemdGuid, L"LoaderDevicePartUUID",
-                    EspGUID, StrLen (EspGUID) * 2 + 2, TRUE
+                    EspGUID, StrLen (EspGUID) * 2 + 2, FALSE
                 );
                 #if REFIT_DEBUG > 0
                 if (EFI_ERROR(Status)) {
@@ -1137,7 +1137,7 @@ VOID RebootIntoLoader (
         return;
     }
 
-    StoreLoaderName(Entry->me.Title);
+    StoreLoaderName (Entry->me.Title);
 
     #if REFIT_DEBUG > 0
     OUT_TAG();

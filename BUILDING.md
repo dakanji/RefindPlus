@@ -27,7 +27,8 @@ $ xcode-select --install
 #### Background
 While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for TianoCore EDK II development as required to build RefindPlus on macOS natively.
 
-This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink which, unlike HomeBrew, maintain support for older versions of macOS. Just substitute in the equivalent commands as required.
+This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink; which may offer better support for older versions of macOS.
+Substitute equivalent commands in as required.
 
 You will find installation instructions on the HomeBrew website (https://brew.sh)
 
@@ -68,6 +69,9 @@ $ brew uninstall mtoc && brew install ocmtoc && brew upgrade ocmtoc
 ```
 
 **NB:** Only install one of `mtoc` or `ocmtoc` at a time.
+
+`mtoc` and `ocmtoc` are only available as packages on HomeBrew.
+Prebuilt versions of `ocmtoc` can be found here: https://github.com/acidanthera/ocmtoc/releases
 
 # Prepare RefindPlus Environment
 #### Fork the RefindPlus Repository

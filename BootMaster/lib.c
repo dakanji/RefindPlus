@@ -622,7 +622,7 @@ EFI_STATUS FindVarsDir (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Locate/Create Emulated Variable Storage for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
+        L"Locate/Create Variable Storage (Emulated) for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
         Status
     );
     #endif
@@ -640,7 +640,7 @@ EFI_STATUS FindVarsDir (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated Variable Storage for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
+            L"Locate/Create Variable Storage (Emulated) for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
             Status
         );
 
@@ -1949,7 +1949,7 @@ CHAR16 * GetVolumeName (
                 // Try to use fs type and size as name
                 FileSystemInfoPtr = (Volume->RootDir != NULL)
                     ? LibFileSystemInfo (Volume->RootDir) : NULL;
-                if (FileSystemInfoPtr) {
+                if (FileSystemInfoPtr != NULL) {
                     SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
                     FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
                     MY_FREE_POOL(SISize);
@@ -2766,13 +2766,6 @@ VOID ScanVolumes (VOID) {
         return;
     }
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Found Handles for %d Volumes",
-        HandleCount
-    );
-    #endif
-
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
         #if REFIT_DEBUG > 0
@@ -2806,13 +2799,7 @@ VOID ScanVolumes (VOID) {
     #endif
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
-        #if REFIT_DEBUG > 0
-        /* Exception for LOG_LINE_THIN_SEP */
-        ALT_LOG(1, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
-        #endif
-
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
-        Volume->VolRole = APFS_VOLUME_ROLE_UNKNOWN;
         if (Volume == NULL) {
             MY_FREE_POOL(UuidList);
 
@@ -2834,6 +2821,7 @@ VOID ScanVolumes (VOID) {
             return;
         }
 
+        Volume->VolRole = APFS_VOLUME_ROLE_UNKNOWN;
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable (Volume);
         ScanVolume (Volume);
@@ -3739,6 +3727,7 @@ BOOLEAN RefitMetaiMatch (
 #if defined (__MAKEWITH_GNUEFI)
     return MetaiMatch (String, Pattern);
 #elif defined(__MAKEWITH_TIANO)
+    EFI_STATUS Status;
     static EFI_UNICODE_COLLATION_PROTOCOL *UnicodeCollationEng = NULL;
 
     if (UnicodeCollationEng == NULL) {
@@ -3748,9 +3737,9 @@ BOOLEAN RefitMetaiMatch (
         return UnicodeCollationEng->MetaiMatch (UnicodeCollationEng, String, Pattern);
     }
 
-    // DA-TAG: Fallback on original inadequate upstream implementation
+    // DA-TAG: Fallback on original upstream implementation
     //         Should not get here when support is present
-    EFI_STATUS Status = REFIT_CALL_3_WRAPPER(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &gEfiUnicodeCollation2ProtocolGuid,
         NULL, (VOID **) &UnicodeCollationEng
     );
@@ -3760,9 +3749,9 @@ BOOLEAN RefitMetaiMatch (
             NULL, (VOID **) &UnicodeCollationEng
         );
     }
+#endif
 
     return FALSE;
-#endif
 } // static BOOLEAN RefitMetaiMatch()
 
 BOOLEAN DirIterNext (
@@ -4241,21 +4230,26 @@ BOOLEAN VolumeMatchesDescription (
     IN REFIT_VOLUME *Volume,
     IN CHAR16       *Description
 ) {
-    EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
+    CHAR16   *FilteredDescription;
+    EFI_GUID  TargetVolGuid = NULL_GUID_VALUE;
 
     if (Volume == NULL || Description == NULL) {
         return FALSE;
     }
 
-    if (!IsGuid (Description)) {
+    FilteredDescription = GetSubStrAfter (HIDDEN_TAG_DELIMITER, Description);
+
+    if (!IsGuid (FilteredDescription)) {
         return (
-            MyStriCmp (Description, Volume->VolName)  ||
-            MyStriCmp (Description, Volume->FsName)   ||
-            MyStriCmp (Description, Volume->PartName)
+            MyStriCmp (FilteredDescription, Volume->VolName)  ||
+            MyStriCmp (FilteredDescription, Volume->FsName)   ||
+            MyStriCmp (FilteredDescription, Volume->PartName)
         );
     }
 
-    TargetVolGuid = StringAsGuid (Description);
+    TargetVolGuid = StringAsGuid (FilteredDescription);
+    FilteredDescription = NULL;
+
     return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
 } // BOOLEAN VolumeMatchesDescription()
 
@@ -4271,6 +4265,7 @@ BOOLEAN FilenameIn (
     IN CHAR16       *List
 ) {
     UINTN      i;
+    CHAR16    *AnElement; // Do *NOT* Free
     CHAR16    *OneElement;
     CHAR16    *TargetPath;
     CHAR16    *TargetVolName;
@@ -4289,14 +4284,26 @@ BOOLEAN FilenameIn (
         !Found &&
         (OneElement = FindCommaDelimited (List, i++)) != NULL
     ) {
-        Found = TRUE;
-        SplitPathName (OneElement, &TargetVolName, &TargetPath, &TargetFilename);
-        if ((TargetVolName  != NULL && !VolumeMatchesDescription (Volume, TargetVolName)) ||
-            (TargetPath     != NULL && !MyStriCmp (TargetPath, Directory)) ||
-            (TargetFilename != NULL && !MyStriCmp (TargetFilename, Filename))
+        AnElement = GetSubStrAfter (HIDDEN_TAG_DELIMITER, OneElement);
+        SplitPathName (AnElement, &TargetVolName, &TargetPath, &TargetFilename);
+
+        if (TargetPath     == NULL &&
+            TargetVolName  == NULL &&
+            TargetFilename == NULL
         ) {
+            return FALSE;
+        }
+
+        if (MyStriCmp (TargetPath, Directory)    &&
+            MyStriCmp (TargetFilename, Filename) &&
+            VolumeMatchesDescription (Volume, TargetVolName)
+        ) {
+            Found = TRUE;
+        }
+        else {
             Found = FALSE;
         }
+
         MY_FREE_POOL(OneElement);
         MY_FREE_POOL(TargetPath);
         MY_FREE_POOL(TargetVolName);
