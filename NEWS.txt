@@ -38,8 +38,6 @@
     - This meant that instances with defined resolutions were not properly displayed
   * Separately, the selected resolution when seeking `max` was not always the actual maximum
   * Additionally, a `HelpSize` Feature, documented separately, was introduced
-- Fixes `SyncNVram` Handling
-    * The feature was not functional on macOS boots
 - Fixes `HelpScan` Handling
   * Rationalises implementation
     - Could be applied, when disabled, to some items that should be excluded
@@ -50,6 +48,12 @@
   * Updated to handle `memtest+{ARCH}.efi` and `memtest86+{ARCH}.efi` files as per upstream
 - Improves `ProtectNvram` Handling
   * Now also blocks the `CurrentPolicy` and `CurrentActivePolicy` variables
+- Improves `SyncNVram` Handling
+  * Now also clears the `opencore-version` variable, if present, when booting into macOS directly
+    - This variable is effectively an `OpenCore Present` flag that is checked by the macOS kernel
+    - This variable removal only applies when RefindPlus is *NOT* chain-loaded via OpenCore
+    - This variable removal also applies to macOS installers
+  * Separately, the implementation of the base feature was not functional on macOS boots and was fixed
 - Improves `HelpIcon` Handling
   * The following `OS Icons` are now cached on first load and reused as required afterwards when this feature is active
     - List is "os_mac", "os_win", "os_win8", "os_linux", "os_legacy", "os_clover", "os_opencore", "os_unknown", and "dummy image"

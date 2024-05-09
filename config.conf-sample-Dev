@@ -541,6 +541,7 @@
 #   - bluetoothInternalControllerinfo
 #   - bluetoothActiveControllerInfo
 #   - bluetoothExternalDongleFailed
+#   - opencore-version (macOS boots ... including installers)
 #
 # This token accepts these options:
 #   0    - Sync is not attempted                       (Default/Base Option:- Y)
@@ -554,6 +555,7 @@
 # 2. Option '1' is as '4' when 'transient_boot' is active
 # 3. Option '2' is as '3' when 'transient_boot' is active
 # 4. Qualifying boots are macOS, OpenCore or Clover boots
+# 5. opencore-version when *NOT* chainloaded via OpenCore
 #
 # Inactive when commented out (Does not sync nvRAM)
 #

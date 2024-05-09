@@ -1596,13 +1596,13 @@ VOID ReMapOpenProtocol (VOID) {
 
 static
 VOID RunNVramSync (
-    CHAR16       *SelectionName
+    CHAR16       *SelectionName,
+    BOOLEAN       IsMacOS
 ) {
     EFI_STATUS    Status;
     BOOLEAN       Proceed;
     UINT8        *TmpBuffer;
     CHAR16       *PreviousBoot;
-    CHAR16       *MacLoadString;
 
     #if REFIT_DEBUG > 0
     CHAR16       *MsgStr;
@@ -1636,8 +1636,16 @@ VOID RunNVramSync (
                 (VOID **) &TmpBuffer, NULL
             );
             if (Status == EFI_NOT_FOUND) {
-                // Not Present
-                Proceed = FALSE;
+                if (IsMacOS) {
+                    Status = EfivarGetRaw (
+                        &OpenCoreVendorGuid, L"opencore-version",
+                        (VOID **) &TmpBuffer, NULL
+                    );
+                }
+                if (Status == EFI_NOT_FOUND) {
+                    // Not Present
+                    Proceed = FALSE;
+                }
             }
         }
     }
@@ -1657,9 +1665,8 @@ VOID RunNVramSync (
                         Proceed = FALSE;
                     }
                     else {
-                        MacLoadString = L"Load Instance: macOS";
-                        if (MyStrBegins (MacLoadString, SelectionName) &&
-                            MyStrBegins (MacLoadString,  PreviousBoot)
+                        if (IsMacOS &&
+                            MyStrBegins (L"Load Instance: macOS", PreviousBoot)
                         ) {
                             // Sucessive macOS Boots
                             Proceed = FALSE;
@@ -1701,6 +1708,12 @@ VOID RunNVramSync (
         L"bluetoothExternalDongleFailed", &AppleBootGuid,
         AccessFlagsBoot, 0, NULL
     );
+    if (IsMacOS) {
+        SetHardwareNvramVariable (
+            L"opencore-version", &OpenCoreVendorGuid,
+            AccessFlagsBoot, 0, NULL
+        );
+    }
 
     #if REFIT_DEBUG > 0
     MsgStr = L"Status:- 'Success' ... Apply nvRAM Sync";
@@ -1739,7 +1752,7 @@ VOID RunMacBootSupportFuncs (
     TrimCoerce();
 
     // Sync nvRAM
-    RunNVramSync (SelectionName);
+    RunNVramSync (SelectionName, TRUE);
 
     // Re-Map OpenProtocol
     ReMapOpenProtocol();
@@ -4079,7 +4092,7 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     // Sync nvRAM
-                    RunNVramSync (SelectionName);
+                    RunNVramSync (SelectionName, FALSE);
                 }
                 else if (
                     ourLoaderEntry->OSType == 'C'                          ||
@@ -4108,7 +4121,7 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     // Sync nvRAM
-                    RunNVramSync (SelectionName);
+                    RunNVramSync (SelectionName, FALSE);
                 }
                 else {
                     i = 0;
