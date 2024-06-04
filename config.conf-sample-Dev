@@ -700,12 +700,10 @@
 # NOTES:
 # 1. The 'all' option takes precedence over others apart from 'none'
 # 2. The 'none' option takes precedence over every other setting
-# 3. The options need to be set one at a time on single lines
 #
 # Inactive when commented out or set to 'none' (Does not hide UI elements)
 #
-#hideui label
-#hideui badges
+#hideui label badges
 
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about
@@ -827,9 +825,9 @@
 # disables automatic booting (i.e., no timeout). Setting "-1" results in
 # an immediate boot to the default OS (DirectBoot Feature) unless there
 # is a keypress already present in the buffer. In this case, the value
-# is interpreted as a shortcut key. When the "ESC" or SpaceBar key is
-# pressed instead, the DirectBoot Feature is overridden and the main
-# menu screen is displayed as normal. If the shortcut key cannot be
+# is interpreted as a shortcut key. When "ESC" / BackSpace / SpaceBar
+# is pressed instead, the 'DirectBoot' feature is overridden and the
+# main menu screen displayed as normal. If a shortcut key cannot be
 # matched to a valid shortcut, the main menu is displayed instead.
 #
 # Inactive when commented out (timeout is disabled)
@@ -842,9 +840,11 @@
 # a more seamless transition, but may not display any information, which
 # can make it difficult to debug problems. However, using graphics mode
 # may prevent crashes in some instances. Note that specifying an empty
-# list will set RefindPlus up to boot all loader types in text mode.
+# token will set RefindPlus up to boot all loader types in text mode.
+# That is, 'use_graphics_for' alone works like setting 'everything'.
 #
 # Valid options:
+#   none        - No loader
 #   osx         - macOS loader
 #   windows     - Windows loader
 #   linux       - Linux stub loader
@@ -852,10 +852,15 @@
 #   elilo       - The ELILO boot loader
 #   clover      - The Clover boot loader
 #   opencore    - The OpenCore boot loader
+#   everything  - Graphics for every loader
+#
+# NOTES:
+# 1. The 'everything' option takes precedence over others apart from 'none'
+# 2. The 'none' option takes precedence over every other setting
 #
 # Defaults to 'osx' when commented out (Launches macOS in graphics mode)
 #
-#use_graphics_for osx,linux
+#use_graphics_for osx linux
 
 # While using the nvRAM works with most computers, this can increase wear
 # and tear on the motherboard's nvRAM. Under conditions where the nvRAM is
@@ -929,7 +934,7 @@
 #  - A "+" symbol at the start of the string, which refers to the most
 #      recently booted loader (Unless overriden by 'transient_boot').
 #  - Any substring that matches to a portion of the loader's title
-#      (usually OS name, boot loader path, or volume/filesystem title).
+#      (usually name, boot loader path, or volume/filesystem title).
 # Multiple selectors may be specified by separating them with commas
 # and enclosing the list in quotes (The "+" option is only meaningful
 # in this context). If the selector(s) has two times in 24-hour format,
@@ -950,7 +955,7 @@
 #default_selection Maintenance 23:30 2:00
 #default_selection "Maintenance,macOS" 1:00 2:30
 
-# Directories that should *NOT* be scanned for boot loaders. This option can be
+# Directories that should *NOT* be scanned for boot loaders. This token can be
 # used to keep EFI/boot/bootx64.efi out of the menu if that is a duplicate of
 # another boot loader, to exclude directories holding drivers or to exclude
 # directories with non-bootloader utilities from a hardware manufacturer.

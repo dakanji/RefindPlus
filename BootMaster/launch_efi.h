@@ -62,6 +62,7 @@
 //#define LOADER_TYPE_EFI     1
 //#define LOADER_TYPE_GZIP    2
 
+EFI_STATUS RebootIntoFirmware (VOID);
 EFI_STATUS StartEFIImage (
     IN   REFIT_VOLUME  *Volume,
     IN   CHAR16        *Filename,
@@ -79,8 +80,9 @@ EFI_STATUS ConstructBootEntry (
     CHAR8      **Entry,
     UINTN       *Size
 );
+
 BOOLEAN IsValidLoader (EFI_FILE_PROTOCOL *RootDir, CHAR16 *FileName);
-EFI_STATUS RebootIntoFirmware (VOID);
+
 VOID StartLoader (LOADER_ENTRY *Entry, CHAR16 *SelectionName);
 VOID StartTool (IN LOADER_ENTRY *Entry);
 VOID RebootIntoLoader (LOADER_ENTRY *Entry);

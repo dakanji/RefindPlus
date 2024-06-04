@@ -66,6 +66,7 @@
 // Menu module
 //
 
+#define MENU_EXIT_ZERO       (0)
 #define MENU_EXIT_ENTER      (1)
 #define MENU_EXIT_ESCAPE     (2)
 #define MENU_EXIT_DETAILS    (3)
@@ -73,6 +74,7 @@
 #define MENU_EXIT_EJECT      (5)
 #define MENU_EXIT_HIDE       (6)
 #define MENU_EXIT_SCREENSHOT (7)
+#define MENU_EXIT_SHOWSCREEN (8)
 
 #define TAG_RETURN          (99)
 
@@ -136,10 +138,23 @@ VOID GenerateWaitList (VOID);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
 VOID FreeMenuEntry (IN OUT REFIT_MENU_ENTRY **Entry);
-VOID AddMenuEntry (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
-VOID AddMenuEntryCopy (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
-VOID AddSubMenuEntry (IN REFIT_MENU_SCREEN *SubScreen, IN REFIT_MENU_ENTRY *SubEntry);
-VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine, IN BOOLEAN CanFree);
+VOID AddMenuEntry (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN REFIT_MENU_ENTRY  *Entry
+);
+VOID AddMenuEntryCopy (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN REFIT_MENU_ENTRY  *Entry
+);
+VOID AddSubMenuEntry (
+    IN REFIT_MENU_SCREEN *SubScreen,
+    IN REFIT_MENU_ENTRY  *SubEntry
+);
+VOID AddMenuInfoLine (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN CHAR16            *InfoLine,
+    IN BOOLEAN            CanFree
+);
 VOID MainMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE      *State,

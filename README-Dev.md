@@ -1,10 +1,15 @@
-[![Latest Release](https://img.shields.io/github/release/dakanji/RefindPlus.svg?flat=1&label=current)](https://github.com/dakanji/RefindPlus/releases) [![Release date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?flat=1&color=informational&label=when)](https://github.com/dakanji/RefindPlus/releases) [![Scan Status](https://scan.coverity.com/projects/22695/badge.svg?flat=1)](https://scan.coverity.com/projects/22695)
+# <center>The RefindPlus Boot Manager</center>
 
-# RefindPlus
+<div align="center">
+
+[![Release Version](https://img.shields.io/github/v/release/dakanji/RefindPlus?style=for-the-badge)](https://github.com/dakanji/RefindPlus/releases)[![Release Date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?display_date=published_at&style=for-the-badge&color=informational&label=)](https://github.com/dakanji/RefindPlus/releases)
+
+[![Coverity Scan](https://img.shields.io/coverity/scan/22695?style=for-the-badge)](https://scan.coverity.com/projects/22695)&nbsp;&nbsp;&nbsp;[![Codacy Grade](https://img.shields.io/codacy/grade/d2955171e96246579279c1a28c4b11cf?style=for-the-badge&label=Codacy)](https://app.codacy.com/gh/dakanji/RefindPlus/dashboard)
+
+</div>
+
 ## Overview
-RefindPlus is a boot manager for Mac and PC.
-
-It is a fork of the [rEFInd Boot Manager](https://www.rodsbooks.com/refind) incorporating several fixes and additional features.
+RefindPlus is a boot manager for Mac and PC that builds on the venerable [rEFInd Boot Manager](https://www.rodsbooks.com/refind) with enhancements and fixes.
 
 The main development focus is on the following units:
 - **MacPro3,1**: Early 2008 Mac Pro
@@ -13,39 +18,40 @@ The main development focus is on the following units:
 - **Xserve2,1**: Early 2008 Xserve
 - **Xserve3,1**: Early 2009 Xserve
 
-However, the enhancements and fixes provided by RefindPlus are not limited in scope to those units and include several other Apple Mac as well as multiple UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager.
+The scope of the enhancements and fixes provided by RefindPlus are not limited to those units however, and include several other Apple Mac as well as multiple UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager on Mac and PC.
+
+RefindPlus offers these enhancements and fixes while maintaining the core functionality within rEFInd along with full forward configuration compatibility from rEFInd. It is particularly useful for users with additional configuration needs as well as those that require advanced or non-standard options for running operating systems and uEFI utilities on Mac and PC.
 
 ## Headline Features
 - Maintains feature and configuration parity with the base upstream version.
-- Protects against damage to Mac nvRAM when booting UEFI Windows.
-- Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
-- Provides UGADraw on modern GOP based GPUs to permit booting legacy EFI Boot operating systems.
+- Provides protection against damage to Mac nvRAM when booting UEFI Windows.
 - Provides option to avoid boot failures and associated freezes on T2/TPM chipped units.
-- Provides improved support for languages that use unicode text.
-- Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
+- Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
 - Extensive memory management improvements with associated speed and stability gains.
+- Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
+- Provides improved support for languages that use unicode text.
 - Adds a debug (DBG) binary that provides extensive logging.
-  * The release (REL) binary is an optimised build for day to day use.
-- Fixes upstream inability to print to screen on some Macs.
-  * This prevented receiving program messages as well as leveraging advanced features such as uEFI shell.
-- Provides NVMe capability, if required, via an inbuilt NvmExpress driver.
-  * Removes the need to add NVMe drivers on units without NVMe support.
-  * Basically allows working as if NVMe is natively supported by the firmware.
-    - Removes the need for a risky `firmware flash` operation on units such as the MacPro3,1.
-- Provides APFS filesystem capability, if required, via an inbuilt APFS JumpStart driver.
-  * Removes the need to add APFS drivers to run recent macOS releases on units without APFS support.
-  * Additionally, this ensures that matching APFS drivers for specific macOS releases are used.
-  * Basically allows working as if APFS is natively supported by the firmware.
-    - Removes the need for a risky `firmware flash` operation on units such as the MacPro3,1.
+  - The release (REL) binary is an optimised build for day to day use.
+- Fixes inability to print to screen on some Macs.
+  - This prevented receiving program messages or using utilities such as uEFI shell.
+- Provides NVMe capability, if required, via an inbuilt `NvmExpress` driver.
+  - Removes the need to load external drivers on units without native NVMe support.
+  - Basically allows working as if NVMe is natively supported by the firmware.
+    - Removes the need for a risky `firmware flash` on units such as the MacPro3,1.
+- Provides APFS filesystem capability, if required, via an inbuilt `APFS JumpStart` driver.
+  - Removes the need to load external drivers on units without native APFS support.
+  - Additionally ensures matching APFS drivers for specific macOS versions are used.
+  - Basically allows working as if APFS is natively supported by the firmware.
+    - Removes the need for a risky `firmware flash` on units such as the MacPro3,1.
 - Fully supports APFS filesystem requirements.
-  * This allows booting macOS 11.x (Big Sur) or later from single named volumes on the main screen.
+  - This allows booting recent macOS versions from single named volumes.
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
-    - Avoids potentially compromising system integrity by otherwise requiring SIP to be disabled.
-  * This also allows booting FileVault encrypted volumes from single named volumes on the main screen.
+    - Avoids compromising system integrity by otherwise requiring SIP to be disabled.
+  - This also allows booting `FileVault` encrypted volumes from single named volumes.
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
 
 ## Installation
-[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus on macOS. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) can be installed first and its efi file replaced with the RefindPlus efi file. (Ensure the RefindPlus efi file is renamed to match). This manual process allows installing RefindPlus on other operating systems supported upstream. On macOS, MyBootMgr can optionally be used to set a RefindPlus|OpenCore chain-loading arrangement up on MacPro3,1 to MacPro5,1 as well as on Xserve2,1 and Xserve3,1.
+[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus on macOS. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) can be installed first and its efi file replaced with the RefindPlus efi file. (Ensure the RefindPlus efi file is renamed to match). This manual process allows installing RefindPlus on other operating systems supported upstream. On macOS, MyBootMgr can optionally be used to set a RefindPlus|OpenCore chain-loading arrangement up for MacPro3,1 to MacPro5,1 as well as on Xserve2,1 and Xserve3,1.
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 
@@ -103,38 +109,41 @@ supply_nvme           |Enables an inbuilt NvmExpress driver
 supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
 sync_nvram            |Resets nvRAM settings, such as BlueTooth, on some boot types if required
 sync_trust            |Works around some `Boot Chain of Trust` problems on T2/TPM chipped units
-transient_boot        |Disables selection of the last booted loader if not required
+transient_boot        |Disables feature that highlights the last booted loader by default
 unicode_collation     |Provides fine tuned support for languages that use unicode text
 
 ## Modified Functionality
 In addition to the new functionality listed above, the following upstream tokens have been modified:
-- **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
-- **"showtools" Token:** Additional tool added:
+- **"timeout":** The default is no timeout unless explicitly set.
+- **"use_nvram":** RefindPlus variables are written to the file system, not the motherboard's nvRAM chip, unless explicitly set to do so by activating this configuration token.
+- **"use_graphics_for":** Additional options added:
+  - `none` option to disable graphics mode loading for everything.
+  - `everything` option to enable graphics mode loading for everything.
+  - `OpenCore` and `Clover` can be specifically set to load in graphics mode.
+- **"showtools":** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
     - When run on Apple firmware, RefindPlus will additionally trigger nvRAM garbage collection
-- **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates when running macOS 11.x (Big Sur), or later, with SIP enabled.
+- **"csr_values":** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates when running macOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `csr_normalise` token.
-- **"timeout" Token:** The default is no timeout unless explicitly set.
-- **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
-- **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's nvRAM unless explicitly set to do so by activating this configuration token.
-- **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
-  * Only active on `DEBUG` and `NOOPT` builds while `RELEASE` builds remain optimised for day-to-day use.
-  * Level 0 does not switch logging off but activates the native summary format.
-  * Levels 1 and 2 output logs similar to the detailed upstream format.
+- **"log_level":** Controls the native log format and an implementation of the upstream format.
+  - Only active on `DEBUG` and `NOOPT` builds while `RELEASE` builds remain optimised for day-to-day use.
+  - Level 0 does not switch logging off but activates the native summary format.
+  - Levels 1 and 2 output logs similar to the detailed upstream format.
     - Level 1 is broadly equivalent to upstream Level 4 (upstream Levels 1 to 3 were dispensed with)
     - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
-      * Create `NOOPT` builds by passing `ALL` as a second parameter to the RefindPlus build script
-      * The first parameter is the build branch, which also needs to be specified in such instances
+      - Create `NOOPT` builds by passing `ALL` as a second parameter to the RefindPlus build script
+      - The first parameter is the build branch, which also needs to be specified in such instances
     - When Level 2 is not exposed, selected levels above `1` will be capped at Level 1
     - When exposed, selected levels above `2` will be capped at Level 2
-- **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
+- **"resolution":** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
+- **"screensaver":** The screensaver cycles through a set of colours as opposed to a single grey colour.
 
 ## Divergence
 Significant visible implementation differences vis-a-vis the upstream base are:
 - **GZipped Loaders:** RefindPlus only provides stub support for handling GZipped loaders as this is largely only relevant for units on the ARM architecture. This stub support is only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` configuration token as upstream.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Flags:** RefindPlus requires that any desired previously set `hideui` configuration token options are explicitly defined in supplementary/theme configuration files; as whenever the token is found in such files, the token setting is reset by RefindPlus to the specified option(s). This is consistent with how other configuration tokens in such files are handled. The upstream implementation effectively adds new settings to any previously existing ones for this configuration token instead.
-- **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
+- **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected. Additionally, UI elements on extremely high resultion screens (greater than 5999px on the longest edge) receive a `4X scaling` as opposed to the `2X scaling` applied for standard HiDPI screens.
 - **Loader Icons:** RefindPlus defaults to preferring generic icons for loaders ahead of the slower to load custom icons where possible. The upstream icon search implementation involves only loading such icons after a search for custom icons has not turned anything up. Users can activate the RefindPlus-specific `decline_help_icon` configuration token to use the upstream icon search implementation instead of the RefindPlus default.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units. Users that wish to disable this feature can activate the RefindPlus-specific `disable_reload_gop` configuration token to switch it off.
 - **Apple Framebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using an inbuilt `SetAppleFB` feature. Users that wish to disable this feature can activate the RefindPlus-specific `disable_set_applefb` configuration token to switch it off.

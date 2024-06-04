@@ -5,7 +5,7 @@ on:
     inputs:
       operation:
         type: choice
-        description: Issue Action
+        description: 'Issue Action'
         options:
         - 'Assignment - Self - Add'
         - 'Assignment - Self - Remove'

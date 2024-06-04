@@ -38,12 +38,18 @@
     - This meant that instances with defined resolutions were not properly displayed
   * Separately, the selected resolution when seeking `max` was not always the actual maximum
   * Additionally, a `HelpSize` Feature, documented separately, was introduced
+- Fixes `DirectBoot` Handling
+  * Was not functional
 - Fixes `HelpScan` Handling
   * Rationalises implementation
     - Could be applied, when disabled, to some items that should be excluded
 - Improves `SystemdVars` Handling
-  * The LoaderDevicePartUUID UEFI Variable is writen to vRAM and not nvRAM
+  * The `LoaderDevicePartUUID` UEFI Variable is written to vRAM and not nvRAM
   * See: https://sf.net/p/refind/discussion/general/thread/d8dad2c475/
+- Improves `GraphicsFor` Handling
+  * Users can now set `none` under the `use_graphics_for` token to disable graphic mode boot
+  * Users can now set `everything` to activate this for all boots
+    - The previous option of setting `use_graphics_for` alone has also been fixed and remains
 - Improves `HiddenTags` Handling
   * Shows volumes names along with GUID where only the GUID would have previously been shown
     - Allows human friendly instance identification when viewing the `Restore Entries` screen
@@ -70,6 +76,8 @@
     - List is stored in `TableBuiltinIconOS`
   * Supplements the existing caching of items covered by `BuiltinIconTable`
     - The `BuiltinIconTable` item caching always happens with or without the `HelpIcon` feature
+- Improves `CleanNvram` Handling
+  * Now clears `CurrentPolicy` and `CurrentActivePolicy` variables on Apple firmware
 - Improves `Misc` Handling
   * Restructured config file into four (4) sections
   * Completed LodePNG 20230410 update started in v0.14.0.AC

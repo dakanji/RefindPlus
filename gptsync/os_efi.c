@@ -129,7 +129,7 @@ VOID PauseForKey (VOID) {
     // Remove buffered key strokes
     if (ReadAllKeyStrokes()) {
         // 5 second delay
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         for (StallIndex = 0; StallIndex < 500; ++StallIndex) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 9999);
         } // for

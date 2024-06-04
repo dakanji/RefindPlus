@@ -59,7 +59,9 @@ void error(const char *msg, ...)
     vsnprintf(buf, 4096, msg, par);
     va_end(par);
 
-    fprintf(stderr, PROGNAME_S ": %s\n", buf);
+    // DA-TAG: Directly use 'PROGNAME_S' in string instead of concatenating it.
+    //         Best practice to avoid potential arbitrary code execution.
+    fprintf(stderr, "%s: %s\n", PROGNAME_S, buf);
 }
 
 void errore(const char *msg, ...)
@@ -71,7 +73,9 @@ void errore(const char *msg, ...)
     vsnprintf(buf, 4096, msg, par);
     va_end(par);
 
-    fprintf(stderr, PROGNAME_S ": %s: %s\n", buf, strerror(errno));
+    // DA-TAG: Directly use 'PROGNAME_S' in string instead of concatenating it.
+    //         Best practice to avoid potential arbitrary code execution.
+    fprintf(stderr, "%s: %s: %s\n", PROGNAME_S, buf, strerror(errno));
 }
 
 //
@@ -196,7 +200,9 @@ int main(int argc, char *argv[])
 
     // argument check
     if (argc != 2) {
-        fprintf(stderr, "Usage: " PROGNAME_S " <device>\n");
+        // DA-TAG: Directly use 'PROGNAME_S' in string instead of concatenating it.
+        //         Best practice to avoid potential arbitrary code execution.
+        fprintf(stderr, "Usage: %s <device>\n", PROGNAME_S);
         return 1;
     }
     filename = argv[1];

@@ -790,7 +790,7 @@ EFI_STATUS EfivarSetRaw (
     IN  BOOLEAN    Persistent
 ) {
     EFI_STATUS   Status;
-    UINT32       AccessFlagsBase;
+    UINT32       OurAccessFlag;
     VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
@@ -886,13 +886,13 @@ EFI_STATUS EfivarSetRaw (
     }
     else {
         // Store the new value
-        AccessFlagsBase = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+        OurAccessFlag = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (Persistent) {
-            AccessFlagsBase |= EFI_VARIABLE_NON_VOLATILE;
+            OurAccessFlag |= EFI_VARIABLE_NON_VOLATILE;
         }
         Status = REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
-            VendorGUID, AccessFlagsBase,
+            VendorGUID, OurAccessFlag,
             VariableSize, VariableData
         );
 
@@ -1939,13 +1939,13 @@ CHAR16 * GetVolumeName (
             FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
         }
         else {
+            // 'FSTypeName' returns a constant ... Do not free 'TypeName'!
+            TypeName = FSTypeName (Volume);
+
             if (MyStriCmp (TypeName, L"APFS")) {
                 FoundName = StrDuplicate (L"APFS Volume (Assumed)");
             }
             else {
-                // 'FSTypeName' returns a constant ... Do not free 'TypeName'!
-                TypeName = FSTypeName (Volume);
-
                 // Try to use fs type and size as name
                 FileSystemInfoPtr = (Volume->RootDir != NULL)
                     ? LibFileSystemInfo (Volume->RootDir) : NULL;

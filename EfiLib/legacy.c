@@ -226,7 +226,7 @@ BOOLEAN BdsFindLegacyBootOptionByDevTypeAndName (
             &BootOptionSize
         );
 
-        if (NULL == BootOptionVar) {
+        if (BootOptionVar == NULL) {
             continue;
         }
 
@@ -896,9 +896,7 @@ EFI_STATUS BdsDeleteAllInvalidLegacyBootOptions (VOID) {
 
         // Skip Non-Legacy boot option
         if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, &BbsIndex)) {
-            if (BootOptionVar!= NULL) {
-                MY_FREE_POOL(BootOptionVar);
-            }
+            MY_FREE_POOL(BootOptionVar);
             Index++;
 
             continue;

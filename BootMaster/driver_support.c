@@ -643,8 +643,8 @@ UINTN ScanDriverDir (
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "%s  - %r ... UEFI Driver:- '%s'",
-            (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+            "%s  - %r ... uEFI Driver:- '%s'",
+            (GlobalConfig.LogLevel <= LOGLEVELMAX)
                 ? OffsetNext
                 : L"",
             Status, FileName
@@ -745,7 +745,7 @@ BOOLEAN LoadDrivers (VOID) {
             );
             LOG_MSG(
                 "%s  - %s",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                (GlobalConfig.LogLevel <= LOGLEVELMAX)
                     ? OffsetNext
                     : L"",
                 MsgNotFound
@@ -792,7 +792,7 @@ BOOLEAN LoadDrivers (VOID) {
                     );
                     LOG_MSG(
                         "%s  - %s",
-                        (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                        (GlobalConfig.LogLevel <= LOGLEVELMAX)
                             ? OffsetNext
                             : L"",
                         MsgNotFound

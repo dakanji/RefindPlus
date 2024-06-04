@@ -759,7 +759,7 @@ VOID AddLegacyEntry (
     LegacyTitle = PoolPrint (
         L"Load %s%s%s%s%s",
         LoaderTitle,
-        SetVolJoin (LoaderTitle                         ),
+        SetVolJoin (LoaderTitle, TRUE                   ),
         SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
         SetVolFlag (LoaderTitle, VolDesc                ),
         SetVolType (LoaderTitle, VolDesc, Volume->FSType)
@@ -803,7 +803,7 @@ VOID AddLegacyEntry (
         "%s  - Found %s%s%s%s%s",
         OffsetNext,
         LoaderTitle,
-        SetVolJoin (LoaderTitle                         ),
+        SetVolJoin (LoaderTitle, FALSE                  ),
         SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
         SetVolFlag (LoaderTitle, VolDesc                ),
         SetVolType (LoaderTitle, VolDesc, Volume->FSType)
@@ -823,7 +823,7 @@ VOID AddLegacyEntry (
     SubScreen->Title  = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         LoaderTitle,
-        SetVolJoin (LoaderTitle                         ),
+        SetVolJoin (LoaderTitle, TRUE                   ),
         SetVolKind (LoaderTitle, VolDesc, Volume->FSType),
         SetVolFlag (LoaderTitle, VolDesc                ),
         SetVolType (LoaderTitle, VolDesc, Volume->FSType)
@@ -902,7 +902,7 @@ VOID AddLegacyEntryUEFI (
 
     Entry->me.Title = PoolPrint (
         L"Load Legacy Bootcode%s%s%s%s",
-        SetVolJoin (L"Legacy Bootcode"                           ),
+        SetVolJoin (L"Legacy Bootcode", TRUE                     ),
         SetVolKind (L"Legacy Bootcode", BdsOption->Description, 0),
         SetVolFlag (L"Legacy Bootcode", BdsOption->Description   ),
         SetVolType (L"Legacy Bootcode", BdsOption->Description, 0)
@@ -945,7 +945,7 @@ VOID AddLegacyEntryUEFI (
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
     SubScreen->Title = PoolPrint (
         L"Boot Options for Legacy Bootcode%s%s%s%s",
-        SetVolJoin (L"Legacy Bootcode"                           ),
+        SetVolJoin (L"Legacy Bootcode", TRUE                     ),
         SetVolKind (L"Legacy Bootcode", BdsOption->Description, 0),
         SetVolFlag (L"Legacy Bootcode", BdsOption->Description   ),
         SetVolType (L"Legacy Bootcode", BdsOption->Description, 0)

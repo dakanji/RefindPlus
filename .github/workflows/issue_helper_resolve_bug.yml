@@ -1,0 +1,117 @@
+name: 'Issue Helper Resolve Bug'
+
+on:
+  workflow_dispatch:
+    inputs:
+      item_id:
+        description: 'Item ID'
+        required: true
+      commit_ref:
+        description: 'Commit Ref'
+        required: true
+      show_buildmsg:
+        type: choice
+        description: 'Version Comment'
+        options:
+        - 'Yes'
+        - 'No'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_resolve_bug1:
+    name: Issue - Resolve - Bug1
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_resolve_bug2:
+    name: Issue - Resolve - Bug2
+    needs: [issue_resolve_bug1]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - if: ${{ github.event.inputs.show_buildmsg == 'Yes' }}
+        id: part_1a
+        uses: oprypin/find-latest-tag@v1
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          releases-only: true
+
+      - if: ${{ github.event.inputs.show_buildmsg == 'Yes' }}
+        id: part_1b
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
+
+            Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
+            Refer to BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality before next release.
+
+      - if: ${{ github.event.inputs.show_buildmsg == 'No' }}
+        id: part_2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
+
+  issue_resolve_bug3:
+    name: Issue - Resolve - Bug3
+    needs: [issue_resolve_bug2]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Bug,Resolved'
+
+  issue_resolve_bug4:
+    name: Issue - Resolve - Bug4
+    needs: [issue_resolve_bug3]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
+
+  issue_resolve_bug5:
+    name: Issue - Resolve - Bug5
+    needs: [issue_resolve_bug4]
+    runs-on: ubuntu-20.04
+
+    if: ${{ success() || failure() }}
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          close-reason: 'completed'
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}

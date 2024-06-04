@@ -227,7 +227,7 @@ VOID SaveMessageToDebugLogFile (
         return;
     }
 
-    if (GlobalConfig.LogLevel < MINLOGLEVEL) {
+    if (GlobalConfig.LogLevel < LOGLEVELMIN) {
         // DA-TAG: Undocumented feature
         //         Allows using DEBUG build without logging
         //         Set 'log-level' to negative value to activate
@@ -247,7 +247,7 @@ VOID SaveMessageToDebugLogFile (
     }
 
     if (DelMsgLog &&
-        GlobalConfig.LogLevel < MINLOGLEVEL
+        GlobalConfig.LogLevel < LOGLEVELMIN
     ) {
         return;
     }
@@ -337,12 +337,12 @@ VOID DeepLoggger (
 
     // Ensure we are allowed to write logs
     EarlyReturn = (
-        REFIT_DEBUG <= MINLOGLEVEL           ||
+        REFIT_DEBUG <= LOGLEVELMIN           ||
         GlobalConfig.LogLevel < level        ||
-        GlobalConfig.LogLevel == MINLOGLEVEL ||
+        GlobalConfig.LogLevel == LOGLEVELMIN ||
         (
             DelMsgLog &&
-            GlobalConfig.LogLevel < MINLOGLEVEL
+            GlobalConfig.LogLevel < LOGLEVELMIN
         ) || (
             type != LOG_LINE_FORENSIC &&
             (MuteLogger || NativeLogger)
@@ -351,7 +351,7 @@ VOID DeepLoggger (
 
     if (!MuteLogger           &&
         type == LOG_BLOCK_SEP &&
-        REFIT_DEBUG > MAXLOGLEVEL
+        REFIT_DEBUG > LOGLEVELMAX
     ) {
         EarlyReturn = FALSE;
     }
@@ -364,9 +364,9 @@ VOID DeepLoggger (
 
     OurPad = (PadStr != NULL) ? PadStr : L"[ ";
 
-    // Truncate message at MAXLOGLEVEL and lower (if required)
-    if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {
-        Limit   = 213;
+    // Truncate message at LOGLEVELMAX and lower (if required)
+    if (GlobalConfig.LogLevel <= LOGLEVELMAX) {
+        Limit   = 426;
         LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
@@ -437,7 +437,7 @@ VOID EFIAPI DebugLog (
         FormatString == NULL ||
         (
             DelMsgLog &&
-            GlobalConfig.LogLevel < MINLOGLEVEL
+            GlobalConfig.LogLevel < LOGLEVELMIN
         )
     ) {
         return;
@@ -448,7 +448,7 @@ VOID EFIAPI DebugLog (
         UseMsgLog = NativeLogger;
 
         if (!UseMsgLog &&
-            GlobalConfig.LogLevel > MINLOGLEVEL
+            GlobalConfig.LogLevel > LOGLEVELMIN
         ) {
             return;
         }

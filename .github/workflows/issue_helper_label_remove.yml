@@ -5,7 +5,7 @@ on:
     inputs:
       operation:
         type: choice
-        description: Issue Action
+        description: 'Issue Action'
         options:
         - 'Label - Remove - Abandoned'
         - 'Label - Remove - Cancelled'

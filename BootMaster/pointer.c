@@ -75,6 +75,16 @@ VOID pdInitialize (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
+    if (GlobalConfig.DirectBoot) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("Skip Pointer Device Setup ... 'DirectBoot' is Active");
+        LOG_MSG("\n\n");
+        #endif
+
+        // Early Return
+        return;
+    }
+
     pdCleanup(); // Just in case
 
     if (!GlobalConfig.EnableMouse && !GlobalConfig.EnableTouch) {

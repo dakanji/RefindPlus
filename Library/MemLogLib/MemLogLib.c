@@ -70,10 +70,13 @@ BOOLEAN   mTimerPrev = FALSE;
 
 
 UINT64 GetCurrentMS (VOID) {
-	UINT64    CurrentMS  = 0;
-	UINT64    CurrentTsc = 0;
+	UINT64    CurrentMS;
+	UINT64    CurrentTsc;
 
-	if (mMemLog && mMemLog->TscFreqSec != 0) {
+	if (!mMemLog || mMemLog->TscFreqSec == 0) {
+        CurrentMS = 0;
+    }
+    else {
 		CurrentTsc = AsmReadTsc();
 
 		CurrentMS = DivU64x64Remainder (
@@ -281,7 +284,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
         Tsc0 = AsmReadTsc();
 
         // Wait for 100ms.
-        // DA-TAG: 100 Loops = 1 Sec.
+        // DA-TAG: 100 Loops == 1 Sec.
         RefitStall (10);
 
         // Read New Current Tsc.

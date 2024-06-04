@@ -209,41 +209,45 @@ REFIT_CONFIG GlobalConfig = {
 #define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware"
 
 
-UINTN                  AppleFramebuffers    =                    0;
-UINT32                 AccessFlagsBoot      =    ACCESS_FLAGS_BOOT;
-UINT32                 AccessFlagsFull      =    ACCESS_FLAGS_FULL;
-CHAR16                *ArchType             =                 NULL;
-CHAR16                *VendorInfo           =                 NULL;
-CHAR16                *gHiddenTools         =                 NULL;
-BOOLEAN                gKernelStarted       =                FALSE;
-BOOLEAN                IsBoot               =                FALSE;
-BOOLEAN                WarnOC               =                FALSE;
-BOOLEAN                RunningOC            =                FALSE;
-BOOLEAN                ProtectOn            =                FALSE;
-BOOLEAN                ConfigWarn           =                FALSE;
-BOOLEAN                OverrideSB           =                FALSE;
-BOOLEAN                OneMainLoop          =                FALSE;
-BOOLEAN                BlockRescan          =                FALSE;
-BOOLEAN                NativeLogger         =                FALSE;
-BOOLEAN                IconScaleSet         =                FALSE;
-BOOLEAN                ExtremeHiDPI         =                FALSE;
-BOOLEAN                ForceTextOnly        =                FALSE;
-BOOLEAN                AppleFirmware        =                FALSE;
-BOOLEAN                FlushFailedTag       =                FALSE;
-BOOLEAN                FlushFailReset       =                FALSE;
-BOOLEAN                WarnMissingQVInfo    =                FALSE;
-BOOLEAN                WarnVersionEFI       =                FALSE;
-BOOLEAN                WarnRevisionUEFI     =                FALSE;
-BOOLEAN                VarNoCheckCompat     =                FALSE;
-BOOLEAN                VarNoCheckAMFI       =                FALSE;
-BOOLEAN                VarDisablePanicLog   =                FALSE;
-BOOLEAN                SecureBootFailure    =                FALSE;
-EFI_GUID               RefindPlusGuid       =      REFINDPLUS_GUID;
-EFI_GUID               RefindPlusOldGuid    =  REFINDPLUS_OLD_GUID;
-EFI_GUID               OpenCoreVendorGuid   = OPENCORE_VENDOR_GUID;
-EFI_SET_VARIABLE       OrigSetVariableRT    =                 NULL;
-EFI_OPEN_PROTOCOL      OrigOpenProtocolBS   =                 NULL;
+UINTN                  AppleFramebuffers    =                     0;
+UINT32                 AccessFlagsBoot      =     ACCESS_FLAGS_BOOT;
+UINT32                 AccessFlagsFull      =     ACCESS_FLAGS_FULL;
+CHAR16                *ArchType             =                  NULL;
+CHAR16                *VendorInfo           =                  NULL;
+CHAR16                *gHiddenTools         =                  NULL;
+BOOLEAN                gKernelStarted       =                 FALSE;
 BOOLEAN                KeepTrustChain       =                 FALSE;
+BOOLEAN                IsBoot               =                 FALSE;
+BOOLEAN                WarnOC               =                 FALSE;
+BOOLEAN                RunningOC            =                 FALSE;
+BOOLEAN                ProtectOn            =                 FALSE;
+BOOLEAN                ConfigWarn           =                 FALSE;
+BOOLEAN                OverrideSB           =                 FALSE;
+BOOLEAN                OneMainLoop          =                 FALSE;
+BOOLEAN                BlockRescan          =                 FALSE;
+BOOLEAN                NativeLogger         =                 FALSE;
+BOOLEAN                IconScaleSet         =                 FALSE;
+BOOLEAN                ExtremeHiDPI         =                 FALSE;
+BOOLEAN                ForceTextOnly        =                 FALSE;
+BOOLEAN                AppleFirmware        =                 FALSE;
+BOOLEAN                FlushFailedTag       =                 FALSE;
+BOOLEAN                FlushFailReset       =                 FALSE;
+BOOLEAN                WarnMissingQVInfo    =                 FALSE;
+BOOLEAN                WarnVersionEFI       =                 FALSE;
+BOOLEAN                WarnRevisionUEFI     =                 FALSE;
+BOOLEAN                VarNoCheckCompat     =                 FALSE;
+BOOLEAN                VarNoCheckAMFI       =                 FALSE;
+BOOLEAN                VarDisablePanicLog   =                 FALSE;
+BOOLEAN                SecureBootFailure    =                 FALSE;
+EG_PIXEL               BGColorFail          =             COLOR_RED;
+EG_PIXEL               BGColorWarn          =           COLOR_AMBER;
+EG_PIXEL               BGColorBase          =       COLOR_LIGHTBLUE;
+EFI_GUID               RefindPlusGuid       =       REFINDPLUS_GUID;
+EFI_GUID               RefindPlusOldGuid    =   REFINDPLUS_OLD_GUID;
+EFI_GUID               OpenCoreVendorGuid   =  OPENCORE_VENDOR_GUID;
+EFI_GUID               MicrosoftVendorGuid  = MICROSOFT_VENDOR_GUID;
+EFI_SET_VARIABLE       OrigSetVariableRT    =                  NULL;
+EFI_OPEN_PROTOCOL      OrigOpenProtocolBS   =                  NULL;
 
 #define NVRAM_SIZE_THRESHOLD       (1023)
 
@@ -448,7 +452,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  VOID       *VariableData OPTIONAL
 ) {
     EFI_STATUS      Status;
-    EFI_GUID        VendorMS = MICROSOFT_VENDOR_GUID;
     BOOLEAN         CurPolicyOEM;
     BOOLEAN         IsVendorMS;
     BOOLEAN         BlockCert;
@@ -475,7 +478,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     RevokeVar = (VariableData == NULL && VariableSize == 0);
-    IsVendorMS = GuidsAreEqual (VendorGuid, &VendorMS);
+    IsVendorMS = GuidsAreEqual (VendorGuid, &MicrosoftVendorGuid);
     CurPolicyOEM = (
         IsVendorMS &&
         !AppleFirmware &&
@@ -1467,19 +1470,20 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 static
 VOID ReMapOpenProtocol (VOID) {
     if (GOPDraw == NULL && UGADraw == NULL) {
-        // Early Return if GOP and UGA are Absent
+        // GOP and UGA Absent
+        // Early Return
         return;
     }
 
-    if (AppleFirmware) {
-        if (!DevicePresence) {
-            // Early Return on Compact Macs
-            return;
-        }
-        if (AppleFramebuffers == 0) {
-            // Early Return on Macs without AppleFramebuffers
-            return;
-        }
+    if (AppleFirmware &&
+        (
+            !DevicePresence   ||
+            AppleFramebuffers == 0
+        )
+    ) {
+        // Compact Mac or Mac without AppleFramebuffers
+        // Early Return
+        return;
     }
 
     // Amend EFI_BOOT_SERVICES.OpenProtocol
@@ -1502,7 +1506,6 @@ UINTN RunTrustSync (
     UINTN                      ExitChain;
     BOOLEAN                    LoaderValid;
     BOOLEAN                    AlreadyExists;
-    EG_PIXEL                   BGColor = COLOR_LIGHTBLUE;
     EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
 
     #if REFIT_DEBUG > 0
@@ -1587,7 +1590,7 @@ UINTN RunTrustSync (
         );
 
         // Wait 0.50 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (50);
 
         if (EFI_ERROR(Status)) {
@@ -1605,7 +1608,7 @@ UINTN RunTrustSync (
     );
 
     // Wait 0.50 second
-    // DA-TAG: 100 Loops = 1 Sec
+    // DA-TAG: 100 Loops == 1 Sec
     RefitStall (50);
 
     MY_FREE_POOL(VarName);
@@ -1625,7 +1628,7 @@ UINTN RunTrustSync (
     #endif
 
     egDisplayMessage (
-        L"Restart in Native Boot Chain", &BGColor,
+        L"Restart in Native Boot Chain", &BGColorBase,
         CENTER, 3, L"PauseSeconds"
     );
 
@@ -1838,6 +1841,11 @@ BOOLEAN ShowCleanNvramInfo (
         return FALSE;
     }
 
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- '%s Info'", ToolPurpose);
+    #endif
+
     CleanNvramInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
     CleanNvramInfoMenu->Title      = StrDuplicate (LABEL_CLEAN_NVRAM          );
     CleanNvramInfoMenu->Hint1      = StrDuplicate (RETURN_MAIN_SCREEN_HINT    );
@@ -1884,7 +1892,7 @@ BOOLEAN ShowCleanNvramInfo (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' from DrawMenuScreen Call on '%s'",
+        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' Function from '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     LOG_MSG("Received User Input:");
@@ -1927,7 +1935,8 @@ VOID AboutRefindPlus (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
 
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'About RefindPlus' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'About RefindPlus'");
     #endif
 
     AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT                 );
@@ -2278,7 +2287,13 @@ VOID RescanAll (
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
     #endif
+
     ScanForTools();
+
+    if (OverrideSB) {
+        pdInitialize();
+    }
+
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
 
@@ -2425,13 +2440,8 @@ VOID SetConfigFilename (
             LOG_MSG("\n");
             #endif
 
-            if (&SubString[4] == NULL) {
-                FileName = NULL;
-            }
-            else {
-                FileName = StrDuplicate (&SubString[4]);
-                LimitStringLength (FileName, 256);
-            }
+            FileName = StrDuplicate (&SubString[4]);
+            LimitStringLength (FileName, 256);
 
             if (FileName != NULL && FileExists (SelfDir, FileName)) {
                 GlobalConfig.ConfigFilename = FileName;
@@ -2837,7 +2847,6 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN            MainLoopRunning;
     BOOLEAN            SkipTrustChain;
     BOOLEAN            FoundInstallerMac;
-    EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
     LEGACY_ENTRY      *ourLegacyEntry;
     REFIT_VOLUME      *EntryVol;
@@ -3074,24 +3083,23 @@ EFI_STATUS EFIAPI efi_main (
 
     LOG_MSG("%s      TextOnly:- ",           OffsetNext                               );
     if (ForceTextOnly) {
-        LOG_MSG("'Forced'"                                                          );
+        LOG_MSG("'Forced'"                                                            );
     }
     else {
-        LOG_MSG("'%s'", (GlobalConfig.TextOnly) ? L"Active" : L"Inactive"           );
+        LOG_MSG("'%s'", (GlobalConfig.TextOnly) ? L"Active" : L"Inactive"             );
     }
+    LOG_MSG("%s      DirectGOP:- '%s'",      TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
 
-    LOG_MSG("%s      DirectGOP:- '%s'",    TAG_ITEM_C(GlobalConfig.UseDirectGop    ));
-
-    LOG_MSG("%s      LegacySync:- ",       OffsetNext                               );
+    LOG_MSG("%s      LegacySync:- ",         OffsetNext                               );
     if (!AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                        );
+        LOG_MSG("'Disabled'"                                                          );
     }
     else {
-        LOG_MSG("'%s'", (GlobalConfig.LegacySync) ? L"Enabled" : L"Inactive"        );
+        LOG_MSG("'%s'", (GlobalConfig.LegacySync) ? L"Enabled" : L"Inactive"          );
     }
 
-    LOG_MSG("%s      ScanAllESP:- '%s'",   TAG_ITEM_C(GlobalConfig.ScanAllESP      ));
-    LOG_MSG("%s      DirectBoot:- '%s'",   TAG_ITEM_C(GlobalConfig.DirectBoot      ));
+    LOG_MSG("%s      ScanAllESP:- '%s'",     TAG_ITEM_C(GlobalConfig.ScanAllESP      ));
+    LOG_MSG("%s      DirectBoot:- '%s'",     TAG_ITEM_C(GlobalConfig.DirectBoot      ));
 
     LOG_MSG(
         "%s      TextRenderer:- '%s'",
@@ -3099,17 +3107,17 @@ EFI_STATUS EFIAPI efi_main (
         (GlobalConfig.UseTextRenderer) ? L"Active" : L"Inactive"
     );
 
-    LOG_MSG("%s      ProtectNvram:- ",     OffsetNext                               );
+    LOG_MSG("%s      ProtectNvram:- ",       OffsetNext                               );
     if (!AppleFirmware || RunningOC) {
         if (!AppleFirmware) {
-            LOG_MSG("'Disabled'"                                                    );
+            LOG_MSG("'Disabled'"                                                      );
         }
         else {
-            LOG_MSG("'Disabled ... OpenCore Chainload'"                             );
+            LOG_MSG("'Disabled ... OpenCore Chainload'"                               );
         }
     }
     else {
-        LOG_MSG("'%s'", (GlobalConfig.NvramProtect) ? L"Active" : L"Inactive"       );
+        LOG_MSG("'%s'", (GlobalConfig.NvramProtect) ? L"Active" : L"Inactive"         );
     }
 
     LOG_MSG(
@@ -3124,12 +3132,12 @@ EFI_STATUS EFIAPI efi_main (
         (GlobalConfig.HandleVentoy) ? L"Active" : L"Inactive"
     );
 
-    LOG_MSG("%s      RansomDrives:- ",     OffsetNext                               );
+    LOG_MSG("%s      RansomDrives:- ",       OffsetNext                               );
     if (AppleFirmware) {
-        LOG_MSG("'Disabled'"                                                        );
+        LOG_MSG("'Disabled'"                                                          );
     }
     else {
-        LOG_MSG("'%s'", (GlobalConfig.RansomDrives) ? L"Active" : L"Inactive"       );
+        LOG_MSG("'%s'", (GlobalConfig.RansomDrives) ? L"Active" : L"Inactive"         );
     }
 
     LOG_MSG(
@@ -3138,20 +3146,20 @@ EFI_STATUS EFIAPI efi_main (
         (GlobalConfig.TransientBoot) ? L"Active" : L"Inactive"
     );
 
-    LOG_MSG("%s      NvramProtectEx:- ",    OffsetNext                              );
+    LOG_MSG("%s      NvramProtectEx:- ",      OffsetNext                              );
     if (!AppleFirmware || RunningOC) {
         if (!AppleFirmware) {
-            LOG_MSG("'Disabled'"                                                    );
+            LOG_MSG("'Disabled'"                                                      );
         }
         else {
-            LOG_MSG("'Disabled ... OpenCore Chainload'"                             );
+            LOG_MSG("'Disabled ... OpenCore Chainload'"                               );
         }
     }
     else {
-        LOG_MSG("'%s'", (GlobalConfig.NvramProtectEx) ? L"Active" : L"Inactive"     );
+        LOG_MSG("'%s'", (GlobalConfig.NvramProtectEx) ? L"Active" : L"Inactive"       );
     }
 
-    LOG_MSG("%s      FollowSymlinks:- '%s'", TAG_ITEM_C(GlobalConfig.FollowSymlinks));
+    LOG_MSG("%s      FollowSymlinks:- '%s'",   TAG_ITEM_C(GlobalConfig.FollowSymlinks));
     LOG_MSG("\n\n");
 
     // DA-TAG: Prime Status for SupplyUEFI
@@ -3215,8 +3223,8 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 1
     ThislogLevel  = GlobalConfig.LogLevel;
     TempLevelFlip = FALSE;
-    if (ThislogLevel > MAXLOGLEVEL) {
-        GlobalConfig.LogLevel = MAXLOGLEVEL;
+    if (ThislogLevel > LOGLEVELMAX) {
+        GlobalConfig.LogLevel = LOGLEVELMAX;
         TempLevelFlip = TRUE;
     }
     #endif
@@ -3383,7 +3391,7 @@ EFI_STATUS EFIAPI efi_main (
         if (GlobalConfig.ScanDelay > Trigger) {
             PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (
-                PartMsg, &BGColor,
+                PartMsg, &BGColorBase,
                 CENTER, 0, NULL
             );
 
@@ -3405,7 +3413,7 @@ EFI_STATUS EFIAPI efi_main (
             #endif
 
             // Wait 1 second
-            // DA-TAG: 100 Loops = 1 Sec
+            // DA-TAG: 100 Loops == 1 Sec
             RefitStall (100);
         }
 
@@ -3481,7 +3489,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         // Wait 1 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (100);
     } // if WarnMissingQVInfo
     #endif
@@ -3541,7 +3549,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         // Wait 0.25 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (25);
     } // if ConfigWarn
     #endif
@@ -3598,7 +3606,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         // Wait 0.25 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (25);
     } // if WarnOC
     #endif
@@ -3625,6 +3633,7 @@ EFI_STATUS EFIAPI efi_main (
         IsBoot         = FALSE;
         FoundTool      = FALSE;
         RunOurTool     = FALSE;
+        OverrideSB     = FALSE;
         SubScreenBoot  = FALSE;
         KeepTrustChain = FALSE;
         SkipTrustChain = FALSE;
@@ -3634,19 +3643,27 @@ EFI_STATUS EFIAPI efi_main (
         MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);
 
         // The ESC key triggers a rescan ... if allowed
-        if (MenuExit == MENU_EXIT_ESCAPE) {
+        if (MenuExit == MENU_EXIT_ESCAPE  ||
+            MenuExit == MENU_EXIT_SHOWSCREEN
+        ) {
             // Flag at least one loop done
             OneMainLoop = TRUE;
 
             #if REFIT_DEBUG > 0
             LOG_MSG("Received User Input:");
-            LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
+            if (MenuExit == MENU_EXIT_ESCAPE) {
+                LOG_MSG("%s  - Rescan All ... Escape Key Pressed", OffsetNext);
+            }
+            else {
+                LOG_MSG("%s  - Rescan All ... Key Press Detected", OffsetNext);
+            }
             LOG_MSG("\n\n");
             #endif
 
             if (GlobalConfig.DirectBoot) {
                 OverrideSB = TRUE;
             }
+
             RescanAll (TRUE);
 
             continue;
@@ -3689,7 +3706,7 @@ EFI_STATUS EFIAPI efi_main (
 
             TypeStr = L"Aborted Invalid System Reset Call ... Please Try Again";
             egDisplayMessage (
-                TypeStr, &BGColor,
+                TypeStr, &BGColorFail,
                 CENTER, 4, L"PauseSeconds"
             );
 
@@ -3712,8 +3729,6 @@ EFI_STATUS EFIAPI efi_main (
                 TypeStr = L"Clean/Reset nvRAM";
 
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare '%s Info' Screen", TypeStr);
-
                 LOG_MSG("Received User Input:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
                 LOG_MSG("\n\n");
@@ -3794,6 +3809,17 @@ EFI_STATUS EFIAPI efi_main (
                     L"boot-protect", &OpenCoreVendorGuid,
                     AccessFlagsFull, 0, NULL
                 );
+                if (AppleFirmware) {
+                    // Only Clear "CurrentPolicy" on Apple Firmware
+                    SetHardwareNvramVariable ( // "CurrentPolicy"
+                        L"CurrentPolicy", &MicrosoftVendorGuid,
+                        AccessFlagsBoot, 0, NULL
+                    );
+                    SetHardwareNvramVariable ( // "CurrentActivePolicy"
+                        L"CurrentActivePolicy", &MicrosoftVendorGuid,
+                        AccessFlagsFull, 0, NULL
+                    );
+                }
 
                 // No end dash line ... Handled in 'Reboot' below
                 StartTool (ourLoaderEntry);
@@ -3887,7 +3913,7 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 egDisplayMessage (
-                    TypeStr, &BGColor,
+                    TypeStr, &BGColorBase,
                     CENTER, 3, L"PauseSeconds"
                 );
                 TerminateScreen();
@@ -4049,7 +4075,11 @@ EFI_STATUS EFIAPI efi_main (
                 if (FoundInstallerMac) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     MsgStr = StrDuplicate (L"Load macOS Installer");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -4057,7 +4087,7 @@ EFI_STATUS EFIAPI efi_main (
                         OffsetNext,
                         MsgStr,
                         (EntryVol->VolName != NULL)
-                            ? L" on" : L":-",
+                            ? L" from" : L":-",
                         (EntryVol->VolName != NULL)
                             ? EntryVol->VolName : ourLoaderEntry->LoaderPath
                     );
@@ -4080,7 +4110,11 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", SelectionName);
                     LOG_MSG("%s  - %s", OffsetNext, SelectionName);
                     #endif
@@ -4108,7 +4142,11 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", SelectionName);
                     LOG_MSG("%s  - %s", OffsetNext, SelectionName);
 
@@ -4147,7 +4185,11 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: Linux (Grub)");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -4167,7 +4209,11 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: Linux (VMLinuz)");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -4187,7 +4233,11 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: Linux (BZImage)");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -4207,7 +4257,11 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: Linux (Kernel)");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -4231,15 +4285,24 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     MsgStr = StrDuplicate (L"Load Instance: Linux");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                    if (EntryVol->VolName != NULL) {
-                        LOG_MSG(" on '%s' Partition", EntryVol->VolName);
+                    if (EntryVol->VolName == NULL) {
+                        LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
-                        LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
+                        if (MyStrStr (EntryVol->VolName, L"Partition")) {
+                            LOG_MSG(" from %s", EntryVol->VolName);
+                        }
+                        else {
+                            LOG_MSG(" from '%s' Partition", EntryVol->VolName);
+                        }
                     }
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -4258,7 +4321,11 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Load Instance: rEFIt Variant");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -4305,16 +4372,14 @@ EFI_STATUS EFIAPI efi_main (
 
                         egDisplayMessage (
                             L"OpenCore Load Attempt is *INVALID* ... Already Started",
-                            &BGColor, CENTER, 4, L"PauseSeconds"
+                            &BGColorWarn, CENTER, 4, L"PauseSeconds"
                         );
                         break;
                     }
 
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = (
-                            (
-                                GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
-                            ) == GRAPHICS_FOR_OPENCORE
+                            GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
                         );
                     }
 
@@ -4334,13 +4399,17 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = (
-                            (GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER) == GRAPHICS_FOR_CLOVER
+                            GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER
                         );
                     }
 
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG("Received User Input:");
+                    LOG_MSG("%s:",
+                        (GlobalConfig.DirectBoot)
+                            ? L"Run DirectBoot"
+                            : L"Received User Input"
+                    );
                     MsgStr = StrDuplicate (L"Load Instance: Clover");
                     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -4363,7 +4432,7 @@ EFI_STATUS EFIAPI efi_main (
                 else {
                     i = 0;
                     while (
-                        !FoundVentoy               &&
+                        !FoundVentoy              &&
                         GlobalConfig.HandleVentoy &&
                         (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                     ) {
@@ -4382,7 +4451,7 @@ EFI_STATUS EFIAPI efi_main (
                     }
                     else {
                         MsgStr = PoolPrint (
-                            L"Load Instance: Ventoy via '%s'",
+                            L"Load Instance: Ventoy from '%s'",
                             ourLoaderEntry->LoaderPath
                         );
                     }
@@ -4439,7 +4508,7 @@ EFI_STATUS EFIAPI efi_main (
 
                     egDisplayMessage (
                         TypeStr,
-                        &BGColor, CENTER, 4, L"PauseSeconds"
+                        &BGColorFail, CENTER, 4, L"PauseSeconds"
                     );
 
                     #if REFIT_DEBUG > 0
@@ -4513,7 +4582,11 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("Received User Input:");
+                LOG_MSG("%s:",
+                    (GlobalConfig.DirectBoot)
+                        ? L"Run DirectBoot"
+                        : L"Received User Input"
+                );
                 LOG_MSG("%s  - Reboot into Firmware Loader", OffsetNext);
                 #endif
 

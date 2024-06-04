@@ -126,7 +126,9 @@ to something as fast. */
 static void lodepng_memcpy(void* LODEPNG_RESTRICT dst,
                            const void* LODEPNG_RESTRICT src, size_t size) {
   size_t i;
-  for(i = 0; i < size; i++) ((char*)dst)[i] = ((const char*)src)[i];
+  if(dst != NULL) {
+      for(i = 0; i < size; i++) ((char*)dst)[i] = ((const char*)src)[i];
+  }
 }
 
 static void lodepng_memset(void* LODEPNG_RESTRICT dst,
@@ -2741,6 +2743,8 @@ static unsigned readBitsFromReversedStream(size_t* bitpointer, const unsigned ch
 }
 
 static void setBitOfReversedStream(size_t* bitpointer, unsigned char* bitstream, unsigned char bit) {
+  if (bitstream == NULL) return;
+
   /*the current bit in bitstream may be 0 or 1 for this to work*/
   if(bit == 0) bitstream[(*bitpointer) >> 3u] &=  (unsigned char)(~(1u << (7u - ((*bitpointer) & 7u))));
   else         bitstream[(*bitpointer) >> 3u] |=  (1u << (7u - ((*bitpointer) & 7u)));
@@ -6162,7 +6166,9 @@ static void Adam7_interlace(unsigned char* out, const unsigned char* in, unsigne
         size_t pixelinstart = ((ADAM7_IY[i] + y * ADAM7_DY[i]) * w + ADAM7_IX[i] + x * ADAM7_DX[i]) * bytewidth;
         size_t pixeloutstart = passstart[i] + (y * passw[i] + x) * bytewidth;
         for(b = 0; b < bytewidth; ++b) {
-          out[pixeloutstart + b] = in[pixelinstart + b];
+          if(out != NULL) {
+              out[pixeloutstart + b] = in[pixelinstart + b];
+          }
         }
       }
     }
@@ -6230,7 +6236,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     if(!(*out)) error = 83; /*alloc fail*/
 
     adam7 = (unsigned char*)lodepng_refit_malloc(passstart[7]);
-    if(!adam7 && passstart[7]) error = 83; /*alloc fail*/
+    if(!adam7) error = 83; /*alloc fail*/
 
     if(!error) {
       unsigned i;
@@ -6461,7 +6467,7 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
     size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) / 8u;
 
     converted = (unsigned char*)lodepng_refit_malloc(size);
-    if(!converted && size) state->error = 83; /*alloc fail*/
+    if(!converted) state->error = 83; /*alloc fail*/
     if(!state->error) {
       state->error = lodepng_convert(converted, image, &info.color, &state->info_raw, w, h);
     }

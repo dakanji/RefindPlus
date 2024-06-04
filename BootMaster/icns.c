@@ -455,12 +455,12 @@ EG_IMAGE * LoadOSIcon (
     }
 
     if (GlobalConfig.HelpIcon && Image != NULL) {
-        if (TableBuiltinIconOS[OurId].Image == NULL && OurId >= 0) {
-            TableBuiltinIconOS[OurId].Image  = Image;
+        if (OurId >= 0 && TableBuiltinIconOS[OurId].Image == NULL) {
+            TableBuiltinIconOS[OurId].Image = Image;
         }
 
-        if (TableBuiltinIconOS[Id].Image == NULL && Id >= 0) {
-            TableBuiltinIconOS[Id].Image  = Image;
+        if (Id >= 0 && TableBuiltinIconOS[Id].Image == NULL) {
+            TableBuiltinIconOS[Id].Image = Image;
         }
     } // if GlobalConfig.HelpIcon
 

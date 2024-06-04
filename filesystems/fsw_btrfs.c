@@ -1128,7 +1128,10 @@ begin_direct_read:
                         int s = vol->sectorsize - off;
                         if(s > csize - n)
                             s = csize - n;
-                        fsw_memcpy(buf+n, buffer+off, s);
+
+                        // DA-TAG: Behaviour is undefined when using void pointers in calculations.
+                        //         Cast to 'char' pointer to avoid potential issues outside GCC.
+                        fsw_memcpy((char *)buf + n, buffer + off, s);
                         fsw_block_release(dev, paddr, (void *)buffer);
 
                         n += s;
@@ -1182,7 +1185,9 @@ begin_direct_read:
 
 		    if(dev && !(err = fsw_block_get(dev, paddrN, cache_level, (void **) &buffer))) {
 			// reading direct sector first
-                        fsw_memcpy(buf+n, buffer+off, used_bytes);
+                        // DA-TAG: Behaviour is undefined when using void pointers in calculations.
+                        //         Cast to 'char' pointer to avoid potential issues outside GCC.
+                        fsw_memcpy((char *)buf + n, buffer + off, used_bytes);
                         fsw_block_release(dev, paddrN, (void *)buffer);
 
 		    } else if((rcache = get_recover_cache(vol, stripe[stripen].device_id, paddrN)) == NULL) {
@@ -1190,7 +1195,9 @@ begin_direct_read:
 			goto io_error;
 		    } else if(rcache->valid) {
 			// hit recovered cache
-                        fsw_memcpy(buf+n, rcache->buffer+off, used_bytes);
+                        // DA-TAG: Behaviour is undefined when using void pointers in calculations.
+                        //         Cast to 'char' pointer to avoid potential issues outside GCC.
+                        fsw_memcpy((char *)buf + n, rcache->buffer + off, used_bytes);
 
                     } else {
 			// need recover data
@@ -1281,7 +1288,9 @@ begin_direct_read:
 			if(err)
 			    goto io_error;
 
-			fsw_memcpy(buf+n, rcache->buffer+off, used_bytes);
+			// DA-TAG: Behaviour is undefined when using void pointers in calculations.
+			//         Cast to 'char' pointer to avoid potential issues outside GCC.
+			fsw_memcpy((char *)buf + n, rcache->buffer + off, used_bytes);
 			rcache->valid = TRUE;
 		    }
 

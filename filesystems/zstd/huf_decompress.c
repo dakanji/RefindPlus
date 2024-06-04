@@ -378,7 +378,7 @@ static void HUF_fillDTableX4Level2(HUF_DEltX4 *DTable, U32 sizeLog, const U32 co
 	memcpy(rankVal, rankValOrigin, sizeof (rankVal));
 
 	/* fill skipped values */
-	if (minWeight > 1) {
+	if (minWeight > 1 && minWeight < (HUF_TABLELOG_MAX + 1)) {
 		U32 i, skipSize = rankVal[minWeight];
 		ZSTD_writeLE16(&(DElt.sequence), baseSeq);
 		DElt.nbBits = (BYTE)(consumed);

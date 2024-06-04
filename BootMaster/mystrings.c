@@ -50,13 +50,73 @@ CHAR16 * GetSubStrAfter (
 
     Substring = MyStrStr (String, Delimiter);
     if (Substring == NULL) {
+        // Return original string ... Delimiter not found
         return String;
     }
 
     // Move past delimiter
     Substring += StrLen (Delimiter);
+    if (*Substring == L'\0') {
+        // Return original string ... Delimiter is at end
+        return String;
+    }
+
     return Substring;
-} // CHAR16 * GetSubStrAfter
+} // CHAR16 * GetSubStrAfter()
+
+
+/*++
+ *
+ * Routine Description:
+ *
+ *  Return the substring before a supplied delimiter.
+ *  Note that the calling function is responsible for freeing
+ *  the memory associated with the returned string pointer.
+ *
+ * Arguments:
+ *
+ *  Delimiter  - Null-terminated string to search for as delimiter.
+ *  String     - Null-terminated string to search for a Substring.
+ *
+ * Returns:
+ *  The address of the matching substring before the delimiter
+ *  or the original string if the delimiter was not found.
+ * --*/
+CHAR16 * GetSubStrBefore (
+    IN CHAR16 *Delimiter,
+    IN CHAR16 *String
+) {
+    UINTN   Length;
+    CHAR16 *Result;
+    CHAR16 *Substring;
+
+    if (String == NULL) {
+        return NULL;
+    }
+
+    Substring = MyStrStr (String, Delimiter);
+    if (Substring == NULL) {
+        // Return original string ... Delimiter not found
+        return String;
+    }
+
+    if (MyStriCmp (Substring, String)) {
+        // Return original string ... Delimiter is at start
+        return String;
+    }
+
+    Length = Substring - String;
+    Result = AllocateZeroPool ((Length + 1) * sizeof (CHAR16));
+    if (Result == NULL) {
+        // Return original string ... Memory exhausted
+        return String;
+    }
+
+    CopyMem (Result, String, Length * sizeof (CHAR16));
+    Result[Length] = L'\0'; // Null-terminate result
+
+    return Result;
+} // CHAR16 * GetSubStrBefore()
 
 BOOLEAN StriSubCmp (
     IN CHAR16 *SmallStr,
@@ -799,6 +859,7 @@ BOOLEAN LimitStringLength (
     UINTN    Limit
 ) {
     UINTN     i;
+    UINTN     DestSize;
     CHAR16   *SubString;
     CHAR16   *TempString;
     BOOLEAN   HasChanged;
@@ -846,7 +907,8 @@ BOOLEAN LimitStringLength (
                 break;
             }
 
-            StrCpy (&SubString[1], TempString);
+            DestSize = StrSize (&SubString[1]) / sizeof (CHAR16);
+            StrCpyS (&SubString[1], DestSize, TempString);
             MY_FREE_POOL(TempString);
         }
 
@@ -1062,6 +1124,7 @@ BOOLEAN DeleteItemFromCsvList (
     CHAR16  *ToDelete,
     CHAR16  *List
 ) {
+    UINTN    DestSize;
     CHAR16  *Found;
     CHAR16  *Comma;
     BOOLEAN  Retval;
@@ -1072,11 +1135,13 @@ BOOLEAN DeleteItemFromCsvList (
 
     Retval = FALSE;
     Found = MyStrStr (List, ToDelete);
-    if (Found) {
+    if (Found != NULL) {
         Comma = MyStrStr (Found, L",");
-        if (Comma) {
+        if (Comma != NULL) {
             // 'Found' is NOT the final element
-            StrCpy (Found, &Comma[1]);
+            // Calculate the remaining buffer size in characters
+            DestSize = StrSize (Found) / sizeof (CHAR16);
+            StrCpyS (Found, DestSize, &Comma[1]);
         }
         else {
             // 'Found' is final element
@@ -1202,7 +1267,10 @@ BOOLEAN ReplaceSubstring (
     IN     CHAR16  *SearchString,
     IN     CHAR16  *ReplString
 ) {
-    CHAR16 *FoundSearchString, *NewString, *EndString;
+    UINTN   DestSize;
+    CHAR16 *EndString;
+    CHAR16 *NewString;
+    CHAR16 *FoundSearchString;
 
     #if REFIT_DEBUG > 1
     const CHAR16 *FuncTag = L"ReplaceSubstring";
@@ -1224,13 +1292,11 @@ BOOLEAN ReplaceSubstring (
     }
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
-    FoundSearchString = NULL;
-    NestedStrStr      = TRUE;
     FoundSearchString = MyStrStr (*MainString, SearchString);
     NestedStrStr      = FALSE;
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (!FoundSearchString) {
+    if (FoundSearchString == NULL) {
         BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString *NOT* Found!!", FuncTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1238,7 +1304,8 @@ BOOLEAN ReplaceSubstring (
     }
 
     BREAD_CRUMB(L"%s:  4", FuncTag);
-    NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen (*MainString));
+    DestSize = StrLen (*MainString) + 1;
+    NewString = AllocateZeroPool (DestSize * sizeof (CHAR16));
     if (NewString == NULL) {
         BREAD_CRUMB(L"%s:  4a - END:- return BOOLEAN 'FALSE' ... Out of Resources!!", FuncTag);
         LOG_DECREMENT();
@@ -1251,14 +1318,19 @@ BOOLEAN ReplaceSubstring (
     FoundSearchString[0] = L'\0';
 
     BREAD_CRUMB(L"%s:  6", FuncTag);
-    if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
+    // "FoundSearchString > *MainString" is required to make sure:
+    // "FoundSearchString" is within "*MainString" in terms of memory address
+    // "FoundSearchString" is not at the start of "*MainString" for the "-1" index
+    if ((FoundSearchString > *MainString) &&
+        (FoundSearchString[-1] == L'%')
+    ) {
         BREAD_CRUMB(L"%s:  6a 1", FuncTag);
         FoundSearchString[-1] = L'\0';
         ReplString = SearchString;
     }
 
     BREAD_CRUMB(L"%s:  7", FuncTag);
-    StrCpy (NewString, *MainString);
+    StrCpyS (NewString, DestSize, *MainString);
 
     BREAD_CRUMB(L"%s:  8", FuncTag);
     MergeStrings (&NewString, ReplString, L'\0');
@@ -1378,7 +1450,11 @@ BOOLEAN IsGuid (
     retval = TRUE;
     for (i = 0; i < Length; i++) {
         a = UnknownString[i];
-        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+        if (i ==  8 ||
+            i == 13 ||
+            i == 18 ||
+            i == 23
+        ) {
             if (a != L'-') {
                 retval = FALSE;
                 break;
@@ -1387,7 +1463,8 @@ BOOLEAN IsGuid (
         // DA-TAG: Investigate This
         //         Condition below can apparently never be met (coverity scan)
         //         Comment out until review
-        //else if (((a < L'a') || (a > L'f')) &&
+        //else if (
+        //    ((a < L'a') || (a > L'f')) &&
         //    ((a < L'A') || (a > L'F')) &&
         //    ((a < L'0') && (a > L'9'))
         //) {
@@ -1547,13 +1624,22 @@ VOID MyUnicodeFilterString (
             // Remove all unicode characters.
             *String = L'_';
         }
-        else if (SingleLine && (*String == L'\r' || *String == L'\n')) {
+        else if (
+            SingleLine &&
+            (
+                *String == L'\r' ||
+                *String == L'\n'
+            )
+        ) {
             // Stop after printing one line.
             *String = L'\0';
 
             break;
         }
-        else if (*String < 0x20 || *String == 0x7F) {
+        else if (
+            *String < 0x20 ||
+            *String == 0x7F
+        ) {
             // Drop all unprintable spaces but space including tabs.
             *String = L'_';
         }

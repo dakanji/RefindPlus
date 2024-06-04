@@ -92,7 +92,6 @@ BOOLEAN                FoundFontImage  =  TRUE;
 #endif
 
 extern BOOLEAN         ForceTextOnly;
-extern EFI_GUID        GuidNull;
 
 #if REFIT_DEBUG > 0
 static
@@ -420,36 +419,41 @@ CHAR16 * ReadLine (
 // quotes ('"'); it deletes one of them.
 static
 BOOLEAN KeepReading (
-    IN OUT CHAR16  *p,
+    IN OUT CHAR16  *InString,
     IN OUT BOOLEAN *IsQuoted
 ) {
     CHAR16  *Temp;
+    UINTN    DestSize;
     BOOLEAN  MoreToRead;
 
-    if (IsQuoted == NULL || p == NULL || *p == L'\0') {
+    // Check if pointers are NULL or if the string pointed to by 'InString' is empty
+    if (IsQuoted == NULL || InString == NULL || *InString == L'\0') {
         return FALSE;
     }
 
-    MoreToRead = FALSE;
     if ((
-        *p != ' '  &&
-        *p != '\t' &&
-        *p != '='  &&
-        *p != '#'  &&
-        *p != ','
+        *InString != ' '  &&
+        *InString != '\t' &&
+        *InString != '='  &&
+        *InString != '#'  &&
+        *InString != ','
     ) || *IsQuoted) {
         MoreToRead = TRUE;
     }
+    else {
+        MoreToRead = FALSE;
+    }
 
-    if (*p == L'"') {
-        if (p[1] != L'"') {
+    if (*InString == L'"') {
+        if (InString[1] != L'"') {
             *IsQuoted  = !(*IsQuoted);
             MoreToRead = FALSE;
         }
         else {
-            Temp = StrDuplicate (&p[1]);
+            Temp = StrDuplicate (&InString[1]);
             if (Temp != NULL) {
-                StrCpy (p, Temp);
+                DestSize = StrSize (InString) / sizeof (CHAR16);
+                StrCpyS (InString, DestSize, Temp);
                 MY_FREE_POOL(Temp);
             }
             MoreToRead = TRUE;
@@ -778,8 +782,8 @@ VOID AddSubmenu (
 
     while (
         SubEntry->Enabled &&
-        StrCmp (TokenList[0], L"}") != 0 &&
-        (TokenCount = ReadTokenLine (File, &TokenList)) > 0
+        (TokenCount = ReadTokenLine (File, &TokenList)) > 0 &&
+        StrCmp (TokenList[0], L"}") != 0
     ) {
         LOG_SEP(L"X");
         BREAD_CRUMB(L"%s:  5a 1 - WHILE LOOP:- START", FuncTag);
@@ -897,7 +901,7 @@ VOID AddSubmenu (
         SubEntry->me.Title = PoolPrint (
             L"Load %s%s%s%s%s",
             TmpName,
-            SetVolJoin (TmpName                                 ),
+            SetVolJoin (TmpName, TRUE                           ),
             SetVolKind (TmpName, Volume->VolName, Volume->FSType),
             SetVolFlag (TmpName, Volume->VolName                ),
             SetVolType (TmpName, Volume->VolName, Volume->FSType)
@@ -990,9 +994,9 @@ LOADER_ENTRY * AddStanzaEntries (
     #endif
 
     CurrentVolume   = Volume;
-    LoaderToken     = LoadOptions  = OurEfiBootNumber      =  NULL;
-    FirmwareBootNum = AddedSubmenu = DefaultsSet = HasPath = FALSE;
-    DoneLoader      = DoneIcon                             = FALSE;
+    LoaderToken     = LoadOptions  = OurEfiBootNumber =  NULL;
+    FirmwareBootNum = AddedSubmenu = DefaultsSet      = FALSE;
+    DoneLoader      = DoneIcon                        = FALSE;
 
     while (
         Entry->Enabled &&
@@ -1238,7 +1242,7 @@ LOADER_ENTRY * AddStanzaEntries (
         Entry->me.Title = PoolPrint (
             L"Load %s%s%s%s%s",
             Entry->Title,
-            SetVolJoin (Entry->Title                                 ),
+            SetVolJoin (Entry->Title, TRUE                           ),
             SetVolKind (Entry->Title, Volume->VolName, Volume->FSType),
             SetVolFlag (Entry->Title, Volume->VolName                ),
             SetVolType (Entry->Title, Volume->VolName, Volume->FSType)
@@ -1469,9 +1473,9 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 MY_FREE_POOL(Line);
 
                 BREAD_CRUMB(L"%s:  7a 1a 2a 8", FuncTag);
-                Options->BufferSize = StrLen (
-                    (CHAR16 *) Options->Buffer
-                ) * sizeof (CHAR16);
+                Options->BufferSize = sizeof (CHAR16) * (
+                    StrLen ((CHAR16 *) Options->Buffer) + 1
+                );
             } // if
 
             BREAD_CRUMB(L"%s:  7a 1a 3", FuncTag);
@@ -1577,9 +1581,9 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     Options->Encoding     = ENCODING_UTF16_LE;
     Options->Current8Ptr  = (CHAR8  *) Options->Buffer;
     Options->Current16Ptr = (CHAR16 *) Options->Buffer;
-    Options->BufferSize   = StrLen ((CHAR16 *) Options->Buffer) * sizeof (CHAR16);
+    Options->BufferSize   = sizeof (CHAR16) * (StrLen ((CHAR16 *) Options->Buffer) + 1);
     Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-    Options->End8Ptr      = Options->Current8Ptr  + Options->BufferSize;
+    Options->End8Ptr      = Options->Current8Ptr  +  Options->BufferSize;
 
     BREAD_CRUMB(L"%s:  5 - END:- return REFIT_FILE *Options", FuncTag);
     LOG_DECREMENT();
@@ -1686,6 +1690,7 @@ EFI_STATUS RefitReadFile (
 
     File->Buffer     = NULL;
     File->BufferSize =    0;
+    *size            =    0;
 
     // Read the file and allocating a buffer
     Status = REFIT_CALL_5_WRAPPER(
@@ -1697,7 +1702,6 @@ EFI_STATUS RefitReadFile (
         Message = PoolPrint (L"While Loading File:- '%s'", FileName);
         CheckError (Status, Message);
         MY_FREE_POOL(Message);
-        size = 0;
 
         // Early Return
         return Status;
@@ -1705,8 +1709,6 @@ EFI_STATUS RefitReadFile (
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
-        size = 0;
-
         // DA-TAG: Invesigate This
         //         Print and register the error
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
@@ -1721,8 +1723,6 @@ EFI_STATUS RefitReadFile (
 
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
-       size = 0;
-
        // DA-TAG: Invesigate This
        //         Print and register the error
        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
@@ -1730,8 +1730,6 @@ EFI_STATUS RefitReadFile (
        // Early Return
        return EFI_OUT_OF_RESOURCES;
     }
-
-    *size = File->BufferSize;
 
     Status = REFIT_CALL_3_WRAPPER(
         FileHandle->Read, FileHandle,
@@ -1741,7 +1739,6 @@ EFI_STATUS RefitReadFile (
         Message = PoolPrint (L"While Loading File:- '%s'", FileName);
         CheckError (Status, Message);
         MY_FREE_POOL(Message);
-        size = 0;
 
         // DA-TAG: Invesigate This
         //         Print and register the error
@@ -1752,6 +1749,8 @@ EFI_STATUS RefitReadFile (
         // Early Return
         return Status;
     }
+
+    *size = File->BufferSize;
 
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
@@ -1934,7 +1933,7 @@ VOID ScanUserConfigured (
                         "%s  - Found %s%s%s%s%s",
                         OffsetNext,
                         Entry->Title,
-                        SetVolJoin (Entry->Title            ),
+                        SetVolJoin (Entry->Title, FALSE     ),
                         SetVolKind (Entry->Title, TmpName, 0),
                         SetVolFlag (Entry->Title, TmpName   ),
                         SetVolType (Entry->Title, TmpName, 0)
@@ -2211,6 +2210,9 @@ VOID ReadConfig (
     BOOLEAN           GotSyncTrustAll;
     BOOLEAN           GotNoneSyncTrust;
     BOOLEAN           OutLoopSyncTrust;
+    BOOLEAN           GotGraphicsForAll;
+    BOOLEAN           GotNoneGraphicsFor;
+    BOOLEAN           OutLoopGraphicsFor;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
     CHAR16           *MsgStr;
@@ -2353,13 +2355,14 @@ VOID ReadConfig (
     CheckManual        = DoneManual         = FALSE;
     GotNoneHideui      = OutLoopHideui      = FALSE;
     GotNoneSyncTrust   = OutLoopSyncTrust   = FALSE;
+    GotNoneGraphicsFor = OutLoopGraphicsFor = FALSE;
     #if REFIT_DEBUG > 0
     if (!OuterLoop) {
         CheckManual = TRUE;
     }
     #endif
 
-    MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
+    MaxLogLevel = (ForensicLogging) ? LOGLEVELMAX + 1 : LOGLEVELMAX;
     while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
         if (MyStriCmp (TokenList[0], L"timeout")) {
             #if REFIT_DEBUG > 0
@@ -2383,34 +2386,32 @@ VOID ReadConfig (
             !GotNoneHideui &&
             MyStriCmp (TokenList[0], L"hideui")
         ) {
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
+            if (!OuterLoop && !OutLoopHideui) {
+                #if REFIT_DEBUG > 0
                 UpdatedToken = LogUpdate (
                     TokenList[0], NotRunBefore, TRUE
                 );
+                #endif
+
+                // DA-TAG: Allows reset/override in 'included' config files
+                OutLoopHideui            = TRUE;
+                GlobalConfig.HideUIFlags = HIDEUI_FLAG_NONE;
             }
-            #endif
 
             GotHideuiAll = FALSE;
-            if (!OuterLoop && !OutLoopHideui) {
-                // DA-TAG: Allows reset/override in 'included' config files
-                OutLoopHideui = TRUE;
-                GlobalConfig.HideUIFlags = 0;
-            }
-
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
                 if (MyStriCmp (Flag, L"none")) {
                     // DA-TAG: Required despite earlier reset
                     //         This will always be used if in token list
-                    GotNoneHideui = TRUE;
-                    GlobalConfig.HideUIFlags = 0;
+                    GotNoneHideui            = TRUE;
+                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_NONE;
                     break;
                 }
                 else if (!GotHideuiAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
                     if (MyStriCmp (Flag, L"all")) {
-                        GotHideuiAll = TRUE;
+                        GotHideuiAll             = TRUE;
                         GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
                     }
                     else {
@@ -2440,6 +2441,67 @@ VOID ReadConfig (
                             PauseForKey();
                             MY_FREE_POOL(MsgStr);
                         }
+                    }
+                }
+            } // for
+        }
+        else if (
+            !GotNoneGraphicsFor &&
+            MyStriCmp (TokenList[0], L"use_graphics_for")
+        ) {
+            if (!OuterLoop && !OutLoopGraphicsFor) {
+                #if REFIT_DEBUG > 0
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+                #endif
+
+                // DA-TAG: Allows reset/override in 'included' config files
+                OutLoopGraphicsFor       = TRUE;
+                GlobalConfig.GraphicsFor = GRAPHICS_FOR_NONE;
+            }
+
+            if (TokenCount == 2 ||
+                (
+                    TokenCount > 2 &&
+                    !MyStriCmp (TokenList[1], L"+")
+                )
+            ) {
+                GlobalConfig.GraphicsFor = GRAPHICS_FOR_NONE;
+            }
+
+            if (TokenCount > 1) {
+                GotGraphicsForAll = FALSE;
+            }
+            else {
+                GotGraphicsForAll        = TRUE;
+                GlobalConfig.GraphicsFor = GRAPHICS_FOR_EVERYTHING;
+            }
+
+            for (i = 1; i < TokenCount; i++) {
+                Flag = TokenList[i];
+                if (MyStriCmp (Flag, L"none")) {
+                    // DA-TAG: Required despite earlier reset
+                    //         This will always be used if in token list
+                    GotNoneGraphicsFor        = TRUE;
+                    GlobalConfig.GraphicsFor = GRAPHICS_FOR_NONE;
+                    break;
+                }
+                else if (!GotGraphicsForAll) {
+                    // DA-TAG: Arranged as so to prioritise 'none' above
+                    if (MyStriCmp (Flag, L"everything")) {
+                        GotGraphicsForAll        = TRUE;
+                        GlobalConfig.GraphicsFor = GRAPHICS_FOR_EVERYTHING;
+                    }
+                    else {
+                        if (0);
+                        else if (MyStriCmp (TokenList[i], L"osx"     )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
+                        else if (MyStriCmp (TokenList[i], L"grub"    )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
+                        else if (MyStriCmp (TokenList[i], L"linux"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
+                        else if (MyStriCmp (TokenList[i], L"elilo"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
+                        else if (MyStriCmp (TokenList[i], L"clover"  )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
+                        else if (MyStriCmp (TokenList[i], L"windows" )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
+                        else if (MyStriCmp (TokenList[i], L"opencore")) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
                     }
                 }
             } // for
@@ -2996,35 +3058,6 @@ VOID ReadConfig (
                 TokenList, TokenCount,
                 &(GlobalConfig.ScreensaverTime)
             );
-        }
-        else if (MyStriCmp (TokenList[0], L"use_graphics_for")) {
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                UpdatedToken = LogUpdate (
-                    TokenList[0], NotRunBefore, TRUE
-                );
-            }
-            #endif
-
-            if (TokenCount == 2 ||
-                (
-                    TokenCount > 2 &&
-                    !MyStriCmp (TokenList[1], L"+")
-                )
-            ) {
-                GlobalConfig.GraphicsFor = 0;
-            }
-
-            for (i = 1; i < TokenCount; i++) {
-                if (0);
-                else if (MyStriCmp (TokenList[i], L"osx"     )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
-                else if (MyStriCmp (TokenList[i], L"grub"    )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
-                else if (MyStriCmp (TokenList[i], L"linux"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
-                else if (MyStriCmp (TokenList[i], L"elilo"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
-                else if (MyStriCmp (TokenList[i], L"clover"  )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
-                else if (MyStriCmp (TokenList[i], L"windows" )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
-                else if (MyStriCmp (TokenList[i], L"opencore")) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
-            } // for
         }
         else if (
             TokenCount == 2 &&
@@ -4060,7 +4093,7 @@ VOID ReadConfig (
                 // DA-TAG: Always log this in case LogLevel is overriden
                 RealLogLevel = 0;
                 HighLogLevel = MaxLogLevel * 10;
-                if (GlobalConfig.LogLevel < MINLOGLEVEL) {
+                if (GlobalConfig.LogLevel < LOGLEVELMIN) {
                     RealLogLevel = GlobalConfig.LogLevel;
                     GlobalConfig.LogLevel = HighLogLevel;
                 }

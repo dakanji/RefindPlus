@@ -222,7 +222,7 @@ REFIT_VOLUME * PickOneESP (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneESP' from DrawMenuScreen Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneESP' from '%s' in DrawMenuScreen Call",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1102,7 +1102,7 @@ EFI_STATUS CreateNvramEntry (
 
     if (!EFI_ERROR(Status)) {
         // Wait 0.25 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (25);
 
         if (MakeDefault) {
@@ -1138,6 +1138,7 @@ EFI_STATUS ConstructBootEntry (
     UINTN       *Size
 ) {
     EFI_STATUS                 Status;
+    UINTN                      DestSize;
     UINTN                      DevPathSize;
     CHAR8                     *Working;
     EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
@@ -1160,14 +1161,19 @@ EFI_STATUS ConstructBootEntry (
         *(UINT16 *) Working = DevPathSize;
         Working += sizeof (UINT16);
 
-        StrCpy ((CHAR16 *) Working, Label);
+        // Get remaining buffer size of "Working" in characters
+        DestSize = (*Size - ((UINTN) Working - (UINTN) *Entry)) / sizeof (CHAR16);
+        StrCpyS ((CHAR16 *) Working, DestSize, Label);
         Working += StrSize (Label);
 
         CopyMem (Working, DevicePath, DevPathSize);
         // If support for arguments is required in the future, uncomment
-        // the lines below and adjust Size computation above appropriately.
-        // Working += DevPathSize;
-        // StrCpy ((CHAR16 *)Working, Arguments);
+        // the lines below and adjust "*Size" computation above appropriately.
+/*
+        Working += DevPathSize;
+        DestSize = (*Size - (sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize) / sizeof (CHAR16);
+        StrCpyS ((CHAR16 *) Working, DestSize, Arguments);
+*/
     }
     MY_FREE_POOL(DevicePath);
 
@@ -1199,9 +1205,8 @@ VOID InstallRefindPlus (VOID) {
         return;
     }
 
-    MsgStr = L"Install RefindPlus to an ESP";
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Install RefindPlus to an ESP");
     #endif
 
     Status = CopyRefindPlusFiles (SelectedESP->RootDir);
@@ -1360,7 +1365,8 @@ UINTN ConfirmBootOptionOperation (
     }
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Confirm Boot Option Operation' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'Confirm Boot Option Operation'");
     #endif
 
     ConfirmBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -1399,7 +1405,7 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' from DrawMenuScreen Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' Function from '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1520,7 +1526,7 @@ UINTN PickOneBootOption (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneBootOption' from DrawMenuScreen Call on '%s'",
+            L"Returned '%d' (%s) in 'PickOneBootOption' Function from '%s' Option in Menu Screen",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -1603,7 +1609,8 @@ VOID ManageBootorder (VOID) {
     BOOT_ENTRY_LIST *Entries;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Manage BootOrder' Screen");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'Manage BootOrder'");
     #endif
 
     BootNum   = 0;

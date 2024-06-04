@@ -918,7 +918,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
             //BREAD_CRUMB(L"%s:  7c 2a 1", FuncTag);
             LOG_MSG(
                 "%s      Colour (Text) ... %3d %3d %3d",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                (GlobalConfig.LogLevel <= LOGLEVELMAX)
                     ? OffsetNext
                     : L"",
                 PixelValueR,

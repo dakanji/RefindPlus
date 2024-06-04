@@ -98,6 +98,10 @@ CHAR16 * GetSubStrAfter (
     IN CHAR16 *Delimiter,
     IN CHAR16 *String
 );
+CHAR16 * GetSubStrBefore (
+    IN CHAR16 *Delimiter,
+    IN CHAR16 *String
+);
 
 VOID ToUpper (IN OUT CHAR16 *MyString);
 VOID ToLower (IN OUT CHAR16 *MyString);

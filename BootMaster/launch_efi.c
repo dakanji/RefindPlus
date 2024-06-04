@@ -170,7 +170,8 @@ BOOLEAN ConfirmReboot (
     REFIT_MENU_SCREEN *ConfirmRebootMenu;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare 'Confirm %s' Screen", PromptUser);
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'Confirm %s'", PromptUser);
     #endif
 
     ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -198,7 +199,7 @@ BOOLEAN ConfirmReboot (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmReboot' from DrawMenuScreen Call on '%s'",
+        L"Returned '%d' (%s) in 'ConfirmReboot' Function from '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -245,7 +246,7 @@ VOID DoEnableAndLockVMX(VOID) {
 
 // Load APFS Recovery Instance
 static
-EFI_STATUS ApfsRecoveryBoot (
+EFI_STATUS RecoveryBootAPFS (
     IN LOADER_ENTRY *Entry
 ) {
     if (!SingleAPFS) {
@@ -255,7 +256,7 @@ EFI_STATUS ApfsRecoveryBoot (
 
 
 #if 0
-// DA-TAG: Force Load Error until finalised
+// DA-TAG: Force Error Until Finalised - START
 
 
     EFI_STATUS  Status;
@@ -326,10 +327,13 @@ EFI_STATUS ApfsRecoveryBoot (
         EFI_SUCCESS, 0, NULL
     );
 
+
+// DA-TAG: Force Error Until Finalised - END
 #endif
 
+
     return EFI_LOAD_ERROR;
-} // static EFI_STATUS ApfsRecoveryBoot()
+} // static EFI_STATUS RecoveryBootAPFS()
 
 #if REFIT_DEBUG > 0
 static
@@ -705,14 +709,6 @@ EFI_STATUS StartEFIImage (
             break;
         }
 
-        // Store loader name if booting and set to do so
-        if (BootSelection != NULL) {
-            if (IsBoot) {
-                StoreLoaderName (BootSelection);
-            }
-            BootSelection = NULL;
-        }
-
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
         #if REFIT_DEBUG < 1
@@ -720,7 +716,7 @@ EFI_STATUS StartEFIImage (
         // Stall works best in smaller increments as per specs
         // Stall appears to be only needed on REL builds
         if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
-            // DA-TAG: 100 Loops = 1 Sec
+            // DA-TAG: 100 Loops == 1 Sec
             RefitStall (50);
         }
         #endif
@@ -865,6 +861,14 @@ EFI_STATUS StartEFIImage (
 
                 MY_FREE_POOL(EspGUID);
             } // if write systemd UEFI variables
+
+            // Store loader name if booting and set to do so
+            if (BootSelection != NULL) {
+                if (IsBoot) {
+                    StoreLoaderName (BootSelection);
+                }
+                BootSelection = NULL;
+            }
 
             // DA-TAG: SyncAPFS items are typically no longer required if
             //         not loading drivers.  "Typically" as users may put
@@ -1186,7 +1190,11 @@ VOID StartLoader (
     IsBoot        = TRUE;
     BootSelection = SelectionName;
     LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (L"User Input:- '%s'", SelectionName);
+    MsgStr        = PoolPrint (
+        L"%s:- '%s'",
+        (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"User Input",
+        SelectionName
+    );
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1215,8 +1223,9 @@ VOID StartLoader (
 VOID StartTool (
     IN LOADER_ENTRY *Entry
 ) {
-    CHAR16  *MsgStr;
-    CHAR16  *LoaderPath;
+    EFI_STATUS  Status;
+    CHAR16     *MsgStr;
+    CHAR16     *LoaderPath;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
@@ -1242,7 +1251,7 @@ VOID StartTool (
 
     if (FindSubStr (Entry->me.Title, L"APFS Instance")) {
         /* APFS Recovery Instance */
-        EFI_STATUS Status = ApfsRecoveryBoot (Entry);
+        Status = RecoveryBootAPFS (Entry);
         if (EFI_ERROR(Status)) {
             MY_FREE_POOL(MsgStr);
             MsgStr = PoolPrint (

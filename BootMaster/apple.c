@@ -94,7 +94,6 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN ShowResult
 ) {
-    EG_PIXEL  BGColor   = COLOR_LIGHTBLUE;
     CHAR16   *MsgStr;
 
 
@@ -239,7 +238,7 @@ VOID RecordgCsrStatus (
         #endif
 
         egDisplayMessage (
-            MsgStr, &BGColor,
+            MsgStr, &BGColorBase,
             CENTER, 2, L"PauseSeconds"
         );
     }
@@ -259,8 +258,6 @@ VOID RotateCsrValue (
     BOOLEAN UnsetDynamic
 ) {
     EFI_STATUS    Status;
-    EG_PIXEL      BGColor         = COLOR_LIGHTBLUE;
-    UINT32        AccessFlagsFull = ACCESS_FLAGS_FULL;
     UINT32        TargetCsr;
     UINT32        CurrentValue;
     UINT32_LIST  *ListItem;
@@ -277,7 +274,7 @@ VOID RotateCsrValue (
         #endif
 
         egDisplayMessage (
-            gCsrStatus, &BGColor,
+            gCsrStatus, &BGColorBase,
             CENTER, 4, L"PauseSeconds"
         );
 
@@ -295,7 +292,7 @@ VOID RotateCsrValue (
         #endif
 
         egDisplayMessage (
-            gCsrStatus, &BGColor,
+            gCsrStatus, &BGColorWarn,
             CENTER, 4, L"PauseSeconds"
         );
 
@@ -322,14 +319,14 @@ VOID RotateCsrValue (
     }
     else if (CurrentValue == 0) {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Set SIP to '0x%04x' from 'NULL'",
+            L"Change SIP to '0x%04x' from 'NULL'",
             TargetCsr
         );
     }
     else {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Set SIP to '0x%04x' from '0x%04x'",
-            CurrentValue, TargetCsr
+            L"Change SIP to '0x%04x' from '0x%04x'",
+            TargetCsr, CurrentValue
         );
     }
     #endif
@@ -352,7 +349,7 @@ VOID RotateCsrValue (
         #endif
 
         egDisplayMessage (
-            gCsrStatus, &BGColor,
+            gCsrStatus, &BGColorFail,
             CENTER, 4, L"PauseSeconds"
         );
 
@@ -371,14 +368,17 @@ VOID RotateCsrValue (
     // 'ShowResult' is based on 'UnsetDynamic'
     RecordgCsrStatus (TargetCsr, UnsetDynamic);
 
-    NormaliseCall = FALSE;
-
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
         L"Successfully Set SIP/SSV:- '0x%04x'",
         TargetCsr
     );
+    if (NormaliseCall) {
+        ALT_LOG(1, LOG_LINE_NORMAL, L"NOTE: Normalised SIP/SSV");
+    }
     #endif
+
+    NormaliseCall = FALSE;
 
     if (UnsetDynamic) {
         // Disable DynamicCSR
@@ -616,6 +616,31 @@ CHAR16 * RefitGetBootPathName (
 
     return PathName;
 } // static EFI_STATUS RefitGetBootPathName
+
+static
+VOID SetBootFlag (
+    CHAR16     *VariableName
+) {
+    EFI_STATUS  Status;
+    UINTN       BufferSize;
+    VOID       *TmpBuffer;
+
+
+    TmpBuffer    = NULL;
+    BufferSize   =    0;
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, VariableName,
+        &AppleBootGuid, NULL,
+        &BufferSize, TmpBuffer
+    );
+    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, VariableName,
+            &AppleBootGuid, AccessFlagsFull, 0, NULL
+        );
+        MY_FREE_POOL(TmpBuffer);
+    }
+} // VOID SetBootFlag()
 
 static
 CHAR16 * RefitGetAppleDiskLabelEx (
@@ -1046,56 +1071,7 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
 
 // Delete recovery-boot-mode/internet-recovery-mode flags
 VOID ClearRecoveryBootFlag (VOID) {
-    EFI_STATUS  Status;
-    UINTN       BufferSize;
-    UINT32      AccessFlagsFull = ACCESS_FLAGS_FULL;
-    VOID       *TmpBuffer;
-    CHAR16     *VariableName;
-
-    BufferSize   = 0;
-    TmpBuffer    = NULL;
-    VariableName = NULL;
-    VariableName = L"recovery-boot-mode";
-    Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable, VariableName,
-        &AppleBootGuid, NULL,
-        &BufferSize, TmpBuffer
-    );
-    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
-        REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable, VariableName,
-            &AppleBootGuid, AccessFlagsFull, 0, NULL
-        );
-        MY_FREE_POOL(TmpBuffer);
-    }
-
-    BufferSize   = 0;
-    VariableName = L"internet-recovery-mode";
-    Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable, VariableName,
-        &AppleBootGuid, NULL,
-        &BufferSize, TmpBuffer
-    );
-    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
-        REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable, VariableName,
-            &AppleBootGuid, AccessFlagsFull, 0, NULL
-        );
-        MY_FREE_POOL(TmpBuffer);
-    }
-
-    BufferSize   = 0;
-    VariableName = L"RecoveryBootInitiator";
-    Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable, VariableName,
-        &AppleBootGuid, NULL,
-        &BufferSize, TmpBuffer
-    );
-    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
-        REFIT_CALL_5_WRAPPER(
-            gRT->SetVariable, VariableName,
-            &AppleBootGuid, AccessFlagsFull, 0, NULL
-        );
-        MY_FREE_POOL(TmpBuffer);
-    }
+    SetBootFlag (L"recovery-boot-mode");
+    SetBootFlag (L"internet-recovery-mode");
+    SetBootFlag (L"RecoveryBootInitiator");
 } // VOID ClearRecoveryBootFlag()

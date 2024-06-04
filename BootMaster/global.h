@@ -92,18 +92,7 @@
 #define TAG_RESET_NVRAM          (25)
 #define TAG_FIRMWARE_LOADER      (26)
 
-
-
 #define NUM_SCAN_OPTIONS         (10)
-
-// OS bit codes (Actual Decimal) ... Used in GlobalConfig.GraphicsFor
-#define GRAPHICS_FOR_OSX          (1)
-#define GRAPHICS_FOR_LINUX        (2)
-#define GRAPHICS_FOR_ELILO        (4)
-#define GRAPHICS_FOR_GRUB         (8)
-#define GRAPHICS_FOR_WINDOWS     (16)
-#define GRAPHICS_FOR_OPENCORE    (32)
-#define GRAPHICS_FOR_CLOVER      (64)
 
 // Type of Legacy Boot support detected
 #define LEGACY_TYPE_NONE          (0)
@@ -187,6 +176,11 @@
 
 #define DEFAULT_ICONS_DIR     L"icons"
 #define HIDDEN_TAG_DELIMITER  L" @@ "
+
+// Define some colours
+#define COLOR_LIGHTBLUE {255, 175, 100, 0}
+#define COLOR_AMBER {255, 177, 0, 0}
+#define COLOR_RED {0, 0, 200, 0}
 
 // NVRAM ACCESS FLAGS
 #define ACCESS_FLAGS_FULL   EFI_VARIABLE_NON_VOLATILE|EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
@@ -310,19 +304,6 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define LINUX_PREFIXES        L"vmlinuz,bzImage,kernel"
 #endif
 
-// Definitions for the "hideui" option in config.conf
-#define HIDEUI_FLAG_NONE        (0x0000)
-#define HIDEUI_FLAG_BANNER      (0x0001)
-#define HIDEUI_FLAG_LABEL       (0x0002)
-#define HIDEUI_FLAG_SINGLEUSER  (0x0004)
-#define HIDEUI_FLAG_HWTEST      (0x0008)
-#define HIDEUI_FLAG_ARROWS      (0x0010)
-#define HIDEUI_FLAG_HINTS       (0x0020)
-#define HIDEUI_FLAG_EDITOR      (0x0040)
-#define HIDEUI_FLAG_SAFEMODE    (0x0080)
-#define HIDEUI_FLAG_BADGES      (0x0100)
-#define HIDEUI_FLAG_ALL         (0x01FF)
-
 // Return codes for SyncTrust
 #define SYNC_TRUST_HALT           (0) // Forced to halt on error
 #define SYNC_TRUST_EXIT           (1) // User exit via "Esc" etc
@@ -339,6 +320,30 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define ENFORCE_TRUST_OTHERS     (32)
 #define REQUIRE_TRUST_VERIFY     (64)
 #define ENFORCE_TRUST_EVERY     (127) // 1 + 2 + 4 + 8 + 16 + 32 + 64
+
+// Bit codes (Actual Decimal) ... Used in GlobalConfig.HideUIFlags
+#define HIDEUI_FLAG_NONE          (0)
+#define HIDEUI_FLAG_BANNER        (1)
+#define HIDEUI_FLAG_LABEL         (2)
+#define HIDEUI_FLAG_SINGLEUSER    (4)
+#define HIDEUI_FLAG_HWTEST        (8)
+#define HIDEUI_FLAG_ARROWS       (16)
+#define HIDEUI_FLAG_HINTS        (32)
+#define HIDEUI_FLAG_EDITOR       (64)
+#define HIDEUI_FLAG_SAFEMODE    (128)
+#define HIDEUI_FLAG_BADGES      (256)
+#define HIDEUI_FLAG_ALL         (511) // 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 + 256
+
+// Bit codes (Actual Decimal) ... Used in GlobalConfig.GraphicsFor
+#define GRAPHICS_FOR_NONE         (0)
+#define GRAPHICS_FOR_OSX          (1)
+#define GRAPHICS_FOR_LINUX        (2)
+#define GRAPHICS_FOR_WINDOWS      (4)
+#define GRAPHICS_FOR_ELILO        (8)
+#define GRAPHICS_FOR_GRUB        (16)
+#define GRAPHICS_FOR_CLOVER      (32)
+#define GRAPHICS_FOR_OPENCORE    (64)
+#define GRAPHICS_FOR_EVERYTHING (127) // 1 + 2 + 4 + 8 + 16 + 32 + 64
 
 // Default hint text for program-launch submenus
 #define SUBSCREEN_HINT1            L"Use arrow keys to move selection and press 'Enter' to run selected item"
@@ -388,8 +393,8 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE Mode);
 
 
 #define LOGLEVELOFF (-1)
-#define MINLOGLEVEL  (0)
-#define MAXLOGLEVEL  (1)
+#define LOGLEVELMIN  (0)
+#define LOGLEVELMAX  (1)
 
 
 //
@@ -627,10 +632,15 @@ extern EFI_FILE_PROTOCOL       *SelfDir;
 extern EFI_FILE_PROTOCOL       *SelfRootDir;
 
 extern EFI_GUID                 GuidESP;
+extern EFI_GUID                 GuidNull;
 extern EFI_GUID                 GlobalGuid;
 extern EFI_GUID                 AppleBootGuid;
 extern EFI_GUID                 RefindPlusGuid;
 extern EFI_GUID                 gEfiLegacyBootProtocolGuid;
+
+extern EG_PIXEL                 BGColorBase;
+extern EG_PIXEL                 BGColorWarn;
+extern EG_PIXEL                 BGColorFail;
 
 extern EFI_HANDLE               SelfImageHandle;
 
@@ -743,7 +753,7 @@ extern VOID EFIAPI DebugLog (
 #elif REFIT_DEBUG < 2
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
+            if (!gKernelStarted && GlobalConfig.LogLevel == LOGLEVELMIN) {  \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
@@ -773,33 +783,33 @@ extern VOID EFIAPI DebugLog (
         } while (0)
 #   define BREAD_CRUMB(...)                                                 \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
+            if (!gKernelStarted && GlobalConfig.LogLevel > LOGLEVELMAX) {   \
                 gLogTemp = PoolPrint (__VA_ARGS__);                         \
                 DeepLoggger (2, LOG_LINE_FORENSIC, &gLogTemp);              \
             }                                                               \
         } while (0)
 #   define LOG_SEP(...)                                                     \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
+            if (!gKernelStarted && GlobalConfig.LogLevel > LOGLEVELMAX) {   \
                 gLogTemp = PoolPrint (__VA_ARGS__);                         \
                 DeepLoggger (2, LOG_BLOCK_SEP, &gLogTemp);                  \
             }                                                               \
         } while (0)
 #   define BRK_MAX(...)                                                     \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel > MAXLOGLEVEL) {   \
+            if (!gKernelStarted && GlobalConfig.LogLevel > LOGLEVELMAX) {   \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
 #   define BRK_MOD(...)                                                     \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel <= MAXLOGLEVEL) {  \
+            if (!gKernelStarted && GlobalConfig.LogLevel <= LOGLEVELMAX) {  \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)
 #   define BRK_MIN(...)                                                     \
         do {                                                                \
-            if (!gKernelStarted && GlobalConfig.LogLevel == MINLOGLEVEL) {  \
+            if (!gKernelStarted && GlobalConfig.LogLevel == LOGLEVELMIN) {  \
                 DebugLog (__VA_ARGS__);                                     \
             }                                                               \
         } while (0)

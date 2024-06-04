@@ -360,7 +360,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         TmpStr,
-        SetVolJoin (TmpStr                                ),
+        SetVolJoin (TmpStr, TRUE                          ),
         SetVolKind (TmpStr, TmpName, Entry->Volume->FSType),
         SetVolFlag (TmpStr, TmpName                       ),
         SetVolType (TmpStr, TmpName, Entry->Volume->FSType)
@@ -901,9 +901,10 @@ VOID SetLoaderDefaults (
     BREAD_CRUMB(L"%s:  3", FuncTag);
     ShortcutLetter =     0;
     TargetName     =  NULL;
+    OSIconName     =  NULL;
     FoundVentoy    = FALSE;
     if (AllowGraphicsMode) {
-        ThisIconName = OSIconName =  NULL;
+        ThisIconName              =  NULL;
         VetVolIcon   = MacFlag    = FALSE;
         GotFlag      = GotUEFI    = FALSE;
 
@@ -1849,7 +1850,7 @@ LOADER_ENTRY * AddLoaderEntry (
         } // if CheckLinux
 
         if (!Found) {
-            Entry->Title = StrDuplicate (LoaderPath);
+            Entry->Title = PoolPrint (L"Instance: Linux - %s", LoaderPath);
         }
     } // if/else LoaderTitle
 
@@ -1896,7 +1897,7 @@ LOADER_ENTRY * AddLoaderEntry (
         ALT_LOG(1, LOG_THREE_STAR_MID, L"Synced PreBoot:- '%s'", DisplayName);
     }
     ALT_LOG(1, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
-    ALT_LOG(1, LOG_LINE_NORMAL, L"UEFI Loader File:- '%s'", LoaderPath);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"uEFI Loader File:- '%s'", LoaderPath);
     #endif
 
     SetVolumeBadgeIcon (Volume);
@@ -1906,7 +1907,7 @@ LOADER_ENTRY * AddLoaderEntry (
         ? PoolPrint (
             L"Load %s%s%s%s%s",
             Entry->Title,
-            SetVolJoin (Entry->Title                         ),
+            SetVolJoin (Entry->Title, TRUE                   ),
             SetVolKind (Entry->Title, TmpName, Volume->FSType),
             SetVolFlag (Entry->Title, TmpName                ),
             SetVolType (Entry->Title, TmpName, Volume->FSType)
@@ -1939,7 +1940,7 @@ LOADER_ENTRY * AddLoaderEntry (
         "%s  - Found %s%s%s%s%s",
         OffsetNext,
         Entry->Title,
-        SetVolJoin (Entry->Title                         ),
+        SetVolJoin (Entry->Title, FALSE                  ),
         SetVolKind (Entry->Title, TmpName, Volume->FSType),
         SetVolFlag (Entry->Title, TmpName                ),
         SetVolType (Entry->Title, TmpName, Volume->FSType)
@@ -2089,7 +2090,8 @@ CHAR16 * SetVolKind (
 } // CHAR16 * SetVolKind()
 
 CHAR16 * SetVolJoin (
-    IN CHAR16 *InstanceName
+    IN CHAR16  *InstanceName,
+    IN BOOLEAN  ForBoot
 ) {
     CHAR16 *RetVal;
 
@@ -2097,7 +2099,8 @@ CHAR16 * SetVolJoin (
     if (0);
     else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""      ;
     else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for " ;
-    else                                                   RetVal = L" from ";
+    else if (ForBoot                                     ) RetVal = L" from ";
+    else                                                   RetVal = L" on "  ;
 
     return RetVal;
 } // CHAR16 * SetVolJoin()
@@ -3598,6 +3601,208 @@ LOADER_ENTRY * AddToolEntry (
     return Entry;
 } // static LOADER_ENTRY * AddToolEntry()
 
+
+// Checks to see if a specified file seems to be a valid tool.
+// Returns TRUE if it passes all tests, FALSE otherwise
+static
+BOOLEAN IsValidTool (
+    REFIT_VOLUME *BaseVolume,
+    CHAR16       *PathName
+) {
+    UINTN    i;
+    CHAR16  *DontVolName;
+    CHAR16  *TestVolName;
+    CHAR16  *TestPathName;
+    CHAR16  *TestFileName;
+    CHAR16  *DontPathName;
+    CHAR16  *DontFileName;
+    CHAR16  *DontScanThis;
+    CHAR16  *DontScanTools;
+    BOOLEAN  retval;
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
+
+    if (!FileExists (BaseVolume->RootDir, PathName)) {
+        // Early return ... File does not exist
+        return FALSE;
+    }
+
+    if (gHiddenTools == NULL) {
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+
+        DontScanTools = ReadHiddenTags (L"HiddenTools");
+        gHiddenTools  = (DontScanTools != NULL)
+            ? StrDuplicate (DontScanTools)
+            : StrDuplicate (L"NotSet");
+
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+    }
+    else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
+        DontScanTools = StrDuplicate (gHiddenTools);
+    }
+    else {
+        DontScanTools = NULL;
+    }
+
+    if (GlobalConfig.DontScanTools) {
+        MergeUniqueStrings (
+            &DontScanTools, GlobalConfig.DontScanTools, L','
+        );
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Check File is Valid:- '%s'",
+        PathName
+    );
+    #endif
+
+    if (!FileExists    (BaseVolume->RootDir, PathName) ||
+        !IsValidLoader (BaseVolume->RootDir, PathName)
+    ) {
+        MY_FREE_POOL(DontScanTools);
+
+        return FALSE;
+    }
+
+    if (!DontScanTools) {
+        // Early return ... Assume valid
+        return TRUE;
+    }
+
+    retval       = TRUE;
+    TestVolName  = TestPathName = TestFileName = NULL;
+    DontPathName = DontFileName = DontVolName  = NULL;
+    SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
+
+    i = 0;
+    while (
+        retval &&
+        (DontScanThis = FindCommaDelimited (DontScanTools, i++)) != NULL
+    ) {
+        SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
+
+        if (MyStriCmp (TestFileName, DontFileName) &&
+            (
+                !DontPathName ||
+                MyStriCmp (TestPathName, DontPathName)
+            ) && (
+                !DontVolName  ||
+                VolumeMatchesDescription (BaseVolume, DontVolName)
+            )
+        ) {
+            retval = FALSE;
+        }
+
+        MY_FREE_POOL(DontVolName);
+        MY_FREE_POOL(DontPathName);
+        MY_FREE_POOL(DontFileName);
+        MY_FREE_POOL(DontScanThis);
+    } // while
+
+    MY_FREE_POOL(TestVolName);
+    MY_FREE_POOL(TestPathName);
+    MY_FREE_POOL(TestFileName);
+    MY_FREE_POOL(DontScanTools);
+
+    return retval;
+} // static BOOLEAN IsValidTool()
+
+// Locate a single tool from the specified Locations using one of the
+// specified Names and add it to the menu.
+static
+BOOLEAN FindTool (
+    CHAR16 *Locations,
+    CHAR16 *Names,
+    CHAR16 *Description,
+    UINTN   Icon
+) {
+    UINTN    i, j;
+    UINTN    VolumeIndex;
+    CHAR16  *DirName;
+    CHAR16  *FileName;
+    CHAR16  *PathName;
+    CHAR16  *ToolData;
+    BOOLEAN  FoundTool;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *ToolStr;
+    #endif
+
+    DirName   =  NULL;
+    FoundTool = FALSE;
+
+    i = 0;
+    while ((DirName = FindCommaDelimited (Locations, i++)) != NULL) {
+        j = 0;
+        while ((FileName = FindCommaDelimited (Names, j++)) != NULL) {
+            // DA-TAG: Do not free 'PathName'
+            //         Used in 'AddToolEntry'
+            PathName  = StrDuplicate (DirName);
+            MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
+            for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                if (Volumes[VolumeIndex]->RootDir != NULL &&
+                    IsValidTool (Volumes[VolumeIndex], PathName)
+                ) {
+                    // DA-TAG: Do not free 'ToolData'
+                    //         Used in 'AddToolEntry'
+                    ToolData = PoolPrint (
+                        L"%s on %s%s via %s",
+                        Description,
+                        Volumes[VolumeIndex]->VolName,
+                        SetVolType (NULL, Volumes[VolumeIndex]->VolName, Volumes[VolumeIndex]->FSType),
+                        PathName
+                    );
+
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_LINE_NORMAL,
+                        L"Adding Tag for '%s' on '%s'",
+                        FileName, Volumes[VolumeIndex]->VolName
+                    );
+                    #endif
+
+                    AddToolEntry (
+                        Volumes[VolumeIndex],
+                        PathName, ToolData,
+                        BuiltinIcon (Icon),
+                        'S', FALSE
+                    );
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (
+                        L"Added Tool:- '%-18s     :::     %s'",
+                        Description, PathName
+                    );
+
+                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+
+                    if (FoundTool) {
+                        LOG_MSG("%s%s", OffsetNext, Spacer);
+                    }
+                    LOG_MSG("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+
+                    FoundTool = TRUE;
+                } // if Volumes[VolumeIndex]->RootDir
+            } // for
+
+            MY_FREE_POOL(FileName);
+        } // while Names
+
+        MY_FREE_POOL(DirName);
+    } // while Locations
+
+    return FoundTool;
+} // static VOID FindTool()
+
 // Locates boot loaders.
 // NOTE: This assumes that GlobalConfig.LegacyType is correctly set.
 VOID ScanForBootloaders (VOID) {
@@ -3955,59 +4160,67 @@ VOID ScanForBootloaders (VOID) {
         LOG_MSG("\n\n");
         LOG_MSG("%s", LogSection);
 
-        MsgStr = StrDuplicate (L"Set Shortcuts");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("\n");
-        LOG_MSG("%s:", MsgStr);
-        MY_FREE_POOL(MsgStr);
+        if (GlobalConfig.DirectBoot) {
+            MsgStr = StrDuplicate (L"Skip Shortcut Key Setup ... 'DirectBoot' is Active");
+            LOG_MSG("%s", MsgStr); // MsgStr is freed later
+        }
+        else {
+            MsgStr = StrDuplicate (L"Set Shortcuts");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("\n");
+            LOG_MSG("%s:", MsgStr);
+            MY_FREE_POOL(MsgStr);
+        }
 
         KeyNum = 0;
         #endif
 
-        for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
-            if (i > 9) {
-                break;
-            }
+        if (!GlobalConfig.DirectBoot) {
+            for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
+                if (i > 9) {
+                    break;
+                }
 
-            if (i < 9) {
+                if (i < 9) {
+                    #if REFIT_DEBUG > 0
+                    KeyNum = i + 1;
+                    #endif
+
+                    MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('1' + i);
+                }
+                else { // i == 9
+                    MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('9' - i);
+
+                    #if REFIT_DEBUG > 0
+                    KeyNum = 0;
+                    #endif
+                }
+
                 #if REFIT_DEBUG > 0
-                KeyNum = i + 1;
+                MsgStr = PoolPrint (
+                    L"Set Key '%d' to Run Item:- '%s'",
+                    KeyNum, MainMenu->Entries[i]->Title
+                );
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
-
-                MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('1' + i);
-            }
-            else { // i == 9
-                MainMenu->Entries[i]->ShortcutDigit = (CHAR16) ('9' - i);
-
-                #if REFIT_DEBUG > 0
-                KeyNum = 0;
-                #endif
-            }
+            }  // for
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"Set Key '%d' to Run Item:- '%s'",
-                KeyNum, MainMenu->Entries[i]->Title
+                L"Assigned Shortcut Key%s to %d of %d Instance Loader%s",
+                (i == 1) ? L"" : L"s",
+                i, MainMenu->EntryCount,
+                (MainMenu->EntryCount == 1) ? L"" : L"s"
             );
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
+            ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+            LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             #endif
-        }  // for
-
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Assigned Shortcut Key%s to %d of %d Instance Loader%s",
-            (i == 1) ? L"" : L"s",
-            i, MainMenu->EntryCount,
-            (MainMenu->EntryCount == 1) ? L"" : L"s"
-        );
-        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-        LOG_MSG("\n\n");
-        LOG_MSG("INFO: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
+        }
     } // if/else MainMenu->EntryCount
 
     // Wait for user acknowledgement if there were errors
@@ -4019,207 +4232,6 @@ VOID ScanForBootloaders (VOID) {
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanForBootloaders()
-
-// Checks to see if a specified file seems to be a valid tool.
-// Returns TRUE if it passes all tests, FALSE otherwise
-static
-BOOLEAN IsValidTool (
-    REFIT_VOLUME *BaseVolume,
-    CHAR16       *PathName
-) {
-    UINTN    i;
-    CHAR16  *DontVolName;
-    CHAR16  *TestVolName;
-    CHAR16  *TestPathName;
-    CHAR16  *TestFileName;
-    CHAR16  *DontPathName;
-    CHAR16  *DontFileName;
-    CHAR16  *DontScanThis;
-    CHAR16  *DontScanTools;
-    BOOLEAN  retval;
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN  CheckMute = FALSE;
-    #endif
-
-
-    if (!FileExists (BaseVolume->RootDir, PathName)) {
-        // Early return ... File does not exist
-        return FALSE;
-    }
-
-    if (gHiddenTools == NULL) {
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-
-        DontScanTools = ReadHiddenTags (L"HiddenTools");
-        gHiddenTools  = (DontScanTools != NULL)
-            ? StrDuplicate (DontScanTools)
-            : StrDuplicate (L"NotSet");
-
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
-    }
-    else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
-        DontScanTools = StrDuplicate (gHiddenTools);
-    }
-    else {
-        DontScanTools = NULL;
-    }
-
-    if (GlobalConfig.DontScanTools) {
-        MergeUniqueStrings (
-            &DontScanTools, GlobalConfig.DontScanTools, L','
-        );
-    }
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Check File is Valid:- '%s'",
-        PathName
-    );
-    #endif
-
-    if (!FileExists    (BaseVolume->RootDir, PathName) ||
-        !IsValidLoader (BaseVolume->RootDir, PathName)
-    ) {
-        MY_FREE_POOL(DontScanTools);
-
-        return FALSE;
-    }
-
-    if (!DontScanTools) {
-        // Early return ... Assume valid
-        return TRUE;
-    }
-
-    retval       = TRUE;
-    TestVolName  = TestPathName = TestFileName = NULL;
-    DontPathName = DontFileName = DontVolName  = NULL;
-    SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
-
-    i = 0;
-    while (
-        retval &&
-        (DontScanThis = FindCommaDelimited (DontScanTools, i++)) != NULL
-    ) {
-        SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
-
-        if (MyStriCmp (TestFileName, DontFileName) &&
-            (
-                !DontPathName ||
-                MyStriCmp (TestPathName, DontPathName)
-            ) && (
-                !DontVolName  ||
-                VolumeMatchesDescription (BaseVolume, DontVolName)
-            )
-        ) {
-            retval = FALSE;
-        }
-
-        MY_FREE_POOL(DontVolName);
-        MY_FREE_POOL(DontPathName);
-        MY_FREE_POOL(DontFileName);
-        MY_FREE_POOL(DontScanThis);
-    } // while
-
-    MY_FREE_POOL(TestVolName);
-    MY_FREE_POOL(TestPathName);
-    MY_FREE_POOL(TestFileName);
-    MY_FREE_POOL(DontScanTools);
-
-    return retval;
-} // BOOLEAN IsValidTool()
-
-// Locate a single tool from the specified Locations using one of the
-// specified Names and add it to the menu.
-static
-BOOLEAN FindTool (
-    CHAR16 *Locations,
-    CHAR16 *Names,
-    CHAR16 *Description,
-    UINTN   Icon
-) {
-    UINTN    i, j;
-    UINTN    VolumeIndex;
-    CHAR16  *DirName;
-    CHAR16  *FileName;
-    CHAR16  *PathName;
-    CHAR16  *ToolData;
-    BOOLEAN  FoundTool;
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *ToolStr;
-    #endif
-
-    DirName   =  NULL;
-    FoundTool = FALSE;
-
-    i = 0;
-    while ((DirName = FindCommaDelimited (Locations, i++)) != NULL) {
-        j = 0;
-        while ((FileName = FindCommaDelimited (Names, j++)) != NULL) {
-            // DA-TAG: Do not free 'PathName'
-            //         Used in 'AddToolEntry'
-            PathName  = StrDuplicate (DirName);
-            MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
-            for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if (Volumes[VolumeIndex]->RootDir != NULL &&
-                    IsValidTool (Volumes[VolumeIndex], PathName)
-                ) {
-                    // DA-TAG: Do not free 'ToolData'
-                    //         Used in 'AddToolEntry'
-                    ToolData = PoolPrint (
-                        L"%s on %s%s via %s",
-                        Description,
-                        Volumes[VolumeIndex]->VolName,
-                        SetVolType (NULL, Volumes[VolumeIndex]->VolName, Volumes[VolumeIndex]->FSType),
-                        PathName
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Adding Tag for '%s' on '%s'",
-                        FileName, Volumes[VolumeIndex]->VolName
-                    );
-                    #endif
-
-                    AddToolEntry (
-                        Volumes[VolumeIndex],
-                        PathName, ToolData,
-                        BuiltinIcon (Icon),
-                        'S', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (
-                        L"Added Tool:- '%-18s     :::     %s'",
-                        Description, PathName
-                    );
-
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-
-                    if (FoundTool) {
-                        LOG_MSG("%s%s", OffsetNext, Spacer);
-                    }
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-
-                    FoundTool = TRUE;
-                } // if Volumes[VolumeIndex]->RootDir
-            } // for
-
-            MY_FREE_POOL(FileName);
-        } // while Names
-
-        MY_FREE_POOL(DirName);
-    } // while Locations
-
-    return FoundTool;
-} // VOID FindTool()
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {

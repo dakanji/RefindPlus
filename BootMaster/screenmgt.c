@@ -997,15 +997,13 @@ VOID PrintUglyText (
     IN CHAR16 *Text,
     IN UINTN    PositionCode
 ) {
-    EG_PIXEL BGColor = COLOR_RED;
-
     if (Text != NULL) {
         if (AppleFirmware &&
             AllowGraphicsMode &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (
-                Text, &BGColor,
+                Text, &BGColorFail,
                 PositionCode, 0, NULL
             );
             GraphicsScreenDirty = TRUE;
@@ -1214,7 +1212,7 @@ VOID HaltSeconds (
 
     for (i = 0; i < Seconds; ++i) {
         // Wait 1 second
-        // DA-TAG: 100 Loops = 1 Sec
+        // DA-TAG: 100 Loops == 1 Sec
         RefitStall (100);
     } // for
 
@@ -1497,14 +1495,17 @@ VOID BltClearScreen (
         #if REFIT_DEBUG > 0
         if (!IsBoot) {
             LOG_MSG("%s  - Clear Screen",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL) ? OffsetNext : L""
+                (GlobalConfig.LogLevel <= LOGLEVELMAX) ? OffsetNext : L""
             );
         }
         #endif
 
         // Not showing banner
-        // Clear to menu background colour
-        egClearScreen (&MenuBackgroundPixel);
+        // Clear to background colour
+        egClearScreen (
+            (GlobalConfig.DirectBoot)
+                ? &BlackPixel : &MenuBackgroundPixel
+        );
     }
     else {
         BREAD_CRUMB(L"%s:  2b 1", FuncTag);
@@ -1512,7 +1513,7 @@ VOID BltClearScreen (
         if (!Banner) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Fetch Banner",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL) ? OffsetNext : L""
+                (GlobalConfig.LogLevel <= LOGLEVELMAX) ? OffsetNext : L""
             );
             #endif
 
@@ -1521,7 +1522,8 @@ VOID BltClearScreen (
             }
 
             if (Banner != NULL) {
-                MenuBackgroundPixel = Banner->PixelData[0];
+                MenuBackgroundPixel = (GlobalConfig.DirectBoot)
+                    ? BlackPixel : Banner->PixelData[0];
 
                 // Using Custom Title Banner
                 DefaultBanner = FALSE;
@@ -1537,7 +1539,10 @@ VOID BltClearScreen (
                 #endif
             }
             else {
-                if (!GlobalConfig.CustomScreenBG) {
+                if (GlobalConfig.DirectBoot) {
+                    MenuBackgroundPixel = BlackPixel;
+                }
+                else if (!GlobalConfig.CustomScreenBG) {
                     MenuBackgroundPixel = GrayPixel;
                 }
                 else {
@@ -1631,7 +1636,7 @@ VOID BltClearScreen (
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Scale Banner",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                (GlobalConfig.LogLevel <= LOGLEVELMAX)
                     ? OffsetNext : L""
             );
             BRK_MAX("\n");
@@ -1663,7 +1668,7 @@ VOID BltClearScreen (
         // Clear and draw banner
         #if REFIT_DEBUG > 0
         LOG_MSG("%s  - Clear Screen",
-            (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+            (GlobalConfig.LogLevel <= LOGLEVELMAX)
                 ? OffsetNext
                 : L""
         );
@@ -1682,7 +1687,7 @@ VOID BltClearScreen (
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Offer Banner",
-                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                (GlobalConfig.LogLevel <= LOGLEVELMAX)
                     ? OffsetNext
                     : L""
             );

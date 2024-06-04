@@ -898,7 +898,6 @@ BOOLEAN SupplyConsoleGop (
         }
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("\n\n");
         LOG_MSG("%s ConOut GOP:", (FixGOP) ? L"Replace" : L"Provide");
         LOG_MSG("%s  - Status:- '%r' ... RefitCheckGOP", OffsetNext, Status);
         #endif
@@ -3118,7 +3117,7 @@ VOID egDrawImageArea (
 static
 VOID egDisplayMessageEx (
     CHAR16    *Text,
-    EG_PIXEL  *BGColor,
+    EG_PIXEL  *MessageBG,
     UINTN      PositionCode,
     BOOLEAN    ResetPosition
 ) {
@@ -3128,7 +3127,7 @@ VOID egDisplayMessageEx (
     static UINTN Position = 1;
     EG_IMAGE *Box;
 
-    if (Text == NULL || BGColor == NULL) {
+    if (Text == NULL || MessageBG == NULL) {
         // Early Return
         return;
     }
@@ -3139,14 +3138,14 @@ VOID egDisplayMessageEx (
     if (BoxWidth > egScreenWidth) {
         BoxWidth = egScreenWidth;
     }
-    Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, BGColor);
+    Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, MessageBG);
 
     if (!ResetPosition) {
         // Get Luminance Index
         LumIndex = GetLumIndex (
-            (UINTN) BGColor->r,
-            (UINTN) BGColor->g,
-            (UINTN) BGColor->b
+            (UINTN) MessageBG->r,
+            (UINTN) MessageBG->g,
+            (UINTN) MessageBG->b
         );
 
         egRenderText (
@@ -3184,12 +3183,12 @@ VOID egDisplayMessageEx (
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
 VOID egDisplayMessage (
     CHAR16    *Text,
-    EG_PIXEL  *BGColor,
+    EG_PIXEL  *MessageBG,
     UINTN      PositionCode,
     UINTN      PauseLength,
     CHAR16    *PauseType     OPTIONAL
 ) {
-    if (Text == NULL || BGColor == NULL) {
+    if (Text == NULL || MessageBG == NULL) {
         // Early Return
         return;
     }
@@ -3199,7 +3198,7 @@ VOID egDisplayMessage (
     MY_MUTELOGGER_SET;
     #endif
     // Display the message
-    egDisplayMessageEx (Text, BGColor, PositionCode, FALSE);
+    egDisplayMessageEx (Text, MessageBG, PositionCode, FALSE);
 
     if (PauseType && PauseLength > 0) {
         if (MyStriCmp (PauseType, L"HaltSeconds")) {
@@ -3279,8 +3278,6 @@ VOID egScreenShot (VOID) {
     UINTN                 FilePixelSize;        ///< Size in pixels
     CHAR16               *FileName;
     CHAR16               *MsgStr;
-    EG_PIXEL              BGColorWarn = COLOR_RED;
-    EG_PIXEL              BGColorGood = COLOR_LIGHTBLUE;
     EFI_FILE_PROTOCOL    *BaseDir;
 
     #if REFIT_DEBUG > 0
@@ -3302,7 +3299,7 @@ VOID egScreenShot (VOID) {
         MsgStr = L"Unable to Take Screenshot ... Image is NULL";
 
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
+            MsgStr, &BGColorFail,
             CENTER, 4, L"HaltSeconds"
         );
 
@@ -3338,7 +3335,7 @@ VOID egScreenShot (VOID) {
         MsgStr = L"No FileData!";
 
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
+            MsgStr, &BGColorFail,
             CENTER, 4, L"HaltSeconds"
         );
 
@@ -3354,7 +3351,7 @@ VOID egScreenShot (VOID) {
     if (EFI_ERROR(Status)) {
         MsgStr = L"Could *NOT* Encode PNG";
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
+            MsgStr, &BGColorFail,
             CENTER, 4, L"HaltSeconds"
         );
 
@@ -3389,7 +3386,7 @@ VOID egScreenShot (VOID) {
     if (EFI_ERROR(Status)) {
         MsgStr = L"Could *NOT* Find an ESP to Save Screenshot";
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
+            MsgStr, &BGColorFail,
             CENTER, 4, L"HaltSeconds"
         );
 
@@ -3419,7 +3416,7 @@ VOID egScreenShot (VOID) {
     if (EFI_ERROR(Status)) {
         MsgStr = L"Aborting Screenshot ... Excessive Number of Saved Files Found";
         egDisplayMessage (
-            MsgStr, &BGColorWarn,
+            MsgStr, &BGColorFail,
             CENTER, 4, L"HaltSeconds"
         );
 
@@ -3434,7 +3431,7 @@ VOID egScreenShot (VOID) {
             CheckError (Status, L"on 'egSaveFile' call in 'egScreenShot'");
             MsgStr = L"Error on 'egSaveFile' call in 'egScreenShot'";
             egDisplayMessage (
-                MsgStr, &BGColorWarn,
+                MsgStr, &BGColorFail,
                 CENTER, 4, L"HaltSeconds"
             );
 
@@ -3445,7 +3442,7 @@ VOID egScreenShot (VOID) {
         else {
             MsgStr = L"Saved Screenshot";
             egDisplayMessage (
-                MsgStr, &BGColorGood,
+                MsgStr, &BGColorBase,
                 CENTER, 2, L"HaltSeconds"
             );
 

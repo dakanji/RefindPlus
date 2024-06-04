@@ -85,6 +85,7 @@ BOOLEAN line_edit (
     UINTN    first;
     UINTN    y_pos;
     UINTN    cursor;
+    UINTN    DestSize;
     BOOLEAN  exit;
     BOOLEAN  enter;
 
@@ -111,7 +112,9 @@ BOOLEAN line_edit (
         // Early Return
         return FALSE;
     }
-    StrCpy (line, line_in);
+
+    DestSize = StrSize (line_in) / sizeof (CHAR16);
+    StrCpyS (line, DestSize, line_in);
 
     print = AllocatePool (sizeof (CHAR16) * x_max);
     if (print == NULL) {
