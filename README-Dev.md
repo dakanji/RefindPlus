@@ -1,6 +1,6 @@
-# <center>The RefindPlus Boot Manager</center>
-
 <div align="center">
+
+# The RefindPlus Boot Manager
 
 [![Release Version](https://img.shields.io/github/v/release/dakanji/RefindPlus?style=for-the-badge)](https://github.com/dakanji/RefindPlus/releases)[![Release Date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?display_date=published_at&style=for-the-badge&color=informational&label=)](https://github.com/dakanji/RefindPlus/releases)
 
