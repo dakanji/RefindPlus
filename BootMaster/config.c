@@ -1627,11 +1627,13 @@ VOID ExitOuter (
     SyncLinuxPrefixes();
 
     // Forced Default Settings
-    if ( AppleFirmware) GlobalConfig.RansomDrives          = FALSE;
-    if (!AppleFirmware) GlobalConfig.SetAppleFB            = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtect          = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtectEx        = FALSE;
-    if (GlobalConfig.EnableTouch) GlobalConfig.EnableMouse = FALSE;
+    if ( AppleFirmware) GlobalConfig.RansomDrives            = FALSE;
+    if (!AppleFirmware) GlobalConfig.SetAppleFB              = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtect            = FALSE;
+    if (!AppleFirmware) GlobalConfig.NvramProtectEx          = FALSE;
+    if (GlobalConfig.EnableTouch) GlobalConfig.EnableMouse   = FALSE;
+    if (GlobalConfig.SyncTrust != 0) GlobalConfig.DirectBoot = FALSE;
+    if (GlobalConfig.SyncTrust != 0) GlobalConfig.Timeout    =     0;
 
     #if REFIT_DEBUG > 0
     if (NotRunBefore) MuteLogger = FALSE;
@@ -2206,6 +2208,9 @@ VOID ReadConfig (
     BOOLEAN           GotHideuiAll;
     BOOLEAN           GotNoneHideui;
     BOOLEAN           OutLoopHideui;
+    BOOLEAN           GotSyncTrustAll;
+    BOOLEAN           GotNoneSyncTrust;
+    BOOLEAN           OutLoopSyncTrust;
     BOOLEAN           DeclineSetting;
     CHAR16          **TokenList;
     CHAR16           *MsgStr;
@@ -2345,8 +2350,9 @@ VOID ReadConfig (
         return;
     }
 
-    CheckManual   = DoneManual    = FALSE;
-    GotNoneHideui = OutLoopHideui = FALSE;
+    CheckManual        = DoneManual         = FALSE;
+    GotNoneHideui      = OutLoopHideui      = FALSE;
+    GotNoneSyncTrust   = OutLoopSyncTrust   = FALSE;
     #if REFIT_DEBUG > 0
     if (!OuterLoop) {
         CheckManual = TRUE;
@@ -2421,6 +2427,69 @@ VOID ReadConfig (
                         else {
                             MsgStr = PoolPrint (
                                 L"WARN: Invalid 'hideui' Token:- '%s'", Flag
+                            );
+
+                            #if REFIT_DEBUG > 0
+                            if (NotRunBefore) MuteLogger = FALSE;
+                            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+                            if (NotRunBefore) MuteLogger = TRUE;
+                            #endif
+
+                            SwitchToText (FALSE);
+                            PrintUglyText (MsgStr, NEXTLINE);
+                            PauseForKey();
+                            MY_FREE_POOL(MsgStr);
+                        }
+                    }
+                }
+            } // for
+        }
+        else if (
+            !GotNoneSyncTrust &&
+            MyStriCmp (TokenList[0], L"sync_trust")
+        ) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop && !OutLoopSyncTrust) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            GotSyncTrustAll = FALSE;
+            if (!OuterLoop && !OutLoopSyncTrust) {
+                // DA-TAG: Allows reset/override in 'included' config files
+                OutLoopSyncTrust       = TRUE;
+                GlobalConfig.SyncTrust = ENFORCE_TRUST_NONE;
+            }
+
+            for (i = 1; i < TokenCount; i++) {
+                Flag = TokenList[i];
+                if (MyStriCmp (Flag, L"none")) {
+                    // DA-TAG: Required despite earlier reset
+                    //         This will always be used if in token list
+                    GotNoneSyncTrust       = TRUE;
+                    GlobalConfig.SyncTrust = ENFORCE_TRUST_NONE;
+                    break;
+                }
+                else if (!GotSyncTrustAll) {
+                    // DA-TAG: Arranged as so to prioritise 'none' above
+                    if (MyStriCmp (Flag, L"every")) {
+                        GotSyncTrustAll        = TRUE;
+                        GlobalConfig.SyncTrust = ENFORCE_TRUST_EVERY;
+                    }
+                    else {
+                        if (0);
+                        else if (MyStriCmp (Flag, L"macos"   )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_MACOS;
+                        else if (MyStriCmp (Flag, L"linux"   )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_LINUX;
+                        else if (MyStriCmp (Flag, L"windows" )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_WINDOWS;
+                        else if (MyStriCmp (Flag, L"opencore")) GlobalConfig.SyncTrust |= ENFORCE_TRUST_OPENCORE;
+                        else if (MyStriCmp (Flag, L"clover"  )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_CLOVER;
+                        else if (MyStriCmp (Flag, L"similar" )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_OTHERS;
+                        else if (MyStriCmp (Flag, L"verify"  )) GlobalConfig.SyncTrust |= REQUIRE_TRUST_VERIFY;
+                        else {
+                            MsgStr = PoolPrint (
+                                L"WARN: Invalid 'sync_trust' Token:- '%s'", Flag
                             );
 
                             #if REFIT_DEBUG > 0

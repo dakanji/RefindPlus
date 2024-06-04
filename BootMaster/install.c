@@ -937,22 +937,27 @@ VOID CreateFallbackCSV (
 // device path structure. In this case, the function will skip the equivalent-
 // but-not-identical entry and the boot list will end up with two (or more)
 // functionally equivalent entries.
-static
 UINTN FindBootNum (
     EFI_DEVICE_PATH_PROTOCOL *Entry,
     UINTN                     Size,
     BOOLEAN                  *AlreadyExists
 ) {
     EFI_STATUS      Status;
-    UINTN           VarSize, i, j;
+    UINTN           Index;
+    UINTN           VarSize;
     CHAR16         *VarName;
-    CHAR16         *Contents = NULL;
+    CHAR16         *Contents;
 
     *AlreadyExists = FALSE;
     Contents = NULL;
-    i = 0;
+
+    Index = 80;
     do {
-        VarName = PoolPrint (L"Boot%04x", i++);
+        if (Index > 89) {
+            break;
+        }
+
+        VarName = PoolPrint (L"Boot%04x", Index++);
         Status = EfivarGetRaw (
             &GlobalGuid, VarName,
             (VOID **) &Contents, &VarSize
@@ -963,19 +968,39 @@ UINTN FindBootNum (
         ) {
             *AlreadyExists = TRUE;
         }
+
+        MY_FREE_POOL(VarName);
+    } while (*AlreadyExists == FALSE); // No '!EFI_ERROR(Status)' Here
+
+    if (*AlreadyExists == TRUE) {
+        return (Index - 1);
+    }
+
+    Index = 0;
+    do {
+        VarName = PoolPrint (L"Boot%04x", Index++);
+        Status = EfivarGetRaw (
+            &GlobalGuid, VarName,
+            (VOID **) &Contents, &VarSize
+        );
+        if (!EFI_ERROR(Status) &&
+            VarSize == Size &&
+            CompareMem (Contents, Entry, VarSize) == 0
+        ) {
+            *AlreadyExists = TRUE;
+        }
+
         MY_FREE_POOL(VarName);
     } while (!EFI_ERROR(Status) && *AlreadyExists == FALSE);
 
-    if (i > 0x10000) {
+    if (Index > 0x10000) {
         // Somehow ALL boot entries are occupied! VERY unlikely!
         // In desperation, the program will overwrite the last one.
-        i = 0x10000;
+        Index = 0x10000;
     }
 
-    j = (i - 1);
-
-    return j;
-} // static UINTN FindBootNum()
+    return (Index - 1);
+} // UINTN FindBootNum()
 
 // Set BootNum as first in the boot order. This function also eliminates any
 // duplicates of BootNum in the boot order list (but NOT duplicates among
@@ -1033,27 +1058,28 @@ EFI_STATUS SetBootDefault (
     return Status;
 } // static EFI_STATUS SetBootDefault()
 
-// Create an NVRAM entry for the newly-installed RefindPlus and make it the default.
-// (If an entry that is identical to the one this function would create already
-// exists, it may be used instead; see the comments before the FindBootNum()
-// function for details and caveats.)
+// Create an NVRAM entry and optionally make it the default.
+// An identical entry may be used instead if already existing.
+// See the comments before FindBootNum() for details and caveats.
 static
 EFI_STATUS CreateNvramEntry (
-    EFI_HANDLE DeviceHandle
+    IN     EFI_HANDLE  DeviceHandle,
+    IN     CHAR16     *ProgLabel,
+    IN     CHAR16     *LoaderPath,
+    IN     BOOLEAN     MakeDefault
 ) {
     EFI_STATUS                 Status;
-    CHAR16                    *VarName, *ProgName;
-    UINTN                      Size, BootNum;
+    CHAR16                    *VarName;
+    UINTN                      BootNum;
+    UINTN                      EntrySize;
+    UINT16                     EfiBootNum;
     BOOLEAN                    AlreadyExists;
-    EFI_DEVICE_PATH_PROTOCOL  *Entry;
+    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
 
-    ProgName = PoolPrint (L"\\EFI\\refindplus\\%s", INST_REFINDPLUS_NAME);
     Status = ConstructBootEntry (
-        DeviceHandle, ProgName,
-        L"RefindPlus Boot Manager",
-        (CHAR8**) &Entry, &Size
+        DeviceHandle, LoaderPath, ProgLabel,
+        (CHAR8**) &DevicePath, &EntrySize
     );
-    MY_FREE_POOL(ProgName);
 
     if (EFI_ERROR(Status)) {
         BootNum = 0;
@@ -1061,37 +1087,49 @@ EFI_STATUS CreateNvramEntry (
     }
     else {
         AlreadyExists = FALSE;
-        BootNum = FindBootNum (Entry, Size, &AlreadyExists);
+        BootNum = FindBootNum (DevicePath, EntrySize, &AlreadyExists);
     }
 
-    if (EFI_ERROR(Status) || AlreadyExists != FALSE) {
-        VarName = NULL;
-    }
-    else {
+    if (!EFI_ERROR(Status) && AlreadyExists == FALSE) {
         VarName = PoolPrint (L"Boot%04x", BootNum);
-        Status  = EfivarSetRaw (
-            &GlobalGuid, VarName,
-            Entry, Size, TRUE
+        Status = SetHardwareNvramVariable (
+            VarName, &GlobalGuid,
+            AccessFlagsFull, EntrySize, DevicePath
         );
         MY_FREE_POOL(VarName);
     }
-    MY_FREE_POOL(Entry);
+    MY_FREE_POOL(DevicePath);
 
     if (!EFI_ERROR(Status)) {
-        Status = SetBootDefault (BootNum);
+        // Wait 0.25 second
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (25);
+
+        if (MakeDefault) {
+            Status = SetBootDefault (BootNum);
+        }
+        else {
+            VarName = PoolPrint (L"%d", BootNum);
+            EfiBootNum = StrToHex (VarName, 0, 16);
+            Status = SetHardwareNvramVariable (
+                L"BootNext", &GlobalGuid,
+                AccessFlagsFull, sizeof (UINT16), &EfiBootNum
+            );
+            MY_FREE_POOL(VarName);
+        }
     }
 
     return Status;
 } // static EFI_STATUS CreateNvramEntry()
 
-// Construct an NVRAM entry, but do NOT write it to NVRAM. The entry
-// consists of:
-// - A 32-bit options flag, which holds the LOAD_OPTION_ACTIVE value
-// - A 16-bit number specifying the size of the device path
-// - A label/description for the entry
-// - The device path data in binary form
-// - Any arguments to be passed to the program. This function does NOT
-//   create arguments.
+// Construct an NVRAM entry but *DO NOT* write it to NVRAM.
+// The entry consists of:
+//   - A 32-bit options flag, which holds the LOAD_OPTION_ACTIVE value
+//   - A 16-bit number specifying the size of the device path
+//   - A label/description for the entry
+//   - The device path data in binary form
+//   - Any arguments to be passed to the program.
+//     NB: This function *DOES NOT* create arguments.
 EFI_STATUS ConstructBootEntry (
     EFI_HANDLE  *TargetVolume,
     CHAR16      *Loader,
@@ -1106,8 +1144,9 @@ EFI_STATUS ConstructBootEntry (
 
     DevicePath  = FileDevicePath (TargetVolume, Loader);
     DevPathSize = DevicePathSize (DevicePath);
-    *Size       = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
-    *Entry      = Working = AllocateZeroPool (*Size);
+
+    *Size  = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize;
+    *Entry = Working = AllocateZeroPool (*Size);
 
     if (DevicePath == NULL || *Entry == NULL) {
         Status = EFI_OUT_OF_RESOURCES;
@@ -1146,6 +1185,7 @@ EFI_STATUS ConstructBootEntry (
 VOID InstallRefindPlus (VOID) {
     EFI_STATUS     Status;
     CHAR16        *MsgStr;
+    CHAR16        *ProgName;
     ESP_LIST      *AllESPs;
     REFIT_VOLUME  *SelectedESP; // Do not free
 
@@ -1166,7 +1206,13 @@ VOID InstallRefindPlus (VOID) {
 
     Status = CopyRefindPlusFiles (SelectedESP->RootDir);
     if (!EFI_ERROR(Status)) {
-        Status = CreateNvramEntry (SelectedESP->DeviceHandle);
+        ProgName = PoolPrint (L"\\EFI\\refindplus\\%s", INST_REFINDPLUS_NAME);
+        Status = CreateNvramEntry (
+            SelectedESP->DeviceHandle,
+            L"RefindPlus Boot Manager",
+            ProgName, TRUE
+        );
+        MY_FREE_POOL(ProgName);
     }
 
     if (EFI_ERROR(Status)) {
@@ -1468,7 +1514,7 @@ UINTN PickOneBootOption (
             break;
         }
 
-        DefaultEntry = 9999; // Use the Max Index
+        DefaultEntry = -1; // Use the Max Index
         Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
         MenuExit = DrawMenuScreen (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 

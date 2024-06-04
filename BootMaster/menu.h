@@ -115,6 +115,8 @@ typedef struct {
 // Maximum length of a text string in certain menus
 #define MAX_LINE_LENGTH     (65)
 
+#define TRUSTED_BOOT_CONFIRM  L"Confirm Trusted Boot Fix"
+
 struct _refit_menu_screen;
 
 typedef VOID (*MENU_STYLE_FUNC) (
@@ -163,6 +165,7 @@ VOID DisplaySimpleMessage (
 
 UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
 UINTN WaitForInput (IN UINTN Timeout);
+UINTN AbortSyncTrust (VOID);
 UINTN DrawMenuScreen (
     IN     REFIT_MENU_SCREEN   *Screen,
     IN     MENU_STYLE_FUNC      StyleFunc,

@@ -1,6 +1,11 @@
 0.14.1.AA (PRE-RELEASE):
 -----------------------
 - Synced with Upstream v0.14.1
+- Adds `SyncTrust` Feature
+  * The boot `Chain of Trust` may be broken on booting with 3rd-party tools on T2/TPM chipped units
+  * When this happens, the unit refuse to boot the selected item and may even become unresponsive
+  * This feature provides a workaround by allowing a native trusted reboot to the selected item
+  * This feature can be enabled by activating a new `sync_trust` configuration token
 - Adds `LegacySync` Feature
   * RefindPlus previously assumed all Macs were capable of legacy BIOS boot
     - This was from code that went in upstream in 2012 when this was a reasonable working assumption

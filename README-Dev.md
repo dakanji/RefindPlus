@@ -20,6 +20,7 @@ However, the enhancements and fixes provided by RefindPlus are not limited in sc
 - Protects against damage to Mac nvRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
 - Provides UGADraw on modern GOP based GPUs to permit booting legacy EFI Boot operating systems.
+- Provides option to avoid boot failures and associated freezes on T2/TPM chipped units.
 - Provides improved support for languages that use unicode text.
 - Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
 - Extensive memory management improvements with associated speed and stability gains.
@@ -101,6 +102,7 @@ set_boot_args         |Allows setting arbitrary macOS boot arguments
 supply_nvme           |Enables an inbuilt NvmExpress driver
 supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
 sync_nvram            |Resets nvRAM settings, such as BlueTooth, on some boot types if required
+sync_trust            |Works around some `Boot Chain of Trust` problems on T2/TPM chipped units
 transient_boot        |Disables selection of the last booted loader if not required
 unicode_collation     |Provides fine tuned support for languages that use unicode text
 

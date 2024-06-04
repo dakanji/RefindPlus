@@ -64,9 +64,16 @@ typedef struct _boot_entry_list {
     struct _boot_entry_list  *NextBootEntry;
 } BOOT_ENTRY_LIST;
 
-VOID InstallRefindPlus(VOID);
 BOOT_ENTRY_LIST * FindBootOrderEntries(VOID);
+
 VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries);
+VOID InstallRefindPlus(VOID);
 VOID ManageBootorder(VOID);
+
+UINTN FindBootNum (
+    EFI_DEVICE_PATH_PROTOCOL *Entry,
+    UINTN                     Size,
+    BOOLEAN                  *AlreadyExists
+);
 
 #endif

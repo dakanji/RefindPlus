@@ -561,6 +561,30 @@
 #
 #sync_nvram 1
 
+# The boot 'Chain of Trust' may be broken on booting with 3rd-party tools but
+# RefindPlus can trigger a native reboot into a selected boot target to avoid
+# this issue. The 'SyncTrust' feature is useful on computers running enhanced
+# boot security setups, particularly in conjunction with TPM/T2 Chipped units.
+#
+#   macos       - macOS loader
+#   linux       - Linux loaders
+#   windows     - Windows loader
+#   clover      - The Clover boot-loader
+#   opencore    - The OpenCore boot-loader
+#   similar     - Any other uEFI loader
+#   verify      - Always verify first
+#   every       - All of the above
+#   none        - None of the above (default)
+#
+# NOTES:
+# 1. The 'every' option takes precedence over others apart from 'none'
+# 2. The 'none' option takes precedence over every other setting
+# 3. The 'DirectBoot' feature is disabled by this token
+#
+# Inactive when commented out or set to 'none' (Does not trigger native reboots)
+#
+#sync_trust macos verify
+
 # RefindPlus defaults to storing the name of the last booted loader in
 # the "PreviousBoot" variable in the nvRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus

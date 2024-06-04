@@ -3610,6 +3610,74 @@ VOID HideTag (
 } // VOID HideTag()
 
 // Present a menu for the user to confirm Bluetooth Sync
+UINTN AbortSyncTrust (VOID) {
+    INTN               DefaultEntry;
+    UINTN              MenuExit;
+    BOOLEAN            RetVal;
+    MENU_STYLE_FUNC    Style;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    REFIT_MENU_SCREEN *AbortSyncTrustMenu;
+
+
+    AbortSyncTrustMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (AbortSyncTrustMenu == NULL) {
+        // Resource Exhaustion ... Early Exit
+        return SYNC_TRUST_HALT;
+    }
+
+    // Build the menu page
+    AbortSyncTrustMenu->Title      = StrDuplicate (TRUSTED_BOOT_CONFIRM   );
+    AbortSyncTrustMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT );
+    AbortSyncTrustMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT     );
+    AbortSyncTrustMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
+
+    AddMenuInfoLine (AbortSyncTrustMenu, L"The boot \"Chain of Trust\" may be servered on booting with 3rd-party tools.", FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"This typically affects units with T2/TPM chips after an SMC/Similar reset.",   FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"",                                                                             FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"When manifested, the machine will fail to boot and/or become unresponsive.",   FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"",                                                                             FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"RefindPlus will start a native reboot into your target to avoid the issue.",   FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"Would you prefer RefindPlus to load your selected target directly instead?",   FALSE);
+    AddMenuInfoLine (AbortSyncTrustMenu, L"",                                                                             FALSE);
+
+    RetVal = GetMenuEntryYesNo (&AbortSyncTrustMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&AbortSyncTrustMenu);
+
+        // Early Return
+        return SYNC_TRUST_HALT;
+    }
+
+    DefaultEntry = 9999; // Use the Max Index
+    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    MenuExit = DrawMenuScreen (
+        AbortSyncTrustMenu, Style,
+        &DefaultEntry, &ChosenOption
+    );
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from DrawMenuScreen Call on '%s' in 'AbortSyncTrust'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MenuExit == MENU_EXIT_ESCAPE) {
+        RetVal = SYNC_TRUST_EXIT;
+    }
+    else if (MenuExit == MENU_EXIT_ENTER && MyStriCmp (ChosenOption->Title, L"Yes")) {
+        RetVal = SYNC_TRUST_SKIP;
+    }
+    else {
+        RetVal = SYNC_TRUST_BOOT;
+    }
+
+    FreeMenuScreen (&AbortSyncTrustMenu);
+
+    return RetVal;
+} // UINTN AbortSyncTrust()
+
+// Present a menu for the user to confirm Bluetooth Sync
 BOOLEAN ConfirmSyncNVram (VOID) {
     INTN               DefaultEntry;
     UINTN              MenuExit;

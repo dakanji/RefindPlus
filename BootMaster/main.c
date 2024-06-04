@@ -143,6 +143,7 @@ REFIT_CONFIG GlobalConfig = {
     .RequestedScreenHeight     =                       0,
     .BannerBottomEdge          =                       0,
     .HideUIFlags               =                       0,
+    .SyncTrust                 =                       0,
     .MaxTags                   =                       0,
     .ScanDelay                 =                       0,
     .SyncNVram                 =                       0,
@@ -242,6 +243,7 @@ EFI_GUID               RefindPlusOldGuid    =  REFINDPLUS_OLD_GUID;
 EFI_GUID               OpenCoreVendorGuid   = OPENCORE_VENDOR_GUID;
 EFI_SET_VARIABLE       OrigSetVariableRT    =                 NULL;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS   =                 NULL;
+BOOLEAN                KeepTrustChain       =                 FALSE;
 
 #define NVRAM_SIZE_THRESHOLD       (1023)
 
@@ -370,111 +372,6 @@ VOID InitMainMenu (VOID) {
     MainMenu = CopyMenuScreen (&MainMenuSrc);
     MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
 } // static VOID InitMainMenu()
-
-// DA-TAG: Caller responsible for returned buffer
-static
-EFI_STATUS GetHardwareNvramVariable (
-    IN  CHAR16    *VariableName,
-    IN  EFI_GUID  *VendorGuid,
-    OUT VOID     **VariableData,
-    OUT UINTN     *VariableSize  OPTIONAL
-) {
-    EFI_STATUS   Status;
-    UINTN        BufferSize;
-    VOID        *TmpBuffer;
-
-    // Pass in a zero-size buffer to find the required buffer size.
-    // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
-    // Any other status means the variable does not exist.
-    BufferSize = 0;
-    TmpBuffer  = NULL;
-    Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable, VariableName,
-        VendorGuid, NULL,
-        &BufferSize, TmpBuffer
-    );
-    if (Status != EFI_BUFFER_TOO_SMALL) {
-        return EFI_NOT_FOUND;
-    }
-
-    TmpBuffer = AllocatePool (BufferSize);
-    if (TmpBuffer == NULL) {
-        return EFI_OUT_OF_RESOURCES;
-    }
-
-    // Retry with the correct buffer size.
-    Status = REFIT_CALL_5_WRAPPER(
-        gRT->GetVariable, VariableName,
-        VendorGuid, NULL,
-        &BufferSize, TmpBuffer
-    );
-    if (EFI_ERROR(Status)) {
-        MY_FREE_POOL(TmpBuffer);
-        *VariableData = NULL;
-        *VariableSize = 0;
-
-        return EFI_LOAD_ERROR;
-    }
-
-    *VariableData = TmpBuffer;
-    *VariableSize = (BufferSize != 0) ? BufferSize : 0;
-
-    return EFI_SUCCESS;
-} // static EFI_STATUS GetHardwareNvramVariable()
-
-static
-EFI_STATUS SetHardwareNvramVariable (
-    IN  CHAR16    *VariableName,
-    IN  EFI_GUID  *VendorGuid,
-    IN  UINT32     Attributes,
-    IN  UINTN      VariableSize,
-    IN  VOID      *VariableData OPTIONAL
-) {
-    EFI_STATUS   Status;
-    VOID        *OldBuf;
-    UINTN        OldSize;
-    BOOLEAN      SettingMatch;
-
-    OldSize = 0;
-    OldBuf  = NULL;
-    Status  = EFI_LOAD_ERROR;
-
-    if (VariableData != NULL && VariableSize != 0) {
-        Status = GetHardwareNvramVariable (
-            VariableName, VendorGuid,
-            &OldBuf, &OldSize
-        );
-        if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
-            // Early Return
-            return Status;
-        }
-    }
-
-    SettingMatch = FALSE;
-    if (!EFI_ERROR(Status)) {
-        if (VariableData != NULL && VariableSize != 0) {
-            // Check for match
-            SettingMatch = (
-                VariableSize == OldSize &&
-                CompareMem (VariableData, OldBuf, VariableSize) == 0
-            );
-        }
-        MY_FREE_POOL(OldBuf);
-
-        if (SettingMatch) {
-            // Early Return
-            return EFI_ALREADY_STARTED;
-        }
-    }
-
-    // Store the new value
-    Status = OrigSetVariableRT (
-        VariableName, VendorGuid,
-        Attributes, VariableSize, VariableData
-    );
-
-    return Status;
-} // static EFI_STATUS SetHardwareNvramVariable()
 
 static
 EFI_STATUS StoreBootArgsNvram (
@@ -1595,6 +1492,172 @@ VOID ReMapOpenProtocol (VOID) {
 } // static VOID ReMapOpenProtocol()
 
 static
+UINTN RunTrustSync (
+    LOADER_ENTRY *Entry
+) {
+    EFI_STATUS                 Status;
+    CHAR16                    *VarName;
+    UINTN                      BootNum;
+    UINTN                      EntrySize;
+    UINTN                      ExitChain;
+    BOOLEAN                    LoaderValid;
+    BOOLEAN                    AlreadyExists;
+    EG_PIXEL                   BGColor = COLOR_LIGHTBLUE;
+    EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+
+    #if REFIT_DEBUG > 0
+    CHAR16                    *MsgStr;
+    BOOLEAN                    CheckMute = FALSE;
+
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", Entry->me.Title);
+
+    MY_MUTELOGGER_SET;
+    #endif
+    LoaderValid = IsValidLoader (Entry->Volume->RootDir, Entry->LoaderPath);
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+
+    if (!LoaderValid) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"ERROR: Invalid Binary!!");
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+        LOG_MSG("%s", OffsetNext);
+        MY_FREE_POOL(MsgStr);
+        #endif
+
+        // Invalid Binary ... Early Return
+        return SYNC_TRUST_HALT;
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Config Setting Detected:- 'sync_trust'");
+    #endif
+
+    if (GlobalConfig.SyncTrust & REQUIRE_TRUST_VERIFY) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- '%s'", TRUSTED_BOOT_CONFIRM);
+        #endif
+
+        ExitChain = AbortSyncTrust();
+        if (ExitChain != SYNC_TRUST_BOOT) {
+            // Early Return
+            return ExitChain;
+        }
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        #endif
+    }
+
+    // Construct Boot Entry
+    Status = ConstructBootEntry (
+        Entry->Volume->DeviceHandle,
+        Entry->LoaderPath, Entry->Volume->VolName,
+        (CHAR8**) &DevicePath,
+        &EntrySize
+    );
+    if (EFI_ERROR(Status)) {
+        // Boot Entry Error ... Early Return
+        return SYNC_TRUST_HALT;
+    }
+
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+
+    AlreadyExists = FALSE;
+    BootNum = FindBootNum (DevicePath, EntrySize, &AlreadyExists);
+    VarName = PoolPrint (L"Boot%04x", BootNum);
+
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Select Boot#### Variable:- '%s'", VarName);
+    #endif
+
+    if (AlreadyExists == FALSE) {
+        Status = EfivarSetRaw (
+           &GlobalGuid, VarName,
+           DevicePath, EntrySize, TRUE
+        );
+
+        // Wait 0.50 second
+        // DA-TAG: 100 Loops = 1 Sec
+        RefitStall (50);
+
+        if (EFI_ERROR(Status)) {
+            MY_FREE_POOL(VarName);
+            MY_FREE_POOL(DevicePath);
+
+            // BootEntry Build Failure ... Early Return
+            return SYNC_TRUST_HALT;
+        }
+    }
+
+    Status = EfivarSetRaw (
+       &GlobalGuid, L"BootNext",
+       &BootNum, sizeof (UINT16), TRUE
+    );
+
+    // Wait 0.50 second
+    // DA-TAG: 100 Loops = 1 Sec
+    RefitStall (50);
+
+    MY_FREE_POOL(VarName);
+    MY_FREE_POOL(DevicePath);
+
+    if (EFI_ERROR(Status)) {
+        // BootEntry Build Failure ... Early Return
+        return SYNC_TRUST_HALT;
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"Status:- 'Success' ... Native Boot Chain Setup");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    LOG_MSG("%s", OffsetNext);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
+    egDisplayMessage (
+        L"Restart in Native Boot Chain", &BGColor,
+        CENTER, 3, L"PauseSeconds"
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"Restart in Native Boot Chain for Loader");
+    LOG_MSG("\n");
+    LOG_MSG("%s File", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%s'", MsgStr, Entry->LoaderPath);
+    MY_FREE_POOL(MsgStr);
+    #endif
+
+    StoreLoaderName (Entry->me.Title);
+
+    #if REFIT_DEBUG > 0
+    OUT_TAG();
+    #endif
+
+    // Reboot into new BootNext entry
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
+    );
+
+    #if REFIT_DEBUG > 0
+    UnexpectedReturn (L"Trusted Boot Chain Reset");
+    #endif
+
+    return SYNC_TRUST_HALT;
+} // static UINTN RunTrustSync()
+
+static
 VOID RunNVramSync (
     CHAR16       *SelectionName,
     BOOLEAN       IsMacOS
@@ -1989,6 +2052,109 @@ VOID AboutRefindPlus (VOID) {
 
     FreeMenuScreen (&AboutMenu);
 } // static VOID AboutRefindPlus()
+
+// DA-TAG: Caller responsible for returned buffer
+EFI_STATUS GetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    OUT VOID     **VariableData,
+    OUT UINTN     *VariableSize  OPTIONAL
+) {
+    EFI_STATUS   Status;
+    UINTN        BufferSize;
+    VOID        *TmpBuffer;
+
+    // Pass in a zero-size buffer to find the required buffer size.
+    // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
+    // Any other status means the variable does not exist.
+    BufferSize = 0;
+    TmpBuffer  = NULL;
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, VariableName,
+        VendorGuid, NULL,
+        &BufferSize, TmpBuffer
+    );
+    if (Status != EFI_BUFFER_TOO_SMALL) {
+        return EFI_NOT_FOUND;
+    }
+
+    TmpBuffer = AllocatePool (BufferSize);
+    if (TmpBuffer == NULL) {
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Retry with the correct buffer size.
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, VariableName,
+        VendorGuid, NULL,
+        &BufferSize, TmpBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(TmpBuffer);
+        *VariableData = NULL;
+        *VariableSize = 0;
+
+        return EFI_LOAD_ERROR;
+    }
+
+    *VariableData = TmpBuffer;
+    *VariableSize = (BufferSize != 0) ? BufferSize : 0;
+
+    return EFI_SUCCESS;
+} // EFI_STATUS GetHardwareNvramVariable()
+
+EFI_STATUS SetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    IN  UINT32     Attributes,
+    IN  UINTN      VariableSize,
+    IN  VOID      *VariableData OPTIONAL
+) {
+    EFI_STATUS   Status;
+    VOID        *OldBuf;
+    UINTN        OldSize;
+    BOOLEAN      SettingMatch;
+
+    OldSize = 0;
+    OldBuf  = NULL;
+    Status  = EFI_LOAD_ERROR;
+
+    if (VariableData != NULL && VariableSize != 0) {
+        Status = GetHardwareNvramVariable (
+            VariableName, VendorGuid,
+            &OldBuf, &OldSize
+        );
+        if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
+            // Early Return
+            return Status;
+        }
+    }
+
+    SettingMatch = FALSE;
+    if (!EFI_ERROR(Status)) {
+        if (VariableData != NULL && VariableSize != 0) {
+            // Check for match
+            SettingMatch = (
+                VariableSize == OldSize &&
+                CompareMem (VariableData, OldBuf, VariableSize) == 0
+            );
+        }
+        MY_FREE_POOL(OldBuf);
+
+        if (SettingMatch) {
+            // Early Return
+            return EFI_ALREADY_STARTED;
+        }
+    }
+
+    // Store the new value
+    Status = OrigSetVariableRT (
+        VariableName, VendorGuid,
+        Attributes, VariableSize, VariableData
+    );
+
+    return Status;
+} // EFI_STATUS SetHardwareNvramVariable()
 
 // Record the loader's name/description in the "PreviousBoot" UEFI variable
 // if different from what is already stored there.
@@ -2669,6 +2835,7 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN            FoundVentoy;
     BOOLEAN            ForceContinue;
     BOOLEAN            MainLoopRunning;
+    BOOLEAN            SkipTrustChain;
     BOOLEAN            FoundInstallerMac;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
     LOADER_ENTRY      *ourLoaderEntry;
@@ -2893,18 +3060,19 @@ EFI_STATUS EFIAPI efi_main (
 
     LOG_MSG("L I S T   M I S C   S E T T I N G S");
     LOG_MSG("\n");
-    LOG_MSG("INFO: RefitDBG:- '%d'",       REFIT_DEBUG                              );
-    LOG_MSG("%s      LogLevel:- '%d'",     TAG_ITEM_A(LogLevelConfig               ));
-    LOG_MSG("%s      ScanDelay:- '%d'",    TAG_ITEM_A(GlobalConfig.ScanDelay       ));
-    LOG_MSG("%s      SyncNVram:- '%d'",    TAG_ITEM_A(GlobalConfig.SyncNVram       ));
-    LOG_MSG("%s      PreferUGA:- '%s'",    TAG_ITEM_B(GlobalConfig.PreferUGA       ));
-    LOG_MSG("%s      ReloadGOP:- '%s'",    TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
-    LOG_MSG("%s      SyncAPFS:- '%s'",     TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
-    LOG_MSG("%s      HelpScan:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpScan        ));
-    LOG_MSG("%s      HelpIcon:- '%s'",     TAG_ITEM_C(GlobalConfig.HelpIcon        ));
-    LOG_MSG("%s      CheckDXE:- '%s'",     TAG_ITEM_C(GlobalConfig.RescanDXE       ));
+    LOG_MSG("INFO: RefitDBG:- '%d'",         REFIT_DEBUG                              );
+    LOG_MSG("%s      LogLevel:- '%d'",       TAG_ITEM_A(LogLevelConfig               ));
+    LOG_MSG("%s      ScanDelay:- '%d'",      TAG_ITEM_A(GlobalConfig.ScanDelay       ));
+    LOG_MSG("%s      SyncNVram:- '%d'",      TAG_ITEM_A(GlobalConfig.SyncNVram       ));
+    LOG_MSG("%s      PreferUGA:- '%s'",      TAG_ITEM_B(GlobalConfig.PreferUGA       ));
+    LOG_MSG("%s      ReloadGOP:- '%s'",      TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
+    LOG_MSG("%s      SyncTrust:- '%03d'",    TAG_ITEM_A(GlobalConfig.SyncTrust       ));
+    LOG_MSG("%s      SyncAPFS:- '%s'",       TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
+    LOG_MSG("%s      HelpIcon:- '%s'",       TAG_ITEM_C(GlobalConfig.HelpIcon        ));
+    LOG_MSG("%s      HelpScan:- '%s'",       TAG_ITEM_C(GlobalConfig.HelpScan        ));
+    LOG_MSG("%s      CheckDXE:- '%s'",       TAG_ITEM_C(GlobalConfig.RescanDXE       ));
 
-    LOG_MSG("%s      TextOnly:- ",         OffsetNext                               );
+    LOG_MSG("%s      TextOnly:- ",           OffsetNext                               );
     if (ForceTextOnly) {
         LOG_MSG("'Forced'"                                                          );
     }
@@ -3458,6 +3626,9 @@ EFI_STATUS EFIAPI efi_main (
         FoundTool      = FALSE;
         RunOurTool     = FALSE;
         SubScreenBoot  = FALSE;
+        KeepTrustChain = FALSE;
+        SkipTrustChain = FALSE;
+
         MY_FREE_POOL(FilePath);
 
         MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);
@@ -3894,6 +4065,11 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     RunMacBootSupportFuncs (SelectionName);
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_MACOS) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (
                     (
@@ -3910,6 +4086,11 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     RunMacBootSupportFuncs (SelectionName);
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_MACOS) {
+                        KeepTrustChain = TRUE;
+                    }
 
                     if (GlobalConfig.NvramProtectEx) {
                         if (GlobalConfig.NvramProtect) {
@@ -3943,6 +4124,13 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
+                    SkipTrustChain = TRUE;
+                    if (!AppleFirmware) {
+                        if (GlobalConfig.SyncTrust & ENFORCE_TRUST_WINDOWS) {
+                            KeepTrustChain = TRUE;
+                        }
+                    }
+
                     if (GlobalConfig.NvramProtect) {
                         // Start NvramProtect
                         SetProtectNvram (SystemTable, TRUE);
@@ -3968,6 +4156,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_LINUX) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
                     #if REFIT_DEBUG > 0
@@ -3983,6 +4176,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_LINUX) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
                     #if REFIT_DEBUG > 0
@@ -3998,6 +4196,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_LINUX) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (MyStrStr (ourLoaderEntry->LoaderPath, L"kernel")) {
                     #if REFIT_DEBUG > 0
@@ -4013,6 +4216,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_LINUX) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (
                     (
@@ -4035,6 +4243,11 @@ EFI_STATUS EFIAPI efi_main (
                     }
                     MY_FREE_POOL(MsgStr);
                     #endif
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_LINUX) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (ourLoaderEntry->OSType == 'R') {
                     if (!ourLoaderEntry->UseGraphicsMode && AllowGraphicsMode) {
@@ -4107,6 +4320,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Sync nvRAM
                     RunNVramSync (SelectionName, FALSE);
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_OPENCORE) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else if (
                     ourLoaderEntry->OSType == 'C'                          ||
@@ -4136,6 +4354,11 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Sync nvRAM
                     RunNVramSync (SelectionName, FALSE);
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_CLOVER) {
+                        KeepTrustChain = TRUE;
+                    }
                 }
                 else {
                     i = 0;
@@ -4180,14 +4403,51 @@ EFI_STATUS EFIAPI efi_main (
                     }
                 }
 
-                // No end dash line ... Added in 'IsValidLoader'
-                StartLoader (ourLoaderEntry, SelectionName);
-
-                #if REFIT_DEBUG > 0
-                if (!FoundVentoy) {
-                    UnexpectedReturn (L"OS Loader");
+                if (!SkipTrustChain &&
+                    !KeepTrustChain &&
+                    !FoundVentoy    &&
+                    (GlobalConfig.SyncTrust & ENFORCE_TRUST_OTHERS)
+                ) {
+                    KeepTrustChain = TRUE;
                 }
-                #endif
+
+                if (!KeepTrustChain) {
+                    Trigger = SYNC_TRUST_SKIP;
+                }
+                else {
+                    // May not return from this ... End dash line added if so
+                    Trigger = RunTrustSync (ourLoaderEntry);
+                }
+
+                if (Trigger == SYNC_TRUST_EXIT) {
+                    continue;
+                }
+
+                if (Trigger == SYNC_TRUST_SKIP) {
+                    // No end dash line ... Added in 'IsValidLoader'
+                    StartLoader (ourLoaderEntry, SelectionName);
+
+                    #if REFIT_DEBUG > 0
+                    if (!FoundVentoy) {
+                        UnexpectedReturn (L"OS Loader");
+                    }
+                    #endif
+                }
+                else {
+                    // Using as Temp String
+                    TypeStr = L"Could *NOT* Load Native Boot Chain";
+
+                    egDisplayMessage (
+                        TypeStr,
+                        &BGColor, CENTER, 4, L"PauseSeconds"
+                    );
+
+                    #if REFIT_DEBUG > 0
+                    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TypeStr);
+                    LOG_MSG("%s    * %s", OffsetNext, TypeStr);
+                    LOG_MSG("%s", OffsetNext);
+                    #endif
+                }
 
             break;
             case TAG_LEGACY:      // Legacy OS on Mac

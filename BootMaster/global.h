@@ -323,6 +323,23 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define HIDEUI_FLAG_BADGES      (0x0100)
 #define HIDEUI_FLAG_ALL         (0x01FF)
 
+// Return codes for SyncTrust
+#define SYNC_TRUST_HALT           (0) // Forced to halt on error
+#define SYNC_TRUST_EXIT           (1) // User exit via "Esc" etc
+#define SYNC_TRUST_SKIP           (2) // User prefers direct boot
+#define SYNC_TRUST_BOOT           (3) // User prefers native boot
+
+// Bit codes (Actual Decimal) ... Used in GlobalConfig.SyncTrust
+#define ENFORCE_TRUST_NONE        (0)
+#define ENFORCE_TRUST_MACOS       (1)
+#define ENFORCE_TRUST_LINUX       (2)
+#define ENFORCE_TRUST_WINDOWS     (4)
+#define ENFORCE_TRUST_OPENCORE    (8)
+#define ENFORCE_TRUST_CLOVER     (16)
+#define ENFORCE_TRUST_OTHERS     (32)
+#define REQUIRE_TRUST_VERIFY     (64)
+#define ENFORCE_TRUST_EVERY     (127) // 1 + 2 + 4 + 8 + 16 + 32 + 64
+
 // Default hint text for program-launch submenus
 #define SUBSCREEN_HINT1            L"Use arrow keys to move selection and press 'Enter' to run selected item"
 #define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to edit options or press 'Esc' to return to the main screen"
@@ -536,6 +553,7 @@ typedef struct {
     UINTN                       RequestedScreenHeight;
     UINTN                       BannerBottomEdge;
     UINTN                       HideUIFlags;
+    UINTN                       SyncTrust;
     UINTN                       MaxTags;
     UINTN                       ScanDelay;
     UINTN                       SyncNVram;
@@ -594,6 +612,9 @@ extern UINTN                    SystemVolumesCount;
 extern UINTN                    DataVolumesCount;
 extern UINTN                    HfsRecoveryCount;
 
+extern UINT32                   AccessFlagsFull;
+extern UINT32                   AccessFlagsBoot;
+
 extern UINT64                   ReadWriteCreate;
 
 extern BOOLEAN                  SingleAPFS;
@@ -636,6 +657,19 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType);
 
 LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 
+EFI_STATUS SetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    IN  UINT32     Attributes,
+    IN  UINTN      VariableSize,
+    IN  VOID      *VariableData OPTIONAL
+);
+EFI_STATUS GetHardwareNvramVariable (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    OUT VOID     **VariableData,
+    OUT UINTN     *VariableSize  OPTIONAL
+);
 
 
 /* Misc Extra Items - START */
