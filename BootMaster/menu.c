@@ -572,7 +572,7 @@ INTN FindMenuShortcutEntry (
 
     i = j = 0;
     FoundMatch = FALSE;
-    while ((Shortcut = FindCommaDelimited (Defaults, j)) != NULL) {
+    while ((Shortcut = FindCommaDelimited (Defaults, j++)) != NULL) {
         if (StrLen (Shortcut) > 1) {
             for (i = 0; i < Screen->EntryCount; i++) {
                 if (MyStriCmp (Shortcut, Screen->Entries[i]->Title)) {
@@ -612,12 +612,10 @@ INTN FindMenuShortcutEntry (
         if (FoundMatch) {
             return i;
         }
-
-        j++;
     } // while
 
     return -1;
-} // static INTN FindMenuShortcutEntry()
+} // INTN FindMenuShortcutEntry()
 
 // Identify the end of row 0 and the beginning of row 1; store the results in the
 // appropriate fields in State. Also reduce MaxVisible if that value is greater
@@ -3525,10 +3523,14 @@ VOID HideTag (
     //           - https://sf.net/p/refind/discussion/general/thread/4dfcdfdd16
     //           - https://github.com/joevt/RefindPlus/commit/8c303d504d58bb235e9d2218df8bdb939de9ed77
     //           - https://github.com/dakanji/RefindPlus/issues/163
-    //         El Gordo is most likely a buffer overrun of some sort.
+    //         El Gordo is most likely a buffer overflow of some sort.
+    //         El Gordo might be in one or more filesystem drivers.
+    //         El Gordo might be spread across a number of files.
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
-            if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
+            if (GlobalConfig.SyncAPFS &&
+                Loader->Volume->FSType == FS_TYPE_APFS
+            ) {
                 DisplaySimpleMessage (
                     L"Amend Config File Instead ... Update \"dont_scan_volumes\" Token",
                     L"Hide Entry *IS NOT* Available on Synced APFS Loaders"
@@ -3683,7 +3685,10 @@ UINTN AbortSyncTrust (VOID) {
     if (MenuExit == MENU_EXIT_ESCAPE) {
         RetVal = SYNC_TRUST_EXIT;
     }
-    else if (MenuExit == MENU_EXIT_ENTER && MyStriCmp (ChosenOption->Title, L"Yes")) {
+    else if (
+        MenuExit == MENU_EXIT_ENTER &&
+        MyStriCmp (ChosenOption->Title, L"Yes")
+    ) {
         RetVal = SYNC_TRUST_SKIP;
     }
     else {
@@ -3742,7 +3747,9 @@ BOOLEAN ConfirmSyncNVram (VOID) {
     );
     #endif
 
-    if (MenuExit == MENU_EXIT_ENTER && MyStriCmp (ChosenOption->Title, L"Yes")) {
+    if (MenuExit == MENU_EXIT_ENTER &&
+        MyStriCmp (ChosenOption->Title, L"Yes")
+    ) {
         RetVal =  TRUE;
     }
     else {
@@ -3858,7 +3865,7 @@ BOOLEAN ConfirmRotate (VOID) {
 
         if (EmptySIP) {
             // Save first config CsrValue when SIP is not set
-            // To allow rotation to the second value, usually "Disabled" setting
+            // Allows rotation to the second value, usually "Disabled" setting
             EfivarSetRaw (
                 &AppleBootGuid, L"csr-active-config",
                 &TempCsr, sizeof (UINT32), TRUE
@@ -3926,7 +3933,9 @@ BOOLEAN ConfirmRestart (VOID) {
     );
     #endif
 
-    if (MenuExit == MENU_EXIT_ENTER && MyStriCmp (ChosenOption->Title, L"Yes")) {
+    if (MenuExit == MENU_EXIT_ENTER &&
+        MyStriCmp (ChosenOption->Title, L"Yes")
+    ) {
         RetVal = TRUE;
     }
     else {
@@ -3993,7 +4002,9 @@ BOOLEAN ConfirmShutdown (VOID) {
     );
     #endif
 
-    if (MenuExit == MENU_EXIT_ENTER && MyStriCmp (ChosenOption->Title, L"Yes")) {
+    if (MenuExit == MENU_EXIT_ENTER &&
+        MyStriCmp (ChosenOption->Title, L"Yes")
+    ) {
         RetVal = TRUE;
     }
     else {
@@ -4213,8 +4224,8 @@ UINTN RunMainMenu (
             else {
                 BREAD_CRUMB(L"%s:  10a 4a 1b 1", FuncTag);
                 egDisplayMessage (
-                    L"Enable 'hidden_tags' in 'showtools' config to hide tag", &BGColorBase,
-                    CENTER, 3, L"PauseSeconds"
+                    L"Enable 'hidden_tags' in 'showtools' config to hide tag",
+                    &BGColorBase, CENTER, 3, L"PauseSeconds"
                 );
             }
 
@@ -4260,7 +4271,8 @@ UINTN RunMainMenu (
     }
 
     BREAD_CRUMB(L"%s:  13", FuncTag);
-    if (DefaultSelection) {
+    // No need to check "*DefaultSelection" below
+    if (DefaultSelection != NULL) {
         BREAD_CRUMB(L"%s:  13a 1", FuncTag);
         MY_FREE_POOL(*DefaultSelection);
         *DefaultSelection = StrDuplicate (TempChosenEntry->Title);
@@ -4442,16 +4454,6 @@ VOID FreeMenuEntry (
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%s:  1 - START", FuncTag);
-
-
-    if (*Entry == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
-        LOG_DECREMENT();
-        LOG_SEP(L"X");
-
-        // Early Return
-        return;
-    }
 
     BREAD_CRUMB(L"%s:  2", FuncTag);
     switch ((*Entry)->Tag) {

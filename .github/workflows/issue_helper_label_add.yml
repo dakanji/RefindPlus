@@ -125,7 +125,7 @@ jobs:
           body: |
             Thank you for taking the time to suggest improvements to RefindPlus.
             However, at least one required item is missing.
-            This is typically useful background information.
+            This is typically background information.
 
             Please kindly amend your post accordingly.
 

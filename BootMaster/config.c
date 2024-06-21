@@ -1631,13 +1631,28 @@ VOID ExitOuter (
     SyncLinuxPrefixes();
 
     // Forced Default Settings
-    if ( AppleFirmware) GlobalConfig.RansomDrives            = FALSE;
-    if (!AppleFirmware) GlobalConfig.SetAppleFB              = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtect            = FALSE;
-    if (!AppleFirmware) GlobalConfig.NvramProtectEx          = FALSE;
-    if (GlobalConfig.EnableTouch) GlobalConfig.EnableMouse   = FALSE;
-    if (GlobalConfig.SyncTrust != 0) GlobalConfig.DirectBoot = FALSE;
-    if (GlobalConfig.SyncTrust != 0) GlobalConfig.Timeout    =     0;
+    if (GlobalConfig.EnableTouch) {
+        GlobalConfig.EnableMouse = FALSE;
+
+        if (!AppleFirmware) {
+            // DA-TAG: Force 'RescanDXE' on UEFI-PC
+            //         Update other instances if changing
+            GlobalConfig.RescanDXE = TRUE;
+        }
+    }
+    if (AppleFirmware) {
+        GlobalConfig.RescanDXE    = FALSE;
+        GlobalConfig.RansomDrives = FALSE;
+    }
+    else {
+        GlobalConfig.SetAppleFB     = FALSE;
+        GlobalConfig.NvramProtect   = FALSE;
+        GlobalConfig.NvramProtectEx = FALSE;
+    }
+    if (GlobalConfig.SyncTrust != ENFORCE_TRUST_NONE) {
+        GlobalConfig.DirectBoot = FALSE;
+        GlobalConfig.Timeout    =     0;
+    }
 
     #if REFIT_DEBUG > 0
     if (NotRunBefore) MuteLogger = FALSE;
@@ -3191,12 +3206,6 @@ VOID ReadConfig (
             GlobalConfig.EnableMouse = HandleBoolean (
                 TokenList, TokenCount
             );
-
-            // DA-TAG: Force 'RescanDXE'
-            //         Update other instances if changing
-            if (GlobalConfig.EnableMouse) {
-                GlobalConfig.RescanDXE = TRUE;
-            }
         }
         else if (MyStriCmp (TokenList[0], L"enable_touch")) {
             #if REFIT_DEBUG > 0
@@ -3210,12 +3219,6 @@ VOID ReadConfig (
             GlobalConfig.EnableTouch = HandleBoolean (
                 TokenList, TokenCount
             );
-
-            // DA-TAG: Force 'RescanDXE'
-            //         Update other instances if changing
-            if (GlobalConfig.EnableTouch) {
-                GlobalConfig.RescanDXE = TRUE;
-            }
         }
         else if (MyStriCmp (TokenList[0], L"persist_boot_args")) {
             #if REFIT_DEBUG > 0

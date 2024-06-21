@@ -352,10 +352,13 @@ static void fsw_ext4_dnode_free(struct fsw_ext4_volume *vol, struct fsw_ext4_dno
  * callback that converts it to the host-specific format.
  */
 
-static fsw_status_t fsw_ext4_dnode_stat(struct fsw_ext4_volume *vol, struct fsw_ext4_dnode *dno,
-                                        struct fsw_dnode_stat *sb)
-{
-    sb->used_bytes = dno->raw->i_blocks_lo * EXT4_BLOCK_SIZE(vol->sb);   // very, very strange...
+static
+fsw_status_t fsw_ext4_dnode_stat (
+    struct fsw_ext4_volume *vol,
+    struct fsw_ext4_dnode  *dno,
+    struct fsw_dnode_stat  *sb
+) {
+    sb->used_bytes = ((fsw_u64)dno->raw->i_blocks_lo) * EXT4_BLOCK_SIZE(vol->sb);   // very, very strange...
     fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->raw->i_ctime);
     fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->raw->i_atime);
     fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->raw->i_mtime);

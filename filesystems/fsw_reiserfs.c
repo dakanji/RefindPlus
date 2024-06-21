@@ -296,20 +296,24 @@ static void fsw_reiserfs_dnode_free(struct fsw_reiserfs_volume *vol, struct fsw_
  * callback that converts it to the host-specific format.
  */
 
-static fsw_status_t fsw_reiserfs_dnode_stat(struct fsw_reiserfs_volume *vol, struct fsw_reiserfs_dnode *dno,
-                                            struct fsw_dnode_stat *sb)
-{
+static
+fsw_status_t fsw_reiserfs_dnode_stat (
+    struct fsw_reiserfs_volume *vol,
+    struct fsw_reiserfs_dnode  *dno,
+    struct fsw_dnode_stat      *sb
+) {
     if (dno->sd_v1) {
-        if (dno->g.type == FSW_DNODE_TYPE_SPECIAL)
+        if (dno->g.type == FSW_DNODE_TYPE_SPECIAL) {
             sb->used_bytes = 0;
-        else
-            sb->used_bytes = dno->sd_v1->u.sd_blocks * vol->g.log_blocksize;
+        } else {
+            sb->used_bytes = ((fsw_u64)dno->sd_v1->u.sd_blocks) * vol->g.log_blocksize;
+        }
         fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v1->sd_ctime);
         fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v1->sd_atime);
         fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v1->sd_mtime);
         fsw_store_attr_posix(sb, dno->sd_v1->sd_mode);
     } else if (dno->sd_v2) {
-        sb->used_bytes = dno->sd_v2->sd_blocks * vol->g.log_blocksize;
+        sb->used_bytes = ((fsw_u64)dno->sd_v2->sd_blocks) * vol->g.log_blocksize;
         fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, dno->sd_v2->sd_ctime);
         fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, dno->sd_v2->sd_atime);
         fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, dno->sd_v2->sd_mtime);

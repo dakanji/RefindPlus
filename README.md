@@ -1,28 +1,28 @@
 <div align="center">
 
-# The RefindPlus Boot Manager
+# RefindPlus
 
-[![Release Version](https://img.shields.io/github/v/release/dakanji/RefindPlus?style=for-the-badge)](https://github.com/dakanji/RefindPlus/releases)[![Release Date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?display_date=published_at&style=for-the-badge&color=informational&label=)](https://github.com/dakanji/RefindPlus/releases)
+A boot manager for Mac and PC
 
-[![Coverity Scan](https://img.shields.io/coverity/scan/22695?style=for-the-badge)](https://scan.coverity.com/projects/22695)&nbsp;&nbsp;&nbsp;[![Codacy Grade](https://img.shields.io/codacy/grade/d2955171e96246579279c1a28c4b11cf?style=for-the-badge&label=Codacy)](https://app.codacy.com/gh/dakanji/RefindPlus/dashboard)
+<br>
+
+[![Release Version](https://img.shields.io/github/v/release/dakanji/RefindPlus?style=for-the-badge&label=current)](https://github.com/dakanji/RefindPlus/releases)[![Release Date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?display_date=published_at&style=for-the-badge&color=informational&label=)](https://github.com/dakanji/RefindPlus/releases)
+
+[![Coverity Scan](https://img.shields.io/coverity/scan/22695)](https://scan.coverity.com/projects/22695)&nbsp;&nbsp;&nbsp;[![Codacy Grade](https://img.shields.io/codacy/grade/d2955171e96246579279c1a28c4b11cf?label=codacy)](https://app.codacy.com/gh/dakanji/RefindPlus/dashboard)
+
+[![License Type](https://img.shields.io/badge/GPL--3.0/Later-blue?label=copies)](https://github.com/dakanji/RefindPlus/blob/GOPFix/INFO.txt)
 
 </div>
 
+<br><br>
+
 ## Overview
-RefindPlus is a boot manager for Mac and PC that builds on the venerable [rEFInd Boot Manager](https://www.rodsbooks.com/refind) with enhancements and fixes.
 
-The main development focus is on the following units:
-- **MacPro3,1**: Early 2008 Mac Pro
-- **MacPro4,1**: Early 2009 Mac Pro
-- **MacPro5,1**: Mid 2010 and Mid 2012 Mac Pro
-- **Xserve2,1**: Early 2008 Xserve
-- **Xserve3,1**: Early 2009 Xserve
+RefindPlus builds on _`rEFInd`_ with enhancements and fixes that include several Apple Mac and UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager. It offers these enhancements and fixes while maintaining rEFInd's core functionality.
 
-The scope of the enhancements and fixes provided by RefindPlus are not limited to those units however, and include several other Apple Mac as well as multiple UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager on Mac and PC.
+RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-typical options for running operating systems and uEFI utilities on Mac and PC.
 
-RefindPlus offers these enhancements and fixes while maintaining the core functionality within rEFInd along with full forward configuration compatibility from rEFInd. It is particularly useful for users with additional configuration needs as well as those that require advanced or non-standard options for running operating systems and uEFI utilities on Mac and PC.
-
-## Headline Features
+Some features:
 - Maintains feature and configuration parity with the base upstream version.
 - Provides protection against damage to Mac nvRAM when booting UEFI Windows.
 - Provides option to avoid boot failures and associated freezes on T2/TPM chipped units.
@@ -37,12 +37,10 @@ RefindPlus offers these enhancements and fixes while maintaining the core functi
 - Provides NVMe capability, if required, via an inbuilt `NvmExpress` driver.
   - Removes the need to load external drivers on units without native NVMe support.
   - Basically allows working as if NVMe is natively supported by the firmware.
-    - Removes the need for a risky `firmware flash` on units such as the MacPro3,1.
 - Provides APFS filesystem capability, if required, via an inbuilt `APFS JumpStart` driver.
   - Removes the need to load external drivers on units without native APFS support.
   - Additionally ensures matching APFS drivers for specific macOS versions are used.
   - Basically allows working as if APFS is natively supported by the firmware.
-    - Removes the need for a risky `firmware flash` on units such as the MacPro3,1.
 - Fully supports APFS filesystem requirements.
   - This allows booting recent macOS versions from single named volumes.
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
@@ -51,6 +49,7 @@ RefindPlus offers these enhancements and fixes while maintaining the core functi
     - As opposed to generic and difficult to distinguish `PreBoot` volumes.
 
 ## Installation
+
 [MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus on macOS. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) can be installed first and its efi file replaced with the RefindPlus efi file. (Ensure the RefindPlus efi file is renamed to match). This manual process allows installing RefindPlus on other operating systems supported upstream. On macOS, MyBootMgr can optionally be used to set a RefindPlus|OpenCore chain-loading arrangement up for MacPro3,1 to MacPro5,1 as well as on Xserve2,1 and Xserve3,1.
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
@@ -60,13 +59,14 @@ RefindPlus will function with the upstream configuration file, `refind.conf`, bu
 Note that if RefindPlus is run without activating the additional options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.1. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the base upstream release version plus any such updates and typically include updates for subsequent upstream release versions since the base version.
 
 ## Additional Functionality
+
 RefindPlus-specific funtionality can be configured by adding the tokens below to the upstream configuration file.
 Additional information is provided in the sample RefindPlus configuration file.
 
 Token | Functionality
 ----- | -----
 continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
-csr_dynamic           |Actively enables or disables the SIP Policy on Macs
+csr_dynamic           |Actively enables or disables Apple's `System Integrity Protection` (SIP)
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
 decline_help_scan     |Disables feature that skips showing misc typically unwanted loaders
@@ -113,6 +113,7 @@ transient_boot        |Disables feature that highlights the last booted loader b
 unicode_collation     |Provides fine tuned support for languages that use unicode text
 
 ## Modified Functionality
+
 In addition to the new functionality listed above, the following upstream tokens have been modified:
 - **"timeout":** The default is no timeout unless explicitly set.
 - **"use_nvram":** RefindPlus variables are written to the file system, not the motherboard's nvRAM chip, unless explicitly set to do so by activating this configuration token.
@@ -131,7 +132,10 @@ In addition to the new functionality listed above, the following upstream tokens
   - Levels 1 and 2 output logs similar to the detailed upstream format.
     - Level 1 is broadly equivalent to upstream Level 4 (upstream Levels 1 to 3 were dispensed with)
     - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
-      - Create `NOOPT` builds by passing `ALL` as a second parameter to the RefindPlus build script
+      - Create `NOOPT` builds by passing `ALL` or `NPT` as a second parameter to the RefindPlus build script
+        - Setting `ALL` includes an `NPT` build to the standard `REL` and `DBG` builds created
+        - Setting `NPT` only creates that build type
+          - Applies to setting `REL` or `DBG`
       - The first parameter is the build branch, which also needs to be specified in such instances
     - When Level 2 is not exposed, selected levels above `1` will be capped at Level 1
     - When exposed, selected levels above `2` will be capped at Level 2
@@ -139,6 +143,7 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"screensaver":** The screensaver cycles through a set of colours as opposed to a single grey colour.
 
 ## Divergence
+
 Significant visible implementation differences vis-a-vis the upstream base are:
 - **GZipped Loaders:** RefindPlus only provides stub support for handling GZipped loaders as this is largely only relevant for units on the ARM architecture. This stub support is only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` configuration token as upstream.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
@@ -156,6 +161,7 @@ Significant visible implementation differences vis-a-vis the upstream base are:
 - **Pointer Device Priority:** The upstream implementation of pointer device priority is based on how the `enable_mouse` and `enable_touch` pointer device control tokens appear in the configuration file(s) when both are active. The last pointer device control token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, `enable_touch` always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s). This means that to use a mouse in RefindPlus, `enable_touch` must be disabled (default) in addition to enabling `enable_mouse`.
 
 ## Roll Your Own
+
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x86_64 Only).
 
-[CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for the ReadMe File related to the current (work in progress) code base.
+[CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for the ReadMe file related to the current (work in progress) code base.

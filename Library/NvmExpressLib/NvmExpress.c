@@ -159,10 +159,9 @@ EFI_STATUS EnumerateNvmeDevNamespace (
     Device->StorageSecurity.SendData    = NvmeStorageSecuritySendData;
 
     // Create DiskInfo Protocol instance
-    CopyMem (
-        &Device->NamespaceData,
-        NamespaceData,
-        sizeof (NVME_ADMIN_NAMESPACE_DATA)
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, &Device->NamespaceData,
+        NamespaceData, sizeof (NVME_ADMIN_NAMESPACE_DATA)
     );
     InitializeDiskInfo (Device);
 
@@ -260,17 +259,15 @@ EFI_STATUS EnumerateNvmeDevNamespace (
     );
 
     // Build controller name for Component Name (2) protocol.
-    CopyMem (
-        Sn,
-        Private->ControllerData->Sn,
-        sizeof (Private->ControllerData->Sn)
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, Sn,
+        Private->ControllerData->Sn, sizeof (Private->ControllerData->Sn)
     );
     Sn[20] = 0;
 
-    CopyMem (
-        Mn,
-        Private->ControllerData->Mn,
-        sizeof (Private->ControllerData->Mn)
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, Mn,
+        Private->ControllerData->Mn, sizeof (Private->ControllerData->Mn)
     );
     Mn[40] = 0;
 
@@ -569,10 +566,9 @@ VOID EFIAPI ProcessAsyncTaskList (
 
                 // Copy the Respose Queue entry for this command to the callers
                 // response buffer.
-                CopyMem (
-                    AsyncRequest->Packet->NvmeCompletion,
-                    Cq,
-                    sizeof (EFI_NVM_EXPRESS_COMPLETION)
+                NVME_CALL_3_WRAPPER(
+                    gBS->CopyMem, AsyncRequest->Packet->NvmeCompletion,
+                    Cq, sizeof (EFI_NVM_EXPRESS_COMPLETION)
                 );
 
                 // Free the resources allocated before cmd submission
@@ -905,10 +901,9 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
             Private->Passthru.GetNextNamespace = NvmExpressGetNextNamespace;
             Private->Passthru.BuildDevicePath  = NvmExpressBuildDevicePath;
             Private->Passthru.GetNamespace     = NvmExpressGetNamespace;
-            CopyMem (
-                &Private->PassThruMode,
-                &gEfiNvmExpressPassThruMode,
-                sizeof (EFI_NVM_EXPRESS_PASS_THRU_MODE)
+            NVME_CALL_3_WRAPPER(
+                gBS->CopyMem, &Private->PassThruMode,
+                &gEfiNvmExpressPassThruMode, sizeof (EFI_NVM_EXPRESS_PASS_THRU_MODE)
             );
             InitializeListHead (&Private->AsyncPassThruQueue);
             InitializeListHead (&Private->UnsubmittedSubtasks);

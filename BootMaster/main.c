@@ -213,6 +213,7 @@ UINTN                  AppleFramebuffers    =                     0;
 UINT32                 AccessFlagsBoot      =     ACCESS_FLAGS_BOOT;
 UINT32                 AccessFlagsFull      =     ACCESS_FLAGS_FULL;
 CHAR16                *ArchType             =                  NULL;
+CHAR16                *ArchBits             =                  NULL;
 CHAR16                *VendorInfo           =                  NULL;
 CHAR16                *gHiddenTools         =                  NULL;
 BOOLEAN                gKernelStarted       =                 FALSE;
@@ -1702,16 +1703,8 @@ VOID RunNVramSync (
                 (VOID **) &TmpBuffer, NULL
             );
             if (Status == EFI_NOT_FOUND) {
-                if (IsMacOS) {
-                    Status = EfivarGetRaw (
-                        &OpenCoreVendorGuid, L"opencore-version",
-                        (VOID **) &TmpBuffer, NULL
-                    );
-                }
-                if (Status == EFI_NOT_FOUND) {
-                    // Not Present
-                    Proceed = FALSE;
-                }
+                // Not Present
+                Proceed = FALSE;
             }
         }
     }
@@ -1774,12 +1767,6 @@ VOID RunNVramSync (
         L"bluetoothExternalDongleFailed", &AppleBootGuid,
         AccessFlagsBoot, 0, NULL
     );
-    if (IsMacOS) {
-        SetHardwareNvramVariable (
-            L"opencore-version", &OpenCoreVendorGuid,
-            AccessFlagsBoot, 0, NULL
-        );
-    }
 
     #if REFIT_DEBUG > 0
     MsgStr = L"Status:- 'Success' ... Apply nvRAM Sync";
@@ -2170,6 +2157,9 @@ EFI_STATUS SetHardwareNvramVariable (
 VOID StoreLoaderName (
     IN CHAR16 *Name
 ) {
+    UINTN      NameSize;
+
+
     if (Name == NULL) {
         // Early Return
         return;
@@ -2185,9 +2175,10 @@ VOID StoreLoaderName (
         return;
     }
 
+    NameSize = (StrLen (Name) + 1) * sizeof (CHAR16);
     EfivarSetRaw (
         &RefindPlusGuid, L"PreviousBoot",
-        Name, StrLen (Name) * 2 + 2, TRUE
+        Name, NameSize, TRUE
     );
 } // VOID StoreLoaderName()
 
@@ -2908,8 +2899,14 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Set Default Scan Pattern */
     (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1)
-        ? CopyMem (GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS)
-        : CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
+        ? REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, GlobalConfig.ScanFor,
+            "ihebocm   ", NUM_SCAN_OPTIONS
+        )
+        : REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, GlobalConfig.ScanFor,
+            "ieom      ", NUM_SCAN_OPTIONS
+        );
 
     /* Init Logging */
     // DA-TAG: Also on RELEASE builds as we need the timer
@@ -2932,18 +2929,26 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Architecture */
 #if defined(EFIX64)
-    ArchType = L"x86_64 (64 bit)";
+    ArchType = L"x86_64";
+    ArchBits = L"64 bit";
 #elif defined(EFI32)
-    ArchType = L"x86_32 (32 bit)";
+    ArchType = L"x86_32";
+    ArchBits = L"32 bit";
 #elif defined(EFIAARCH64)
-    ArchType = L"ARM_64 (64 bit)";
+    ArchType = L"ARM_64";
+    ArchBits = L"64 bit";
 #else
     ArchType = L"Unknown";
 #endif
 
 #if REFIT_DEBUG > 0
 // Big REFIT_DEBUG - START
-    LOG_MSG("Arch/Type:- '%s'", ArchType);
+    if (ArchBits == NULL) {
+        LOG_MSG("Arch/Type:- '%s'", ArchType);
+    }
+    else {
+        LOG_MSG("Arch/Type:- '%s (%s)'", ArchType, ArchBits);
+    }
     LOG_MSG("\n");
 
     /* Build Engine */
@@ -2999,7 +3004,8 @@ EFI_STATUS EFIAPI efi_main (
         SelfGUID    = GuidAsString (&SelfVolume->PartGuid);
         StrSelfUUID = GuidAsString (&SelfVolume->VolUuid);
         LOG_MSG("INFO: Self-Volume Data:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, StrSelfUUID);
-        LOG_MSG("%s      Install Location:- '%s'", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
+        LOG_MSG("%s      Program Filename:- '%s'", OffsetNext, (SelfBaseName != NULL) ? SelfBaseName : L"Not Set");
+        LOG_MSG("%s      Install Location:- '%s'", OffsetNext, (SelfDirPath  != NULL) ? SelfDirPath  : L"Not Set");
         MY_FREE_POOL(SelfGUID);
         MY_FREE_POOL(StrSelfUUID);
     }
@@ -3874,7 +3880,7 @@ EFI_STATUS EFIAPI efi_main (
 
             // No break ... Drop into TAG_REBOOT with FoundTool == TRUE
             case TAG_REBOOT:    // Reboot
-                TypeStr = L"Run System Restart";
+                TypeStr = L"System Restart";
 
                 // FoundTool == FALSE if hit directly
                 //   - FALSE == Show Confirmation Screen ... YES
@@ -3907,8 +3913,8 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n");
                 MY_FREE_POOL(MsgStr);
 
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
-                LOG_MSG("%s", TypeStr);
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Run %s", TypeStr);
+                LOG_MSG("Run %s", TypeStr);
                 END_TAG();
                 #endif
 
@@ -4472,9 +4478,8 @@ EFI_STATUS EFIAPI efi_main (
                     }
                 }
 
-                if (!SkipTrustChain &&
-                    !KeepTrustChain &&
-                    !FoundVentoy    &&
+                if (!FoundVentoy    &&
+                    !SkipTrustChain &&
                     (GlobalConfig.SyncTrust & ENFORCE_TRUST_OTHERS)
                 ) {
                     KeepTrustChain = TRUE;
@@ -4482,40 +4487,40 @@ EFI_STATUS EFIAPI efi_main (
 
                 if (!KeepTrustChain) {
                     Trigger = SYNC_TRUST_SKIP;
+                    RunOurTool = FALSE;
                 }
                 else {
                     // May not return from this ... End dash line added if so
                     Trigger = RunTrustSync (ourLoaderEntry);
+                    RunOurTool = TRUE;
                 }
 
-                if (Trigger == SYNC_TRUST_EXIT) {
-                    continue;
-                }
+                if (Trigger != SYNC_TRUST_EXIT) {
+                    if (Trigger == SYNC_TRUST_SKIP) {
+                        // No end dash line ... Added in 'StartLoader'
+                        StartLoader (ourLoaderEntry, SelectionName, RunOurTool);
 
-                if (Trigger == SYNC_TRUST_SKIP) {
-                    // No end dash line ... Added in 'IsValidLoader'
-                    StartLoader (ourLoaderEntry, SelectionName);
-
-                    #if REFIT_DEBUG > 0
-                    if (!FoundVentoy) {
-                        UnexpectedReturn (L"OS Loader");
+                        #if REFIT_DEBUG > 0
+                        if (!FoundVentoy) {
+                            UnexpectedReturn (L"OS Loader");
+                        }
+                        #endif
                     }
-                    #endif
-                }
-                else {
-                    // Using as Temp String
-                    TypeStr = L"Could *NOT* Load Native Boot Chain";
+                    else {
+                        // Using as Temp String
+                        TypeStr = L"Could *NOT* Load Native Boot Chain";
 
-                    egDisplayMessage (
-                        TypeStr,
-                        &BGColorFail, CENTER, 4, L"PauseSeconds"
-                    );
+                        egDisplayMessage (
+                            TypeStr,
+                            &BGColorFail, CENTER, 4, L"PauseSeconds"
+                        );
 
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TypeStr);
-                    LOG_MSG("%s    * %s", OffsetNext, TypeStr);
-                    LOG_MSG("%s", OffsetNext);
-                    #endif
+                        #if REFIT_DEBUG > 0
+                        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TypeStr);
+                        LOG_MSG("%s    * %s", OffsetNext, TypeStr);
+                        LOG_MSG("%s", OffsetNext);
+                        #endif
+                    }
                 }
 
             break;

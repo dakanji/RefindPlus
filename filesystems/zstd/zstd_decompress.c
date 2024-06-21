@@ -1435,7 +1435,6 @@ size_t ZSTD_findFrameCompressedSize(const void *src, size_t srcSize)
 			if (remainingSize < 4)
 				return ERROR(srcSize_wrong);
 			ip += 4;
-			remainingSize -= 4;
 		}
 
 		return ip - ipstart;

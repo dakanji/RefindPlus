@@ -892,7 +892,7 @@ static fsw_status_t fsw_btrfs_read_logical (struct fsw_btrfs_volume *vol, uint64
     struct stripe_table *stripe_table = NULL;
     int challoc = 0;
     struct btrfs_chunk_item *chunk = NULL;
-    fsw_status_t err = 0;
+    fsw_status_t err;
     while (size > 0)
     {
         uint8_t *ptr;

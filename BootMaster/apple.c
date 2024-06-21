@@ -499,21 +499,16 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     #endif
 
     UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
+
     Status = REFIT_CALL_1_WRAPPER(SetOs->SetOsVersion, MacVersionStr);
+    if (!EFI_ERROR(Status) && SetOs->Version >= 2) {
+        REFIT_CALL_1_WRAPPER(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
+    }
 
     MY_FREE_POOL(MacVersionStr);
     MY_FREE_POOL(AppleVersionOS);
 
-    if (EFI_ERROR(Status)) {
-        // Early Return ... Return Error
-        return Status;
-    }
-
-    if (SetOs->Version >= 2) {
-        REFIT_CALL_1_WRAPPER(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
-    }
-
-    return EFI_SUCCESS;
+    return Status;
 } // EFI_STATUS SetAppleOSInfo()
 
 
@@ -599,7 +594,10 @@ CHAR16 * RefitGetBootPathName (
         return NULL;
     }
 
-    CopyMem (PathName, FilePath->PathName, Size);
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, PathName,
+        FilePath->PathName, Size
+    );
     if (!MyStrStr (PathName, L"\\")) {
         StrCpyS (PathName, PathNameSize, L"\\");
 

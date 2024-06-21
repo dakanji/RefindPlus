@@ -1,6 +1,15 @@
 0.14.2.AA (PRE-RELEASE):
 -----------------------
-- PENDING
+- Fixes `ScanFirmwareDefined` Handling
+  * Spurious items were added (Typically as firmware shell instances ... Thanks @emperor06)
+  * This bug was introduced in v0.14.0.AC (Commit aad3298)
+- Improves `Misc` Handling
+  * Some entry types were mislabelled as `Linux`
+  * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
+  * No longer attempts to clear the `opencore-version` variable when booting into macOS
+    - This variable is actually only stored in a volatile state
+  * Addressed misc static analysis flags
+    - These apply to some filesystem drivers; which are updated accordingly
 
 
 0.14.1.AA (04 Jun 2024):
@@ -8,7 +17,7 @@
 - Synced with Upstream v0.14.1
 - Adds `SyncTrust` Feature
   * The boot `Chain of Trust` may be broken on booting with 3rd-party tools on T2/TPM chipped units
-  * When this happens, the unit refuse to boot the selected item and may even become unresponsive
+  * When this happens, the unit refuses to boot the selected item and may even become unresponsive
   * This feature provides a workaround by allowing a native trusted reboot to the selected item
   * This feature can be enabled by activating a new `sync_trust` configuration token
 - Adds `LegacySync` Feature
@@ -16,7 +25,7 @@
     - This was from code that went in upstream in 2012 when this was a reasonable working assumption
       * However, Macs later became UEFI certified and the last Intel Macs appear to be UEFI Class 3+
       * UEFI Class 3/3+ devices do not support legacy BIOS boot
-    - This feature attempts to categorise Macs and allow/disallow legacy boot accordingly
+    - This feature attempts to categorise Macs and allow/disallow legacy BIOS boot accordingly
   * Enabled by default but can be disabled using a new `disable_legacy_sync` configuration token
     - Disabling might be needed if a Mac is mis-categorised and legacy BIOS boot wrongly prevented
 - Adds `HelpSize` Feature
@@ -33,10 +42,9 @@
   * Optimisations for speed had potentially disabled legacy BIOS boot on some Macs
   * This bug was introduced in v0.13.3.AB (Commit 66dbed0)
 - Fixes Potential Memory Conflict
-  * Potential Memory Conflict
-    - Some constants were passed to a function that reallocates memory
-    - This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
-    - Extended in v0.14.0.AB (Commit 5cb1ed9)
+  * Some constants were passed to a function that reallocates memory
+  * This bug was introduced in v0.14.0.AA (Commit 3fc36f5)
+  * Extended in v0.14.0.AB (Commit 5cb1ed9)
 - Fixes Display Resolution Handling
   * User defined resolutions were not being properly handled
     - Only the default, `max`, resolution was considered

@@ -112,7 +112,10 @@ CHAR16 * EfiStrDuplicate (
     Size = StrSize (Src); //at least 2bytes
     Dest = AllocateZeroPool (Size);
     if (Dest != NULL) {
-        CopyMem (Dest, Src, Size);
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, Dest,
+            Src, Size
+        );
     }
 
     return Dest;
@@ -185,7 +188,10 @@ VOID * EfiReallocatePool (
 
     if (OldPool != NULL) {
         if (NewPool != NULL) {
-            CopyMem (NewPool, OldPool, OldSize < NewSize ? OldSize : NewSize);
+            REFIT_CALL_3_WRAPPER(
+                gBS->CopyMem, NewPool,
+                OldPool, OldSize < NewSize ? OldSize : NewSize
+            );
         }
 
         MY_FREE_POOL(OldPool);

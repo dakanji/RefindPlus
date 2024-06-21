@@ -7,6 +7,7 @@
 **/
 
 #include "NvmExpress.h"
+#include "nvme_call_wrapper.h"
 
 EFI_DISK_INFO_PROTOCOL gNvmExpressDiskInfoProtocolTemplate = {
     EFI_DISK_INFO_NVME_INTERFACE_GUID,
@@ -28,10 +29,9 @@ EFI_DISK_INFO_PROTOCOL gNvmExpressDiskInfoProtocolTemplate = {
 VOID InitializeDiskInfo (
     IN  NVME_DEVICE_PRIVATE_DATA    *Device
 ) {
-    CopyMem (
-        &Device->DiskInfo,
-        &gNvmExpressDiskInfoProtocolTemplate,
-        sizeof (EFI_DISK_INFO_PROTOCOL)
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, &Device->DiskInfo,
+        &gNvmExpressDiskInfoProtocolTemplate, sizeof (EFI_DISK_INFO_PROTOCOL)
     );
 }
 
@@ -94,10 +94,9 @@ EFI_STATUS EFIAPI NvmExpressDiskInfoIdentify (
 
     if (*IdentifyDataSize >= sizeof (Device->NamespaceData)) {
         Status = EFI_SUCCESS;
-        CopyMem (
-            IdentifyData,
-            &Device->NamespaceData,
-            sizeof (Device->NamespaceData)
+        NVME_CALL_3_WRAPPER(
+            gBS->CopyMem, IdentifyData,
+            &Device->NamespaceData, sizeof (Device->NamespaceData)
         );
     }
     *IdentifyDataSize = sizeof (Device->NamespaceData);

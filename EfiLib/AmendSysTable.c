@@ -296,7 +296,6 @@ EFI_STATUS OurCreateEventEx (
     IEVENT            *IEvent;
     INTN               Index;
 
-    Status = EFI_SUCCESS;
 
     // Check for invalid NotifyTpl if a notify event type
     if ((Type & (EVT_NOTIFY_WAIT | EVT_NOTIFY_SIGNAL)) != 0) {

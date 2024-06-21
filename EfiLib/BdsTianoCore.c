@@ -233,7 +233,10 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
         return NULL;
     }
 
-    CopyMem (Option->DevicePath, DevicePath, GetDevicePathSize (DevicePath));
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Option->DevicePath,
+        DevicePath, GetDevicePathSize (DevicePath)
+    );
     Option->Attribute   = Attribute;
     Option->Description = AllocateZeroPool (StrSize (Description));
     if (Option->Description == NULL) {
@@ -244,7 +247,10 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
         return NULL;
     }
 
-    CopyMem (Option->Description, Description, StrSize (Description));
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Option->Description,
+        Description, StrSize (Description)
+    );
     Option->LoadOptions = AllocateZeroPool (LoadOptionsSize);
     if (Option->LoadOptions == NULL) {
         MY_FREE_POOL(Option->DevicePath);
@@ -255,7 +261,10 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
         return NULL;
     }
 
-    CopyMem (Option->LoadOptions, LoadOptions, LoadOptionsSize);
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Option->LoadOptions,
+        LoadOptions, LoadOptionsSize
+    );
     Option->LoadOptionsSize = LoadOptionsSize;
 
     // Get the value from VariableName Unicode string since the ISO

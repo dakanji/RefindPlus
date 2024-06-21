@@ -163,9 +163,9 @@ EG_IMAGE * egCopyImage (
         return NULL;
     }
 
-    CopyMem (
-        NewImage->PixelData, Image->PixelData,
-        Image->Width * Image->Height * sizeof (EG_PIXEL)
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, NewImage->PixelData,
+        Image->PixelData, Image->Width * Image->Height * sizeof (EG_PIXEL)
     );
 
     return NewImage;

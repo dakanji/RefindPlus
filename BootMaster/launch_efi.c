@@ -677,7 +677,7 @@ EFI_STATUS StartEFIImage (
     MY_FREE_POOL(MsgStr);
 
     do {
-        ReturnStatus = Status = EFI_LOAD_ERROR;  // In case list is empty
+        ReturnStatus = EFI_LOAD_ERROR;  // In case list is empty
 
         // DA-TAG: Investigate This
         //         Some EFIs crash if attempting to load drivers for an invalid
@@ -695,15 +695,13 @@ EFI_STATUS StartEFIImage (
             MY_FREE_POOL(MsgStr);
             #endif
 
-            if (EFI_ERROR(Status)) {
-                MsgStr = PoolPrint (
-                    L"When Loading %s ... %s",
-                    ImageTitle, ValidText
-                );
-                ValidText = L"Invalid Binary";
-                CheckError (Status, MsgStr);
-                MY_FREE_POOL(MsgStr);
-            }
+            MsgStr = PoolPrint (
+                L"When Loading %s ... %s",
+                ImageTitle, ValidText
+            );
+            ValidText = L"Invalid Binary";
+            CheckError (ReturnStatus, MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             // Bail Out
             break;
@@ -731,19 +729,18 @@ EFI_STATUS StartEFIImage (
         //
         //         Track down the cause of this error, and fix it, if possible.
         /*
-        Status = REFIT_CALL_6_WRAPPER(
+        ReturnStatus = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePath,
             ImageData, ImageSize, &ChildImageHandle
         );
         */
-        Status = REFIT_CALL_6_WRAPPER(
+        ReturnStatus = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePath,
             NULL, 0, &ChildImageHandle
         );
         MY_FREE_POOL(DevicePath);
-        ReturnStatus = Status;
 
         if (SecureFlag && ShimFound) {
             // Load ourself into memory. This is a trick to work around a bug in
@@ -777,13 +774,13 @@ EFI_STATUS StartEFIImage (
             );
         }
 
-        if (Status == EFI_ACCESS_DENIED   ||
-            Status == EFI_SECURITY_VIOLATION
+        if (ReturnStatus == EFI_ACCESS_DENIED   ||
+            ReturnStatus == EFI_SECURITY_VIOLATION
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"'%r' Returned by Secure Boot While Loading %s",
-                Status, ImageTitle
+                ReturnStatus, ImageTitle
             );
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
             LOG_MSG("* ERROR: %s", MsgStr);
@@ -799,13 +796,13 @@ EFI_STATUS StartEFIImage (
 
         do {
             ChildLoadedImage = NULL;
-            ReturnStatus = Status = REFIT_CALL_3_WRAPPER(
+            ReturnStatus = REFIT_CALL_3_WRAPPER(
                 gBS->HandleProtocol, ChildImageHandle,
                 &LoadedImageProtocol, (VOID **) &ChildLoadedImage
             );
-            if (EFI_ERROR(Status)) {
+            if (EFI_ERROR(ReturnStatus)) {
                 CheckError (
-                    Status, L"while Getting LoadedImageProtocol Handle"
+                    ReturnStatus, L"while Getting LoadedImageProtocol Handle"
                 );
 
                 // Unload and Bail Out
@@ -897,13 +894,12 @@ EFI_STATUS StartEFIImage (
             }
             #endif
 
-            Status = REFIT_CALL_3_WRAPPER(
+            ReturnStatus = REFIT_CALL_3_WRAPPER(
                 gBS->StartImage, ChildImageHandle,
                 NULL, NULL
             );
 
-            // Control returns here if the child image calls 'Exit()'
-            ReturnStatus = Status;
+            /* Control returns here if the child image calls 'Exit()' */
 
             // DA-TAG: Used in 'ScanDriverDir()'
             NewImageHandle = ChildImageHandle;
@@ -1181,23 +1177,26 @@ VOID RebootIntoLoader (
 
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader (
-    LOADER_ENTRY *Entry,
-    CHAR16       *SelectionName
+    IN LOADER_ENTRY *Entry,
+    IN CHAR16       *SelectionName,
+    IN BOOLEAN       TrustSynced
 ) {
-    CHAR16 *MsgStr;
     CHAR16 *LoaderPath;
 
     IsBoot        = TRUE;
     BootSelection = SelectionName;
-    LoaderPath    = Basename (Entry->LoaderPath);
-    MsgStr        = PoolPrint (
-        L"%s:- '%s'",
-        (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"User Input",
-        SelectionName
-    );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    if (TrustSynced) {
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    }
+    else {
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"%s:- '%s'",
+            (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"User Input",
+            SelectionName
+        );
+    }
     #endif
 
     if (GlobalConfig.EnableAndLockVMX) {
@@ -1205,6 +1204,9 @@ VOID StartLoader (
     }
 
     BeginExternalScreen (Entry->UseGraphicsMode, SelectionName);
+
+    LoaderPath = Basename (Entry->LoaderPath);
+
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
@@ -1215,7 +1217,6 @@ VOID StartLoader (
         FALSE, NULL
     );
 
-    MY_FREE_POOL(MsgStr);
     MY_FREE_POOL(LoaderPath);
 } // VOID StartLoader()
 

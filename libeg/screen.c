@@ -1253,10 +1253,10 @@ EFI_STATUS egSetMaxResolution (VOID) {
         return EFI_UNSUPPORTED;
     }
 
-    XStatus =          EFI_NOT_READY;
-    Info    =                   NULL;
-    SumOld  = SumNew            =  0;
-    Width   = Height = BestMode =  0;
+    XStatus = EFI_NOT_READY;
+    Info    =          NULL;
+    Width   = Height   =  0;
+    SumOld  = BestMode =  0;
     MaxMode = GOPDraw->Mode->MaxMode;
 
     #if REFIT_DEBUG > 0
@@ -1908,7 +1908,9 @@ VOID egInitScreen (VOID) {
             #endif
         }
         else {
-            if (OldGop && OldGop->Mode->MaxMode > 0) {
+            if (OldGop != NULL &&
+                OldGop->Mode->MaxMode > 0
+            ) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2049,8 +2051,12 @@ VOID egInitScreen (VOID) {
                         &GOPDrawProtocolGuid, (VOID **) &OldGop
                     );
                     if (!EFI_ERROR(Status)) {
-                        Status = EFI_NOT_READY;
-                        if (OldGop && OldGop->Mode->MaxMode > 0) {
+                        if (OldGop == NULL        ||
+                            OldGop->Mode->MaxMode == 0
+                        ) {
+                            Status = EFI_NOT_READY;
+                        }
+                        else {
                             Status = EFI_SUCCESS;
                             GOPDraw = OldGop;
                         }

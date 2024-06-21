@@ -156,6 +156,8 @@ EFI\\BOOT\\ia32_tools\\ipxe_ia32.efi,EFI\\BOOT\\ia32_tools\\ipxe.efi,EFI\\BOOT\\
 EFI\\ipxe_ia32.efi,EFI\\ipxe.efi,EFI\\ia32_ipxe.efi,EFI\\ipxeia32.efi,\
 \\ipxe_ia32.efi,\\ipxe.efi,\\ia32_ipxe.efi,\\ipxeia32.efi"
 #   define MEMTEST_NAMES \
+L"memtest.efi,memtest_ia32.efi,ia32_memtest.efi,memtestia32.efi,memtest+ia32.efi,\
+memtest86.efi,memtest86_ia32.efi,ia32_memtest86.efi,memtest8ia32.efi,memtest86+ia32.efi,bootia32.efi"
 #   define FALLBACK_SKIPNAME       L"bootx64.efi,bootaa64.efi,bootmips.efi"
 L"memtest.efi,memtest_ia32.efi,ia32_memtest.efi,memtestia32.efi,memtest+ia32.efi,\
 memtest86.efi,memtest86_ia32.efi,ia32_memtest86.efi,memtest86ia32.efi,memtest86+ia32.efi,bootia32.efi"
@@ -204,6 +206,8 @@ EFI\\BOOT\\aa64_tools\\ipxe_aa64.efi,EFI\\BOOT\\aa64_tools\\ipxe.efi,EFI\\BOOT\\
 EFI\\ipxe_aa64.efi,EFI\\ipxe.efi,EFI\\aa64_ipxe.efi,EFI\\ipxeaa64.efi,\
 \\ipxe_aa64.efi,\\ipxe.efi,\\aa64_ipxe.efi,\\ipxeaa64.efi"
 #   define MEMTEST_NAMES \
+L"memtest.efi,memtest_aa64.efi,aa64_memtest.efi,memtestaa64.efi,memtest+aa64.efi,\
+memtest86.efi,memtest86_aa64.efi,aa64_memtest86.efi,memtest8aa64.efi,memtest86+aa64.efi,bootaa64.efi"
 #   define FALLBACK_SKIPNAME       L"bootx64.efi,bootia32.efi,bootmips.efi"
 L"memtest.efi,memtest_aa64.efi,aa64_memtest.efi,memtestaa64.efi,memtest+aa64.efi,\
 memtest86.efi,memtest86_aa64.efi,aa64_memtest86.efi,memtest86aa64.efi,memtest86+aa64.efi,bootaa64.efi"
@@ -224,7 +228,7 @@ L"EFI\\tools\\gdisk.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\gdisk.efi,\\gdisk.efi"
 #   define NETBOOT_NAMES \
 L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #   define MEMTEST_NAMES           L"memtest.efi,memtest86.efi,boot.efi"
-#   define FALLBACK_SKIPNAME       L"boot123abc.efi"      // Dummy
+#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootia32.efi,bootaa64.efi,bootmips.efi"
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" // Not really correct
 #   define FALLBACK_BASENAME       L"boot.efi"            // Not really correct
 #   define NETBOOT_FILES           L"ipxe.efi"
@@ -237,12 +241,12 @@ L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #define BASE_LINUX_DISTROS \
 L"Alpine,Arch,Artful,Bionic,Cachy,Centos,Chakra,Crunchbang,Debian,Deepin,\
 Devuan,Elementary,Endeavour,Fedora,Frugalware,Gentoo,Gummiboot,LinuxMint,\
-Mageia,Mandriva,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,Suse,\
+Mageia,Mandriva,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,SUSE,\
 Trusty,Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Xenial,Zesty"
 
 #define MAIN_LINUX_DISTROS \
-L"Arch,Debian,Deepin,Elementary,Endeavour,Fedora,\
-LinuxMint,Manjaro,NixOS,OpenSUSE,Redhat,Ubuntu,Zorin"
+L"Arch,Debian,Deepin,Elementary,Endeavour,Fedora,Gentoo,\
+LinuxMint,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,Ubuntu,Zorin"
 
 LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
 

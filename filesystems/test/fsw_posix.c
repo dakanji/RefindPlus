@@ -295,55 +295,76 @@ int fsw_posix_closedir(struct fsw_posix_dir *dir)
  * Open a shand of a required type by path.
  */
 
-fsw_status_t fsw_posix_open_dno(struct fsw_posix_volume *pvol, const char *path, int required_type, struct fsw_shandle *shand)
-{
-    fsw_status_t        status;
-    struct fsw_dnode    *dno;
-    struct fsw_dnode    *target_dno;
-    struct fsw_string   lookup_path;
+ fsw_status_t fsw_posix_open_dno(struct fsw_posix_volume *pvol, const char *path, int required_type, struct fsw_shandle *shand)
+ {
+     fsw_status_t        status;
+     struct fsw_dnode    *dno;
+     struct fsw_dnode    *target_dno;
+     struct fsw_string   lookup_path;
 
-    lookup_path.type = FSW_STRING_TYPE_ISO88591;
-    lookup_path.len  = strlen(path);
-    lookup_path.size = lookup_path.len;
-    lookup_path.data = (void *)path;
+     lookup_path.type = FSW_STRING_TYPE_ISO88591;
 
-    // resolve the path (symlinks along the way are automatically resolved)
-    status = fsw_dnode_lookup_path(pvol->vol->root, &lookup_path, '/', &dno);
-    if (status) {
-        fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_lookup_path returned %d\n", status);
-        return status;
-    }
+     // Ensure path is not NULL
+     if (path == NULL) {
+         fprintf(stderr, "fsw_posix_open_dno: path is NULL\n");
+         return FSW_IO_ERROR;
+     }
 
-    // if the final node is a symlink, also resolve it
-    status = fsw_dnode_resolve(dno, &target_dno);
-    fsw_dnode_release(dno);
-    if (status) {
-        fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_resolve returned %d\n", status);
-        return status;
-    }
-    dno = target_dno;
+     // Calculate the length of path with a defined upper limit
+     size_t path_len = strnlen(path, FSW_PATH_MAX);
+     char *safe_path = malloc(path_len + 1); // Allocate memory for new string with null terminator
 
-    // check that it is a regular file
-    status = fsw_dnode_fill(dno);
-    if (status) {
-        fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_fill returned %d\n", status);
-        fsw_dnode_release(dno);
-        return status;
-    }
-    if (dno->type != required_type) {
-        fprintf(stderr, "fsw_posix_open_dno: dnode is not of the requested type\n");
-        fsw_dnode_release(dno);
-        return FSW_UNSUPPORTED;
-    }
+     if (safe_path == NULL) {
+         fprintf(stderr, "fsw_posix_open_dno: memory allocation failed\n");
+         return FSW_OUT_OF_MEMORY;
+     }
 
-    // open shandle
-    status = fsw_shandle_open(dno, shand);
-    if (status) {
-        fprintf(stderr, "fsw_posix_open_dno: fsw_shandle_open returned %d\n", status);
-    }
-    fsw_dnode_release(dno);
-    return status;
-}
+     // Copy path to the new string and ensure it is null-terminated
+     strncpy(safe_path, path, path_len);
+     safe_path[path_len] = '\0';
+
+     lookup_path.len  = path_len;
+     lookup_path.size = path_len;
+     lookup_path.data = (void *)safe_path;
+
+     // resolve the path (symlinks along the way are automatically resolved)
+     status = fsw_dnode_lookup_path(pvol->vol->root, &lookup_path, '/', &dno);
+     free(safe_path); // Free allocated memory
+     if (status) {
+         fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_lookup_path returned %d\n", status);
+         return status;
+     }
+
+     // if the final node is a symlink, also resolve it
+     status = fsw_dnode_resolve(dno, &target_dno);
+     fsw_dnode_release(dno);
+     if (status) {
+         fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_resolve returned %d\n", status);
+         return status;
+     }
+     dno = target_dno;
+
+     // check that it is a regular file
+     status = fsw_dnode_fill(dno);
+     if (status) {
+         fprintf(stderr, "fsw_posix_open_dno: fsw_dnode_fill returned %d\n", status);
+         fsw_dnode_release(dno);
+         return status;
+     }
+     if (dno->type != required_type) {
+         fprintf(stderr, "fsw_posix_open_dno: dnode is not of the requested type\n");
+         fsw_dnode_release(dno);
+         return FSW_UNSUPPORTED;
+     }
+
+     // open shandle
+     status = fsw_shandle_open(dno, shand);
+     if (status) {
+         fprintf(stderr, "fsw_posix_open_dno: fsw_shandle_open returned %d\n", status);
+     }
+     fsw_dnode_release(dno);
+     return status;
+ }
 
 /**
  * FSW interface function for block size changes. This function is called by the FSW core

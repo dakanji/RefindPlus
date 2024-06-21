@@ -467,59 +467,67 @@ static fsw_status_t read_mft(struct fsw_ntfs_volume *vol, fsw_u8 *mft, fsw_u64 m
     int m;
     fsw_u64 vcn = (mftno << vol->mftbits) >> vol->clbits;
     struct extent_slot *e = vol->extmap.extent;
+    fsw_status_t err;
 
     while(l <= r) {
-	m = (l+r)/2;
-	if(vcn < e[m].vcn) {
-	    r = m - 1;
-	} else if(vcn >= e[m].vcn + e[m].cnt) {
-	    l = m + 1;
-	} else if(vol->mftbits <= vol->clbits) {
-	    fsw_u64 lcn = e[m].lcn + (vcn - e[m].vcn);
-	    int offset = (mftno << vol->mftbits) & ((1<<vol->clbits)-1);
-	    fsw_u8 *buffer;
-	    fsw_status_t err;
+        m = (l+r)/2;
+        if(vcn < e[m].vcn) {
+            r = m - 1;
+        } else if(vcn >= e[m].vcn + e[m].cnt) {
+            l = m + 1;
+        } else if(vol->mftbits <= vol->clbits) {
+            fsw_u64 lcn = e[m].lcn + (vcn - e[m].vcn);
+            int offset = (mftno << vol->mftbits) & ((1<<vol->clbits)-1);
+            fsw_u8 *buffer;
 
-	    if(e[m].lcn + 1 == 0)
-		return FSW_VOLUME_CORRUPTED;
+            if(e[m].lcn + 1 == 0) {
+                return FSW_VOLUME_CORRUPTED;
+            }
 
-	    if ((err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer)) != FSW_SUCCESS)
-		return FSW_VOLUME_CORRUPTED;
+            err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer);
+            if (err != FSW_SUCCESS) {
+                return FSW_VOLUME_CORRUPTED;
+            }
 
-	    fsw_memcpy(mft, buffer+offset, 1<<vol->mftbits);
-	    fsw_block_release(&vol->g, lcn, buffer);
-	    return fixup(mft, "FILE", 1<<vol->sctbits, 1<<vol->mftbits);
-	} else {
-	    fsw_u8 *p = mft;
-	    fsw_u64 lcn = e[m].lcn + (vcn - e[m].vcn);
-	    fsw_u64 ecnt = e[m].cnt - (vcn - e[m].vcn);
-	    int count = 1 << (vol->mftbits - vol->clbits);
-	    fsw_status_t err;
+            fsw_memcpy(mft, buffer+offset, 1<<vol->mftbits);
+            fsw_block_release(&vol->g, lcn, buffer);
 
-	    if(e[m].lcn + 1 == 0)
-		return FSW_VOLUME_CORRUPTED;
-	    while(count-- > 0) {
-		fsw_u8 *buffer;
-		if ((err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer)) != FSW_SUCCESS)
-		    return FSW_VOLUME_CORRUPTED;
-		fsw_memcpy(p, buffer, 1<<vol->clbits);
-		fsw_block_release(&vol->g, lcn, buffer);
+            return fixup(mft, "FILE", 1<<vol->sctbits, 1<<vol->mftbits);
+        } else {
+            fsw_u8 *p = mft;
+            fsw_u64 lcn = e[m].lcn + (vcn - e[m].vcn);
+            fsw_u64 ecnt = e[m].cnt - (vcn - e[m].vcn);
+            int count = 1 << (vol->mftbits - vol->clbits);
 
-		p += 1<<vol->clbits;
-		ecnt--;
-		vcn++;
-		if(count==0) break;
-		if(ecnt > 0) {
-		    lcn++;
-		} else if(++m >= vol->extmap.used || e[m].vcn != vcn) {
-		    return FSW_VOLUME_CORRUPTED;
-		} else {
-		    lcn = e[m].lcn;
-		    ecnt = e[m].cnt;
-		}
-	    }
-	    return fixup(mft, "FILE", 1<<vol->sctbits, 1<<vol->mftbits);
-	}
+            if(e[m].lcn + 1 == 0) {
+                return FSW_VOLUME_CORRUPTED;
+            }
+
+            while(count-- > 0) {
+                fsw_u8 *buffer;
+                err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer);
+                if (err != FSW_SUCCESS) {
+                    return FSW_VOLUME_CORRUPTED;
+                }
+
+                fsw_memcpy(p, buffer, 1<<vol->clbits);
+                fsw_block_release(&vol->g, lcn, buffer);
+
+                p += 1<<vol->clbits;
+                ecnt--;
+                vcn++;
+                if(count==0) break;
+                if(ecnt > 0) {
+                    lcn++;
+                } else if(++m >= vol->extmap.used || e[m].vcn != vcn) {
+                    return FSW_VOLUME_CORRUPTED;
+                } else {
+                    lcn = e[m].lcn;
+                    ecnt = e[m].cnt;
+                }
+            }
+            return fixup(mft, "FILE", 1<<vol->sctbits, 1<<vol->mftbits);
+        }
     }
     return FSW_NOT_FOUND;
 }

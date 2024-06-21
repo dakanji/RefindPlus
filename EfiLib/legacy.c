@@ -339,8 +339,14 @@ EFI_STATUS BdsCreateLegacyBootOption (
         return EFI_OUT_OF_RESOURCES;
     }
 
-    CopyMem (NewBbsDevPathNode, CurrentBbsDevPath, sizeof (BBS_BBS_DEVICE_PATH));
-    CopyMem (NewBbsDevPathNode->String, HelpString, StringLen + 1);
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, NewBbsDevPathNode,
+        CurrentBbsDevPath, sizeof (BBS_BBS_DEVICE_PATH)
+    );
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, NewBbsDevPathNode->String,
+        HelpString, StringLen + 1
+    );
     SetDevicePathNodeLength (&(NewBbsDevPathNode->Header), sizeof (BBS_BBS_DEVICE_PATH) + StringLen);
 
     // Create entire new CurrentBbsDevPath with end node
@@ -379,24 +385,21 @@ EFI_STATUS BdsCreateLegacyBootOption (
     *((UINT16 *) Ptr)  = CurrentBbsDevPathSize;
     Ptr               += sizeof (UINT16);
 
-    CopyMem (
-        Ptr,
-        BootDesc,
-        StrSize (BootDesc)
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Ptr,
+        BootDesc, StrSize (BootDesc)
     );
     Ptr += StrSize (BootDesc);
 
-    CopyMem (
-        Ptr,
-        CurrentBbsDevPath,
-        CurrentBbsDevPathSize
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Ptr,
+        CurrentBbsDevPath, CurrentBbsDevPathSize
     );
     Ptr += CurrentBbsDevPathSize;
 
-    CopyMem (
-        Ptr,
-        CurrentBbsEntry,
-        sizeof (BBS_TABLE)
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Ptr,
+        CurrentBbsEntry, sizeof (BBS_TABLE)
     );
     Ptr += sizeof (BBS_TABLE);
 
@@ -421,7 +424,10 @@ EFI_STATUS BdsCreateLegacyBootOption (
     }
 
     if (*BootOrderList != NULL) {
-        CopyMem (NewBootOrderList, *BootOrderList, *BootOrderListSize);
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, NewBootOrderList,
+            *BootOrderList, *BootOrderListSize
+        );
         MY_FREE_POOL(*BootOrderList);
     }
 
@@ -466,7 +472,10 @@ EFI_STATUS BdsCreateOneLegacyBootOption (
 
     SetDevicePathNodeLength (&BbsDevPathNode.Header, sizeof (BBS_BBS_DEVICE_PATH));
     BbsDevPathNode.DeviceType = BbsItem->DeviceType;
-    CopyMem (&BbsDevPathNode.StatusFlag, &BbsItem->StatusFlags, sizeof (UINT16));
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, &BbsDevPathNode.StatusFlag,
+        &BbsItem->StatusFlags, sizeof (UINT16)
+    );
 
     DevPath = AppendDevicePathNode (
         EndDevicePath,
@@ -515,12 +524,16 @@ VOID GroupMultipleLegacyBootOption4SameType (
 ) {
     UINTN   DeviceTypeIndex[7];
     UINTN   Index;
-    UINTN   MappingIndex;
     UINTN  *NextIndex;
-    UINT16  OptionNumber;
+    UINTN   TempSizeVal;
     UINTN   DeviceIndex;
+    UINTN   MappingIndex;
+    UINT16  OptionNumber;
 
-    SetMem (DeviceTypeIndex, sizeof (DeviceTypeIndex), 0xFF);
+    REFIT_CALL_3_WRAPPER(
+        gBS->SetMem, DeviceTypeIndex,
+        sizeof (DeviceTypeIndex), 0xFF
+    );
 
     for (Index = 0; Index < BootOptionCount; Index++) {
         // Find the DeviceType
@@ -535,9 +548,8 @@ VOID GroupMultipleLegacyBootOption4SameType (
             continue;
         }
 
-        ASSERT ((mBootOptionBbsMapping[MappingIndex].BbsType & 0xF) <
-
-        sizeof (DeviceTypeIndex) / sizeof (DeviceTypeIndex[0]));
+        TempSizeVal = sizeof (DeviceTypeIndex) / sizeof (DeviceTypeIndex[0]);
+        ASSERT ((mBootOptionBbsMapping[MappingIndex].BbsType & 0xF) < TempSizeVal);
 
         NextIndex = &DeviceTypeIndex[mBootOptionBbsMapping[MappingIndex].BbsType & 0xF];
 
@@ -548,7 +560,10 @@ VOID GroupMultipleLegacyBootOption4SameType (
         else {
             // insert the current boot option before *NextIndex, causing [*Next .. Index] shift right one position
             OptionNumber = BootOption[Index];
-            CopyMem (&BootOption[*NextIndex + 1], &BootOption[*NextIndex], (Index - *NextIndex) * sizeof (UINT16));
+            REFIT_CALL_3_WRAPPER(
+                gBS->CopyMem, &BootOption[*NextIndex + 1],
+                &BootOption[*NextIndex], sizeof (UINT16) * (Index - *NextIndex)
+            );
             BootOption[*NextIndex] = OptionNumber;
 
             // Update the DeviceTypeIndex array to reflect the right shift operation
@@ -928,11 +943,9 @@ EFI_STATUS BdsDeleteAllInvalidLegacyBootOptions (VOID) {
             }
         }
 
-        if (BootOptionVar != NULL) {
-            MY_FREE_POOL(BootOptionVar);
-        }
+        MY_FREE_POOL(BootOptionVar);
 
-        // should delete
+        // Should delete
         BdsDeleteBootOption (
             BootOrder[Index],
             BootOrder,

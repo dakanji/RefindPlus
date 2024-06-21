@@ -112,32 +112,6 @@
 #
 #decouple_key_f10
 
-# Disable Apple Mobile File Integrity (AMFI) checks on booting macOS. Whenever
-# this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
-# argument which, along with System Integrity Protection (SIP), restricts
-# application access to OS entitlements. Note that this setting will
-# create a macOS boot argument the first time it is triggered when
-# "persist_boot_args" is also set, and that this boot argument
-# will remain active until it is explicitly cleared, even
-# if this setting is subsequently deactivated.
-#
-# Inactive when commented out (Does not stop AMFI checks)
-#
-#disable_check_amfi
-
-# Disable version compatibility checks when booting macOS. Macs check whether
-# the current macOS version is supported on the machine when booting, and halt
-# if not. When this option is active, RefindPlus will add "-no_compat_check" to
-# the boot arguments to disable this check, which allows macOS boot on otherwise
-# unsupported Macs. Note that when "persist_boot_args" is also set, this setting
-# will create a macOS boot argument the first time it is triggered and that the
-# boot argument will remain active until it is explicitly cleared, even if
-# this setting is subsequently deactivated.
-#
-# Inactive when commented out (Does not stop macOS compatibility checks)
-#
-#disable_check_compat
-
 # Offer APFS filesystem capability. By default, RefindPlus is set up to jump start
 # macOS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # macOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
@@ -168,6 +142,32 @@
 # APFS partition synchronisation is provided (if required) when commented out
 #
 #disable_apfs_sync
+
+# Disable Apple Mobile File Integrity (AMFI) checks on booting macOS. Whenever
+# this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
+# argument which, along with System Integrity Protection (SIP), restricts
+# application access to OS entitlements. Note that this setting will
+# create a macOS boot argument the first time it is triggered when
+# "persist_boot_args" is also set, and that this boot argument
+# will remain active until it is explicitly cleared, even
+# if this setting is subsequently deactivated.
+#
+# Inactive when commented out (Does not stop AMFI checks)
+#
+#disable_check_amfi
+
+# Disable version compatibility checks when booting macOS. Macs check whether
+# the current macOS version is supported on the machine when booting, and halt
+# if not. When this option is active, RefindPlus will add "-no_compat_check" to
+# the boot arguments to disable this check, which allows macOS boot on otherwise
+# unsupported Macs. Note that when "persist_boot_args" is also set, this setting
+# will create a macOS boot argument the first time it is triggered and that the
+# boot argument will remain active until it is explicitly cleared, even if
+# this setting is subsequently deactivated.
+#
+# Inactive when commented out (Does not stop macOS compatibility checks)
+#
+#disable_check_compat
 
 # RefindPlus previously assumed all Macs were capable of legacy BIOS boot.
 # While this was accurate for some time, some later Macs are UEFI Class 3
@@ -564,7 +564,7 @@
 # The boot 'Chain of Trust' may be broken on booting with 3rd-party tools but
 # RefindPlus can trigger a native reboot into a selected boot target to avoid
 # this issue. The 'SyncTrust' feature is useful on computers running enhanced
-# boot security setups, particularly in conjunction with TPM/T2 Chipped units.
+# boot security setups, particularly in conjunction with T2/TPM chipped units.
 #
 #   macos       - macOS loader
 #   linux       - Linux loaders
@@ -572,7 +572,7 @@
 #   clover      - The Clover boot-loader
 #   opencore    - The OpenCore boot-loader
 #   similar     - Any other uEFI loader
-#   verify      - Always verify first
+#   verify      - Always check first
 #   every       - All of the above
 #   none        - None of the above (default)
 #

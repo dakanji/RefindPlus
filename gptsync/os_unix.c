@@ -194,7 +194,6 @@ int main(int argc, char *argv[])
     char        *filename;
     struct stat sb;
     int         filekind;
-    UINT64      filesize;
     char        *reason;
     int         status;
 
@@ -218,24 +217,31 @@ int main(int argc, char *argv[])
     }
 
     filekind = 0;
-    filesize = 0;
-    reason = NULL;
-    if (S_ISREG(sb.st_mode))
-        filesize = sb.st_size;
-    else if (S_ISBLK(sb.st_mode))
+    if (S_ISREG(sb.st_mode)) {
+        reason = NULL;
+    }
+    else if (S_ISBLK(sb.st_mode)) {
         filekind = 1;
-    else if (S_ISCHR(sb.st_mode))
+        reason = NULL;
+    }
+    else if (S_ISCHR(sb.st_mode)) {
         filekind = 2;
-    else if (S_ISDIR(sb.st_mode))
+        reason = NULL;
+    }
+    else if (S_ISDIR(sb.st_mode)) {
         reason = "Is a directory";
-    else if (S_ISFIFO(sb.st_mode))
+    }
+    else if (S_ISFIFO(sb.st_mode)) {
         reason = "Is a FIFO";
 #ifdef S_ISSOCK
-    else if (S_ISSOCK(sb.st_mode))
+    }
+    else if (S_ISSOCK(sb.st_mode)) {
         reason = "Is a socket";
 #endif
-    else
+    }
+    else {
         reason = "Is an unknown kind of special file";
+    }
 
     if (reason != NULL) {
         error("%.300s: %s", filename, reason);
@@ -247,8 +253,9 @@ int main(int argc, char *argv[])
     if (fd < 0 && errno == EBUSY) {
         fd = open(filename, O_RDONLY);
 #ifndef NOREADONLYWARN
-        if (fd >= 0)
+        if (fd >= 0) {
             printf("Warning: %.300s opened read-only\n", filename);
+        }
 #endif
     }
     if (fd < 0) {

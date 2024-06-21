@@ -6,6 +6,8 @@ body:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
         Please use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead if you only wish to ask a question or make a comment.
+
+        NB: Before continuing, try RefindPlus with the 'ransom_drives' setting set if the problem is a hang on UEFI-PC with HP firmware.
   - type: dropdown
     id: version
     attributes:
@@ -46,7 +48,7 @@ body:
       label: Problem Point
       description: Where does the problem manifest itself?
       options:
-        - 'RefindPlus fails to load'
+        - 'RefindPlus crashes/hangs on start'
         - 'Before starting a loader or tool'
         - 'While starting a loader or tool'
         - 'After starting a loader or tool'
@@ -80,7 +82,7 @@ body:
         Please attach log files and do not paste their contents.
         Attach log files by dragging/dropping on the field below.
       placeholder: |
-        Reports not requiring log files are typically best under Discussions.
+        Reports that do not need log files are typically best as Discussions.
         Reports without log files will be automatically closed in most cases.
         Debug logs at Log Level '0' are usually preferred over higher levels.
     validations:

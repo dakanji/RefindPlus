@@ -8,7 +8,7 @@ on:
         required: true
         default: 'all'
   schedule:
-    - cron: '5 15 */5 * *'
+    - cron: '15 15 */5 * *'
 
 permissions:
   issues: write
@@ -28,6 +28,10 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
+      - name: PreStep-Pause
+        run: |
+          sleep 128s
+
       - name: Lock Resolved issues
         uses: dakanji/lock-threads@v5
         with:
@@ -42,9 +46,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Invalid/Not-Planned Issues
         uses: dakanji/lock-threads@v5
@@ -60,9 +64,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Misc Issues
         uses: dakanji/lock-threads@v5
@@ -79,9 +83,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Incomplete/Abandoned Issues
         uses: dakanji/lock-threads@v5
@@ -98,9 +102,9 @@ jobs:
             Trigger: Apparent Abandonment.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Unclear Issues
         uses: dakanji/lock-threads@v5
@@ -116,9 +120,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Inactive Issues
         uses: dakanji/lock-threads@v5
@@ -136,9 +140,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Acknowledged/Known Issues
         uses: dakanji/lock-threads@v5
@@ -155,9 +159,9 @@ jobs:
             Please use the [Discussions Feature](https://github.com/dakanji/RefindPlus/discussions) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
-          sleep 96s
+          sleep 128s
 
       - name: Lock Declined Pull Requests
         uses: dakanji/lock-threads@v5

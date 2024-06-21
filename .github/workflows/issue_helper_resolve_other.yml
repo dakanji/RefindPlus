@@ -6,12 +6,20 @@ on:
       item_id:
         description: 'Item ID'
         required: true
-      show_buildmsg:
+      show_build_msg:
         type: choice
         description: 'Version Comment'
         options:
         - 'Yes'
         - 'No'
+      more_info:
+        description: 'More Info'
+      show_more_info:
+        type: choice
+        description: 'Show More Info Entry'
+        options:
+        - 'No'
+        - 'Yes'
 
 permissions:
   issues: write
@@ -41,7 +49,7 @@ jobs:
 
     if: ${{ success() || failure() }}
     steps:
-      - if: ${{ github.event.inputs.show_buildmsg == 'Yes' }}
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' }}
         id: part_1a
         uses: oprypin/find-latest-tag@v1
         with:
@@ -49,7 +57,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           releases-only: true
 
-      - if: ${{ github.event.inputs.show_buildmsg == 'Yes' }}
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' }}
         id: part_1b
         uses: actions-cool/issues-helper@v3
         with:
@@ -59,11 +67,41 @@ jobs:
           body: |
             This item has been resolved.
 
-            Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
-            Refer to BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality before next release.
+            > [!Note]
+            > Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
+            > Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality ahead of the next release.
+            >
+            > ${{ github.event.inputs.more_info }}
 
-      - if: ${{ github.event.inputs.show_buildmsg == 'No' }}
-        id: part_2
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
+        id: part_1c
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been resolved.
+
+            > [!Note]
+            > Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
+            > Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality ahead of the next release.
+
+      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' }}
+        id: part_2a
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been resolved.
+
+            > [!Note]
+            > ${{ github.event.inputs.more_info }}
+
+      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'No' }}
+        id: part_2b
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'

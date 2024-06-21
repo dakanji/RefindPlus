@@ -96,7 +96,7 @@ extern BOOLEAN            GotConsoleControl;
 #if 0
 // DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
-//         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
+//         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16
 //         Temporary ... Eliminate when no longer required.
 //
 //         Probable 'El Gordo' manifestation.
@@ -922,16 +922,20 @@ VOID DrawScreenHeader (
 //
 
 BOOLEAN ReadAllKeyStrokes (VOID) {
-    EFI_STATUS           Status        = EFI_NOT_FOUND;
-    BOOLEAN              GotKeyStrokes = FALSE;
-    BOOLEAN              EmptyBuffer   = FALSE;
+    EFI_STATUS           Status;
+    BOOLEAN              GotKeyStrokes;
+    BOOLEAN              EmptyBuffer;
     EFI_INPUT_KEY        key;
 
-    static BOOLEAN       FirstCall     = TRUE;
+    static BOOLEAN       FirstCall = TRUE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
     #endif
+
+
+    GotKeyStrokes = FALSE;
+    EmptyBuffer   = FALSE;
 
     if (FirstCall || !GlobalConfig.DirectBoot) {
         for (;;) {

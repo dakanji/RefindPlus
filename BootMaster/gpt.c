@@ -299,7 +299,10 @@ GPT_ENTRY * FindPartWithGuid (
                 return NULL;
             }
 
-            CopyMem (Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
+            REFIT_CALL_3_WRAPPER(
+                gBS->CopyMem, Found,
+                &GptData->Entries[i], sizeof (GPT_ENTRY)
+            );
         } // while (scanning entries)
 
         GptData = GptData->NextEntry;

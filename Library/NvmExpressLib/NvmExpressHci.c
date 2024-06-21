@@ -572,7 +572,10 @@ EFI_STATUS NvmeCreateIoCompletionQueue (
         CrIoCq.Qid   = Index;
         CrIoCq.Qsize = QueueSize;
         CrIoCq.Pc    = 1;
-        CopyMem (&CommandPacket.NvmeCmd->Cdw10, &CrIoCq, sizeof (NVME_ADMIN_CRIOCQ));
+        NVME_CALL_3_WRAPPER(
+            gBS->CopyMem, &CommandPacket.NvmeCmd->Cdw10,
+            &CrIoCq, sizeof (NVME_ADMIN_CRIOCQ)
+        );
         CommandPacket.NvmeCmd->Flags = CDW10_VALID | CDW11_VALID;
 
         Status = Private->Passthru.PassThru (
@@ -647,7 +650,10 @@ EFI_STATUS NvmeCreateIoSubmissionQueue (
         CrIoSq.Pc    = 1;
         CrIoSq.Cqid  = Index;
         CrIoSq.Qprio = 0;
-        CopyMem (&CommandPacket.NvmeCmd->Cdw10, &CrIoSq, sizeof (NVME_ADMIN_CRIOSQ));
+        NVME_CALL_3_WRAPPER(
+            gBS->CopyMem, &CommandPacket.NvmeCmd->Cdw10,
+            &CrIoSq, sizeof (NVME_ADMIN_CRIOSQ)
+        );
         CommandPacket.NvmeCmd->Flags = CDW10_VALID | CDW11_VALID;
 
         Status = Private->Passthru.PassThru (
@@ -836,9 +842,15 @@ EFI_STATUS NvmeControllerInit (
     }
 
     // Dump NvmExpress Identify Controller Data
-    CopyMem (Sn, Private->ControllerData->Sn, sizeof (Private->ControllerData->Sn));
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, Sn,
+        Private->ControllerData->Sn, sizeof (Private->ControllerData->Sn)
+    );
     Sn[20] = 0;
-    CopyMem (Mn, Private->ControllerData->Mn, sizeof (Private->ControllerData->Mn));
+    NVME_CALL_3_WRAPPER(
+        gBS->CopyMem, Mn,
+        Private->ControllerData->Mn, sizeof (Private->ControllerData->Mn)
+    );
     Mn[40] = 0;
 
     // Create two I/O completion queues.

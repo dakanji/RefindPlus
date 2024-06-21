@@ -299,7 +299,10 @@ EFI_STATUS RenameFile (
             break;
         }
 
-        CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, NewInfo,
+            Buffer, sizeof (EFI_FILE_INFO)
+        );
         NewInfo->FileName[0] = 0;
         StrCat (NewInfo->FileName, NewName);
 
@@ -1166,7 +1169,10 @@ EFI_STATUS ConstructBootEntry (
         StrCpyS ((CHAR16 *) Working, DestSize, Label);
         Working += StrSize (Label);
 
-        CopyMem (Working, DevicePath, DevPathSize);
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, Working,
+            DevicePath, DevPathSize
+        );
         // If support for arguments is required in the future, uncomment
         // the lines below and adjust "*Size" computation above appropriately.
 /*
@@ -1302,7 +1308,8 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
                L->BootEntry.Size    = (UINT16) Contents[2];
                L->BootEntry.Label   = StrDuplicate ((CHAR16*) &(Contents[3]));
                L->BootEntry.DevPath = AllocatePool (L->BootEntry.Size);
-               CopyMem (
+               REFIT_CALL_3_WRAPPER(
+                   gBS->CopyMem, 
                    L->BootEntry.DevPath,
                    (EFI_DEVICE_PATH*) &Contents[3 + StrSize (L->BootEntry.Label)/2],
                    L->BootEntry.Size

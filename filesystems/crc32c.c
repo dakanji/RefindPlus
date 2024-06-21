@@ -62,7 +62,7 @@ init_crc32c_table (void)
       crc32c_table[i] = reflect(i, 8) << 24;
       for (j = 0; j < 8; j++)
         crc32c_table[i] = (crc32c_table[i] << 1) ^
-            (crc32c_table[i] & (1 << 31) ? polynomial : 0);
+            ((crc32c_table[i] & (1 << 31)) ? polynomial : 0);
       crc32c_table[i] = reflect(crc32c_table[i], 32);
     }
 }

@@ -23,6 +23,10 @@ jobs:
     if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale'
     steps:
 
+      - name: PreStep-Pause
+        run: |
+          sleep 32s
+
       - name: Handle Cancelled/Duplicate/Invalid/Wierd/Not-Planned Issues
         uses: actions/stale@v9
         with:
@@ -37,7 +41,7 @@ jobs:
           remove-issue-stale-when-updated: false
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
           sleep 32s
 
@@ -62,7 +66,7 @@ jobs:
           remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
           sleep 32s
 
@@ -87,7 +91,7 @@ jobs:
           remove-issue-stale-when-updated: true
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Inter-Step-Pause
+      - name: PreStep-Pause
         run: |
           sleep 32s
 

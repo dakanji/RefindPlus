@@ -192,8 +192,14 @@ EFI_STATUS ActivateMbrPartition (
 
     if (!HaveBootCode) {
         // No boot code found in the MBR, add the syslinux MBR code
-        SetMem (SectorBuffer, MBR_BOOTCODE_SIZE, 0);
-        CopyMem (SectorBuffer, syslinux_mbr, SYSLINUX_MBR_SIZE);
+        REFIT_CALL_3_WRAPPER(
+            gBS->SetMem, SectorBuffer,
+            MBR_BOOTCODE_SIZE, 0
+        );
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, SectorBuffer,
+            syslinux_mbr, SYSLINUX_MBR_SIZE
+        );
     }
 
     // Set the partition active
@@ -556,7 +562,10 @@ VOID StartLegacy (
     BeginExternalScreen (TRUE, L"Load 'Mac-Style' Legacy Bootcode");
 
     BREAD_CRUMB(L"%s:  3", FuncTag);
-    BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
+    BootLogoImage = LoadOSIcon (
+        Entry->Volume->OSIconName,
+        L"legacy", TRUE
+    );
     BREAD_CRUMB(L"%s:  4", FuncTag);
     if (BootLogoImage != NULL) {
         BREAD_CRUMB(L"%s:  4a 1", FuncTag);
@@ -792,7 +801,7 @@ VOID AddLegacyEntry (
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (Volume->OSIconName, L"legacy", FALSE);
-    Entry->Volume            = Volume;
+    Entry->Volume            = CopyVolume (Volume);
     Entry->me.BadgeImage     = egCopyImage (Volume->VolBadgeImage);
     Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
                                ? L"CD"
@@ -846,7 +855,7 @@ VOID AddLegacyEntry (
 
     SubEntry->me.Title    = PoolPrint (L"Load %s", LoaderTitle);
     SubEntry->me.Tag      = TAG_LEGACY;
-    SubEntry->Volume      = Entry->Volume;
+    SubEntry->Volume      = CopyVolume (Entry->Volume);
     SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -920,18 +929,23 @@ VOID AddLegacyEntryUEFI (
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = 0;
     if (GlobalConfig.HelpIcon) {
-        Entry->me.Image      = egFindIcon (L"os_legacy", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        Entry->me.Image = egFindIcon (
+            L"os_legacy",
+            GlobalConfig.IconSizes[ICON_SIZE_BIG]
+        );
     }
     if (Entry->me.Image == NULL) {
-        Entry->me.Image      = LoadOSIcon (L"legacy", L"legacy", TRUE);
+        Entry->me.Image  = LoadOSIcon (
+            L"legacy", L"legacy", TRUE
+        );
     }
-    Entry->LoadOptions       = (DiskType == BBS_CDROM)
-                                ? L"CD"
-                                : ((DiskType == BBS_USB)
-                                    ? L"USB" : L"HD");
-    Entry->me.BadgeImage     = GetDiskBadge (DiskType);
-    Entry->BdsOption         = CopyBdsOption (BdsOption);
-    Entry->Enabled           = TRUE;
+    Entry->LoadOptions   = (DiskType == BBS_CDROM)
+                            ? L"CD"
+                            : ((DiskType == BBS_USB)
+                                ? L"USB" : L"HD");
+    Entry->me.BadgeImage = GetDiskBadge (DiskType);
+    Entry->BdsOption     = CopyBdsOption (BdsOption);
+    Entry->Enabled       = TRUE;
 
     // Create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
@@ -1046,14 +1060,15 @@ VOID ScanLegacyUEFI (
         return;
     }
 
-    // UEFI calls USB drives "BBS_HARDDRIVE". To distinguish from normal hard drives,
-    // we have set "DiskType" inappropriately earlier and now "translate" here.
-    if (DiskType == BBS_USB) {
-       DiskType   = BBS_HARDDISK;
-       AssumeUSB  = TRUE;
+    // UEFI calls USB drives "BBS_HARDDRIVE".
+    // To distinguish from normal hard drives,
+    // "DiskType" was set wrongly earlier and is "translated" here.
+    if (DiskType != BBS_USB) {
+        AssumeUSB = FALSE;
     }
     else {
-        AssumeUSB = FALSE;
+        AssumeUSB = TRUE;
+        DiskType  = BBS_HARDDISK;
     }
 
     // Grab the boot order
@@ -1070,50 +1085,56 @@ VOID ScanLegacyUEFI (
     Index = 0;
     BbsDevicePath = NULL;
     while (Index < BootOrderSize / sizeof (UINT16)) {
-        // Grab each boot option variable from the boot order and convert
-        //   the variable into a BDS boot option
-        SPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
-        // We are not building a list of boot options so init the head each time
+        // Grab each boot option variable from the boot order
+        // and convert the variable into a BDS boot option
+        SPrint (
+            BootOption, sizeof (BootOption),
+            L"Boot%04x", BootOrder[Index]
+        );
+
+        // Not building a list of boot options so init the head each time
         InitializeListHead (&TempList);
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
+        if (BdsOption == NULL) {
+            Index++;
+            continue;
+        }
 
-        if (BdsOption != NULL) {
-            BbsDevicePath = (BBS_BBS_DEVICE_PATH *) BdsOption->DevicePath;
-            // Only add the entry if it is of a requested type (e.g. USB, HD).
-            // Two checks necessary because some systems return EFI boot loaders
-            //   with a DeviceType value that would inappropriately include them
-            //   as legacy loaders.
-            if (BbsDevicePath->DeviceType == DiskType &&
-                BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS
+        BbsDevicePath = (BBS_BBS_DEVICE_PATH *) BdsOption->DevicePath;
+        // Only add the entry if it is of a requested type (e.g. USB, HD).
+        // Two checks necessary because some systems return EFI boot loaders
+        //   with a DeviceType value that would inappropriately include them
+        //   as legacy loaders.
+        if (BbsDevicePath->DeviceType == DiskType &&
+            BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS
+        ) {
+            // USB flash drives appear as hard disks with certain media flags set.
+            // Look for this, and if present, pass it on with the (technically
+            //   incorrect, but internally useful) BBS_TYPE_USB flag set.
+            if (DiskType != BBS_HARDDISK) {
+                AddLegacyEntryUEFI (BdsOption, DiskType);
+            }
+            else if (
+                AssumeUSB &&
+                (
+                    BbsDevicePath->StatusFlag &
+                    (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT)
+                )
             ) {
-                // USB flash drives appear as hard disks with certain media flags set.
-                // Look for this, and if present, pass it on with the (technically
-                //   incorrect, but internally useful) BBS_TYPE_USB flag set.
-                if (DiskType != BBS_HARDDISK) {
-                    AddLegacyEntryUEFI (BdsOption, DiskType);
-                }
-                else if (
-                    AssumeUSB &&
-                    (
-                        BbsDevicePath->StatusFlag &
-                        (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT)
-                    )
-                ) {
-                    AddLegacyEntryUEFI (BdsOption, BBS_USB);
-                }
-                else if (
-                    !AssumeUSB &&
-                    !(
-                        BbsDevicePath->StatusFlag &
-                        (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT)
-                    )
-                ) {
-                    AddLegacyEntryUEFI (BdsOption, DiskType);
-                }
-            } // if BbsDevicePath->DeviceType
+                AddLegacyEntryUEFI (BdsOption, BBS_USB);
+            }
+            else if (
+                !AssumeUSB &&
+                !(
+                    BbsDevicePath->StatusFlag &
+                    (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT)
+                )
+            ) {
+                AddLegacyEntryUEFI (BdsOption, DiskType);
+            }
+        } // if BbsDevicePath->DeviceType
 
-            FreeBdsOption (&BdsOption);
-        } // if BdsOption != NULL
+        FreeBdsOption (&BdsOption);
 
         Index++;
     } // while

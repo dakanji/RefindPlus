@@ -105,14 +105,17 @@ CHAR16 * GetSubStrBefore (
         return String;
     }
 
-    Length = Substring - String;
+    Length = StrLen (String) - StrLen (Substring);
     Result = AllocateZeroPool ((Length + 1) * sizeof (CHAR16));
     if (Result == NULL) {
         // Return original string ... Memory exhausted
         return String;
     }
 
-    CopyMem (Result, String, Length * sizeof (CHAR16));
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, Result,
+        String, sizeof (CHAR16) * Length
+    );
     Result[Length] = L'\0'; // Null-terminate result
 
     return Result;

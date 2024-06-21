@@ -1579,7 +1579,6 @@ EFI_STATUS EFIAPI NvmeStorageSecurityReceiveData (
     EFI_STATUS                       Status;
     NVME_DEVICE_PRIVATE_DATA        *Device;
 
-    Status  = EFI_SUCCESS;
 
     if ((PayloadBuffer == NULL) ||
         (PayloadTransferSize == NULL) ||
@@ -1685,7 +1684,6 @@ EFI_STATUS EFIAPI NvmeStorageSecuritySendData (
     EFI_STATUS                        Status;
     NVME_DEVICE_PRIVATE_DATA         *Device;
 
-    Status  = EFI_SUCCESS;
 
     if ((PayloadBuffer == NULL) && (PayloadBufferSize != 0)) {
         return EFI_INVALID_PARAMETER;

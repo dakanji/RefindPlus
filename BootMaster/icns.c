@@ -64,7 +64,7 @@ typedef struct {
     UINTN        IconSize;
 } BUILTIN_ICON;
 
-BUILTIN_ICON TableBuiltinIconOS[BUILTIN_ICON_COUNT] = {
+BUILTIN_ICON TableBuiltinIconOS[BASE_OS_ICON_COUNT] = {
     { NULL, L"os_mac",              ICON_SIZE_BIG   },
     { NULL, L"os_win",              ICON_SIZE_BIG   },
     { NULL, L"os_win8",             ICON_SIZE_BIG   },
@@ -227,10 +227,10 @@ EG_IMAGE * LoadOSIcon (
     }
 
     // First, try to find an icon from the OSIconName list.
-    Image    = NULL;
-    Id       =   -1;
-    OurId    =   -1;
-    Index    =    0;
+    Id    =   -1;
+    OurId =   -1;
+    Index =    0;
+    Image = NULL;
     while (
         Image == NULL &&
         (CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL

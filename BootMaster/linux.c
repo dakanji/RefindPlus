@@ -391,9 +391,9 @@ CHAR16 * GetMainLinuxOptions (
     return FullOptions;
 } // static CHAR16 * GetMainLinuxOptions()
 
-// Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID" tokens to
-// OSIconName list. Intended for adding Linux distribution clues gleaned from
-// /etc/lsb-release and /etc/os-release files.
+// Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID"
+// tokens to the "OSIconName" list. Intended for adding Linux distribution
+// clues gleaned from the "/etc/lsb-release" and "/etc/os-release" files.
 static
 VOID ParseReleaseFile (
     CHAR16       **OSIconName,
@@ -405,10 +405,10 @@ VOID ParseReleaseFile (
     CHAR16      **TokenList;
     REFIT_FILE    File;
 
-    if (Volume == NULL ||
-        FileName == NULL ||
-        OSIconName == NULL ||
-        *OSIconName == NULL
+    if (Volume      == NULL || // Check Pointer 'Volume'
+        FileName    == NULL || // Check Pointer 'FileName'
+        OSIconName  == NULL || // Check Pointer 'OSIconName' (prevent NULL pointer dereferencing)
+        *OSIconName == NULL    // Check pointer 'OSIconName' points to (ensure valid for further use)
     ) {
         return;
     }

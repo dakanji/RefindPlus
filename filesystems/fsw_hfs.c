@@ -181,12 +181,15 @@ fsw_hfs_read_file (struct fsw_hfs_dnode    * dno,
 
         log_bno = (fsw_u32)RShiftU64(pos, block_size_bits);
 
-        if (   next_len >= 0
-            && (fsw_u32)next_len >  block_size)
+        if ((fsw_u32)next_len > block_size) {
             next_len = block_size;
+        }
+
         status = fsw_hfs_read_block(dno, log_bno, off, next_len, buf);
-        if (status)
+        if (status) {
             return -1;
+        }
+
         buf  += next_len;
         pos  += next_len;
         len  -= next_len;
@@ -384,7 +387,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         //nms42
         /* Take Volume Name before tree_header overwritten */
         firstLeafNum = be32_to_cpu(tree_header.firstLeafNode);
-        catfOffset = firstLeafNum * vol->catalog_tree.node_size;
+        catfOffset = ((fsw_u64)firstLeafNum) * vol->catalog_tree.node_size;
 
         r = fsw_hfs_read_file(vol->catalog_tree.file, catfOffset, sizeof (cbuff), cbuff);
 
@@ -495,10 +498,14 @@ static void fsw_hfs_volume_free(struct fsw_hfs_volume *vol)
  * Get in-depth information on a volume.
  */
 
-static fsw_status_t fsw_hfs_volume_stat(struct fsw_hfs_volume *vol, struct fsw_volume_stat *sb)
-{
-    sb->total_bytes = be32_to_cpu(vol->primary_voldesc->totalBlocks) << vol->block_size_shift;
-    sb->free_bytes = be32_to_cpu(vol->primary_voldesc->freeBlocks) << vol->block_size_shift;
+static
+fsw_status_t fsw_hfs_volume_stat (
+    struct fsw_hfs_volume  *vol,
+    struct fsw_volume_stat *sb
+) {
+    sb->total_bytes = ((fsw_u64) be32_to_cpu(vol->primary_voldesc->totalBlocks)) << vol->block_size_shift;
+    sb->free_bytes = ((fsw_u64) be32_to_cpu(vol->primary_voldesc->freeBlocks)) << vol->block_size_shift;
+
     return FSW_SUCCESS;
 }
 
@@ -519,8 +526,12 @@ static fsw_status_t fsw_hfs_dnode_fill(struct fsw_hfs_volume *vol, struct fsw_hf
  * of the dnode structure.
  */
 
-static void fsw_hfs_dnode_free(struct fsw_hfs_volume *vol, struct fsw_hfs_dnode *dno)
-{
+static
+void fsw_hfs_dnode_free (
+    struct fsw_hfs_volume *vol,
+    struct fsw_hfs_dnode  *dno
+) {
+    return;
 }
 
 static fsw_u32 mac_to_posix(fsw_u32 mac_time)
@@ -772,9 +783,11 @@ typedef struct
     file_info_t             file_info;
 } visitor_parameter_t;
 
-static int
-fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
-{
+static
+int fsw_hfs_btree_visit_node (
+    BTreeKey *record,
+    void     *param
+) {
     visitor_parameter_t* vp = (visitor_parameter_t*)param;
     fsw_u8* base = (fsw_u8*)record->rawData + be16_to_cpu(record->length16) + 2;
     fsw_u16 rec_type =  be16_to_cpu(*(fsw_u16*)base);
@@ -784,15 +797,16 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     fsw_u32   i;
     struct fsw_string * file_name;
 
-    if (be32_to_cpu(cat_key->parentID) != vp->parent)
+    if (be32_to_cpu(cat_key->parentID) != vp->parent) {
         return -1;
+    }
 
-    /* not smth we care about */
-    if (vp->shandle->pos != vp->cur_pos++)
+    /* Ignore */
+    if (vp->shandle->pos != vp->cur_pos++) {
         return 0;
+    }
 
-    switch (rec_type)
-    {
+    switch (rec_type) {
         case kHFSPlusFolderRecord:
         {
             HFSPlusCatalogFolder* folder_info = (HFSPlusCatalogFolder*)base;
@@ -812,8 +826,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
             vp->file_info.id = be32_to_cpu(file_info->fileID);
             vp->file_info.type = FSW_DNODE_TYPE_FILE;
             vp->file_info.size = be64_to_cpu(file_info->dataFork.logicalSize);
-            vp->file_info.used = LShiftU64(be32_to_cpu(file_info->dataFork.totalBlocks),
-                                           vp->vol->block_size_shift);
+            vp->file_info.used = ((fsw_u64)be32_to_cpu(file_info->dataFork.totalBlocks)) << vp->vol->block_size_shift;
             vp->file_info.ctime = be32_to_cpu(file_info->createDate);
             vp->file_info.mtime = be32_to_cpu(file_info->contentModDate);
             fsw_memcpy(&vp->file_info.extents, &file_info->dataFork.extents,
@@ -836,13 +849,12 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     file_name      =  vp->file_info.name;
     file_name->len = name_len;
     /* coverity[tainted_data: SUPPRESS] */
-    fsw_memdup(&file_name->data, &cat_key->nodeName.unicode[0], 2*name_len);
+    fsw_memdup (&file_name->data, &cat_key->nodeName.unicode[0], 2*name_len);
     file_name->size = 2*name_len;
     file_name->type = FSW_STRING_TYPE_UTF16;
     name_ptr        = (fsw_u16*)file_name->data;
     /* coverity[tainted_data: SUPPRESS] */
-    for (i=0; i<name_len; i++)
-    {
+    for (i=0; i<name_len; i++) {
         name_ptr[i] = be16_to_cpu(name_ptr[i]);
     }
     vp->shandle->pos++;
@@ -1276,7 +1288,7 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
             file_info.id = be32_to_cpu(info->fileID);
             file_info.type = FSW_DNODE_TYPE_FILE;
             file_info.size = be64_to_cpu(info->dataFork.logicalSize);
-            file_info.used = LShiftU64(be32_to_cpu(info->dataFork.totalBlocks), vol->block_size_shift);
+            file_info.used = ((fsw_u64)be32_to_cpu(info->dataFork.totalBlocks)) << vol->block_size_shift;
             file_info.ctime = be32_to_cpu(info->createDate);
             file_info.mtime = be32_to_cpu(info->contentModDate);
             fsw_memcpy(&file_info.extents, &info->dataFork.extents,

@@ -139,7 +139,10 @@ BOOLEAN line_edit (
             i = (x_max - 2);
         }
 
-        CopyMem (print, line + first, i * sizeof (CHAR16));
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, print,
+            line + first, sizeof (CHAR16) * i
+        );
 
         print[i++] = ' ';
         print[i]   = '\0';
