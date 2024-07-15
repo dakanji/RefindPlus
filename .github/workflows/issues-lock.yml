@@ -37,7 +37,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
-          issue-inactive-days: '0'
+          issue-inactive-days: '1'
           include-any-issue-labels: 'Resolved'
           remove-issue-labels: 'Triage, Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
@@ -73,7 +73,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           issue-lock-reason: ''
-          add-issue-labels: 'Resolved'
+          add-issue-labels: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Cannot-Replicate, Cancelled'
           remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'

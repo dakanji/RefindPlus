@@ -543,13 +543,9 @@ VOID StartLegacy (
 
     IsBoot = TRUE;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"StartLegacy";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -558,91 +554,91 @@ VOID StartLegacy (
     );
     #endif
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     BeginExternalScreen (TRUE, L"Load 'Mac-Style' Legacy Bootcode");
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     BootLogoImage = LoadOSIcon (
         Entry->Volume->OSIconName,
         L"legacy", TRUE
     );
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     if (BootLogoImage != NULL) {
-        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 1", __func__);
         BltImageAlpha (
             BootLogoImage,
             (ScreenW - BootLogoImage->Width ) >> 1,
             (ScreenH - BootLogoImage->Height) >> 1,
             &StdBackgroundPixel
         );
-        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if (Entry->Volume->IsMbrPartition) {
-        BREAD_CRUMB(L"%s:  5a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1", __func__);
         ActivateMbrPartition (
             Entry->Volume->WholeDiskBlockIO,
             Entry->Volume->MbrPartitionIndex
         );
-        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     if (Entry->Volume->WholeDiskDevicePath != NULL &&
         Entry->Volume->DiskKind != DISK_KIND_OPTICAL
     ) {
-        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 1", __func__);
         WriteBootDiskHint (Entry->Volume->WholeDiskDevicePath);
-        BREAD_CRUMB(L"%s:  6a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  7", FuncTag);
+    BREAD_CRUMB(L"%a:  7", __func__);
     ExtractLegacyLoaderPaths (
         DiscoveredPathList,
         MAX_DISCOVERED_PATHS,
         LegacyLoaderList
     );
 
-    BREAD_CRUMB(L"%s:  8", FuncTag);
+    BREAD_CRUMB(L"%a:  8", __func__);
     StoreLoaderName (SelectionName);
 
-    BREAD_CRUMB(L"%s:  9", FuncTag);
+    BREAD_CRUMB(L"%a:  9", __func__);
     ErrorInStep = 0;
     Status = StartLegacyImageList (
         DiscoveredPathList,
         Entry->LoadOptions,
         &ErrorInStep
     );
-    BREAD_CRUMB(L"%s:  10", FuncTag);
+    BREAD_CRUMB(L"%a:  10", __func__);
     if (Status == EFI_NOT_FOUND) {
-        BREAD_CRUMB(L"%s:  10a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  10a 1", __func__);
         if (ErrorInStep == 1) {
-            BREAD_CRUMB(L"%s:  10a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1a 1", __func__);
             SwitchToText (FALSE);
 
-            BREAD_CRUMB(L"%s:  10a 1a 2", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1a 2", __func__);
             MsgStrA = L"Ensure You Have the Latest Firmware Updates Installed";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-            BREAD_CRUMB(L"%s:  10a 1a 3", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1a 3", __func__);
 
             #if REFIT_DEBUG > 0
             LOG_MSG("** WARN: %s", MsgStrA);
             LOG_MSG("\n\n");
             #endif
 
-            BREAD_CRUMB(L"%s:  10a 1a 4", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1a 4", __func__);
             PauseForKey();
-            BREAD_CRUMB(L"%s:  10a 1a 5", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1a 5", __func__);
             SwitchToGraphics();
         }
         else if (ErrorInStep == 3) {
-            BREAD_CRUMB(L"%s:  10a 1b 1", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1b 1", __func__);
             SwitchToText (FALSE);
 
-            BREAD_CRUMB(L"%s:  10a 1b 2", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1b 2", __func__);
             MsgStrA = L"The Firmware Refused to Boot from the Selected Volume";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
@@ -656,7 +652,7 @@ VOID StartLegacy (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("\n");
                 #endif
-                BREAD_CRUMB(L"%s:  10a 1b 2a 1", FuncTag);
+                BREAD_CRUMB(L"%a:  10a 1b 2a 1", __func__);
                 MsgStrB = L"Legacy External Drive Boot *IS NOT* Well Supported by Apple Firmware";
                 PrintUglyText (MsgStrB, NEXTLINE);
                 #if REFIT_DEBUG > 0
@@ -668,18 +664,18 @@ VOID StartLegacy (
             LOG_MSG("\n\n");
             #endif
 
-            BREAD_CRUMB(L"%s:  10a 1b 3", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1b 3", __func__);
             PauseForKey();
 
-            BREAD_CRUMB(L"%s:  10a 1b 4", FuncTag);
+            BREAD_CRUMB(L"%a:  10a 1b 4", __func__);
             SwitchToGraphics();
         } // if/else ErrorInStep
     } // if Status == EFI_NOT_FOUND
 
-    BREAD_CRUMB(L"%s:  11", FuncTag);
+    BREAD_CRUMB(L"%a:  11", __func__);
     FinishExternalScreen();
 
-    BREAD_CRUMB(L"%s:  12 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  12 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID StartLegacy()
@@ -1022,15 +1018,12 @@ VOID ScanLegacyUEFI (
 
     #if REFIT_DEBUG > 0
     UINTN LogLineType;
+    #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanLegacyUEFI";
-    #endif
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     #if REFIT_DEBUG > 0
     LogLineType = (FirstLegacyScan)
@@ -1052,7 +1045,7 @@ VOID ScanLegacyUEFI (
         NULL, (VOID **) &LegacyBios
     );
     if (EFI_ERROR(Status)) {
-        BREAD_CRUMB(L"%s:  Z - END:- VOID (LocateProtocol Error)", FuncTag);
+        BREAD_CRUMB(L"%a:  Z - END:- VOID (LocateProtocol Error)", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1141,7 +1134,7 @@ VOID ScanLegacyUEFI (
 
     MY_FREE_POOL(BootOrder);
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanLegacyUEFI()
@@ -1163,9 +1156,6 @@ VOID ScanLegacyVolume (
     BOOLEAN         TypeWholeDisk;
     #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanLegacyVolume";
-    #endif
 
     if (Volume == NULL) {
         // Early Exit .. No Log
@@ -1179,11 +1169,11 @@ VOID ScanLegacyVolume (
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     if (!VolumeScanAllowed (Volume, FALSE, TRUE)) {
-        BREAD_CRUMB(L"%s:  2a 1 - END:- VOID - !VolumeScanAllowed", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - END:- VOID - !VolumeScanAllowed", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1191,7 +1181,7 @@ VOID ScanLegacyVolume (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  3 - HasBootCode and VolumeScanAllowed", FuncTag);
+    BREAD_CRUMB(L"%a:  3 - HasBootCode and VolumeScanAllowed", __func__);
     if (Volume->FSType == FS_TYPE_WHOLEDISK ||
         (
             Volume->OSName           == NULL &&
@@ -1199,7 +1189,7 @@ VOID ScanLegacyVolume (
             Volume->WholeDiskBlockIO == Volume->BlockIO
         )
     ) {
-        BREAD_CRUMB(L"%s:  3a 1 - MBR Entry Type = 'Whole Disk'", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1 - MBR Entry Type = 'Whole Disk'", __func__);
         HideIfOthersFound = TRUE;
 
         #if REFIT_DEBUG > 0
@@ -1207,7 +1197,7 @@ VOID ScanLegacyVolume (
         #endif
     }
     else {
-        BREAD_CRUMB(L"%s:  3b 1 - MBR Entry Type = 'Partition/Volume'", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 1 - MBR Entry Type = 'Partition/Volume'", __func__);
         HideIfOthersFound = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -1233,81 +1223,81 @@ VOID ScanLegacyVolume (
     }
     #endif
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     ShowVolume = TRUE;
     if (HideIfOthersFound) {
         #if REFIT_DEBUG > 1
         if (GlobalConfig.HandleVentoy) {
-            BREAD_CRUMB(L"%s:  4a 1 - Check for Ventoy or Bootable Legacy Instances on *SAME* Disk", FuncTag);
+            BREAD_CRUMB(L"%a:  4a 1 - Check for Ventoy or Bootable Legacy Instances on *SAME* Disk", __func__);
         }
         else {
-            BREAD_CRUMB(L"%s:  4a 1 - Check for Bootable Legacy Instances on *SAME* Disk", FuncTag);
+            BREAD_CRUMB(L"%a:  4a 1 - Check for Bootable Legacy Instances on *SAME* Disk", __func__);
         }
         #endif
 
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             LOG_SEP(L"X");
-            BREAD_CRUMB(L"%s:  4a 1a 1 - FOR LOOP:- START", FuncTag);
+            BREAD_CRUMB(L"%a:  4a 1a 1 - FOR LOOP:- START", __func__);
             if (VolumeIndex2 != VolumeIndex) {
-                BREAD_CRUMB(L"%s:  4a 1a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%a:  4a 1a 1a 1", __func__);
                 /* coverity[copy_paste_error: SUPPRESS] */
                 if (Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->BlockIO       ||
                     Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
                 ) {
-                    BREAD_CRUMB(L"%s:  4a 1a 1a 1a 1", FuncTag);
+                    BREAD_CRUMB(L"%a:  4a 1a 1a 1a 1", __func__);
                     if (Volumes[VolumeIndex2]->HasBootCode) {
-                        BREAD_CRUMB(L"%s:  4a 1a 1a 1a 1a 1 - Found Bootable Legacy Instance ... Set Whole Disk 'Skip' Flag", FuncTag);
+                        BREAD_CRUMB(L"%a:  4a 1a 1a 1a 1a 1 - Found Bootable Legacy Instance ... Set Whole Disk 'Skip' Flag", __func__);
                         ShowVolume = FALSE;
                     }
 
-                    BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2", FuncTag);
+                    BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2", __func__);
                     if (!FoundVentoy) {
-                        BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2a 1", FuncTag);
+                        BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2a 1", __func__);
                         i = 0;
                         while (
                             ShowVolume &&
                             GlobalConfig.HandleVentoy &&
                             (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
                         ) {
-                            BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", FuncTag);
+                            BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2a 1a 1 - WHILE LOOP:- START ... Check for Ventoy Partition", __func__);
                             if (MyStrBegins (VentoyName, Volumes[VolumeIndex2]->VolName)) {
-                                BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2a 1a 1a 1 - Found ... Set Whole Disk 'Skip' Flag", FuncTag);
+                                BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2a 1a 1a 1 - Found ... Set Whole Disk 'Skip' Flag", __func__);
                                 ShowVolume = FALSE;
                             }
                             MY_FREE_POOL(VentoyName);
-                            BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                            BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2a 1a 2 - WHILE LOOP:- END", __func__);
                         } // while
-                        BREAD_CRUMB(L"%s:  4a 1a 1a 1a 2a 2", FuncTag);
+                        BREAD_CRUMB(L"%a:  4a 1a 1a 1a 2a 2", __func__);
                     } // if !FoundVentoy
-                    BREAD_CRUMB(L"%s:  4a 1a 1a 1a 3", FuncTag);
+                    BREAD_CRUMB(L"%a:  4a 1a 1a 1a 3", __func__);
                 } // if Volumes[VolumeIndex2]->WholeDiskBlockIO
-                BREAD_CRUMB(L"%s:  4a 1a 1a 2", FuncTag);
+                BREAD_CRUMB(L"%a:  4a 1a 1a 2", __func__);
             } // if VolumeIndex2
-            BREAD_CRUMB(L"%s:  4a 1a 2 - FOR LOOP:- END", FuncTag);
+            BREAD_CRUMB(L"%a:  4a 1a 2 - FOR LOOP:- END", __func__);
             LOG_SEP(L"X");
 
             if (!ShowVolume) {
                 break;
             }
         } // for
-        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if (!ShowVolume) {
-        BREAD_CRUMB(L"%s:  5a 1 - END:- VOID ... Skip Whole Disk Volume", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1 - END:- VOID ... Skip Whole Disk Volume", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
         return;
     }
 
-    BREAD_CRUMB(L"%s:  5b 1 - Process Legacy Boot Instance", FuncTag);
+    BREAD_CRUMB(L"%a:  5b 1 - Process Legacy Boot Instance", __func__);
     DisplayLoader = TRUE;
     if ((Volume->VolName == NULL)   ||
         (StrLen (Volume->VolName) == 0)
     ) {
-        BREAD_CRUMB(L"%s:  5b 1a 1 - Get Legacy Boot Instance Name", FuncTag);
+        BREAD_CRUMB(L"%a:  5b 1a 1 - Get Legacy Boot Instance Name", __func__);
         Volume->VolName = GetVolumeName (Volume);
     }
 
@@ -1321,11 +1311,11 @@ VOID ScanLegacyVolume (
     }
     #endif
 
-    BREAD_CRUMB(L"%s:  5b 2 - Add Legacy Boot Instance", FuncTag);
+    BREAD_CRUMB(L"%a:  5b 2 - Add Legacy Boot Instance", __func__);
     AddLegacyEntry (NULL, Volume);
-    BREAD_CRUMB(L"%s:  5b 3", FuncTag);
+    BREAD_CRUMB(L"%a:  5b 3", __func__);
 
-    BREAD_CRUMB(L"%s:  6 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  6 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID ScanLegacyVolume()
@@ -1337,19 +1327,16 @@ VOID ScanLegacyDisc (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP,
         L"Optical Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanLegacyDisc";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     FirstLegacyScan = TRUE;
     if (
@@ -1377,7 +1364,7 @@ VOID ScanLegacyDisc (VOID) {
     #endif
     DisplayLoader = TRUE;
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyDisc()
@@ -1388,11 +1375,8 @@ VOID ScanLegacyInternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
-    #if REFIT_DEBUG > 0
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanLegacyInternal";
-    #endif
 
+    #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP,
         L"Internal Disk Volumes with Mode:- 'Legacy BIOS'"
     );
@@ -1400,7 +1384,7 @@ VOID ScanLegacyInternal (VOID) {
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     FirstLegacyScan = TRUE;
     if (
@@ -1429,7 +1413,7 @@ VOID ScanLegacyInternal (VOID) {
     #endif
     DisplayLoader = TRUE;
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyInternal()
@@ -1440,19 +1424,16 @@ VOID ScanLegacyExternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP,
         L"External Disk Volumes with Mode:- 'Legacy BIOS'"
     );
     #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanLegacyExternal";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     FirstLegacyScan = TRUE;
     if (
@@ -1482,7 +1463,7 @@ VOID ScanLegacyExternal (VOID) {
     #endif
     DisplayLoader = TRUE;
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID ScanLegacyExternal()
@@ -1534,20 +1515,17 @@ VOID WarnIfLegacyProblems (VOID) {
     #if REFIT_DEBUG > 0
     BOOLEAN TmpLevel;
     BOOLEAN CheckMute = FALSE;
+    #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"WarnIfLegacyProblems";
-    #endif
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     if (GlobalConfig.LegacyType != LEGACY_TYPE_NONE &&
         GlobalConfig.LegacyType != LEGACY_TYPE_MAC3
     ) {
-        BREAD_CRUMB(L"%s:  A1 - END:- VOID ... Early Return", FuncTag);
+        BREAD_CRUMB(L"%a:  A1 - END:- VOID ... Early Return", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1568,7 +1546,7 @@ VOID WarnIfLegacyProblems (VOID) {
     } while ((i < NUM_SCAN_OPTIONS) && (!found));
 
     if (!found) {
-        BREAD_CRUMB(L"%s:  A2 - END:- VOID ... Early Return", FuncTag);
+        BREAD_CRUMB(L"%a:  A2 - END:- VOID ... Early Return", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1638,7 +1616,7 @@ VOID WarnIfLegacyProblems (VOID) {
         #endif
     }
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID WarnIfLegacyProblems()

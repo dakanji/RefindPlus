@@ -64,11 +64,25 @@
 #ifndef __SCAN_H_
 #define __SCAN_H_
 
-#define LABEL_GDISK           L"GDisk Tool"
-#define LABEL_GPTSYNC         L"GPTsync Tool"
-#define LABEL_CLEAN_NVRAM     L"Clean nvRAM"
-#define LABEL_MEMTEST         L"MemTest Tool"
-#define LABEL_HIDDEN          L"Restore Entries"
+#define LABEL_BOOTORDER     L"Manage BootOrder"
+#define LABEL_FIRMWARE      L"Firmware Reboot"
+#define LABEL_INSTALL       L"Install RefindPlus"
+#define LABEL_NETBOOT       L"Net Boot"
+#define LABEL_REBOOT        L"System Restart"
+#define LABEL_SHUTDOWN      L"System Shutdown"
+#define LABEL_CSR_ROTATE    L"Rotate CSR"
+#define LABEL_ABOUT         L"About RefindPlus"
+#define LABEL_MOK           L"MOK Protocol"
+#define LABEL_EXIT          L"Exit RefindPlus"
+#define LABEL_SHELL         L"uEFI Shell"
+#define LABEL_HIDDEN        L"Hidden Items"
+#define LABEL_MEMTEST       L"MemTest Tool"
+#define LABEL_GDISK         L"GDisk Tool"
+#define LABEL_GPTSYNC       L"GPTsync Tool"
+#define LABEL_FWUPDATE      L"Firmware Update"
+#define LABEL_CLEAN_NVRAM   L"Clean nvRAM"
+#define LABEL_RECOVERY_MAC  L"Recovery (Mac)"
+#define LABEL_RECOVERY_WIN  L"Recovery (Win)"
 
 #if defined (EFIX64)
 #   define SHELL_NAMES \
@@ -248,7 +262,11 @@ Trusty,Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Xenial,Zesty"
 L"Arch,Debian,Deepin,Elementary,Endeavour,Fedora,Gentoo,\
 LinuxMint,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,Ubuntu,Zorin"
 
+
+EG_IMAGE * GetDiskBadge (IN UINTN DiskType);
+
 LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry);
+LOADER_ENTRY * CopyLoaderEntry (IN LOADER_ENTRY *Entry);
 
 REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry);
 
@@ -291,7 +309,10 @@ CHAR16 * GetVolumeGroupName (
     IN REFIT_VOLUME *Volume
 );
 
-BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path);
+BOOLEAN ShouldScan (
+    REFIT_VOLUME *Volume,
+    CHAR16       *Path
+);
 
 #endif
 

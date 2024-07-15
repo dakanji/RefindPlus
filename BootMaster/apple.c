@@ -1021,43 +1021,48 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Update Base AppleFramebuffers";
+    MsgStr = L"Update Base Apple Framebuffer";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s:", MsgStr);
     #endif
 
-    if (!GlobalConfig.SetAppleFB) {
-        Status = EFI_NOT_STARTED;
-    }
-    else {
+    do {
+        if (!GlobalConfig.SetAppleFB) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_NOT_STARTED;
+            #endif
+
+            break;
+        }
+
         Status = REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol, &gAppleFramebufferInfoProtocolGuid,
             NULL, (VOID *) &Protocol
         );
+        if (!EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
+            Status = EFI_ALREADY_STARTED;
+            #endif
+
+            break;
+        }
 
         #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
-            MsgStr = L"Get Old AppleFramebuffers";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
-            LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
-        }
+        MsgStr = L"Get Old Apple Framebuffer";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
+        LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
         #endif
 
-        if (!EFI_ERROR (Status)) {
-            Status = EFI_ALREADY_STARTED;
-        }
-        else {
-            UninitRefitLib();
-            Status = REFIT_CALL_4_WRAPPER(
-                gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
-                &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
-            );
-            ReinitRefitLib();
-        }
-    }
+        UninitRefitLib();
+        Status = REFIT_CALL_4_WRAPPER(
+            gBS->InstallMultipleProtocolInterfaces, &gImageHandle,
+            &gAppleFramebufferInfoProtocolGuid, (VOID *) &OurAppleFramebufferInfo, NULL
+        );
+        ReinitRefitLib();
+    } while (0); // This 'loop' only runs once
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Set New AppleFramebuffers";
+    MsgStr = L"Set New Apple Framebuffer";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s:- '%r'", MsgStr, Status);
     LOG_MSG("%s  - %s ... %r", OffsetNext, MsgStr, Status);
     LOG_MSG("\n\n");
@@ -1068,8 +1073,8 @@ VOID RefitAppleFbInfoInstallProtocol (VOID) {
 #endif
 
 // Delete recovery-boot-mode/internet-recovery-mode flags
-VOID ClearRecoveryBootFlag (VOID) {
+VOID ClearRecoveryBootFlags (VOID) {
     SetBootFlag (L"recovery-boot-mode");
     SetBootFlag (L"internet-recovery-mode");
     SetBootFlag (L"RecoveryBootInitiator");
-} // VOID ClearRecoveryBootFlag()
+} // VOID ClearRecoveryBootFlags()

@@ -92,7 +92,7 @@ VOID pdInitialize (VOID) {
 
         #if REFIT_DEBUG > 0
         // DA-TAG: Use LOG_THREE_STAR_END for this instance
-        MsgStr = StrDuplicate (L"Running in Keyboard-Only Mode");
+        MsgStr = StrDuplicate (L"Running in 'Keyboard Only' Mode");
         ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n\n");

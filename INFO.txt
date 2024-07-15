@@ -13,4 +13,4 @@ or, at your option, any later version of the license.
 
 You should have received a copy of the GNU General Public License
 with RefindPlus. If not, you can view a copy of the license here:
- <https://github.com/dakanji/RefindPlus/blob/GOPFix/LICENSE.txt/>.
+<https://github.com/dakanji/RefindPlus/blob/GOPFix/LICENSE.txt/>.

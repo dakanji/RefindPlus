@@ -213,13 +213,9 @@ VOID PrepareBlankLine (VOID) {
 //
 
 VOID InitScreen (VOID) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"InitScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     // Initialise libeg
     egInitScreen();
@@ -273,7 +269,7 @@ VOID InitScreen (VOID) {
         }
     }
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID InitScreen()
@@ -290,19 +286,16 @@ VOID SetupScreen (VOID) {
     CHAR16 *MsgStr;
     CHAR16 *TmpStr;
 
+
     if (!BannerLoaded) {
         LOG_MSG("D I S P L A Y   T I T L E   B A N N E R");
         LOG_MSG("\n");
     }
     #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"SetupScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
     // Convert mode number to horizontal & vertical resolution values
     if (GlobalConfig.RequestedScreenWidth   > 0 &&
@@ -562,7 +555,7 @@ VOID SetupScreen (VOID) {
         } // if TextOption || !BannerLoaded
     } // if/else !AllowGraphicsMode
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SetupScreen()
@@ -574,15 +567,12 @@ VOID SwitchToText (
 
     #if REFIT_DEBUG > 0
     BOOLEAN TextModeOnEntry;
+    #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"SwitchToText";
-    #endif
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  A - START", FuncTag);
+    BREAD_CRUMB(L"%a:  A - START", __func__);
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
@@ -669,40 +659,36 @@ VOID SwitchToText (
     }
     #endif
 
-    BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SwitchToText()
 
 EFI_STATUS SwitchToGraphics (VOID) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"SwitchToGraphics";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (!AllowGraphicsMode) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- Return EFI_NOT_STARTED (AllowGraphicsMode = FALSE)", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- Return EFI_NOT_STARTED (AllowGraphicsMode = FALSE)", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return EFI_NOT_STARTED;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     if (egIsGraphicsModeEnabled()) {
-        BREAD_CRUMB(L"%s:  2a 1 - END:- Return EFI_ALREADY_STARTED (egIsGraphicsModeEnabled = TRUE)", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - END:- Return EFI_ALREADY_STARTED (egIsGraphicsModeEnabled = TRUE)", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return EFI_ALREADY_STARTED;
     }
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     egSetGraphicsModeEnabled (TRUE);
     GraphicsScreenDirty = TRUE;
 
-    BREAD_CRUMB(L"%s:  4 - END:- Return EFI_SUCCESS", FuncTag);
+    BREAD_CRUMB(L"%a:  4 - END:- Return EFI_SUCCESS", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
     return EFI_SUCCESS;
@@ -714,21 +700,17 @@ EFI_STATUS SwitchToGraphics (VOID) {
 VOID BeginTextScreen (
     IN CHAR16 *Title
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"BeginTextScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
     DrawScreenHeader (Title);
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     SwitchToText (FALSE);
 
     // Reset error flag
     haveError = FALSE;
 
-    BREAD_CRUMB(L"%s:  4 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  4 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID BeginTextScreen()
@@ -736,25 +718,21 @@ VOID BeginTextScreen (
 VOID FinishTextScreen (
     IN BOOLEAN WaitAlways
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FinishTextScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (haveError || WaitAlways) {
-        BREAD_CRUMB(L"%s:  1a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1", __func__);
         SwitchToText (FALSE);
-        BREAD_CRUMB(L"%s:  1a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 2", __func__);
         PauseForKey();
     }
 
     // Reset error flag
     haveError = FALSE;
 
-    BREAD_CRUMB(L"%s:  2 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  2 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FinishTextScreen()
@@ -763,16 +741,12 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"BeginExternalScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (GlobalConfig.DirectBoot) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID - 'DirectBoot' is Active", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID - 'DirectBoot' is Active", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -788,46 +762,46 @@ VOID BeginExternalScreen (
     BOOLEAN  CheckMute = FALSE;
     #endif
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     if (!AllowGraphicsMode) {
-        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1", __func__);
         UseGraphicsMode = FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (UseGraphicsMode) {
-        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1", __func__);
         #if REFIT_DEBUG > 0
         MsgStr = L"Begin Child Image Display with Screen Mode:- 'Graphics'";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         if (!IsBoot) {
-            BREAD_CRUMB(L"%s:  3a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  3a 1a 1", __func__);
             LOG_MSG("%s    * %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
         }
         #endif
 
-        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 2", __func__);
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
-        BREAD_CRUMB(L"%s:  3b 1", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 1", __func__);
         #if REFIT_DEBUG > 0
         MsgStr = L"Begin Child Image Display with Screen Mode:- 'Text'";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         if (!IsBoot) {
-            BREAD_CRUMB(L"%s:  3b 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  3b 1a 1", __func__);
             LOG_MSG("%s    * %s", OffsetNext, MsgStr);
         }
         #endif
 
-        BREAD_CRUMB(L"%s:  3b 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 2", __func__);
         SwitchToText (UseGraphicsMode);
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        BREAD_CRUMB(L"%s:  3b 3", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 3", __func__);
         DrawScreenHeader (Title);
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
@@ -836,37 +810,33 @@ VOID BeginExternalScreen (
 
     // Reset error flag
     haveError = FALSE;
-    BREAD_CRUMB(L"%s:  4 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  4 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID BeginExternalScreen()
 
 VOID FinishExternalScreen (VOID) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FinishExternalScreen";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     // Make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
     if (haveError) {
-        BREAD_CRUMB(L"%s:  1a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1", __func__);
         SwitchToText (FALSE);
-        BREAD_CRUMB(L"%s:  1a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 2", __func__);
         PauseForKey();
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     // Reset the screen resolution, in case external program changed it.
     SetupScreen();
 
     // Reset error flag
     haveError = FALSE;
-    BREAD_CRUMB(L"%s:  3 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  3 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FinishExternalScreen()
@@ -1360,23 +1330,19 @@ BOOLEAN CheckError (
 VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"SwitchToGraphicsAndClear";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     SwitchToGraphics();
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     if (GraphicsScreenDirty) {
-        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1", __func__);
         BltClearScreen (ShowBanner);
     }
 
-    BREAD_CRUMB(L"%s:  3 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  3 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID SwitchToGraphicsAndClear()
@@ -1402,6 +1368,9 @@ UINTN GetLumIndex (
 
 EG_PIXEL FontComplement (VOID) {
     EG_PIXEL OurPix = {0x0, 0x0, 0x0, 0};
+    UINTN    MaxRGB;
+    UINTN    MinRGB;
+    UINTN    LumIndex;
     UINTN    PixelR = (UINTN) MenuBackgroundPixel.r;
     UINTN    PixelG = (UINTN) MenuBackgroundPixel.g;
     UINTN    PixelB = (UINTN) MenuBackgroundPixel.b;
@@ -1416,7 +1385,7 @@ EG_PIXEL FontComplement (VOID) {
     }
 
     // Get Screen Luminance Index
-    UINTN LumIndex = GetLumIndex (PixelR, PixelG, PixelB);
+    LumIndex = GetLumIndex (PixelR, PixelG, PixelB);
 
     if (LumIndex >= 128) {
         // Early Return
@@ -1428,11 +1397,11 @@ EG_PIXEL FontComplement (VOID) {
     // Complementary colour for Mid Grey is ... Mid Grey!
     // Check for a broadly defined 'Grey' to fix
     // Difficult to read text otherwise
-    UINTN MaxRGB = (PixelR > PixelG) ? PixelR : PixelG;
-    MaxRGB       = (MaxRGB > PixelB) ? MaxRGB : PixelB;
+    MaxRGB = (PixelR > PixelG) ? PixelR : PixelG;
+    MaxRGB = (MaxRGB > PixelB) ? MaxRGB : PixelB;
 
-    UINTN MinRGB = (PixelR < PixelG) ? PixelR : PixelG;
-    MinRGB       = (MinRGB < PixelB) ? MinRGB : PixelB;
+    MinRGB = (PixelR < PixelG) ? PixelR : PixelG;
+    MinRGB = (MinRGB < PixelB) ? MinRGB : PixelB;
 
     if ((MaxRGB - MinRGB) <= 64) {
         // We have 'Grey' ... Determine if it is 'Mid Grey'
@@ -1464,20 +1433,17 @@ VOID BltClearScreen (
 
     static EG_IMAGE  *Banner = NULL;
 
-#if REFIT_DEBUG > 0
+    #if REFIT_DEBUG > 0
     CHAR16         *MsgStr;
     CHAR16         *StrSpacer;
 
     static BOOLEAN  LoggedBanner = FALSE;
-
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"BltClearScreen";
     #endif
-#endif
+
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     #if REFIT_DEBUG > 0
     if (!IsBoot) {
@@ -1486,7 +1452,7 @@ VOID BltClearScreen (
     }
     #endif
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     BannerPass = (
         !IsBoot ||
         (
@@ -1495,7 +1461,7 @@ VOID BltClearScreen (
         )
     );
     if (!BannerPass) {
-        BREAD_CRUMB(L"%s:  2a 1 - (Set Screen to Menu Background Colour)", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - (Set Screen to Menu Background Colour)", __func__);
         #if REFIT_DEBUG > 0
         if (!IsBoot) {
             LOG_MSG("%s  - Clear Screen",
@@ -1512,7 +1478,7 @@ VOID BltClearScreen (
         );
     }
     else {
-        BREAD_CRUMB(L"%s:  2b 1", FuncTag);
+        BREAD_CRUMB(L"%a:  2b 1", __func__);
         // Load banner on first call
         if (!Banner) {
             #if REFIT_DEBUG > 0
@@ -1668,7 +1634,7 @@ VOID BltClearScreen (
             }
         }
 
-        BREAD_CRUMB(L"%s:  2b 2", FuncTag);
+        BREAD_CRUMB(L"%a:  2b 2", __func__);
         // Clear and draw banner
         #if REFIT_DEBUG > 0
         LOG_MSG("%s  - Clear Screen",
@@ -1679,15 +1645,15 @@ VOID BltClearScreen (
         BRK_MAX("\n");
         #endif
         if (GlobalConfig.ScreensaverTime != -1) {
-            BREAD_CRUMB(L"%s:  2b 2a 1 - (Set Screen to Menu Background Colour)", FuncTag);
+            BREAD_CRUMB(L"%a:  2b 2a 1 - (Set Screen to Menu Background Colour)", __func__);
             egClearScreen (&MenuBackgroundPixel);
         }
         else {
-            BREAD_CRUMB(L"%s:  2b 2b 1 - (Set Screen to Black)", FuncTag);
+            BREAD_CRUMB(L"%a:  2b 2b 1 - (Set Screen to Black)", __func__);
             egClearScreen (&BlackPixel);
         }
 
-        BREAD_CRUMB(L"%s:  2b 3", FuncTag);
+        BREAD_CRUMB(L"%a:  2b 3", __func__);
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Offer Banner",
@@ -1721,7 +1687,7 @@ VOID BltClearScreen (
     MY_FREE_IMAGE(GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
 
-    BREAD_CRUMB(L"%s:  3 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  3 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID BltClearScreen()

@@ -222,7 +222,7 @@ REFIT_VOLUME * PickOneESP (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneESP' from '%s' in DrawMenuScreen Call",
+            L"Returned '%d' (%s) in 'PickOneESP' Function from the '%s' Option in Menu Screen",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -599,14 +599,14 @@ EFI_STATUS CopyDrivers (
         DriverName = NULL;
         switch (Volumes[i]->FSType) {
             case FS_TYPE_BTRFS:
-                if (DriverCopied[FS_TYPE_BTRFS] == FALSE) {
+                if (!DriverCopied[FS_TYPE_BTRFS]) {
                     DriverName = L"btrfs";
                     DriverCopied[FS_TYPE_BTRFS] = TRUE;
                 }
 
             break;
             case FS_TYPE_EXT2:
-                if (DriverCopied[FS_TYPE_EXT2] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT2]) {
                     DriverName = L"ext2";
                     DriverCopied[FS_TYPE_EXT2] = TRUE;
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
@@ -614,7 +614,7 @@ EFI_STATUS CopyDrivers (
 
             break;
             case FS_TYPE_EXT3:
-                if (DriverCopied[FS_TYPE_EXT3] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT3]) {
                     DriverName = L"ext2";
                     DriverCopied[FS_TYPE_EXT2] = TRUE;
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
@@ -622,21 +622,21 @@ EFI_STATUS CopyDrivers (
 
             break;
             case FS_TYPE_EXT4:
-                if (DriverCopied[FS_TYPE_EXT4] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT4]) {
                     DriverName = L"ext4";
                     DriverCopied[FS_TYPE_EXT4] = TRUE;
                 }
 
             break;
             case FS_TYPE_REISERFS:
-                if (DriverCopied[FS_TYPE_REISERFS] == FALSE) {
+                if (!DriverCopied[FS_TYPE_REISERFS]) {
                     DriverName = L"reiserfs";
                     DriverCopied[FS_TYPE_REISERFS] = TRUE;
                 }
 
             break;
             case FS_TYPE_HFSPLUS:
-                if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) &&
+                if (!DriverCopied[FS_TYPE_HFSPLUS] &&
                     (!AppleFirmware)
                 ) {
                     DriverName = L"hfs";
@@ -973,7 +973,7 @@ UINTN FindBootNum (
         }
 
         MY_FREE_POOL(VarName);
-    } while (*AlreadyExists == FALSE); // No '!EFI_ERROR(Status)' Here
+    } while (!(*AlreadyExists)); // No '!EFI_ERROR(Status)' Here
 
     if (*AlreadyExists == TRUE) {
         return (Index - 1);
@@ -994,7 +994,7 @@ UINTN FindBootNum (
         }
 
         MY_FREE_POOL(VarName);
-    } while (!EFI_ERROR(Status) && *AlreadyExists == FALSE);
+    } while (!EFI_ERROR(Status) && !(*AlreadyExists));
 
     if (Index > 0x10000) {
         // Somehow ALL boot entries are occupied! VERY unlikely!
@@ -1090,10 +1090,12 @@ EFI_STATUS CreateNvramEntry (
     }
     else {
         AlreadyExists = FALSE;
-        BootNum = FindBootNum (DevicePath, EntrySize, &AlreadyExists);
+        BootNum = FindBootNum (
+            DevicePath, EntrySize, &AlreadyExists
+        );
     }
 
-    if (!EFI_ERROR(Status) && AlreadyExists == FALSE) {
+    if (!EFI_ERROR(Status) && !AlreadyExists) {
         VarName = PoolPrint (L"Boot%04x", BootNum);
         Status = SetHardwareNvramVariable (
             VarName, &GlobalGuid,
@@ -1309,7 +1311,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
                L->BootEntry.Label   = StrDuplicate ((CHAR16*) &(Contents[3]));
                L->BootEntry.DevPath = AllocatePool (L->BootEntry.Size);
                REFIT_CALL_3_WRAPPER(
-                   gBS->CopyMem, 
+                   gBS->CopyMem,
                    L->BootEntry.DevPath,
                    (EFI_DEVICE_PATH*) &Contents[3 + StrSize (L->BootEntry.Label)/2],
                    L->BootEntry.Size
@@ -1412,7 +1414,7 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -1527,13 +1529,13 @@ UINTN PickOneBootOption (
             break;
         }
 
-        DefaultEntry = -1; // Use the Max Index
+        DefaultEntry = 9999; // Use the Max Index
         Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
         MenuExit = DrawMenuScreen (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneBootOption' Function from '%s' Option in Menu Screen",
+            L"Returned '%d' (%s) in 'PickOneBootOption' Function from the '%s' Option in Menu Screen",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif

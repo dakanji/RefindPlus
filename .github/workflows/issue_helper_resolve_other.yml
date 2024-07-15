@@ -20,6 +20,12 @@ on:
         options:
         - 'No'
         - 'Yes'
+      type_more_info:
+        type: choice
+        description: 'More Info Type'
+        options:
+        - 'Note'
+        - 'Caution'
 
 permissions:
   issues: write
@@ -57,7 +63,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           releases-only: true
 
-      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' }}
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
         id: part_1b
         uses: actions-cool/issues-helper@v3
         with:
@@ -67,13 +73,13 @@ jobs:
           body: |
             This item has been resolved.
 
-            > [!Note]
-            > Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
-            > Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality ahead of the next release.
-            >
+            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+
+            > [!NOTE]
             > ${{ github.event.inputs.more_info }}
 
-      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
         id: part_1c
         uses: actions-cool/issues-helper@v3
         with:
@@ -83,11 +89,26 @@ jobs:
           body: |
             This item has been resolved.
 
-            > [!Note]
-            > Current RefindPlus Release: ${{ steps.part_1a.outputs.tag }}.
-            > Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) to access functionality ahead of the next release.
+            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' }}
+            > [!CAUTION]
+            > ${{ github.event.inputs.more_info }}
+
+      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
+        id: part_1d
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been resolved.
+
+            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+
+      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
         id: part_2a
         uses: actions-cool/issues-helper@v3
         with:
@@ -97,11 +118,24 @@ jobs:
           body: |
             This item has been resolved.
 
-            > [!Note]
+            > [!NOTE]
+            > ${{ github.event.inputs.more_info }}
+
+      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
+        id: part_2b
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been resolved.
+
+            > [!CAUTION]
             > ${{ github.event.inputs.more_info }}
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'No' }}
-        id: part_2b
+        id: part_2c
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'

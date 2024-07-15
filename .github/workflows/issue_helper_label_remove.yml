@@ -10,6 +10,7 @@ on:
         - 'Label - Remove - Abandoned'
         - 'Label - Remove - Cancelled'
         - 'Label - Remove - Cannot-Replicate'
+        - 'Label - Remove - Duplicate'
         - 'Label - Remove - Incomplete'
         - 'Label - Remove - Invalid'
         - 'Label - Remove - Triage'
@@ -71,6 +72,19 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Cannot-Replicate'
+
+  label_remove_duplicate:
+    name: Label - Remove - Duplicate
+    runs-on: ubuntu-20.04
+
+    if: github.event.inputs.operation == 'Label - Remove - Duplicate'
+    steps:
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Duplicate,Resolved'
 
   label_remove_incomplete:
     name: Label - Remove - Incomplete

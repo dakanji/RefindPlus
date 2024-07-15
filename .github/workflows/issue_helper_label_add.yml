@@ -10,6 +10,7 @@ on:
         - 'Label - Add - Abandoned'
         - 'Label - Add - Cancelled'
         - 'Label - Add - Cannot-Replicate'
+        - 'Label - Add - Discussion'
         - 'Label - Add - Incomplete - Issues'
         - 'Label - Add - Incomplete - Enhancement'
         - 'Label - Add - Invalid'
@@ -24,6 +25,12 @@ on:
       item_id:
         description: 'Item ID'
         required: true
+      discussion_reason:
+        type: choice
+        description: 'Reason for Discussion Label'
+        options:
+        - 'Question/Comment-Only'
+        - 'Other'
 
 permissions:
   issues: write
@@ -47,18 +54,161 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Abandoned'
 
-  label_add_cannot-cancelled:
+  label_add_cancelled:
     name: Label - Add - Cancelled
     runs-on: ubuntu-20.04
 
     if: github.event.inputs.operation == 'Label - Add - Cancelled'
     steps:
-      - uses: actions-cool/issues-helper@v3
+
+      - name: Label - Add - Cancelled - 1
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Cancelled'
+
+      - name: Label - Add - Cancelled - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage'
+
+      - name: Label - Add - Cancelled - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          close-reason: 'completed'
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  label_add_discussion:
+    name: Label - Add - Discussion
+    runs-on: ubuntu-20.04
+
+    if: github.event.inputs.operation == 'Label - Add - Discussion'
+    steps:
+
+      - name: Label - Add - Discussion - 0
+        run: sudo apt-get install -y jq
+
+      - name: Label - Add - Discussion - 1
+        id: get-issue-details
+        run: |
+            # Make a request to the GitHub API to get issue details
+            issue=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.inputs.item_id }})
+            echo "$issue" > issue.json
+            # Extract title and body using jq
+            title=$(jq -r '.title' issue.json)
+            body=$(jq -r '.body' issue.json)
+            # Set the title and body as environment variables
+            notice="# This Discussion Item is an Automated Converstion of Issue/Enhancement Item #${{ github.event.inputs.item_id }}\n\n$body"
+            echo "title=$title" >> $GITHUB_ENV
+            printf "body=%s\n" "$notice" >> $GITHUB_ENV
+
+        # The 'category_id' below was derived from https://docs.github.com/en/graphql/overview/explorer
+        # query {
+        #   repository(owner: "dakanji", name: "RefindPlus") {
+        #     id
+        #     name
+        #     discussionCategories(first: 5) {
+        #       nodes {
+        #         id # Category ID
+        #         name
+        #       }
+        #     }
+        #   }
+        # }
+      - name: Label - Add - Discussion - 2
+        id: create-discussion
+        run: |
+            # Make a request to the GitHub API to create a discussion
+            response=$(curl -s -X POST -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/discussions \
+            -d @- << EOF
+            {
+                "title": "${{ env.title }}",
+                "body": "${{ env.body }}",
+                "category_id": "MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyMDE4Mjgy"
+            }
+            EOF)
+            # Extract the discussion URL from the response
+            discussion_url=$(echo $response | jq -r '.html_url')
+            echo "discussion_url=$discussion_url" >> $GITHUB_ENV
+
+      - if: ${{ github.event.inputs.discussion_reason == 'Question/Comment-Only' }}
+        name: Label - Add - Discussion - 3a
+        id: add-comment-1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
+
+            > [!IMPORTANT]
+            > You have just asked a question or simply made a comment.
+            > The template indicates these should be under Discussions.
+            > The guidance in the template appears to have been ignored.
+
+            Please use Discussions for similar items in future.
+
+            Thank you.
+
+      - if: ${{ github.event.inputs.discussion_reason == 'Other' }}
+        name: Label - Add - Discussion - 3b
+        id: add-comment-2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
+
+            Thank you.
+
+      - name: Label - Add - Discussion - 4
+        id: remove-labels
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,Not-Planned,Parked,Stale,Queries,Invalid,Prorogued,Duplicate,Incomplete,Known-Issue,Enhancement,Cannot-Replicate'
+
+      - name: Label - Add - Discussion - 5
+        id: add-labels
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Discussion'
+
+      - name: Label - Add - Discussion - 6
+        id: close-original-issue
+        uses: actions-cool/issues-helper@v3
+        with:
+          close-reason: 'completed'
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+      - name: Label - Add - Discussion - 7
+        id: lock-original-issue
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
 
   label_add_cannot-replicate:
     name: Label - Add - Cannot-Replicate
@@ -66,12 +216,30 @@ jobs:
 
     if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
     steps:
-      - uses: actions-cool/issues-helper@v3
+
+      - name: Label - Add - Cannot-Replicate - 1
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Cannot-Replicate'
+
+      - name: Label - Add - Cannot-Replicate - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage'
+
+      - name: Label - Add - Cannot-Replicate - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          close-reason: 'completed'
+          actions: 'close-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
 
   label_add_incomplete_issue:
     name: Label - Add - Incomplete - Issues

@@ -70,8 +70,8 @@
 #define TAG_EXIT                  (4)
 #define TAG_SHELL                 (5)
 #define TAG_GPTSYNC               (6)
-#define TAG_RECOVERY_APPLE        (7)
-#define TAG_RECOVERY_WINDOWS      (8)
+#define TAG_RECOVERY_MAC          (7)
+#define TAG_RECOVERY_WIN          (8)
 #define TAG_MOK_TOOL              (9)
 #define TAG_FIRMWARE             (10)
 #define TAG_MEMTEST              (11)
@@ -80,9 +80,9 @@
 #define TAG_CSR_ROTATE           (14)
 #define TAG_FWUPDATE_TOOL        (15)
 #define TAG_HIDDEN               (16)
-#define TAG_BOOTORDER            (17)
-#define TAG_INSTALL              (18)
-#define TAG_NVRAMCLEAN           (19)
+#define TAG_INSTALL              (17)
+#define TAG_BOOTORDER            (18)
+#define TAG_CLEAN_NVRAM          (19)
 #define NUM_TOOLS                (20)
 // Other Tags
 #define TAG_TOOL                 (21)
@@ -175,7 +175,8 @@
 #endif
 
 #define DEFAULT_ICONS_DIR     L"icons"
-#define HIDDEN_TAG_DELIMITER  L" @@ "
+#define DEFAULT_STRING_DELIM  L" @+@ "
+#define INITIAL_STRING_DELIM  L" @@ "
 
 // Define some colours
 #define COLOR_LIGHTBLUE {255, 175, 100, 0}
@@ -665,8 +666,6 @@ extern REFIT_MENU_SCREEN       *MainMenu;
 
 VOID StoreLoaderName (IN CHAR16 *Name);
 VOID RescanAll (BOOLEAN Reconnect);
-
-EG_IMAGE * GetDiskBadge (IN UINTN DiskType);
 
 LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 

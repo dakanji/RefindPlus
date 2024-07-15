@@ -53,7 +53,10 @@
 #define FONT_NUM_CHARS 96
 
 extern BOOLEAN   DefaultBanner;
+
+#if REFIT_DEBUG > 0
 extern BOOLEAN   FoundFontImage;
+#endif
 
 UINTN            FontCellWidth = 7;
 EG_IMAGE        *BaseFontImage = NULL;
@@ -114,11 +117,16 @@ UINTN egGetFontCellWidth (VOID) {
 UINTN egComputeTextWidth (
     IN CHAR16 *Text
 ) {
-    UINTN Width = 0;
+    UINTN Width;
+
 
     egPrepareFont();
-    if (Text != NULL) {
-        Width = FontCellWidth * StrLen (Text);
+
+    if (Text == NULL) {
+        Width = 0;
+    }
+    else{
+        Width = StrLen (Text) * FontCellWidth;
     }
 
     return Width;
@@ -146,17 +154,20 @@ VOID egRenderText (
     IN UINTN         PosY,
     IN UINT8         BGBrightness
 ) {
-    EG_IMAGE        *FontImage;
-    EG_PIXEL        *BufferPtr;
-    EG_PIXEL        *FontPixelData;
-    EG_PIXEL         OurFont = {0xFF, 0xFF, 0xFF, 0};
-    UINTN            BufferLineOffset;
-    UINTN            FontLineOffset;
-    UINTN            TextLength;
     UINTN            i, c;
+    UINTN            TextLength;
+    UINTN            FontLineOffset;
+    UINTN            BufferLineOffset;
+    EG_PIXEL        *FontPixelData;
+    EG_PIXEL        *BufferPtr;
+    EG_PIXEL         OurFont = {0xFF, 0xFF, 0xFF, 0};
+    EG_IMAGE        *FontImage;
 
+    const  UINTN     LoRGB          =    0;
+    const  UINTN     HiRGB          =  255;
     static EG_IMAGE *DarkFontImage  = NULL;
     static EG_IMAGE *LightFontImage = NULL;
+
 
     // Early Return if nothing was passed
     if (Text == NULL) {
@@ -167,8 +178,7 @@ VOID egRenderText (
 
     // Clip the text
     TextLength = StrLen (Text);
-
-    if (TextLength * FontCellWidth + PosX > CompImage->Width) {
+    if ((TextLength * FontCellWidth) + PosX > CompImage->Width) {
         TextLength = (CompImage->Width - PosX) / FontCellWidth;
     }
 
@@ -194,18 +204,18 @@ VOID egRenderText (
             }
 
             for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
-                if (LightFontImage->PixelData[i].r == 0 &&
-                    LightFontImage->PixelData[i].g == 0 &&
-                    LightFontImage->PixelData[i].b == 0
+                if (LightFontImage->PixelData[i].r == LoRGB &&
+                    LightFontImage->PixelData[i].g == LoRGB &&
+                    LightFontImage->PixelData[i].b == LoRGB
                 ) {
                     LightFontImage->PixelData[i].r = OurFont.r;
                     LightFontImage->PixelData[i].g = OurFont.g;
                     LightFontImage->PixelData[i].b = OurFont.b;
                 }
                 else {
-                    LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
-                    LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
-                    LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
+                    LightFontImage->PixelData[i].r = HiRGB - LightFontImage->PixelData[i].r;
+                    LightFontImage->PixelData[i].g = HiRGB - LightFontImage->PixelData[i].g;
+                    LightFontImage->PixelData[i].b = HiRGB - LightFontImage->PixelData[i].b;
                 }
             } // for
         } // if LightFontImage == NULL
@@ -214,9 +224,9 @@ VOID egRenderText (
     } // if/else BGBrightness >= 128
 
     // Render it
-    BufferPtr         = CompImage->PixelData;
     BufferLineOffset  = CompImage->Width;
-    BufferPtr        += PosX + PosY * BufferLineOffset;
+    BufferPtr         = CompImage->PixelData;
+    BufferPtr        += PosX + (PosY * BufferLineOffset);
     FontPixelData     = FontImage->PixelData;
     FontLineOffset    = FontImage->Width;
 
@@ -230,7 +240,7 @@ VOID egRenderText (
         }
 
         egRawCompose (
-            BufferPtr, FontPixelData + c * FontCellWidth,
+            BufferPtr, FontPixelData + (c * FontCellWidth),
             FontCellWidth, FontImage->Height,
             BufferLineOffset, FontLineOffset
         );
@@ -244,8 +254,12 @@ VOID egLoadFont (
 ) {
     MY_FREE_IMAGE(BaseFontImage);
     BaseFontImage = egLoadImage (SelfDir, Filename, TRUE);
+
+    #if REFIT_DEBUG > 0
     if (BaseFontImage == NULL) {
         FoundFontImage = FALSE;
     }
+    #endif
+
     egPrepareFont();
 } // VOID egLoadFont()

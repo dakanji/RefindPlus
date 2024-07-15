@@ -2,7 +2,7 @@
 
 # RefindPlus
 
-A boot manager for Mac and PC
+A Boot Manager for Mac and PC
 
 <br>
 
@@ -10,7 +10,7 @@ A boot manager for Mac and PC
 
 [![Coverity Scan](https://img.shields.io/coverity/scan/22695)](https://scan.coverity.com/projects/22695)&nbsp;&nbsp;&nbsp;[![Codacy Grade](https://img.shields.io/codacy/grade/d2955171e96246579279c1a28c4b11cf?label=codacy)](https://app.codacy.com/gh/dakanji/RefindPlus/dashboard)
 
-[![License Type](https://img.shields.io/badge/GPL--3.0/Later-blue?label=copies)](https://github.com/dakanji/RefindPlus/blob/GOPFix/INFO.txt)
+[![License Type](https://img.shields.io/badge/GPL%203.0/Later-blue?label=copies)](https://github.com/dakanji/RefindPlus/blob/GOPFix/INFO.txt)
 
 </div>
 
@@ -54,14 +54,17 @@ Some features:
 
 Users may also want to replace upstream filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 
+> Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, the RefindPlus code base is usually at the state of the base upstream release version plus any such updates. The code base typically also includes updates for subsequent upstream release versions since the base version.
+
 RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additional options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample-Dev](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample-Dev). RefindPlus-specific options can also be added to an upstream configuration file and used that way if preferred.
 
-Note that if RefindPlus is run without activating the additional options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.1. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence](https://github.com/dakanji/RefindPlus#divergence) section below. NB: Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, RefindPlus releases are actually at the state of the base upstream release version plus any such updates and typically include updates for subsequent upstream release versions since the base version.
+When run without activating RefindPlus-specific configuration options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.2. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence Section](https://github.com/dakanji/RefindPlus#divergence) below.
 
 ## Additional Functionality
 
-RefindPlus-specific funtionality can be configured by adding the tokens below to the upstream configuration file.
-Additional information is provided in the sample RefindPlus configuration file.
+RefindPlus-specific funtionality can be configured using the tokens below.<br>
+Additional information is provided in the sample RefindPlus configuration file.<br>
+These tokens are included in `Section 1` of the sample RefindPlus configuration file.
 
 Token | Functionality
 ----- | -----
@@ -78,7 +81,7 @@ disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Wit
 disable_check_amfi    |Disables AMFI Checks on macOS if required
 disable_check_compat  |Disables Mac version compatibility checks if required
 disable_pass_gop_thru |Disables feature that provides GOP instance on UGA for some loading screens
-disable_legacy_sync   |Disables detailed indentification of Mac Legacy BIOS Boot capability
+disable_legacy_sync   |Disables detailed indentification of Mac legacy BIOS boot capability
 disable_nvram_paniclog|Disables logging macOS kernel panics to nvRAM
 disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
 disable_reload_gop    |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
@@ -97,7 +100,7 @@ mitigate_primed_buffer|Allows enhanced intervention to handle apparent primed ke
 nvram_protect_ex      |Extends `NvramProtect`, if set, to macOS and `unknown` UEFI boots
 nvram_variable_limit  |Limits nvRAM write attempts to the specified variable size
 pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
-persist_boot_args     |Overrides using vRAM, and not nvRAM, for macOS boot argument items
+persist_boot_args     |Overrides using vRAM (instead of nvRAM) for macOS boot argument items
 prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
 ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
@@ -122,9 +125,9 @@ In addition to the new functionality listed above, the following upstream tokens
   - `everything` option to enable graphics mode loading for everything.
   - `OpenCore` and `Clover` can be specifically set to load in graphics mode.
 - **"showtools":** Additional tool added:
-  - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
+  - `clean_nvram` : Allows resetting nvRAM directly from RefindPlus.
     - When run on Apple firmware, RefindPlus will additionally trigger nvRAM garbage collection
-- **"csr_values":** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates when running macOS 11.x (Big Sur), or later, with SIP enabled.
+- **"csr_values":** A value of `0` can be set as the `Enabled` value to allow `Over The Air` (OTA) updates when running macOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `csr_normalise` token.
 - **"log_level":** Controls the native log format and an implementation of the upstream format.
   - Only active on `DEBUG` and `NOOPT` builds while `RELEASE` builds remain optimised for day-to-day use.
@@ -134,7 +137,7 @@ In addition to the new functionality listed above, the following upstream tokens
     - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
       - Create `NOOPT` builds by passing `ALL` or `NPT` as a second parameter to the RefindPlus build script
         - Setting `ALL` includes an `NPT` build to the standard `REL` and `DBG` builds created
-        - Setting `NPT` only creates that build type
+        - Setting `NPT` creates only that build type
           - Applies to setting `REL` or `DBG`
       - The first parameter is the build branch, which also needs to be specified in such instances
     - When Level 2 is not exposed, selected levels above `1` will be capped at Level 1

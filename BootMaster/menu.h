@@ -185,7 +185,7 @@ UINTN DrawMenuScreen (
     IN     REFIT_MENU_SCREEN   *Screen,
     IN     MENU_STYLE_FUNC      StyleFunc,
     IN OUT INTN                *DefaultEntryIndex,
-    OUT    REFIT_MENU_ENTRY  **ChosenEntry
+    OUT    REFIT_MENU_ENTRY  **ChosenOption
 );
 UINTN FindMainMenuItem (
     IN REFIT_MENU_SCREEN *Screen,
@@ -196,7 +196,7 @@ UINTN FindMainMenuItem (
 UINTN RunMainMenu (
     IN REFIT_MENU_SCREEN  *Screen,
     IN CHAR16            **DefaultSelection,
-    OUT REFIT_MENU_ENTRY **ChosenEntry
+    OUT REFIT_MENU_ENTRY **ChosenOption
 );
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);

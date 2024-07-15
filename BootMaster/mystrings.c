@@ -38,14 +38,26 @@ BOOLEAN NestedStrStr = FALSE;
  *  or the original string if the delimiter was not found.
  * --*/
 CHAR16 * GetSubStrAfter (
-    IN CHAR16 *Delimiter,
+    IN CHAR16 *InputDelimiter,
     IN CHAR16 *String
 ) {
     CHAR16 *Substring;
+    CHAR16 *Delimiter;
 
 
     if (String == NULL) {
         return NULL;
+    }
+
+    // Handle Deprecated 'INITIAL_STRING_DELIM' = L" @@ "
+    if (!MyStriCmp (InputDelimiter, DEFAULT_STRING_DELIM)) {
+        Delimiter = InputDelimiter;
+    }
+    else if (MyStrStr (String, INITIAL_STRING_DELIM)) {
+        Delimiter = INITIAL_STRING_DELIM;
+    }
+    else {
+        Delimiter = DEFAULT_STRING_DELIM;
     }
 
     Substring = MyStrStr (String, Delimiter);
@@ -83,15 +95,28 @@ CHAR16 * GetSubStrAfter (
  *  or the original string if the delimiter was not found.
  * --*/
 CHAR16 * GetSubStrBefore (
-    IN CHAR16 *Delimiter,
+    IN CHAR16 *InputDelimiter,
     IN CHAR16 *String
 ) {
     UINTN   Length;
     CHAR16 *Result;
     CHAR16 *Substring;
+    CHAR16 *Delimiter;
+
 
     if (String == NULL) {
         return NULL;
+    }
+
+    // Handle Deprecated 'INITIAL_STRING_DELIM' = L" @@ "
+    if (!MyStriCmp (InputDelimiter, DEFAULT_STRING_DELIM)) {
+        Delimiter = InputDelimiter;
+    }
+    else if (MyStrStr (String, INITIAL_STRING_DELIM)) {
+        Delimiter = INITIAL_STRING_DELIM;
+    }
+    else {
+        Delimiter = DEFAULT_STRING_DELIM;
     }
 
     Substring = MyStrStr (String, Delimiter);
@@ -233,28 +258,25 @@ CHAR16 * MyStrStr (
     CHAR16 *Src;
     CHAR16 *Sub;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"MyStrStr";
-    #endif
 
     if (!NestedStrStr) LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- Find '%s' in '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  1 - START:- Find '%s' in '%s'", __func__,
         StrCharSet ? StrCharSet : L"NULL",
         String     ? String     : L"NULL"
     );
     if (String == NULL || StrCharSet == NULL) {
-        BREAD_CRUMB(L"%s:  return 'NULL'", FuncTag);
+        BREAD_CRUMB(L"%a:  return 'NULL'", __func__);
         LOG_DECREMENT();
         if (!NestedStrStr) LOG_SEP(L"X");
         return NULL;
     }
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    //BREAD_CRUMB(L"%a:  2", __func__);
     Src = String;
     Sub = StrCharSet;
 
-    //BREAD_CRUMB(L"%s:  3 - WHILE LOOP:- START", FuncTag);
+    //BREAD_CRUMB(L"%a:  3 - WHILE LOOP:- START", __func__);
     while ((*String != L'\0') && (*StrCharSet != L'\0')) {
         if (*String++ == *StrCharSet) {
             StrCharSet++;
@@ -264,16 +286,16 @@ CHAR16 * MyStrStr (
             StrCharSet = Sub;
         }
     } // while
-    //BREAD_CRUMB(L"%s:  4 - WHILE LOOP:- END", FuncTag);
+    //BREAD_CRUMB(L"%a:  4 - WHILE LOOP:- END", __func__);
 
     if (*StrCharSet == L'\0') {
-        BREAD_CRUMB(L"%s:  4a - END:- return CHAR16 *Src (Substring Found)", FuncTag);
+        BREAD_CRUMB(L"%a:  4a - END:- return CHAR16 *Src (Substring Found)", __func__);
         LOG_DECREMENT();
         if (!NestedStrStr) LOG_SEP(L"X");
         return Src;
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- return NULL (Substring *NOT* Found)", FuncTag);
+    BREAD_CRUMB(L"%a:  5 - END:- return NULL (Substring *NOT* Found)", __func__);
     LOG_DECREMENT();
     if (!NestedStrStr) LOG_SEP(L"X");
 
@@ -298,18 +320,14 @@ BOOLEAN FindSubStr (
     IN CHAR16  *RawString,
     IN CHAR16  *RawStrCharSet
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FindSubStr";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- Find '%s' in '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  1 - START:- Find '%s' in '%s'", __func__,
         RawStrCharSet ? RawStrCharSet : L"NULL",
         RawString     ? RawString     : L"NULL"
     );
     if (RawString == NULL || RawStrCharSet == NULL) {
-        BREAD_CRUMB(L"%s:  return 'FALSE'", FuncTag);
+        BREAD_CRUMB(L"%a:  return 'FALSE'", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;
@@ -319,18 +337,18 @@ BOOLEAN FindSubStr (
     CHAR16  *StrCharSet = StrDuplicate (RawStrCharSet);
     BOOLEAN  FoundStr   = FALSE;
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    //BREAD_CRUMB(L"%a:  2", __func__);
     ToLower (String);
     ToLower (StrCharSet);
 
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
+    //BREAD_CRUMB(L"%a:  3", __func__);
     NestedStrStr = TRUE;
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     MY_MUTELOGGER_SET;
     #endif
     if (MyStrStr (String, StrCharSet)) {
-        //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  3a 1", __func__);
         FoundStr = TRUE;
     }
     #if REFIT_DEBUG > 0
@@ -338,11 +356,11 @@ BOOLEAN FindSubStr (
     #endif
     NestedStrStr = FALSE;
 
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
+    //BREAD_CRUMB(L"%a:  3", __func__);
     MY_FREE_POOL(String);
     MY_FREE_POOL(StrCharSet);
 
-    BREAD_CRUMB(L"%s:  4 - END:- return BOOLEAN FoundStr = '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  4 - END:- return BOOLEAN FoundStr = '%s'", __func__,
         FoundStr ? L"TRUE" : L"FALSE"
     );
     LOG_DECREMENT();
@@ -474,8 +492,8 @@ VOID MergeStrings (
     CHAR16         *NewString;
 
     #if REFIT_DEBUG > 1
-    const CHAR16   *FuncTag = L"MergeStrings";
     CHAR16         *MsgStr;
+
 
     MsgStr = PoolPrint (
         L"Add '%s' to the end of '%s' (%s Separator)",
@@ -485,13 +503,13 @@ VOID MergeStrings (
     );
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- %s", FuncTag, MsgStr);
+    BREAD_CRUMB(L"%a:  1 - START:- %s", __func__, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        BREAD_CRUMB(L"%s:  1a 1 - END:- NULL INPUT - Out String = '%s'", FuncTag,
+        BREAD_CRUMB(L"%a:  1a 1 - END:- NULL INPUT - Out String = '%s'", __func__,
             *First
         );
         LOG_DECREMENT();
@@ -500,51 +518,51 @@ VOID MergeStrings (
         return;
     }
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    //BREAD_CRUMB(L"%a:  2", __func__);
     Length1 = StrLen (*First);
 
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
+    //BREAD_CRUMB(L"%a:  3", __func__);
     Length2 = (Second != NULL) ? StrLen (Second) : 0;
 
-    //BREAD_CRUMB(L"%s:  4", FuncTag);
+    //BREAD_CRUMB(L"%a:  4", __func__);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
-    //BREAD_CRUMB(L"%s:  5", FuncTag);
+    //BREAD_CRUMB(L"%a:  5", __func__);
     if (NewString) {
-        //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 1", __func__);
         if (*First != NULL && Length1 == 0) {
-            //BREAD_CRUMB(L"%s:  5a 1a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  5a 1a 1", __func__);
             MY_FREE_POOL(*First);
         }
 
-        //BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 2", __func__);
         NewString[0] = L'\0';
 
-        //BREAD_CRUMB(L"%s:  5a 3", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 3", __func__);
         if (*First != NULL) {
-            //BREAD_CRUMB(L"%s:  5a 3a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  5a 3a 1", __func__);
             StrCat (NewString, *First);
 
-            //BREAD_CRUMB(L"%s:  5a 3a 2", FuncTag);
+            //BREAD_CRUMB(L"%a:  5a 3a 2", __func__);
             if (AddChar) {
-                //BREAD_CRUMB(L"%s:  5a 3a 2a 1", FuncTag);
+                //BREAD_CRUMB(L"%a:  5a 3a 2a 1", __func__);
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
             }
-            //BREAD_CRUMB(L"%s:  5a 3a 3", FuncTag);
+            //BREAD_CRUMB(L"%a:  5a 3a 3", __func__);
         }
 
-        //BREAD_CRUMB(L"%s:  5a 4", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 4", __func__);
         if (Second != NULL) {
-            //BREAD_CRUMB(L"%s:  5a 4a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  5a 4a 1", __func__);
             StrCat (NewString, Second);
         }
 
-        //BREAD_CRUMB(L"%s:  5a 5", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 5", __func__);
         MY_FREE_POOL(*First);
         *First = NewString;
     }
-    BREAD_CRUMB(L"%s:  6 - END:- Out String = '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  6 - END:- Out String = '%s'", __func__,
         *First
     );
     LOG_DECREMENT();
@@ -565,8 +583,8 @@ VOID MergeUniqueStrings (
     BOOLEAN  SkipMerge;
 
     #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"MergeUniqueStrings";
     CHAR16 *MsgStr;
+
 
     MsgStr = PoolPrint (
         L"If not already present as a substring, add '%s' to the end of '%s' (%s Separator)",
@@ -576,13 +594,13 @@ VOID MergeUniqueStrings (
     );
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- %s", FuncTag, MsgStr);
+    BREAD_CRUMB(L"%a:  1 - START:- %s", __func__, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        BREAD_CRUMB(L"%s:  1a 1 - END:- NULL Input - Out String = '%s'", FuncTag,
+        BREAD_CRUMB(L"%a:  1a 1 - END:- NULL Input - Out String = '%s'", __func__,
             *First
         );
         LOG_DECREMENT();
@@ -591,23 +609,23 @@ VOID MergeUniqueStrings (
         return;
     }
 
-    //BREAD_CRUMB(L"%s:  2", FuncTag);
+    //BREAD_CRUMB(L"%a:  2", __func__);
     Length1 = StrLen (*First);
 
-    //BREAD_CRUMB(L"%s:  3", FuncTag);
+    //BREAD_CRUMB(L"%a:  3", __func__);
     if (Second == NULL) {
-        //BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  3a 1", __func__);
         Length2 = 0;
     }
     else {
-        //BREAD_CRUMB(L"%s:  3b 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  3b 1", __func__);
         Length2 = StrLen (Second);
     }
 
-    //BREAD_CRUMB(L"%s:  4", FuncTag);
+    //BREAD_CRUMB(L"%a:  4", __func__);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
     if (NewString == NULL) {
-        BREAD_CRUMB(L"%s:  4a 1 - END:- OUT OF MEMERY - Out String = '%s'", FuncTag,
+        BREAD_CRUMB(L"%a:  4a 1 - END:- OUT OF MEMERY - Out String = '%s'", __func__,
             *First
         );
         LOG_DECREMENT();
@@ -616,36 +634,36 @@ VOID MergeUniqueStrings (
         return;
     }
 
-    //BREAD_CRUMB(L"%s:  5", FuncTag);
+    //BREAD_CRUMB(L"%a:  5", __func__);
     if (*First != NULL && Length1 == 0) {
-        //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 1", __func__);
         MY_FREE_POOL(*First);
     }
 
-    //BREAD_CRUMB(L"%s:  6", FuncTag);
+    //BREAD_CRUMB(L"%a:  6", __func__);
     NewString[0] = L'\0';
 
-    //BREAD_CRUMB(L"%s:  7", FuncTag);
+    //BREAD_CRUMB(L"%a:  7", __func__);
     if (*First != NULL) {
-        //BREAD_CRUMB(L"%s:  7a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  7a 1", __func__);
         StrCat (NewString, *First);
 
-        //BREAD_CRUMB(L"%s:  7a 2", FuncTag);
+        //BREAD_CRUMB(L"%a:  7a 2", __func__);
         if (AddChar) {
-            //BREAD_CRUMB(L"%s:  7a 2a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  7a 2a 1", __func__);
             NewString[Length1] = AddChar;
             NewString[Length1 + 1] = '\0';
         }
     }
 
-    //BREAD_CRUMB(L"%s:  8", FuncTag);
+    //BREAD_CRUMB(L"%a:  8", __func__);
     if (Second != NULL) {
-        //BREAD_CRUMB(L"%s:  8a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  8a 1", __func__);
         SkipMerge = FALSE;
 
-        //BREAD_CRUMB(L"%s:  8a 2", FuncTag);
+        //BREAD_CRUMB(L"%a:  8a 2", __func__);
         if (AddChar) {
-            //BREAD_CRUMB(L"%s:  8a 2a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  8a 2a 1", __func__);
             i = 0;
             TestStr = NULL;
 
@@ -653,7 +671,7 @@ VOID MergeUniqueStrings (
                 !SkipMerge &&
                 (TestStr = FindCommaDelimited (NewString, i++)) != NULL
             ) {
-                //BREAD_CRUMB(L"%s:  8a 2a 1a 1 - WHILE LOOP:- START", FuncTag);
+                //BREAD_CRUMB(L"%a:  8a 2a 1a 1 - WHILE LOOP:- START", __func__);
                 NestedStrStr = TRUE;
                 if (MyStriCmp (TestStr, Second)) {
                     SkipMerge = TRUE;
@@ -661,29 +679,29 @@ VOID MergeUniqueStrings (
                 NestedStrStr = FALSE;
 
                 MY_FREE_POOL(TestStr);
-                //BREAD_CRUMB(L"%s:  8a 2a 1a 2 - WHILE LOOP:- END", FuncTag);
+                //BREAD_CRUMB(L"%a:  8a 2a 1a 2 - WHILE LOOP:- END", __func__);
             } // while
-            //BREAD_CRUMB(L"%s:  8a 2a 2", FuncTag);
+            //BREAD_CRUMB(L"%a:  8a 2a 2", __func__);
         }
 
-        //BREAD_CRUMB(L"%s:  8a 3", FuncTag);
+        //BREAD_CRUMB(L"%a:  8a 3", __func__);
         if (!SkipMerge) {
-            //BREAD_CRUMB(L"%s:  8a 3a 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  8a 3a 1", __func__);
             StrCat (NewString, Second);
         }
         else if (AddChar) {
-            //BREAD_CRUMB(L"%s:  8a 3b 1", FuncTag);
+            //BREAD_CRUMB(L"%a:  8a 3b 1", __func__);
             // Remove AddChar if not merging this item
             NewString[Length1] = '\0';
         }
-        //BREAD_CRUMB(L"%s:  8a 4", FuncTag);
+        //BREAD_CRUMB(L"%a:  8a 4", __func__);
     }
 
-    //BREAD_CRUMB(L"%s:  9", FuncTag);
+    //BREAD_CRUMB(L"%a:  9", __func__);
     MY_FREE_POOL(*First);
     *First = NewString;
 
-    BREAD_CRUMB(L"%s:  10 - END:- Out String = '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  10 - END:- Out String = '%s'", __func__,
         *First
     );
     LOG_DECREMENT();
@@ -868,32 +886,29 @@ BOOLEAN LimitStringLength (
     BOOLEAN   HasChanged;
     BOOLEAN   WasTruncated;
 
+
     if (TheString == NULL) {
         return FALSE;
     }
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"LimitStringLength";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (StrLen (TheString) < Limit) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- return BOOLEAN HasChanged = 'FALSE'", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- return BOOLEAN HasChanged = 'FALSE'", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
         return FALSE;
     }
 
-    //BREAD_CRUMB(L"%s:  2 - WHILE LOOP:- START/ENTER", FuncTag);
+    //BREAD_CRUMB(L"%a:  2 - WHILE LOOP:- START/ENTER", __func__);
     HasChanged = FALSE;
     // SubString will be NULL or point WITHIN TheString
     SubString = MyStrStr (TheString, L"  ");
 
-    //BREAD_CRUMB(L"%s:  3 - WHILE LOOP:- START/ENTER", FuncTag);
+    //BREAD_CRUMB(L"%a:  3 - WHILE LOOP:- START/ENTER", __func__);
     while (SubString != NULL) {
         i = 0;
         while (SubString[i] == L' ') {
@@ -918,18 +933,18 @@ BOOLEAN LimitStringLength (
         HasChanged = TRUE;
         SubString = MyStrStr (TheString, L"  ");
     } // while
-    //BREAD_CRUMB(L"%s:  4 - WHILE LOOP:- END/EXIT", FuncTag);
+    //BREAD_CRUMB(L"%a:  4 - WHILE LOOP:- END/EXIT", __func__);
 
     // Truncate if still too long.
     WasTruncated = TruncateString (TheString, Limit);
 
-    //BREAD_CRUMB(L"%s:  5", FuncTag);
+    //BREAD_CRUMB(L"%a:  5", __func__);
     if (!HasChanged) {
-        //BREAD_CRUMB(L"%s:  5a 1", FuncTag);
+        //BREAD_CRUMB(L"%a:  5a 1", __func__);
         HasChanged = WasTruncated;
     }
 
-    BREAD_CRUMB(L"%s:  6 - END:- return BOOLEAN HasChanged = '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  6 - END:- return BOOLEAN HasChanged = '%s'", __func__,
         HasChanged ? L"TRUE" : L"FALSE"
     );
     LOG_DECREMENT();
@@ -1275,77 +1290,74 @@ BOOLEAN ReplaceSubstring (
     CHAR16 *NewString;
     CHAR16 *FoundSearchString;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ReplaceSubstring";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START:- Replace '%s' with '%s' in '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  1 - START:- Replace '%s' with '%s' in '%s'", __func__,
         SearchString ? SearchString : L"NULL",
         ReplString   ? ReplString   : L"NULL",
         *MainString  ? *MainString  : L"NULL"
     );
     if (*MainString == NULL || SearchString == NULL || ReplString == NULL) {
-        BREAD_CRUMB(L"%s:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", FuncTag);
+        BREAD_CRUMB(L"%a:  1a - END:- return BOOLEAN 'FALSE' ... NULL Input!!", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
         return FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     FoundSearchString = MyStrStr (*MainString, SearchString);
     NestedStrStr      = FALSE;
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (FoundSearchString == NULL) {
-        BREAD_CRUMB(L"%s:  3a - END:- return BOOLEAN 'FALSE' ... SearchString *NOT* Found!!", FuncTag);
+        BREAD_CRUMB(L"%a:  3a - END:- return BOOLEAN 'FALSE' ... SearchString *NOT* Found!!", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     DestSize = StrLen (*MainString) + 1;
     NewString = AllocateZeroPool (DestSize * sizeof (CHAR16));
     if (NewString == NULL) {
-        BREAD_CRUMB(L"%s:  4a - END:- return BOOLEAN 'FALSE' ... Out of Resources!!", FuncTag);
+        BREAD_CRUMB(L"%a:  4a - END:- return BOOLEAN 'FALSE' ... Out of Resources!!", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
         return FALSE;
     }
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     EndString = &(FoundSearchString[StrLen (SearchString)]);
     FoundSearchString[0] = L'\0';
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     // "FoundSearchString > *MainString" is required to make sure:
     // "FoundSearchString" is within "*MainString" in terms of memory address
     // "FoundSearchString" is not at the start of "*MainString" for the "-1" index
     if ((FoundSearchString > *MainString) &&
         (FoundSearchString[-1] == L'%')
     ) {
-        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 1", __func__);
         FoundSearchString[-1] = L'\0';
         ReplString = SearchString;
     }
 
-    BREAD_CRUMB(L"%s:  7", FuncTag);
+    BREAD_CRUMB(L"%a:  7", __func__);
     StrCpyS (NewString, DestSize, *MainString);
 
-    BREAD_CRUMB(L"%s:  8", FuncTag);
+    BREAD_CRUMB(L"%a:  8", __func__);
     MergeStrings (&NewString, ReplString, L'\0');
 
-    BREAD_CRUMB(L"%s:  9", FuncTag);
+    BREAD_CRUMB(L"%a:  9", __func__);
     MergeStrings (&NewString, EndString, L'\0');
 
-    BREAD_CRUMB(L"%s:  10", FuncTag);
+    BREAD_CRUMB(L"%a:  10", __func__);
     MY_FREE_POOL(*MainString);
     *MainString = NewString;
 
-    BREAD_CRUMB(L"%s:  11 - END:- return BOOLEAN 'TRUE'", FuncTag);
+    BREAD_CRUMB(L"%a:  11 - END:- return BOOLEAN 'TRUE'", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 

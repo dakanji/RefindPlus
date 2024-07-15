@@ -153,6 +153,7 @@ VOID InitSelection (VOID) {
     }
 
     #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL, L"Handle Default Selection Image:- 'Small'");
     #endif
 
@@ -845,11 +846,12 @@ UINTN DrawMenuScreen (
     IN     REFIT_MENU_SCREEN   *Screen,
     IN     MENU_STYLE_FUNC      StyleFunc,
     IN OUT INTN                *DefaultEntryIndex,
-    OUT    REFIT_MENU_ENTRY  **ChosenEntry
+    OUT    REFIT_MENU_ENTRY  **ChosenOption
 ) {
     EFI_STATUS                  Status;
     EFI_STATUS                  PointerStatus;
     BOOLEAN                     Rotated;
+    BOOLEAN                     IsMainMenu;
     BOOLEAN                     HaveTimeout;
     BOOLEAN                     UserKeyScan;
     BOOLEAN                     UserKeyPress;
@@ -876,20 +878,29 @@ UINTN DrawMenuScreen (
     CHAR16                     *MsgStr;
     CHAR16                     *KeyTxt;
     BOOLEAN                     TmpLevel;
+    BOOLEAN                     CheckMute = FALSE;
+
     static BOOLEAN              OnceWait = FALSE;
-
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Draw Menu Screen");
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- '%s'", Screen->Title);
     #endif
 
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"DrawMenuScreen";
-    #endif
+    IsMainMenu = MyStriCmp (Screen->Title, MAIN_MENU_NAME);
+
+    #if REFIT_DEBUG > 0
+    if (OnceWait || !IsMainMenu) {
+        if (!IsMainMenu) {
+            ALT_LOG(1, LOG_LINE_THIN_SEP, L"Draw Menu Screen");
+        }
+        else {
+            ALT_LOG(1, LOG_THREE_STAR_SEP, L"Show Main Screen");
+        }
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- '%s'", Screen->Title);
+    }
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
+    #endif
 
     if (Screen->TimeoutSeconds < 1) {
         HaveTimeout = FALSE;
@@ -907,7 +918,10 @@ UINTN DrawMenuScreen (
     if (*DefaultEntryIndex == 9999) {
         *DefaultEntryIndex = State.MaxIndex;
     }
-    if (*DefaultEntryIndex >= 0 && *DefaultEntryIndex <= State.MaxIndex) {
+
+    if (*DefaultEntryIndex >= 0           &&
+        *DefaultEntryIndex <= State.MaxIndex
+    ) {
         State.CurrentSelection = *DefaultEntryIndex;
         if (GlobalConfig.ScreensaverTime != -1) {
             UpdateScroll (&State, SCROLL_NONE);
@@ -915,7 +929,7 @@ UINTN DrawMenuScreen (
     }
 
     WaitForRelease = FALSE;
-    MenuExit = MENU_EXIT_ZERO;
+    MenuExit = MENU_EXIT_ZERO; // Temporary in case we need to abort DirectBoot
 
     if (Screen->TimeoutSeconds == -1) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
@@ -934,14 +948,29 @@ UINTN DrawMenuScreen (
         }
     }
 
-    if (GlobalConfig.DirectBoot && WaitForRelease) {
-        // DA-TAG: If we enter here, a shortcut key was pressed but not found.
-        //         Load the screen menu ... Without tools for Main Menu.
-        //         Tools are not loaded with DirectBoot for speed.
-        //         Enable Rescan to allow tools to be loaded.
-        //         Also disable Timeout just in case.
-        BlockRescan = FALSE;
-        Screen->TimeoutSeconds = 0;
+    if (!WaitForRelease) {
+        // Quietly clear the keystroke buffer just in case
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+    }
+    else {
+        if (GlobalConfig.DirectBoot) {
+            // DA-TAG: If we enter here, a shortcut key was pressed but not found.
+            //         Load the screen menu ... Without tools for Main Menu.
+            //         Tools are not loaded with DirectBoot for speed.
+            //         Enable Rescan to allow tools to be loaded.
+            //         Also disable Timeout just in case.
+            BlockRescan = FALSE;
+            Screen->TimeoutSeconds = 0;
+
+            // Flag Abort DirectBoot
+            MenuExit = MENU_EXIT_SHOWSCREEN;
+        }
 
         while (WaitForRelease) {
             // Esure no keys are being held down
@@ -955,20 +984,20 @@ UINTN DrawMenuScreen (
                 REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, TRUE);
             }
         } // while
-
-        // Abort DirectBoot
-        MenuExit = MENU_EXIT_SHOWSCREEN;
     }
 
     if (GlobalConfig.DirectBoot) {
+        // DA-TAG: DirectBoot is active.
+        //         Either abort or proceed.
         if (MenuExit == MENU_EXIT_ZERO) {
+            // DA-TAG: Proceed with DirectBoot.
             MenuExit = MENU_EXIT_ENTER;
         }
     }
     else {
         if (!AllowGraphicsMode &&
             (
-                MyStriCmp (Screen->Title, MAIN_MENU_NAME) ||
+                IsMainMenu ||
                 MyStrBegins (L"Confirm System", Screen->Title)
             )
         ) {
@@ -979,44 +1008,60 @@ UINTN DrawMenuScreen (
         if (GlobalConfig.ScreensaverTime != -1) {
             State.PaintAll = TRUE;
         }
+    }
 
-        #if REFIT_DEBUG > 0
-        if (!OnceWait                &&
-            MyStriCmp (Screen->Title, MAIN_MENU_NAME)
-        ) {
-            OnceWait = TRUE;
+    #if REFIT_DEBUG > 0
+    if (!OnceWait && IsMainMenu) {
+        OnceWait = TRUE;
+
+        MsgStr = PoolPrint (
+            L"Loaded RefindPlus %s on %s Firmware",
+            REFINDPLUS_VERSION, VendorInfo
+        );
+        TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+        if (TmpLevel) {
+            GlobalConfig.LogLevel = 1;
+        }
+        else {
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        }
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        if (TmpLevel) {
+            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            GlobalConfig.LogLevel = 0;
+        }
+        MY_FREE_POOL(MsgStr);
+
+        if (GlobalConfig.DirectBoot) {
+            MsgStr = StrDuplicate (L"E X E C U T E   D I R E C T   B O O T");
+        }
+        else {
+            MsgStr = StrDuplicate (L"P R O C E S S   U S E R   I N P U T");
+        }
+        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("%s", MsgStr);
+        LOG_MSG("\n");
+        MY_FREE_POOL(MsgStr);
+
+        if (!GlobalConfig.DirectBoot) {
             TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
             if (TmpLevel) {
                 GlobalConfig.LogLevel = 1;
             }
-            ALT_LOG(1, LOG_LINE_NORMAL, L"** Wait for User Input **");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"** Awaiting User Input **");
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
             if (TmpLevel) {
                 GlobalConfig.LogLevel = 0;
             }
         }
-        #endif
     }
+    #endif
 
     PreviousTime                         =    -1;
     TimeSinceKeystroke                   =     0;
     UserKeyPress = UserKeyScan = Rotated = FALSE;
     while (MenuExit == MENU_EXIT_ZERO) {
-        // Esure no keys are being held down
-        if (WaitForRelease) {
-            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-            if (!EFI_ERROR(Status)) {
-                // Reset to keep the keystroke buffer clear
-                REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
-            }
-            else {
-                WaitForRelease = FALSE;
-                REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, TRUE);
-            }
-
-            continue;
-        }
-
         // Update the screen
         pdClear();
         if (State.PaintAll && GlobalConfig.ScreensaverTime != -1) {
@@ -1247,7 +1292,7 @@ UINTN DrawMenuScreen (
                 } // switch
             }
             ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Process Keystroke: UnicodeChar = 0x%02X ... ScanCode = 0x%02X - %s",
+                L"Got Keystroke: UnicodeChar = 0x%02X ... ScanCode = 0x%02X - %s",
                 key.UnicodeChar, key.ScanCode, KeyTxt
             );
             #endif
@@ -1400,12 +1445,12 @@ UINTN DrawMenuScreen (
             break;
         }
 
-        if (ClearedBuffer               ||
-            AppleFirmware               ||
-            FlushFailReset              ||
-            GlobalConfig.DirectBoot     ||
-            MenuExit != MENU_EXIT_ENTER ||
-            !MyStriCmp (Screen->Title, MAIN_MENU_NAME)
+        if (!IsMainMenu              ||
+            ClearedBuffer            ||
+            AppleFirmware            ||
+            FlushFailReset           ||
+            GlobalConfig.DirectBoot  ||
+            MenuExit != MENU_EXIT_ENTER
         ) {
             break;
         }
@@ -1450,13 +1495,13 @@ UINTN DrawMenuScreen (
         }
     } while (0); // This 'loop' only runs once
 
-    if (ChosenEntry) {
-        *ChosenEntry = Screen->Entries[State.CurrentSelection];
+    if (ChosenOption) {
+        *ChosenOption = Screen->Entries[State.CurrentSelection];
     }
 
     *DefaultEntryIndex = State.CurrentSelection;
 
-    BREAD_CRUMB(L"%s:  2 - END:- return UINTN MenuExit = '%d'", FuncTag, MenuExit);
+    BREAD_CRUMB(L"%a:  2 - END:- return UINTN MenuExit = '%d'", __func__, MenuExit);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 
@@ -1898,7 +1943,7 @@ VOID ComputeSubScreenWindowSize (
     *LineWidth = *Width;
 
     if (Screen->TitleImage) {
-        *Width += (Screen->TitleImage->Width + TITLEICON_SPACING * 2 + FontCellWidth);
+        *Width += (Screen->TitleImage->Width + (TITLEICON_SPACING * 2) + FontCellWidth);
     }
     else {
         *Width += FontCellWidth;
@@ -2878,7 +2923,7 @@ VOID DisplaySimpleMessage (
         return;
     }
 
-    DefaultEntry = -1;
+    DefaultEntry = 9999; // Use the Max Index
     Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
     MenuExit = DrawMenuScreen (
         SimpleMessageMenu, Style,
@@ -2892,7 +2937,7 @@ VOID DisplaySimpleMessage (
     TypeMenuExit = (MenuExit < 0) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
 
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'DisplaySimpleMessage' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'DisplaySimpleMessage' Function from the '%s' Option in Menu Screen",
         MenuExit, TypeMenuExit, Title
     );
     #endif
@@ -2922,7 +2967,7 @@ BOOLEAN RemoveInvalidFilenames (
 
     VolName = NULL;
     DeleteFlag = FALSE;
-    i = 0; // Do *NOT* increment in 'while' call
+    i = 0; // *DO NOT* increment in 'while' call
     while ((OneElement = FindCommaDelimited (FilenameList, i)) != NULL) {
         DeleteThis = FALSE;
         Filename = StrDuplicate (OneElement);
@@ -3103,7 +3148,7 @@ VOID ManageHiddenTags (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'ManageHiddenTags' Function from '%s' Option in Menu Screen",
+            L"Returned '%d' (%s) in 'ManageHiddenTags' Function from the '%s' Option in Menu Screen",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -3281,6 +3326,7 @@ BOOLEAN HideEfiTag (
 
     AddMenuInfoLine (HideEfiMenu, L"Hide EFI Entry Below?",    FALSE);
     AddMenuInfoLine (HideEfiMenu, PoolPrint (L"%s", TempPath),  TRUE);
+    MY_FREE_POOL(TempPath);
 
     do {
         TagHidden = GetMenuEntryYesNo (&HideEfiMenu);
@@ -3299,7 +3345,7 @@ BOOLEAN HideEfiTag (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'HideEfiTag' Function from '%s' Option in Menu Screen",
+            L"Returned '%d' (%s) in 'HideEfiTag' Function from the '%s' Option in Menu Screen",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -3321,11 +3367,17 @@ BOOLEAN HideEfiTag (
                     FullPath = PoolPrint (L"%s:", GuidStr);
                 }
                 else {
-                    FullPath = PoolPrint (
-                        L"%s%s%s:",
-                        Loader->Volume->VolName,
-                        HIDDEN_TAG_DELIMITER, GuidStr
+                    TempPath = StrDuplicate (
+                        Loader->Volume->VolName
                     );
+                    LimitStringLength (TempPath, 20);
+
+                    FullPath = PoolPrint (
+                        L"%-20s%s%s:",
+                        TempPath, DEFAULT_STRING_DELIM, GuidStr
+                    );
+
+                    MY_FREE_POOL(TempPath);
                 }
 
                 if (MyLoadPath) {
@@ -3351,8 +3403,6 @@ BOOLEAN HideEfiTag (
             MY_FREE_POOL(FullPath);
         }
     } while (0); // This 'loop' only runs once
-
-    MY_FREE_POOL(TempPath);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()
@@ -3388,7 +3438,7 @@ BOOLEAN HideFirmwareTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'HideFirmwareTag' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'HideFirmwareTag' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3416,33 +3466,57 @@ BOOLEAN HideLegacyTag (
     UINTN              MenuExit;
     CHAR16            *Name;
     BOOLEAN            TagHidden;
+    BOOLEAN            BaseCheck;
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if (LegacyLoader->me.Title  != NULL &&
-        GlobalConfig.LegacyType == LEGACY_TYPE_MAC1
-    ) {
-        Name = StrDuplicate (LegacyLoader->me.Title);
-    }
-    else if (
-        LegacyLoader->BdsOption              != NULL &&
-        LegacyLoader->BdsOption->Description != NULL &&
+
+    BaseCheck = (
+        LegacyLoader->me.Title  != NULL &&
+        GlobalConfig.LegacyType != LEGACY_TYPE_MAC1
+    );
+
+    if (!BaseCheck &&
         (
-            GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
-            GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
+            LegacyLoader->BdsOption              == NULL ||
+            LegacyLoader->BdsOption->Description == NULL ||
+            (
+                GlobalConfig.LegacyType != LEGACY_TYPE_UEFI &&
+                GlobalConfig.LegacyType != LEGACY_TYPE_MAC2
+            )
         )
     ) {
-        Name = StrDuplicate (LegacyLoader->BdsOption->Description);
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_STAR_SEPARATOR,
+            L"Could *NOT* Load Menu in 'HideLegacyTag' Function ... 1"
+        );
+        #endif
+
+        FreeMenuScreen (&HideLegacyMenu);
+
+        // Early Return
+        return FALSE;
     }
-    else {
-        Name = StrDuplicate (L"Legacy Bootcode");
-    }
+
+    Name = PoolPrint (
+        L"%-20s%s%s"
+        L"Legacy BIOS Item",
+        DEFAULT_STRING_DELIM,
+        (BaseCheck)
+            ? LegacyLoader->me.Title
+            : LegacyLoader->BdsOption->Description
+    );
 
     AddMenuInfoLine (HideLegacyMenu, L"Hide Legacy Entry Below?", FALSE);
     AddMenuInfoLine (HideLegacyMenu, PoolPrint (L"%s", Name),      TRUE);
 
-    TagHidden = GetMenuEntryYesNo (&HideLegacyMenu);
-    if (!TagHidden) {
+    if (!GetMenuEntryYesNo (&HideLegacyMenu)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_STAR_SEPARATOR,
+            L"Could *NOT* Load Menu in 'HideLegacyTag' Function ... 2"
+        );
+        #endif
+
         FreeMenuScreen (&HideLegacyMenu);
 
         // Early Return
@@ -3458,7 +3532,7 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'HideLegacyTag' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'HideLegacyTag' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3479,7 +3553,7 @@ BOOLEAN HideLegacyTag (
 
 static
 VOID HideTag (
-    REFIT_MENU_ENTRY *ChosenEntry
+    REFIT_MENU_ENTRY *ChosenOption
 ) {
     CHAR16            *NoChanges;
     UINTN              TagFlag;
@@ -3487,7 +3561,7 @@ VOID HideTag (
     LEGACY_ENTRY      *LegacyLoader;
     REFIT_MENU_SCREEN *HideTagMenu;
 
-    if (ChosenEntry == NULL) {
+    if (ChosenOption == NULL) {
         // Early Return
         return;
     }
@@ -3503,9 +3577,9 @@ VOID HideTag (
     HideTagMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT);
 
     TagFlag      = 0;
-    NoChanges    = L"No Changes on Hide Entry Call";
-    Loader       = (LOADER_ENTRY *) ChosenEntry;
-    LegacyLoader = (LEGACY_ENTRY *) ChosenEntry;
+    NoChanges    = L"No Changes Made on Hide Entry Call";
+    Loader       = (LOADER_ENTRY *) ChosenOption;
+    LegacyLoader = (LEGACY_ENTRY *) ChosenOption;
 
     // DA-TAG: Investigate This ... Probably related to 'El Gordo'.
     // Original: (BUG) RescanAll calls should be conditional on successful calls
@@ -3526,7 +3600,7 @@ VOID HideTag (
     //         El Gordo is most likely a buffer overflow of some sort.
     //         El Gordo might be in one or more filesystem drivers.
     //         El Gordo might be spread across a number of files.
-    switch (ChosenEntry->Tag) {
+    switch (ChosenOption->Tag) {
         case TAG_LOADER:
             if (GlobalConfig.SyncAPFS &&
                 Loader->Volume->FSType == FS_TYPE_APFS
@@ -3554,7 +3628,7 @@ VOID HideTag (
                 }
             }
 
-        break;
+            break;
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:
             HideTagMenu->Title = L"Hide Legacy BIOS Entry";
@@ -3567,7 +3641,7 @@ VOID HideTag (
                 TagFlag = 2;
             }
 
-        break;
+            break;
         case TAG_FIRMWARE_LOADER:
             HideTagMenu->Title = L"Hide Firmware BootOption Entry";
             if (HideFirmwareTag(Loader, HideTagMenu)) {
@@ -3579,7 +3653,7 @@ VOID HideTag (
                 TagFlag = 2;
             }
 
-        break;
+            break;
         case TAG_EXIT:
         case TAG_ABOUT:
         case TAG_REBOOT:
@@ -3589,13 +3663,13 @@ VOID HideTag (
         case TAG_FIRMWARE:
         case TAG_BOOTORDER:
         case TAG_CSR_ROTATE:
-        case TAG_NVRAMCLEAN:
+        case TAG_CLEAN_NVRAM:
             DisplaySimpleMessage (
                 L"Amend Config File Instead ... Update \"showtools\" Token",
-                L"Hide Entry *IS NOT* Available on Internal Tools"
+                L"Hide Entry *IS NOT* Available on Any Internal Tool"
             );
 
-        break;
+            break;
         case TAG_TOOL:
             HideTagMenu->Title = L"Hide Tool Entry";
             if (HideEfiTag (Loader, HideTagMenu, L"HiddenTools")) {
@@ -3611,8 +3685,7 @@ VOID HideTag (
     if (TagFlag == 1) {
         #if REFIT_DEBUG > 0
         LOG_MSG("Received User Input:");
-        LOG_MSG("\n");
-        LOG_MSG("  - %s", HideTagMenu->Title);
+        LOG_MSG("%s  - %s", OffsetNext, HideTagMenu->Title);
         LOG_MSG("\n\n");
         #endif
 
@@ -3677,7 +3750,7 @@ UINTN AbortSyncTrust (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'AbortSyncTrust' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'AbortSyncTrust' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3742,7 +3815,7 @@ BOOLEAN ConfirmSyncNVram (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmSyncNVram' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmSyncNVram' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3850,7 +3923,7 @@ BOOLEAN ConfirmRotate (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmRotate' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmRotate' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3928,7 +4001,7 @@ BOOLEAN ConfirmRestart (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmRestart' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmRestart' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -3997,7 +4070,7 @@ BOOLEAN ConfirmShutdown (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmShutdown' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmShutdown' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -4019,9 +4092,9 @@ BOOLEAN ConfirmShutdown (VOID) {
 UINTN RunMainMenu (
     REFIT_MENU_SCREEN  *Screen,
     CHAR16            **DefaultSelection,
-    REFIT_MENU_ENTRY  **ChosenEntry
+    REFIT_MENU_ENTRY  **ChosenOption
 ) {
-    REFIT_MENU_ENTRY   *TempChosenEntry;
+    REFIT_MENU_ENTRY   *TempChosenOption;
     MENU_STYLE_FUNC     MainStyle;
     MENU_STYLE_FUNC     Style;
     BOOLEAN             KeyStrokeFound;
@@ -4032,55 +4105,35 @@ UINTN RunMainMenu (
     #if REFIT_DEBUG > 0
     CHAR16             *MsgStr;
     UINTN               EntryPosition;
-    BOOLEAN             TmpLevel;
 
     static BOOLEAN      ShowLoaded = TRUE;
     #endif
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"RunMainMenu";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG]   * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     DefaultEntryIndex = (DefaultSelection != NULL && *DefaultSelection != NULL)
         ? FindMenuShortcutEntry (Screen, *DefaultSelection) : -1;
 
     #if REFIT_DEBUG > 0
-    BREAD_CRUMB(L"%s:  3", FuncTag);
-    if (ShowLoaded) {
-        MsgStr = PoolPrint (
-            L"Loaded RefindPlus %s on %s Firmware",
-            REFINDPLUS_VERSION, VendorInfo
-        );
-        TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
-        if (TmpLevel) {
-            GlobalConfig.LogLevel = 1;
-        }
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        if (TmpLevel) {
-            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            GlobalConfig.LogLevel = 0;
-        }
-        MY_FREE_POOL(MsgStr);
-
-        MsgStr = StrDuplicate (L"P R O C E S S   U S E R   I N P U T");
-        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("%s", MsgStr);
-        MY_FREE_POOL(MsgStr);
-    }
-
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (ShowLoaded) {
         ShowLoaded = FALSE;
 
-        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1", __func__);
+        MsgStr = StrDuplicate (
+            L"C O M P L E T E   B O O T S T R A P   S E Q U E N C E"
+        );
+        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("%s", MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        BREAD_CRUMB(L"%a:  3a 2", __func__);
         MsgStr = (DefaultSelection != NULL && *DefaultSelection != NULL)
             ? PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection)
             : StrDuplicate (L"Configured Default Loader:- 'NULL'");
@@ -4089,9 +4142,9 @@ UINTN RunMainMenu (
         LOG_MSG("%s", MsgStr);
         MY_FREE_POOL(MsgStr);
 
-        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 3", __func__);
         if (!GlobalConfig.DirectBoot) {
-            BREAD_CRUMB(L"%s:  4a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  3a 3a 1", __func__);
             EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
             MsgStr = PoolPrint (
                 L"Highlighted Screen Option:- '%s'",
@@ -4103,33 +4156,33 @@ UINTN RunMainMenu (
             LOG_MSG("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
-        BREAD_CRUMB(L"%s:  4a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 4", __func__);
         LOG_MSG("\n\n");
     }
     #endif
 
     // Remove any buffered key strokes
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     KeyStrokeFound = ReadAllKeyStrokes();
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if (!KeyStrokeFound || !AppleFirmware) {
-        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1", __func__);
         if (!AppleFirmware) {
             // Always reset the buffer on UEFI PC
-            BREAD_CRUMB(L"%s:  6a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1a 1", __func__);
             REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
         }
-        BREAD_CRUMB(L"%s:  6a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  7", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     if (!AllowGraphicsMode) {
-        BREAD_CRUMB(L"%s:  7a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 1", __func__);
         MainStyle = Style = TextMenuStyle;
     }
     else {
-        BREAD_CRUMB(L"%s:  7b 1", FuncTag);
+        BREAD_CRUMB(L"%a:  6b 1", __func__);
         Style          = GraphicsMenuStyle;
         MainStyle      = MainMenuStyle;
         PointerEnabled = PointerActive = pdAvailable();
@@ -4137,54 +4190,54 @@ UINTN RunMainMenu (
     }
 
     // Generate WaitList if not already generated.
-    BREAD_CRUMB(L"%s:  8 - GenerateWaitList", FuncTag);
+    BREAD_CRUMB(L"%a:  7 - GenerateWaitList", __func__);
     GenerateWaitList();
 
     // Save time elaspsed from start til now
-    BREAD_CRUMB(L"%s:  9 - GetCurrentMS", FuncTag);
+    BREAD_CRUMB(L"%a:  8 - GetCurrentMS", __func__);
     MainMenuLoad = GetCurrentMS();
 
-    BREAD_CRUMB(L"%s:  10", FuncTag);
+    BREAD_CRUMB(L"%a:  9", __func__);
     do {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  10a 1 - DO LOOP:- START", FuncTag);
-        TempChosenEntry = NULL;
+        BREAD_CRUMB(L"%a:  9a 1 - DO LOOP:- START", __func__);
+        TempChosenOption = NULL;
         MenuExit = DrawMenuScreen (
             Screen, MainStyle,
-            &DefaultEntryIndex, &TempChosenEntry
+            &DefaultEntryIndex, &TempChosenOption
         );
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'RunMainMenu' Function from '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
+            L"Returned '%d' (%s) in 'RunMainMenu' Function from the '%s' Option in Menu Screen",
+            MenuExit, MenuExitInfo (MenuExit), TempChosenOption->Title
         );
         #endif
 
-        BREAD_CRUMB(L"%s:  10a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  9a 2", __func__);
         Screen->TimeoutSeconds = 0;
 
-        BREAD_CRUMB(L"%s:  10a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  9a 3", __func__);
         if (MenuExit == MENU_EXIT_DETAILS) {
-            BREAD_CRUMB(L"%s:  10a 3a 1", FuncTag);
-            if (TempChosenEntry->SubScreen == NULL) {
-                BREAD_CRUMB(L"%s:  10a 3a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  9a 3a 1", __func__);
+            if (TempChosenOption->SubScreen == NULL) {
+                BREAD_CRUMB(L"%a:  9a 3a 1a 1", __func__);
                 // No sub-screen ... Ignore keypress
                 MenuExit = MENU_EXIT_ZERO;
             }
             else {
                 SubScreenBoot = TRUE;
 
-                BREAD_CRUMB(L"%s:  10a 3a 1b 1", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 1", __func__);
                 DefaultSubmenuIndex = -1;
                 MenuExit = DrawMenuScreen (
-                    TempChosenEntry->SubScreen,
+                    TempChosenOption->SubScreen,
                     Style,
                     &DefaultSubmenuIndex,
-                    &TempChosenEntry
+                    &TempChosenOption
                 );
 
-                BREAD_CRUMB(L"%s:  10a 3a 1b 2", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 2", __func__);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
                     L"Returned '%d' (%s) in 'RunMainMenu' from DrawMenuScreen Call on SubScreen",
@@ -4192,64 +4245,64 @@ UINTN RunMainMenu (
                 );
                 #endif
 
-                BREAD_CRUMB(L"%s:  10a 3a 1b 3", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 3", __func__);
                 if (MenuExit == MENU_EXIT_ESCAPE ||
-                    TempChosenEntry->Tag == TAG_RETURN
+                    TempChosenOption->Tag == TAG_RETURN
                 ) {
-                    BREAD_CRUMB(L"%s:  10a 3a 1b 3a 1", FuncTag);
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 3a 1", __func__);
                     MenuExit = MENU_EXIT_ZERO;
                 }
 
-                BREAD_CRUMB(L"%s:  10a 3a 1b 4", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 4", __func__);
                 if (MenuExit == MENU_EXIT_DETAILS) {
-                    BREAD_CRUMB(L"%s:  10a 3a 1b 4a 1", FuncTag);
-                    if (!EditOptions ((LOADER_ENTRY *) TempChosenEntry)) {
-                        BREAD_CRUMB(L"%s:  10a 3a 1b 4a 1a 1", FuncTag);
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 4a 1", __func__);
+                    if (!EditOptions ((LOADER_ENTRY *) TempChosenOption)) {
+                        BREAD_CRUMB(L"%a:  9a 3a 1b 4a 1a 1", __func__);
                         MenuExit = MENU_EXIT_ZERO;
                     }
-                    BREAD_CRUMB(L"%s:  10a 3a 1b 4a 2", FuncTag);
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 4a 2", __func__);
                 }
-                BREAD_CRUMB(L"%s:  10a 3a 1b 5", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 5", __func__);
             }
-            BREAD_CRUMB(L"%s:  10a 3a 2", FuncTag);
+            BREAD_CRUMB(L"%a:  9a 3a 2", __func__);
         } // if MenuExit == MENU_EXIT_DETAILS
 
-        BREAD_CRUMB(L"%s:  10a 4", FuncTag);
+        BREAD_CRUMB(L"%a:  9a 4", __func__);
         if (MenuExit == MENU_EXIT_HIDE) {
-            BREAD_CRUMB(L"%s:  10a 4a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  9a 4a 1", __func__);
             if (GlobalConfig.HiddenTags) {
-                BREAD_CRUMB(L"%s:  10a 4a 1a 1", FuncTag);
-                HideTag (TempChosenEntry);
+                BREAD_CRUMB(L"%a:  9a 4a 1a 1", __func__);
+                HideTag (TempChosenOption);
             }
             else {
-                BREAD_CRUMB(L"%s:  10a 4a 1b 1", FuncTag);
+                BREAD_CRUMB(L"%a:  9a 4a 1b 1", __func__);
                 egDisplayMessage (
                     L"Enable 'hidden_tags' in 'showtools' config to hide tag",
                     &BGColorBase, CENTER, 3, L"PauseSeconds"
                 );
             }
 
-            BREAD_CRUMB(L"%s:  10a 4a 2", FuncTag);
+            BREAD_CRUMB(L"%a:  9a 4a 2", __func__);
             MenuExit = MENU_EXIT_ZERO;
         }
 
-        BREAD_CRUMB(L"%s:  10a 5", FuncTag);
+        BREAD_CRUMB(L"%a:  9a 5", __func__);
         if (GlobalConfig.EnableTouch && MenuExit == MENU_EXIT_ZERO) {
             // Break out of loop and reload page
             // Reload happens in 'main.c -> MainLoopRunning'
 
-            BREAD_CRUMB(L"%s:  10a 5a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  9a 5a 1", __func__);
             break;
         }
 
-        BREAD_CRUMB(L"%s:  10a 6 - DO LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%a:  9a 6 - DO LOOP:- END", __func__);
         LOG_SEP(L"X");
     } while (MenuExit == MENU_EXIT_ZERO);
 
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
-    BREAD_CRUMB(L"%s:  11", FuncTag);
+    BREAD_CRUMB(L"%a:  10", __func__);
     if (FlushFailedTag && !FlushFailReset) {
-        BREAD_CRUMB(L"%s:  11a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  10a 1", __func__);
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
@@ -4261,24 +4314,24 @@ UINTN RunMainMenu (
         FlushFailedTag = FALSE;
         FlushFailReset = TRUE;
         MenuExit = MENU_EXIT_ZERO;
-        BREAD_CRUMB(L"%s:  11a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  10a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  12", FuncTag);
-    if (ChosenEntry) {
-        BREAD_CRUMB(L"%s:  12a 1", FuncTag);
-        *ChosenEntry = TempChosenEntry;
+    BREAD_CRUMB(L"%a:  11", __func__);
+    if (ChosenOption) {
+        BREAD_CRUMB(L"%a:  11a 1", __func__);
+        *ChosenOption = TempChosenOption;
     }
 
-    BREAD_CRUMB(L"%s:  13", FuncTag);
+    BREAD_CRUMB(L"%a:  12", __func__);
     // No need to check "*DefaultSelection" below
     if (DefaultSelection != NULL) {
-        BREAD_CRUMB(L"%s:  13a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  12a 1", __func__);
         MY_FREE_POOL(*DefaultSelection);
-        *DefaultSelection = StrDuplicate (TempChosenEntry->Title);
+        *DefaultSelection = StrDuplicate (TempChosenOption->Title);
     }
 
-    BREAD_CRUMB(L"%s:  14 - END:- return UINTN MenuExit = '%d'", FuncTag,
+    BREAD_CRUMB(L"%a:  13 - END:- return UINTN MenuExit = '%d'", __func__,
         MenuExit
     );
     LOG_DECREMENT();
@@ -4292,16 +4345,13 @@ VOID FreeMenuScreen (
 ) {
     UINTN i, j;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FreeMenuScreen";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (Screen == NULL || *Screen == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -4309,61 +4359,61 @@ VOID FreeMenuScreen (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     MY_FREE_POOL((*Screen)->Title);
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     MY_FREE_IMAGE((*Screen)->TitleImage);
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     if ((*Screen)->InfoLines) {
-        BREAD_CRUMB(L"%s:  4a 1 - Free InfoLines", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 1 - Free InfoLines", __func__);
         LOG_SEP(L"X");
         j = 0;
         for (i = 0; i < (*Screen)->InfoLineCount; i++) {
             j++;
-            BREAD_CRUMB(L"%s:  4a 1a 1 - FOR LOOP:- START ... InfoLine %d of %d", FuncTag,
+            BREAD_CRUMB(L"%a:  4a 1a 1 - FOR LOOP:- START ... InfoLine %d of %d", __func__,
                 j, (*Screen)->InfoLineCount
             );
             MY_FREE_POOL((*Screen)->InfoLines[i]);
-            BREAD_CRUMB(L"%s:  4a 1a 2 - FOR LOOP:- END", FuncTag);
+            BREAD_CRUMB(L"%a:  4a 1a 2 - FOR LOOP:- END", __func__);
         }
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  4a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 2", __func__);
         (*Screen)->InfoLineCount = 0;
 
-        BREAD_CRUMB(L"%s:  4a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 3", __func__);
         MY_FREE_POOL((*Screen)->InfoLines);
     }
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if ((*Screen)->Entries) {
-        BREAD_CRUMB(L"%s:  5a 1 - Free Entries", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1 - Free Entries", __func__);
         j = 0;
         for (i = 0; i < (*Screen)->EntryCount; i++) {
             j++;
             LOG_SEP(L"X");
-            BREAD_CRUMB(L"%s:  5a 1a 1 - FOR LOOP:- START ... Entry %d of %d", FuncTag,
+            BREAD_CRUMB(L"%a:  5a 1a 1 - FOR LOOP:- START ... Entry %d of %d", __func__,
                 j, (*Screen)->EntryCount
             );
             FreeMenuEntry (&(*Screen)->Entries[i]);
-            BREAD_CRUMB(L"%s:  5a 1a 2 - FOR LOOP:- END", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1a 2 - FOR LOOP:- END", __func__);
             LOG_SEP(L"X");
         }
-        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
         (*Screen)->EntryCount = 0;
 
-        BREAD_CRUMB(L"%s:  5a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 3", __func__);
         MY_FREE_POOL((*Screen)->Entries);
     }
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     MY_FREE_POOL((*Screen)->TimeoutText);
     MY_FREE_POOL((*Screen)->Hint1);
     MY_FREE_POOL((*Screen)->Hint2);
     MY_FREE_POOL(*Screen);
 
-    BREAD_CRUMB(L"%s:  7 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  7 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FreeMenuScreen()
@@ -4391,16 +4441,12 @@ static
 VOID FreeLoaderEntry (
     IN LOADER_ENTRY **Entry
 ) {
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FreeLoaderEntry";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (*Entry == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -4408,25 +4454,25 @@ VOID FreeLoaderEntry (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     FreeMenuScreen (&(*Entry)->me.SubScreen);
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     MY_FREE_POOL((*Entry)->me.Title);
     MY_FREE_IMAGE((*Entry)->me.Image);
     MY_FREE_IMAGE((*Entry)->me.BadgeImage);
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     MY_FREE_POOL((*Entry)->Title);
     MY_FREE_POOL((*Entry)->LoaderPath);
     MY_FREE_POOL((*Entry)->InitrdPath);
     MY_FREE_POOL((*Entry)->LoadOptions);
     MY_FREE_POOL((*Entry)->EfiLoaderPath);
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     MY_FREE_POOL(*Entry);
 
-    BREAD_CRUMB(L"%s:  6 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  6 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FreeLoaderEntry()
@@ -4442,20 +4488,17 @@ VOID FreeMenuEntry (
     } ENTRY_TYPE;
     ENTRY_TYPE EntryType;
 
+
     if (*Entry == NULL) {
         // Early Return
         return;
     }
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"FreeMenuEntry";
-    #endif
-
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     switch ((*Entry)->Tag) {
         case TAG_TOOL:            EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_TOOL"           ; break;
         case TAG_LOADER:          EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_LOADER"         ; break;
@@ -4466,29 +4509,29 @@ VOID FreeMenuEntry (
         default:                  EntryType = EntryTypeRefitMenuEntry;  TagType = L"DEFAULT"            ; break;
     }
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (EntryType == EntryTypeLoaderEntry) {
-        BREAD_CRUMB(L"%s:  3a 1 - EntryType = EntryTypeLoaderEntry ... TagType = '%s'", FuncTag, TagType);
+        BREAD_CRUMB(L"%a:  3a 1 - EntryType = EntryTypeLoaderEntry ... TagType = '%s'", __func__, TagType);
         FreeLoaderEntry ((LOADER_ENTRY **) Entry);
     }
     else if (EntryType == EntryTypeLegacyEntry) {
-        BREAD_CRUMB(L"%s:  3b 1 - EntryType = EntryTypeLegacyEntry ... TagType = '%s'", FuncTag, TagType);
+        BREAD_CRUMB(L"%a:  3b 1 - EntryType = EntryTypeLegacyEntry ... TagType = '%s'", __func__, TagType);
         FreeLegacyEntry ((LEGACY_ENTRY **) Entry);
     }
     else {
-        BREAD_CRUMB(L"%s:  3b 1 - EntryType = EntryTypeRefitMenuEntry ... TagType = '%s'", FuncTag, TagType);
+        BREAD_CRUMB(L"%a:  3b 1 - EntryType = EntryTypeRefitMenuEntry ... TagType = '%s'", __func__, TagType);
         MY_FREE_POOL((*Entry)->Title);
         MY_FREE_IMAGE((*Entry)->Image);
         MY_FREE_IMAGE((*Entry)->BadgeImage);
 
-        BREAD_CRUMB(L"%s:  3c 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3c 2", __func__);
         FreeMenuScreen (&(*Entry)->SubScreen);
     }
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     MY_FREE_POOL(*Entry);
 
-    BREAD_CRUMB(L"%s:  5 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  5 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID FreeMenuEntry()

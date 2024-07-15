@@ -1,5 +1,10 @@
 0.14.2.AA (PRE-RELEASE):
 -----------------------
+- Synced with Upstream v0.14.2
+- Fixes Handling `Windows Recovery Tools` Volumes
+  * Now filtered out from scanning for loaders via GUID
+  * Effectively results in an unending scan loop otherwise
+  * This bug was inherited from upstream code
 - Fixes `ScanFirmwareDefined` Handling
   * Spurious items were added (Typically as firmware shell instances ... Thanks @emperor06)
   * This bug was introduced in v0.14.0.AC (Commit aad3298)

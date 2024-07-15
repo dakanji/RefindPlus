@@ -760,7 +760,7 @@
 #                       NB: Requires external program
 #                           See documentation for details
 #  memtest          - Memory Testing Utility.
-#                       NB: Requires external memtest program
+#                       NB: Requires external program
 #  gptsync          - The (Dangerous) 'GPTsync' Utility.
 #                       NB: Requires external program
 #                           See documentation for details
@@ -768,7 +768,8 @@
 #                       NB: Requires external program
 #                           See documentation for details
 #  clean_nvram      - Enables nvRAM Reset from RefindPlus.
-#                       NB: Needs External program.
+#                       NB: Requires external program
+#                           Only the first valid instance found is presented
 #  apple_recovery   - Loads Apple Mac Recovery partitions, if present
 #  windows_recovery - Boots an OEM Windows recovery tool, if present.
 #                       NB: Also refer to the "windows_recovery_files" option

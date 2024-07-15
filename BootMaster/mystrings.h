@@ -95,11 +95,11 @@ CHAR16 * MyAsciiStrCopyToUnicode (
     IN  UINTN    Length
 );
 CHAR16 * GetSubStrAfter (
-    IN CHAR16 *Delimiter,
+    IN CHAR16 *InputDelimiter,
     IN CHAR16 *String
 );
 CHAR16 * GetSubStrBefore (
-    IN CHAR16 *Delimiter,
+    IN CHAR16 *InputDelimiter,
     IN CHAR16 *String
 );
 

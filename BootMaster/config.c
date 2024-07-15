@@ -53,17 +53,17 @@
 #include "lib.h"
 #include "icns.h"
 #include "menu.h"
+#include "scan.h"
+#include "apple.h"
 #include "config.h"
 #include "screenmgt.h"
-#include "apple.h"
 #include "mystrings.h"
-#include "scan.h"
-#include "../include/refit_call_wrapper.h"
 #include "../mok/mok.h"
+#include "../include/refit_call_wrapper.h"
 
 // Constants
 
-#define LINUX_OPTIONS_FILENAMES  \
+#define LINUX_OPTIONS_FILENAMES \
 L"refind_linux.conf,refind-linux.conf,\
 refindplus_linux.conf,refindplus-linux.conf"
 
@@ -82,7 +82,10 @@ UINTN                  ValidEntryCount =     0;
 BOOLEAN                OuterLoop       =  TRUE;
 BOOLEAN                SetShowTools    = FALSE;
 BOOLEAN                ManualInclude   = FALSE;
+
+#if REFIT_DEBUG > 0
 BOOLEAN                FoundFontImage  =  TRUE;
+#endif
 
 // Control Forensic Logging
 #if REFIT_DEBUG > 1
@@ -127,7 +130,7 @@ VOID SetLinuxMatchPatterns (
 
     i = 0;
     PatternSet = NULL;
-    while ((Pattern = FindCommaDelimited(Prefixes, i++)) != NULL) {
+    while ((Pattern = FindCommaDelimited (Prefixes, i++)) != NULL) {
         MergeStrings (&Pattern, L"*", 0);
         MergeStrings (&PatternSet, Pattern, L',');
         MY_FREE_POOL(Pattern);
@@ -155,7 +158,7 @@ VOID SyncLinuxPrefixes (VOID) {
 } // static VOID SyncLinuxPrefixes()
 
 static
-VOID SyncAlsoScanDirs (VOID) {
+VOID SyncAlsoScan (VOID) {
     if (GlobalConfig.AlsoScan == NULL) {
         GlobalConfig.AlsoScan = StrDuplicate (
             ALSO_SCAN_DIRS
@@ -167,25 +170,12 @@ VOID SyncAlsoScanDirs (VOID) {
             ALSO_SCAN_DIRS, L','
         );
     }
-} // static VOID SyncAlsoScanDirs()
+} // static VOID SyncAlsoScan()
 
 static
 VOID SyncDontScanDirs (VOID) {
     CHAR16 *GuidString;
 
-
-    if (GlobalConfig.DontScanDirs == NULL) {
-        GlobalConfig.DontScanDirs = StrDuplicate (
-            MEMTEST_LOCATIONS
-        );
-    }
-    else {
-        // Never scan for MemTest as loader
-        MergeUniqueItems (
-            &GlobalConfig.DontScanDirs,
-            MEMTEST_LOCATIONS, L','
-        );
-    }
 
     if (SelfVolume  == NULL ||
         SelfDirPath == NULL
@@ -193,13 +183,11 @@ VOID SyncDontScanDirs (VOID) {
         return;
     }
 
-    if (GuidsAreEqual (&(SelfVolume->PartTypeGuid), &GuidNull)) {
+    if (GuidsAreEqual (&(SelfVolume->PartGuid), &GuidNull)) {
         return;
     }
 
-    GuidString = GuidAsString (
-        &(SelfVolume->PartGuid)
-    );
+    GuidString = GuidAsString (&(SelfVolume->PartGuid));
     if (GuidString == NULL) {
         return;
     }
@@ -284,19 +272,19 @@ VOID SyncShowTools (VOID) {
         return;
     }
 
-    SetShowTools               =                 TRUE;
-    GlobalConfig.ShowTools[0]  =            TAG_SHELL;
-    GlobalConfig.ShowTools[1]  =          TAG_MEMTEST;
-    GlobalConfig.ShowTools[2]  =            TAG_GDISK;
-    GlobalConfig.ShowTools[3]  =   TAG_RECOVERY_APPLE;
-    GlobalConfig.ShowTools[4]  = TAG_RECOVERY_WINDOWS;
-    GlobalConfig.ShowTools[5]  =         TAG_MOK_TOOL;
-    GlobalConfig.ShowTools[6]  =            TAG_ABOUT;
-    GlobalConfig.ShowTools[7]  =           TAG_HIDDEN;
-    GlobalConfig.ShowTools[8]  =         TAG_SHUTDOWN;
-    GlobalConfig.ShowTools[9]  =           TAG_REBOOT;
-    GlobalConfig.ShowTools[10] =         TAG_FIRMWARE;
-    GlobalConfig.ShowTools[11] =    TAG_FWUPDATE_TOOL;
+    SetShowTools               =              TRUE;
+    GlobalConfig.ShowTools[0]  =         TAG_SHELL;
+    GlobalConfig.ShowTools[1]  =       TAG_MEMTEST;
+    GlobalConfig.ShowTools[2]  =         TAG_GDISK;
+    GlobalConfig.ShowTools[3]  =  TAG_RECOVERY_MAC;
+    GlobalConfig.ShowTools[4]  =  TAG_RECOVERY_WIN;
+    GlobalConfig.ShowTools[5]  =      TAG_MOK_TOOL;
+    GlobalConfig.ShowTools[6]  =         TAG_ABOUT;
+    GlobalConfig.ShowTools[7]  =        TAG_HIDDEN;
+    GlobalConfig.ShowTools[8]  =      TAG_SHUTDOWN;
+    GlobalConfig.ShowTools[9]  =        TAG_REBOOT;
+    GlobalConfig.ShowTools[10] =      TAG_FIRMWARE;
+    GlobalConfig.ShowTools[11] = TAG_FWUPDATE_TOOL;
 } // static VOID SyncShowTools()
 
 // Get a single line of text from a file
@@ -742,18 +730,15 @@ VOID AddSubmenu (
     CHAR16             **TokenList;
     BOOLEAN              TitleVolume;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"AddSubmenu";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     SubScreen = InitializeSubScreen (Entry);
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     if (SubScreen == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -762,21 +747,21 @@ VOID AddSubmenu (
 
     // Set defaults for the new entry
     // Will be modified based on lines read from the config file
-    BREAD_CRUMB(L"%s:  3", FuncTag);
-    SubEntry = InitializeLoaderEntry (Entry);
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
+    SubEntry = CopyLoaderEntry (Entry);
+    BREAD_CRUMB(L"%a:  4", __func__);
     if (SubEntry == NULL) {
-        BREAD_CRUMB(L"%s:  4a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 1", __func__);
         FreeMenuScreen (&SubScreen);
 
-        BREAD_CRUMB(L"%s:  4a 2 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 2 - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
         return;
     }
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     SubEntry->Enabled = TRUE;
     TitleVolume = FALSE;
 
@@ -786,16 +771,16 @@ VOID AddSubmenu (
         StrCmp (TokenList[0], L"}") != 0
     ) {
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  5a 1 - WHILE LOOP:- START", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1 - WHILE LOOP:- START", __func__);
         if (MyStriCmp (TokenList[0], L"disabled")) {
-            BREAD_CRUMB(L"%s:  5a 1a", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1a", __func__);
             SubEntry->Enabled = FALSE;
         }
         else if (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"loader")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1b", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1b", __func__);
 
             // Set the boot loader filename
             MY_FREE_POOL(SubEntry->LoaderPath);
@@ -806,7 +791,7 @@ VOID AddSubmenu (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"volume")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1c", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1c", __func__);
 
             if (FindVolume (&Volume, TokenList[1])) {
                 if (Volume          != NULL &&
@@ -828,7 +813,7 @@ VOID AddSubmenu (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"initrd")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1d", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1d", __func__);
             MY_FREE_POOL(SubEntry->InitrdPath);
             SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
         }
@@ -836,7 +821,7 @@ VOID AddSubmenu (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"options")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1e", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1e", __func__);
             MY_FREE_POOL(SubEntry->LoadOptions);
             SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
         }
@@ -844,7 +829,7 @@ VOID AddSubmenu (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"add_options")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1f", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1f", __func__);
 
             MergeStrings (&SubEntry->LoadOptions, TokenList[1], L' ');
         }
@@ -852,27 +837,27 @@ VOID AddSubmenu (
             TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"graphics")
         ) {
-            BREAD_CRUMB(L"%s:  5a 1g", FuncTag);
+            BREAD_CRUMB(L"%a:  5a 1g", __func__);
 
             SubEntry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
         }
         else {
-            BREAD_CRUMB(L"%s:  5a 1h - WARN ... ''%s' Token is Invalid!!", FuncTag, TokenList[0]);
+            BREAD_CRUMB(L"%a:  5a 1h - WARN ... ''%s' Token is Invalid!!", __func__, TokenList[0]);
         }
 
-        BREAD_CRUMB(L"%s:  5a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        BREAD_CRUMB(L"%s:  5a 3 - WHILE LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 3 - WHILE LOOP:- END", __func__);
         LOG_SEP(L"X");
     } // while
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     if (!SubEntry->Enabled) {
-        BREAD_CRUMB(L"%s:  6a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 1", __func__);
         FreeMenuEntry ((REFIT_MENU_ENTRY **) SubEntry);
 
-        BREAD_CRUMB(L"%s:  6a 2 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  6a 2 - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -883,17 +868,17 @@ VOID AddSubmenu (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  7", FuncTag);
+    BREAD_CRUMB(L"%a:  7", __func__);
     MY_FREE_POOL(SubEntry->me.Title);
     if (!TitleVolume) {
-        BREAD_CRUMB(L"%s:  7a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  7a 1", __func__);
 
         SubEntry->me.Title = StrDuplicate (
             (Title != NULL) ? Title : L"Instance: Unknown"
         );
     }
     else {
-        BREAD_CRUMB(L"%s:  7b 1", FuncTag);
+        BREAD_CRUMB(L"%a:  7b 1", __func__);
 
         TmpName = (Title != NULL)
             ? Title : L"Instance: Unknown";
@@ -908,27 +893,27 @@ VOID AddSubmenu (
         );
     }
 
-    BREAD_CRUMB(L"%s:  8", FuncTag);
+    BREAD_CRUMB(L"%a:  8", __func__);
     if (SubEntry->InitrdPath != NULL) {
-        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  8a 1", __func__);
         MergeStrings (&SubEntry->LoadOptions, L"initrd=", L' ');
         MergeStrings (&SubEntry->LoadOptions, SubEntry->InitrdPath, 0);
         MY_FREE_POOL(SubEntry->InitrdPath);
-        BREAD_CRUMB(L"%s:  8a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  8a 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  9", FuncTag);
+    BREAD_CRUMB(L"%a:  9", __func__);
     AddSubMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
     // DA-TAG: Investigate This
     //         Freeing the SubScreen below causes a hang
-    //BREAD_CRUMB(L"%s:  10", FuncTag);
+    //BREAD_CRUMB(L"%a:  10", __func__);
     //FreeMenuScreen (&Entry->me.SubScreen);
 
-    BREAD_CRUMB(L"%s:  10", FuncTag);
+    BREAD_CRUMB(L"%a:  10", __func__);
     Entry->me.SubScreen = SubScreen;
 
-    BREAD_CRUMB(L"%s:  11 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  11 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // static VOID AddSubmenu()
@@ -1343,16 +1328,13 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     REFIT_FILE   *Fstab;
     REFIT_FILE   *Options;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"GenerateOptionsFromEtcFstab";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (!FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- return NULL - '\\etc\\fstab' *DOES NOT* Exist", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- return NULL - '\\etc\\fstab' *DOES NOT* Exist", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1360,10 +1342,10 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     Options = AllocateZeroPool (sizeof (REFIT_FILE));
     if (Options == NULL) {
-        BREAD_CRUMB(L"%s:  2a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - END:- return NULL - OUT OF MEMORY!!", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1371,10 +1353,10 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     Fstab = AllocateZeroPool (sizeof (REFIT_FILE));
     if (Fstab == NULL) {
-        BREAD_CRUMB(L"%s:  3a 1 - END:- return NULL - OUT OF MEMORY!!", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1 - END:- return NULL - OUT OF MEMORY!!", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1384,13 +1366,13 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
 
-    BREAD_CRUMB(L"%s:  5", FuncTag);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if (EFI_ERROR(Status)) {
         CheckError (Status, L"while reading /etc/fstab");
-        BREAD_CRUMB(L"%s:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", FuncTag);
+        BREAD_CRUMB(L"%a:  5a 1 - END:- return NULL - '\\etc\\fstab' is Unreadable", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1401,11 +1383,11 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         return NULL;
     }
 
-    BREAD_CRUMB(L"%s:  6", FuncTag);
+    BREAD_CRUMB(L"%a:  6", __func__);
     // File read; locate root fs and create entries
     Options->Encoding = ENCODING_UTF16_LE;
 
-    BREAD_CRUMB(L"%s:  7", FuncTag);
+    BREAD_CRUMB(L"%a:  7", __func__);
     while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -1416,97 +1398,97 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         #endif
 
         LOG_SEP(L"X");
-        BREAD_CRUMB(L"%s:  7a 1 - WHILE LOOP:- START", FuncTag);
+        BREAD_CRUMB(L"%a:  7a 1 - WHILE LOOP:- START", __func__);
         if (TokenCount > 2) {
-            BREAD_CRUMB(L"%s:  7a 1a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  7a 1a 1", __func__);
             if (StrCmp (TokenList[1], L"\\") == 0) {
-                BREAD_CRUMB(L"%s:  7a 1a 1a 1", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 1a 1", __func__);
                 Root = PoolPrint (L"%s", TokenList[0]);
             }
             else if (StrCmp (TokenList[2], L"\\") == 0) {
-                BREAD_CRUMB(L"%s:  7a 1a 1b 1", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 1b 1", __func__);
                 Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
             }
             else {
-                BREAD_CRUMB(L"%s:  7a 1a 1c 1", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 1c 1", __func__);
                 Root = NULL;
             }
 
-            BREAD_CRUMB(L"%s:  7a 1a 2", FuncTag);
+            BREAD_CRUMB(L"%a:  7a 1a 2", __func__);
             if (Root != NULL &&
                 Root[0] != L'\0'
             ) {
-                BREAD_CRUMB(L"%s:  7a 1a 2a 1", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 1", __func__);
                 for (i = 0; i < StrLen (Root); i++) {
                     LOG_SEP(L"X");
-                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1 - FOR LOOP:- START", FuncTag);
+                    BREAD_CRUMB(L"%a:  7a 1a 2a 1a 1 - FOR LOOP:- START", __func__);
                     if (Root[i] == '\\') {
-                        BREAD_CRUMB(L"%s:  7a 1a 2a 1a 1a 1 - Flip Slash", FuncTag);
+                        BREAD_CRUMB(L"%a:  7a 1a 2a 1a 1a 1 - Flip Slash", __func__);
                         Root[i] = '/';
                     }
-                    BREAD_CRUMB(L"%s:  7a 1a 2a 1a 2 - FOR LOOP:- END", FuncTag);
+                    BREAD_CRUMB(L"%a:  7a 1a 2a 1a 2 - FOR LOOP:- END", __func__);
                     LOG_SEP(L"X");
                 }
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 2", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 2", __func__);
                 Line = PoolPrint (
                     L"\"Boot with Normal Options\"    \"ro root=%s\"\n",
                     Root
                 );
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 3", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 3", __func__);
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 4", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 4", __func__);
                 MY_FREE_POOL(Line);
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 5", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 5", __func__);
                 Line = PoolPrint (
                     L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n",
                     Root
                 );
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 6", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 6", __func__);
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 7", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 7", __func__);
                 MY_FREE_POOL(Line);
 
-                BREAD_CRUMB(L"%s:  7a 1a 2a 8", FuncTag);
+                BREAD_CRUMB(L"%a:  7a 1a 2a 8", __func__);
                 Options->BufferSize = sizeof (CHAR16) * (
                     StrLen ((CHAR16 *) Options->Buffer) + 1
                 );
             } // if
 
-            BREAD_CRUMB(L"%s:  7a 1a 3", FuncTag);
+            BREAD_CRUMB(L"%a:  7a 1a 3", __func__);
             MY_FREE_POOL(Root);
         } // if
 
-        BREAD_CRUMB(L"%s:  7a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  7a 2", __func__);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        BREAD_CRUMB(L"%s:  7a 3 - WHILE LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%a:  7a 3 - WHILE LOOP:- END", __func__);
         LOG_SEP(L"X");
     } // while
 
-    BREAD_CRUMB(L"%s:  8", FuncTag);
+    BREAD_CRUMB(L"%a:  8", __func__);
     if (Options->Buffer == NULL) {
-        BREAD_CRUMB(L"%s:  8a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  8a 1", __func__);
         MY_FREE_POOL(Options);
     }
     else {
-        BREAD_CRUMB(L"%s:  8b 1", FuncTag);
+        BREAD_CRUMB(L"%a:  8b 1", __func__);
         Options->Current8Ptr  = (CHAR8  *) Options->Buffer;
         Options->Current16Ptr = (CHAR16 *) Options->Buffer;
         Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
         Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-        BREAD_CRUMB(L"%s:  8b 2", FuncTag);
+        BREAD_CRUMB(L"%a:  8b 2", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  9", FuncTag);
+    BREAD_CRUMB(L"%a:  9", __func__);
     MY_FREE_FILE(Fstab);
 
-    BREAD_CRUMB(L"%s:  10 - END:- return REFIT_FILE *Options", FuncTag);
+    BREAD_CRUMB(L"%a:  10 - END:- return REFIT_FILE *Options", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 
@@ -1527,15 +1509,12 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     REFIT_FILE   *Options;
     CHAR16       *Line, *GuidString, *WriteStatus;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"GenerateOptionsFromPartTypes";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
     if (GlobalConfig.DiscoveredRoot == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- !GlobalConfig.DiscoveredRoot return NULL", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- !GlobalConfig.DiscoveredRoot return NULL", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -1543,23 +1522,23 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     }
     WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     Options = AllocateZeroPool (sizeof (REFIT_FILE));
     if (Options == NULL) {
-        BREAD_CRUMB(L"%s:  2a 1 - END:- !Options return NULL", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - END:- !Options return NULL", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
         return NULL;
     }
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
     if (GuidString != NULL) {
-        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1", __func__);
         ToLower (GuidString);
 
-        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 2", __func__);
         Line = PoolPrint (
             L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
             WriteStatus, GuidString
@@ -1567,7 +1546,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
         MY_FREE_POOL(Line);
 
-        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 3", __func__);
         Line = PoolPrint (
             L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
             WriteStatus, GuidString
@@ -1577,7 +1556,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
         MY_FREE_POOL(GuidString);
     } // if (GuidString)
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     Options->Encoding     = ENCODING_UTF16_LE;
     Options->Current8Ptr  = (CHAR8  *) Options->Buffer;
     Options->Current16Ptr = (CHAR16 *) Options->Buffer;
@@ -1585,7 +1564,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
     Options->End8Ptr      = Options->Current8Ptr  +  Options->BufferSize;
 
-    BREAD_CRUMB(L"%s:  5 - END:- return REFIT_FILE *Options", FuncTag);
+    BREAD_CRUMB(L"%a:  5 - END:- return REFIT_FILE *Options", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 
@@ -1625,7 +1604,7 @@ VOID ExitOuter (
     }
 
     SyncShowTools();
-    SyncAlsoScanDirs();
+    SyncAlsoScan();
     SyncDontScanDirs();
     SyncDontScanFiles();
     SyncLinuxPrefixes();
@@ -1648,6 +1627,12 @@ VOID ExitOuter (
         GlobalConfig.SetAppleFB     = FALSE;
         GlobalConfig.NvramProtect   = FALSE;
         GlobalConfig.NvramProtectEx = FALSE;
+
+        if (GlobalConfig.EnableMouse) {
+            // DA-TAG: Force 'RescanDXE' on UEFI-PC
+            //         Update other instances if changing
+            GlobalConfig.RescanDXE = TRUE;
+        }
     }
     if (GlobalConfig.SyncTrust != ENFORCE_TRUST_NONE) {
         GlobalConfig.DirectBoot = FALSE;
@@ -1672,18 +1657,16 @@ VOID ExitOuter (
         GlobalConfig.TextOnly = ForceTextOnly = TRUE;
     }
 
+    #if REFIT_DEBUG > 0
     if (!FoundFontImage) {
         FoundFontImage = TRUE;
 
-        #if REFIT_DEBUG > 0
         LOG_MSG(
             "%s  - WARN: Defined Font File *IS NOT* Valid ... Use Default Font",
             OffsetNext
         );
-        #endif
     }
 
-    #if REFIT_DEBUG > 0
     LOG_MSG("\n");
     Status = (ValidInclude) ? EFI_SUCCESS : EFI_WARN_STALE_DATA;
     LOG_MSG("Process Configuration Options ... %r", Status);
@@ -1905,20 +1888,17 @@ VOID ScanUserConfigured (
     UINTN              TokenCount;
     LOADER_ENTRY      *Entry;
 
-#if REFIT_DEBUG > 0
+    #if REFIT_DEBUG > 0
     CHAR16             *TmpName;
     CHAR16             *CountStr;
     UINTN               LogLineType;
-
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ScanUserConfigured";
     #endif
-#endif
+
 
     if (!ManualInclude) {
         LOG_SEP(L"X");
         LOG_INCREMENT();
-        BREAD_CRUMB(L"%s:  A - START", FuncTag);
+        BREAD_CRUMB(L"%a:  A - START", __func__);
 
         TotalEntryCount = ValidEntryCount = 0;
     }
@@ -1962,8 +1942,8 @@ VOID ScanUserConfigured (
                     AddPreparedLoaderEntry (Entry);
                 }
                 else if (
+                    !ManualInclude &&
                     TokenCount == 2 &&
-                    ManualInclude == FALSE &&
                     MyStriCmp (TokenList[0], L"include") &&
                     MyStriCmp (FileName, GlobalConfig.ConfigFilename)
                 ) {
@@ -1977,7 +1957,7 @@ VOID ScanUserConfigured (
                         );
                         #else
                         LOG_SEP(L"X");
-                        BREAD_CRUMB(L"%s:  A1 - INCLUDE FILE (%s): START", FuncTag, TokenList[1]);
+                        BREAD_CRUMB(L"%a:  A1 - INCLUDE FILE (%s): START", __func__, TokenList[1]);
                         #endif
                         #endif
 
@@ -1991,7 +1971,7 @@ VOID ScanUserConfigured (
                             L"Scanned Include File for Manual Stanzas"
                         );
                         #else
-                        BREAD_CRUMB(L"%s:  A2 - INCLUDE FILE (%s): END", FuncTag, TokenList[1]);
+                        BREAD_CRUMB(L"%a:  A2 - INCLUDE FILE (%s): END", __func__, TokenList[1]);
                         LOG_SEP(L"X");
                         #endif
                         #endif
@@ -2034,7 +2014,7 @@ VOID ScanUserConfigured (
         ManualInclude = FALSE;
     }
     else {
-        BREAD_CRUMB(L"%s:  Z - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
     }
@@ -2066,15 +2046,12 @@ REFIT_FILE * ReadLinuxOptionsFile (
     BOOLEAN      FileFound;
     REFIT_FILE  *File;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"ReadLinuxOptionsFile";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     File         =  NULL;
     GoOn         =  TRUE;
     FileFound    = FALSE;
@@ -2090,15 +2067,15 @@ REFIT_FILE * ReadLinuxOptionsFile (
         LOG_SEP(L"X");
         BaseFilename = StrDuplicate (FullFilename);
 
-        BREAD_CRUMB(L"%s:  2a 1 - WHILE LOOP:- START", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - WHILE LOOP:- START", __func__);
         MergeStrings (&BaseFilename, OptionsFilename, '\\');
 
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 2", __func__);
         if (!FileExists (Volume->RootDir, BaseFilename)) {
-            BREAD_CRUMB(L"%s:  2a 2a 1 - OptionsFile *NOT* Found", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2a 1 - OptionsFile *NOT* Found", __func__);
         }
         else {
-            BREAD_CRUMB(L"%s:  2a 2b 1 - Seek OptionsFile ... Success", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2b 1 - Seek OptionsFile ... Success", __func__);
             MY_FREE_FILE(File);
             File = AllocateZeroPool (sizeof (REFIT_FILE));
             if (File == NULL) {
@@ -2106,58 +2083,58 @@ REFIT_FILE * ReadLinuxOptionsFile (
                 MY_FREE_POOL(FullFilename);
                 MY_FREE_POOL(BaseFilename);
 
-                BREAD_CRUMB(L"%s:  2a 2b 1a 1 - WHILE LOOP:- END - OUT OF MEMORY return NULL", FuncTag);
+                BREAD_CRUMB(L"%a:  2a 2b 1a 1 - WHILE LOOP:- END - OUT OF MEMORY return NULL", __func__);
                 LOG_DECREMENT();
                 LOG_SEP(L"X");
 
                 return NULL;
             }
-            BREAD_CRUMB(L"%s:  2a 2b 2", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2b 2", __func__);
 
             Status = RefitReadFile (
                 Volume->RootDir,
                 BaseFilename, File, &size
             );
-            BREAD_CRUMB(L"%s:  2a 2b 3", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2b 3", __func__);
             if (EFI_ERROR(Status)) {
-                BREAD_CRUMB(L"%s:  2a 2b 3a 1", FuncTag);
+                BREAD_CRUMB(L"%a:  2a 2b 3a 1", __func__);
                 CheckError (Status, L"While Loading the Linux Options File");
             }
             else {
-                BREAD_CRUMB(L"%s:  2a 2b 3b 1", FuncTag);
+                BREAD_CRUMB(L"%a:  2a 2b 3b 1", __func__);
                 GoOn      = FALSE;
                 FileFound =  TRUE;
             }
-            BREAD_CRUMB(L"%s:  2a 2b 4", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2b 4", __func__);
         }
 
-        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 3", __func__);
         MY_FREE_POOL(OptionsFilename);
         MY_FREE_POOL(BaseFilename);
 
-        BREAD_CRUMB(L"%s:  2a 4 - WHILE LOOP:- END", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 4 - WHILE LOOP:- END", __func__);
         LOG_SEP(L"X");
     } // while;
     MY_FREE_POOL(FullFilename);
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (!FileFound) {
-        BREAD_CRUMB(L"%s:  3a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1", __func__);
         // No refindplus_linux.conf or refind_linux.conf file,
         // try to pull values from /etc/fstab
         MY_FREE_FILE(File);
         File = GenerateOptionsFromEtcFstab (Volume);
 
-        BREAD_CRUMB(L"%s:  3a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 2", __func__);
         // If still NULL, try Freedesktop.org Discoverable Partitions Spec
         if (File == NULL) {
-            BREAD_CRUMB(L"%s:  3a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  3a 2a 1", __func__);
             File = GenerateOptionsFromPartTypes();
         }
-        BREAD_CRUMB(L"%s:  3a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 3", __func__);
     } // if
 
-    BREAD_CRUMB(L"%s:  4 - END:- return REFIT_FILE *File", FuncTag);
+    BREAD_CRUMB(L"%a:  4 - END:- return REFIT_FILE *File", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
     return File;
@@ -2173,35 +2150,32 @@ CHAR16 * GetFirstOptionsFromFile (
     CHAR16      **TokenList;
     REFIT_FILE   *File;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"GetFirstOptionsFromFile";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
     File = ReadLinuxOptionsFile (LoaderPath, Volume);
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     Options = NULL;
     if (File != NULL) {
-        BREAD_CRUMB(L"%s:  2a 1", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1", __func__);
         TokenCount = ReadTokenLine(File, &TokenList);
 
-        BREAD_CRUMB(L"%s:  2a 2", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 2", __func__);
         if (TokenCount > 1) {
-            BREAD_CRUMB(L"%s:  2a 2a 1", FuncTag);
+            BREAD_CRUMB(L"%a:  2a 2a 1", __func__);
             Options = StrDuplicate (TokenList[1]);
         }
 
-        BREAD_CRUMB(L"%s:  2a 3", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 3", __func__);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        BREAD_CRUMB(L"%s:  2a 4", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 4", __func__);
         MY_FREE_FILE(File);
     }
 
-    BREAD_CRUMB(L"%s:  3 - END:- return CHAR16 *Options = '%s'", FuncTag,
+    BREAD_CRUMB(L"%a:  3 - END:- return CHAR16 *Options = '%s'", __func__,
         Options ? Options : L"NULL"
     );
     LOG_DECREMENT();
@@ -2853,10 +2827,10 @@ VOID ReadConfig (
                 else if (MyStrBegins (L"firmware",         Flag)) GlobalConfig.ShowTools[j] = TAG_FIRMWARE;
                 else if (MyStrBegins (L"bootorder",        Flag)) GlobalConfig.ShowTools[j] = TAG_BOOTORDER;
                 else if (MyStrBegins (L"csr_rotate",       Flag)) GlobalConfig.ShowTools[j] = TAG_CSR_ROTATE;
+                else if (MyStrBegins (L"clean_nvram",      Flag)) GlobalConfig.ShowTools[j] = TAG_CLEAN_NVRAM;
+                else if (MyStrBegins (L"windows_recovery", Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_WIN;
+                else if (MyStrBegins (L"apple_recovery",   Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_MAC;
                 else if (MyStrBegins (L"fwupdate",         Flag)) GlobalConfig.ShowTools[j] = TAG_FWUPDATE_TOOL;
-                else if (MyStrBegins (L"clean_nvram",      Flag)) GlobalConfig.ShowTools[j] = TAG_NVRAMCLEAN;
-                else if (MyStrBegins (L"windows_recovery", Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_WINDOWS;
-                else if (MyStrBegins (L"apple_recovery",   Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_APPLE;
                 else if (MyStrBegins (L"hidden_tags",      Flag)) {
                     GlobalConfig.ShowTools[j] = TAG_HIDDEN;
                     GlobalConfig.HiddenTags = TRUE;

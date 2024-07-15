@@ -94,8 +94,15 @@ typedef struct {
 // Partition names to be ignored when setting volume name
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 
-#define NVRAM_LOG_GET L"Get Item from"
-#define NVRAM_LOG_SET L"Put Item into"
+#if REFIT_DEBUG > 0
+#   define NVRAM_LOG_GET  L"Get Item from"
+#   define NVRAM_LOG_SET  L"Put Item into"
+
+#   define NVRAM_TITLE    L"Variable Storage"
+
+#   define NVRAM_HARDWARE (NVRAM_TITLE L" (Hardware)")
+#   define NVRAM_EMULATED (NVRAM_TITLE L" (Emulated)")
+#endif
 
 extern EFI_GUID gFreedesktopRootGuid;
 

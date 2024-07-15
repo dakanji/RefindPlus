@@ -2051,14 +2051,16 @@ VOID egInitScreen (VOID) {
                         &GOPDrawProtocolGuid, (VOID **) &OldGop
                     );
                     if (!EFI_ERROR(Status)) {
-                        if (OldGop == NULL        ||
-                            OldGop->Mode->MaxMode == 0
+                        if (OldGop != NULL        &&
+                            OldGop->Mode->MaxMode != 0
                         ) {
-                            Status = EFI_NOT_READY;
+                            GOPDraw = OldGop;
+#if REFIT_DEBUG > 0
+                            Status = EFI_SUCCESS;
                         }
                         else {
-                            Status = EFI_SUCCESS;
-                            GOPDraw = OldGop;
+                            Status = EFI_NOT_READY;
+#endif
                         }
                     }
                 }
@@ -2691,7 +2693,7 @@ BOOLEAN egSetScreenSize (
     LOG_MSG("\n\n");
     #endif
 
-    return (ModeSet);
+    return ModeSet;
 } // BOOLEAN egSetScreenSize()
 
 // Set a text mode.
@@ -2848,16 +2850,13 @@ VOID egSetGraphicsModeEnabled (
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
     EFI_CONSOLE_CONTROL_SCREEN_MODE NewMode;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"egSetGraphicsModeEnabled";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (ConsoleControl == NULL) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID (Aborted ... ConsoleControl == NULL)", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID (Aborted ... ConsoleControl == NULL)", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -2865,32 +2864,32 @@ VOID egSetGraphicsModeEnabled (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  2", FuncTag);
+    BREAD_CRUMB(L"%a:  2", __func__);
     REFIT_CALL_4_WRAPPER(
         ConsoleControl->GetMode, ConsoleControl,
         &CurrentMode, NULL, NULL
     );
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (Enable) {
-        BREAD_CRUMB(L"%s:  3a 1 - (Tag for Graphics Mode)", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1 - (Tag for Graphics Mode)", __func__);
         NewMode = EfiConsoleControlScreenGraphics;
     }
     else {
-        BREAD_CRUMB(L"%s:  3b 1 - (Tag for Text Mode)", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 1 - (Tag for Text Mode)", __func__);
         NewMode = EfiConsoleControlScreenText;
     }
 
-    BREAD_CRUMB(L"%s:  4", FuncTag);
+    BREAD_CRUMB(L"%a:  4", __func__);
     if (CurrentMode != NewMode) {
-        BREAD_CRUMB(L"%s:  4a 1 - (Set to Tagged Mode)", FuncTag);
+        BREAD_CRUMB(L"%a:  4a 1 - (Set to Tagged Mode)", __func__);
         REFIT_CALL_2_WRAPPER(ConsoleControl->SetMode, ConsoleControl, NewMode);
     }
     else {
-        BREAD_CRUMB(L"%s:  4b 1 - (Tagged Mode is Already Active)", FuncTag);
+        BREAD_CRUMB(L"%a:  4b 1 - (Tagged Mode is Already Active)", __func__);
     }
 
-    BREAD_CRUMB(L"%s:  5 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  5 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID egSetGraphicsModeEnabl()
@@ -2904,16 +2903,13 @@ VOID egClearScreen (
 ) {
     EFI_UGA_PIXEL FillColor;
 
-    #if REFIT_DEBUG > 1
-    const CHAR16 *FuncTag = L"egClearScreen";
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
-    BREAD_CRUMB(L"%s:  1 - START", FuncTag);
+    BREAD_CRUMB(L"%a:  1 - START", __func__);
 
     if (!egHasGraphics) {
-        BREAD_CRUMB(L"%s:  1a 1 - END:- VOID (Clearing in Text Mode)", FuncTag);
+        BREAD_CRUMB(L"%a:  1a 1 - END:- VOID (Clearing in Text Mode)", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -2925,24 +2921,24 @@ VOID egClearScreen (
         return;
     }
 
-    BREAD_CRUMB(L"%s:  2 - (Set Fill Colour)", FuncTag);
+    BREAD_CRUMB(L"%a:  2 - (Set Fill Colour)", __func__);
     if (Color != NULL) {
-        BREAD_CRUMB(L"%s:  2a 1 - (Use Input Colour)", FuncTag);
+        BREAD_CRUMB(L"%a:  2a 1 - (Use Input Colour)", __func__);
         FillColor.Red   = Color->r;
         FillColor.Green = Color->g;
         FillColor.Blue  = Color->b;
     }
     else {
-        BREAD_CRUMB(L"%s:  2b 1 - (Use Default Black)", FuncTag);
+        BREAD_CRUMB(L"%a:  2b 1 - (Use Default Black)", __func__);
         FillColor.Red   = 0x0;
         FillColor.Green = 0x0;
         FillColor.Blue  = 0x0;
     }
     FillColor.Reserved = 0;
 
-    BREAD_CRUMB(L"%s:  3", FuncTag);
+    BREAD_CRUMB(L"%a:  3", __func__);
     if (GOPDraw != NULL) {
-        BREAD_CRUMB(L"%s:  3a 1 - (Apply Fill via GOP)", FuncTag);
+        BREAD_CRUMB(L"%a:  3a 1 - (Apply Fill via GOP)", __func__);
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout and the TianoCore header file actually defines them
         // as being the same type.
@@ -2955,7 +2951,7 @@ VOID egClearScreen (
          );
     }
     else if (UGADraw != NULL) {
-        BREAD_CRUMB(L"%s:  3b 1 - (Apply Fill via UGA)", FuncTag);
+        BREAD_CRUMB(L"%a:  3b 1 - (Apply Fill via UGA)", __func__);
         REFIT_CALL_10_WRAPPER(
             UGADraw->Blt, UGADraw,
             &FillColor, EfiUgaVideoFill,
@@ -2965,7 +2961,7 @@ VOID egClearScreen (
         );
     }
 
-    BREAD_CRUMB(L"%s:  4 - END:- VOID", FuncTag);
+    BREAD_CRUMB(L"%a:  4 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
 } // VOID egClearScreen()

@@ -47,17 +47,17 @@
  */
 
 #include "global.h"
-#include "screenmgt.h"
 #include "lib.h"
 #include "mok.h"
+#include "scan.h"
 #include "icns.h"
 #include "menu.h"
 #include "apple.h"
 #include "mystrings.h"
+#include "screenmgt.h"
+#include "launch_efi.h"
 #include "driver_support.h"
 #include "../include/refit_call_wrapper.h"
-#include "launch_efi.h"
-#include "scan.h"
 
 //
 // constants
@@ -199,7 +199,7 @@ BOOLEAN ConfirmReboot (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmReboot' Function from '%s' Option in Menu Screen",
+        L"Returned '%d' (%s) in 'ConfirmReboot' Function from the '%s' Option in Menu Screen",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -666,7 +666,7 @@ EFI_STATUS StartEFIImage (
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (MsgStr, NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         #if REFIT_DEBUG > 0
@@ -681,8 +681,8 @@ EFI_STATUS StartEFIImage (
 
         // DA-TAG: Investigate This
         //         Some EFIs crash if attempting to load drivers for an invalid
-        //         architecture, so protect for this condition; but sometimes
-        //         Volume comes back NULL, so provide an exception.
+        //         architecture, so protect for this condition; but 'Volume'
+        //         sometimes comes back NULL; so an exception is provided.
         //
         //         Handle this special condition better.
         LoaderValid = IsValidLoader (Volume->RootDir, Filename);
@@ -887,7 +887,7 @@ EFI_STATUS StartEFIImage (
                 ConstMsgStr = L"Child Image";
 
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Launch %s via Loader:- '%s'",
+                    L"Load %s via Loader:- '%s'",
                     ConstMsgStr, ImageTitle
                 );
                 OUT_TAG();
@@ -906,7 +906,7 @@ EFI_STATUS StartEFIImage (
 
             #if REFIT_DEBUG > 0
             MsgStrEx = PoolPrint (
-                L"'%r' While Running %s",
+                L"'%r' While Loading %s",
                 ReturnStatus, ConstMsgStr
             );
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStrEx);
@@ -1190,13 +1190,6 @@ VOID StartLoader (
     if (TrustSynced) {
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     }
-    else {
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"%s:- '%s'",
-            (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"User Input",
-            SelectionName
-        );
-    }
     #endif
 
     if (GlobalConfig.EnableAndLockVMX) {
@@ -1232,11 +1225,12 @@ VOID StartTool (
     BOOLEAN CheckMute = FALSE;
     #endif
 
+
     IsBoot     = FALSE;
     LoaderPath = Basename (Entry->LoaderPath);
     MsgStr     = PoolPrint (
-        L"Launch Child (Tool) Image:- '%s'",
-        Entry->me.Title
+        L"Start Child (Tool) Image Loader:- '%s'",
+        Entry->LoaderPath
     );
 
     #if REFIT_DEBUG > 0
