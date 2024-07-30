@@ -124,7 +124,7 @@ EFI\\ipxe_x64.efi,EFI\\ipxe.efi,EFI\\x64_ipxe.efi,EFI\\ipxex64.efi,\
 #   define MEMTEST_NAMES \
 L"memtest.efi,memtest_x64.efi,x64_memtest.efi,memtestx64.efi,memtest+x64.efi,\
 memtest86.efi,memtest86_x64.efi,x64_memtest86.efi,memtest86x64.efi,memtest86+x64.efi,bootx64.efi"
-#   define FALLBACK_SKIPNAME       L"bootia32.efi,bootaa64.efi,bootmips.efi"
+#   define SKIPNAME_PATTERNS       L"*ia32*.efi,*aa64*.efi,*mips*.efi"
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #   define FALLBACK_BASENAME       L"bootx64.efi"
 #   define NETBOOT_FILES           L"ipxe_x64.efi,ipxe.efi,x64_ipxe.efi,ipxex64.efi"
@@ -172,9 +172,7 @@ EFI\\ipxe_ia32.efi,EFI\\ipxe.efi,EFI\\ia32_ipxe.efi,EFI\\ipxeia32.efi,\
 #   define MEMTEST_NAMES \
 L"memtest.efi,memtest_ia32.efi,ia32_memtest.efi,memtestia32.efi,memtest+ia32.efi,\
 memtest86.efi,memtest86_ia32.efi,ia32_memtest86.efi,memtest8ia32.efi,memtest86+ia32.efi,bootia32.efi"
-#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootaa64.efi,bootmips.efi"
-L"memtest.efi,memtest_ia32.efi,ia32_memtest.efi,memtestia32.efi,memtest+ia32.efi,\
-memtest86.efi,memtest86_ia32.efi,ia32_memtest86.efi,memtest86ia32.efi,memtest86+ia32.efi,bootia32.efi"
+#   define SKIPNAME_PATTERNS       L"*x64*.efi,*aa64*.efi,*mips*.efi"
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #   define FALLBACK_BASENAME       L"bootia32.efi"
 #   define NETBOOT_FILES           L"ipxe_ia32.efi,ipxe.efi,ia32_ipxe.efi,ipxeia32.efi"
@@ -222,9 +220,7 @@ EFI\\ipxe_aa64.efi,EFI\\ipxe.efi,EFI\\aa64_ipxe.efi,EFI\\ipxeaa64.efi,\
 #   define MEMTEST_NAMES \
 L"memtest.efi,memtest_aa64.efi,aa64_memtest.efi,memtestaa64.efi,memtest+aa64.efi,\
 memtest86.efi,memtest86_aa64.efi,aa64_memtest86.efi,memtest8aa64.efi,memtest86+aa64.efi,bootaa64.efi"
-#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootia32.efi,bootmips.efi"
-L"memtest.efi,memtest_aa64.efi,aa64_memtest.efi,memtestaa64.efi,memtest+aa64.efi,\
-memtest86.efi,memtest86_aa64.efi,aa64_memtest86.efi,memtest86aa64.efi,memtest86+aa64.efi,bootaa64.efi"
+#   define SKIPNAME_PATTERNS       L"*x64*.efi,*ia32*.efi,*mips*.efi"
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
 #   define FALLBACK_BASENAME       L"bootaa64.efi"
 #   define NETBOOT_FILES           L"ipxe_aa64.efi,ipxe.efi,aa64_ipxe.efi,ipxeaa64.efi"
@@ -242,7 +238,7 @@ L"EFI\\tools\\gdisk.efi,EFI\\BOOT\\tools\\gdisk.efi,EFI\\gdisk.efi,\\gdisk.efi"
 #   define NETBOOT_NAMES \
 L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #   define MEMTEST_NAMES           L"memtest.efi,memtest86.efi,boot.efi"
-#   define FALLBACK_SKIPNAME       L"bootx64.efi,bootia32.efi,bootaa64.efi,bootmips.efi"
+#   define SKIPNAME_PATTERNS       L"*x64*.efi,*ia32*.efi,*aa64*.efi,*mips*.efi"
 #   define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" // Not really correct
 #   define FALLBACK_BASENAME       L"boot.efi"            // Not really correct
 #   define NETBOOT_FILES           L"ipxe.efi"

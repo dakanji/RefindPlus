@@ -49,6 +49,7 @@ VOID DeleteESPList (
 ) {
     ESP_LIST *Temp;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Delete List of ESPs");
     #endif
@@ -221,10 +222,7 @@ REFIT_VOLUME * PickOneESP (
         MenuExit = DrawMenuScreen (InstallMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneESP' Function from the '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
+        LogExit (MenuExit, __func__, ChosenOption->Title);
         #endif
 
         if (ChosenOption->Tag == TAG_RETURN) {
@@ -267,6 +265,7 @@ EFI_STATUS RenameFile (
     EFI_FILE_INFO      *Buffer;
     EFI_FILE_INFO      *NewInfo;
     EFI_FILE_PROTOCOL  *FilePtr;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Rename '%s' to '%s'", OldName, NewName);
@@ -332,6 +331,7 @@ EFI_STATUS BackupOldFile (
     EFI_STATUS           Status;
     CHAR16              *NewName;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Back '%s' Up", FileName);
     #endif
@@ -360,6 +360,7 @@ EFI_STATUS CreateDirectories (
     UINTN               i;
     CHAR16             *FileName;
     EFI_FILE_PROTOCOL  *TheDir;
+
 
     i = 0;
     TheDir = NULL;
@@ -397,6 +398,7 @@ EFI_STATUS CopyOneFile (
     EFI_FILE_INFO      *FileInfo;
     EFI_FILE_PROTOCOL  *SourceFile;
     EFI_FILE_PROTOCOL  *DestFile;
+
 
     // Read the original file.
     SourceFile = NULL;
@@ -518,6 +520,7 @@ EFI_STATUS CopyDirectory (
     CHAR16            *SourceFileName;
     EFI_FILE_INFO     *DirEntry;
     REFIT_DIR_ITER     DirIter;
+
 
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
 
@@ -694,6 +697,7 @@ EFI_STATUS CopyFiles (
     CHAR16            *SourceDriversDir;
     REFIT_VOLUME      *SourceVolume;
 
+
     SourceFile   = NULL;
     SourceVolume = NULL; // Do not free
 
@@ -819,6 +823,7 @@ VOID CreateFallbackCSV (
     CHAR16            *Contents;
     EFI_FILE_PROTOCOL *FilePtr;
 
+
     Status = REFIT_CALL_5_WRAPPER(
         TargetDir->Open, TargetDir,
         &FilePtr, L"\\EFI\\refindplus\\BOOT.CSV",
@@ -860,6 +865,7 @@ VOID CreateFallbackCSV (
  ) {
     EFI_STATUS Status;
     EFI_STATUS Status2;
+
 
     if (!FileExists (TargetDir, L"\\EFI\\refindplus\\icons")) {
         // Treat absense as success
@@ -951,6 +957,7 @@ UINTN FindBootNum (
     CHAR16         *VarName;
     CHAR16         *Contents;
 
+
     *AlreadyExists = FALSE;
     Contents = NULL;
 
@@ -1020,6 +1027,7 @@ EFI_STATUS SetBootDefault (
     UINT16     *NewBootOrder;
     BOOLEAN     IsAlreadyFirst;
 
+
     Status = EfivarGetRaw (
         &GlobalGuid, L"BootOrder",
         (VOID **) &BootOrder, &VarSize
@@ -1078,6 +1086,7 @@ EFI_STATUS CreateNvramEntry (
     UINT16                     EfiBootNum;
     BOOLEAN                    AlreadyExists;
     EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
+
 
     Status = ConstructBootEntry (
         DeviceHandle, LoaderPath, ProgLabel,
@@ -1148,6 +1157,7 @@ EFI_STATUS ConstructBootEntry (
     CHAR8                     *Working;
     EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
 
+
     DevicePath  = FileDevicePath (TargetVolume, Loader);
     DevPathSize = DevicePathSize (DevicePath);
 
@@ -1202,6 +1212,7 @@ VOID InstallRefindPlus (VOID) {
     CHAR16        *ProgName;
     ESP_LIST      *AllESPs;
     REFIT_VOLUME  *SelectedESP; // Do not free
+
 
     AllESPs = FindAllESPs();
     if (AllESPs == NULL) {
@@ -1274,6 +1285,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     BOOT_ENTRY_LIST  *ListEnd;
     BOOT_ENTRY_LIST  *ListStart;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Fetch BootOrder Variables:");
     #endif
@@ -1343,6 +1355,7 @@ VOID DeleteBootOrderEntries (
 ) {
     BOOT_ENTRY_LIST *Current;
 
+
     while (Entries != NULL) {
         Current = Entries;
         MY_FREE_POOL(Current->BootEntry.Label);
@@ -1365,6 +1378,7 @@ UINTN ConfirmBootOptionOperation (
     UINTN              MenuExit;
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
+
 
     if (Operation != EFI_BOOT_OPTION_DELETE &&
         Operation != EFI_BOOT_OPTION_MAKE_DEFAULT
@@ -1413,10 +1427,7 @@ UINTN ConfirmBootOptionOperation (
     MenuExit = DrawMenuScreen (ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmBootOptionOperation' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
@@ -1453,6 +1464,7 @@ UINTN PickOneBootOption (
     UINTN              MenuExit;
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
+
 
     if (Entries == NULL) {
         DisplaySimpleMessage (L"Firmware BootOrder List is Empty", NULL);
@@ -1534,10 +1546,7 @@ UINTN PickOneBootOption (
         MenuExit = DrawMenuScreen (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'PickOneBootOption' Function from the '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
+        LogExit (MenuExit, __func__, ChosenOption->Title);
         #endif
 
         if (ChosenOption->Tag == TAG_RETURN) {
@@ -1571,6 +1580,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
     UINT16     *BootOrder;
     UINT16     *NewBootOrder;
     CHAR16     *VarName;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Delete Invalid Boot Entries from Internal BootOrder List");
@@ -1616,6 +1626,7 @@ VOID ManageBootorder (VOID) {
     CHAR16          *Name;
     CHAR16          *Message;
     BOOT_ENTRY_LIST *Entries;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");

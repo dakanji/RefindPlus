@@ -18,7 +18,7 @@ A Boot Manager for Mac and PC
 
 ## Overview
 
-RefindPlus builds on _`rEFInd`_ with enhancements and fixes that include several Apple Mac and UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager. It offers these enhancements and fixes while maintaining rEFInd's core functionality.
+RefindPlus builds on _`rEFInd`_ to extend its functionality with enhancements and fixes that include several Apple Mac and UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager.
 
 RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-typical options for running operating systems and uEFI utilities on Mac and PC.
 
@@ -58,7 +58,7 @@ Users may also want to replace upstream filesystem drivers with those packaged w
 
 RefindPlus will function with the upstream configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additional options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample). RefindPlus-specific options can also be added to an upstream configuration file and used that way if preferred.
 
-When run without activating RefindPlus-specific configuration options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.2. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence Section](https://github.com/dakanji/RefindPlus#divergence) below.
+When run without activating RefindPlus-specific configuration options, as will be the case if using an unmodified upstream configuration file, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.1. That is, the additional options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the [Divergence Section](https://github.com/dakanji/RefindPlus#divergence) below.
 
 ## Additional Functionality
 

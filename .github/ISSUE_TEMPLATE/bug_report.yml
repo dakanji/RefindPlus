@@ -5,9 +5,9 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
-        Please use the [DISCUSSIONS OPTION](https://github.com/dakanji/RefindPlus/discussions) instead if you only wish to ask a question or make a comment.
+        Please [USE THE DISCUSSIONS OPTION INSTEAD](https://github.com/dakanji/RefindPlus/discussions) if you wish to ask a question, make a comment or request support.
 
-        NB: Before continuing, try RefindPlus with the 'ransom_drives' setting set if the problem is a hang on UEFI-PC with HP firmware.
+        NB: Before continuing, try running RefindPlus with the 'ransom_drives' configuration option set if the problem is that RefindPlus hangs on UEFI-PC with HP firmware.
   - type: dropdown
     id: version
     attributes:

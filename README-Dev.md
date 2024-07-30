@@ -18,7 +18,7 @@ A Boot Manager for Mac and PC
 
 ## Overview
 
-RefindPlus builds on _`rEFInd`_ with enhancements and fixes that include several Apple Mac and UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager. It offers these enhancements and fixes while maintaining rEFInd's core functionality.
+RefindPlus builds on _`rEFInd`_ to extend its functionality with enhancements and fixes that include several Apple Mac and UEFI-PC related items that may be of interest to anyone requiring a capable and flexible boot manager.
 
 RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-typical options for running operating systems and uEFI utilities on Mac and PC.
 
@@ -30,6 +30,9 @@ Some features:
 - Extensive memory management improvements with associated speed and stability gains.
 - Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
 - Provides improved support for languages that use unicode text.
+- Identifies and automatically handles Ventoy Instance
+  - Rationalises binaries displayed
+  - Displays an `os_ventoy` icon if present
 - Adds a debug (DBG) binary that provides extensive logging.
   - The release (REL) binary is an optimised build for day to day use.
 - Fixes inability to print to screen on some Macs.
@@ -90,7 +93,6 @@ disable_set_applefb   |Disables provision, under some circumstances, of missing 
 disable_set_consolegop|Disables feature that fixes some issues with GOP graphics on legacy units
 enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
 force_trim            |Forces `TRIM` on Third-Party SSDs on Macs if required
-handle_ventoy         |Rationalises the binaries displayed for `Ventoy` instances
 hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
 hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
 hidden_icons_prefer   |Prioritises `.VolumeIcon` and `.VolumeBadge` image icons when available

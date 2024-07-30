@@ -61,12 +61,9 @@
 #include "../mok/mok.h"
 #include "../include/refit_call_wrapper.h"
 
-// Constants
-
 #define LINUX_OPTIONS_FILENAMES \
 L"refind_linux.conf,refind-linux.conf,\
 refindplus_linux.conf,refindplus-linux.conf"
-
 
 #define ENCODING_ISO8859_1                  (0)
 #define ENCODING_UTF8                       (1)
@@ -95,6 +92,7 @@ BOOLEAN                FoundFontImage  =  TRUE;
 #endif
 
 extern BOOLEAN         ForceTextOnly;
+
 
 #if REFIT_DEBUG > 0
 static
@@ -192,10 +190,17 @@ VOID SyncDontScanDirs (VOID) {
         return;
     }
 
-    MergeStrings (
-        &GlobalConfig.DontScanDirs,
-        GuidString, L','
-    );
+    if (GlobalConfig.DontScanDirs == NULL) {
+        GlobalConfig.DontScanDirs = StrDuplicate (
+            GuidString
+        );
+    }
+    else {
+        MergeStrings (
+            &GlobalConfig.DontScanDirs,
+            GuidString, L','
+        );
+    }
     MergeStrings (
         &GlobalConfig.DontScanDirs,
         SelfDirPath, L':'
@@ -251,10 +256,6 @@ VOID SyncDontScanFiles (VOID) {
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
         NVRAMCLEAN_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        FALLBACK_SKIPNAME, L','
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
@@ -414,18 +415,24 @@ BOOLEAN KeepReading (
     UINTN    DestSize;
     BOOLEAN  MoreToRead;
 
+
     // Check if pointers are NULL or if the string pointed to by 'InString' is empty
-    if (IsQuoted == NULL || InString == NULL || *InString == L'\0') {
+    if (IsQuoted  == NULL ||
+        InString  == NULL ||
+        *InString == L'\0'
+    ) {
         return FALSE;
     }
 
-    if ((
-        *InString != ' '  &&
-        *InString != '\t' &&
-        *InString != '='  &&
-        *InString != '#'  &&
-        *InString != ','
-    ) || *IsQuoted) {
+    if (*IsQuoted ||
+        (
+            *InString != ' '  &&
+            *InString != '\t' &&
+            *InString != '='  &&
+            *InString != '#'  &&
+            *InString != ','
+        )
+    ) {
         MoreToRead = TRUE;
     }
     else {
@@ -504,6 +511,7 @@ VOID HandleStrings (
     UINTN   i;
     BOOLEAN AddMode;
 
+
     if (Target == NULL) {
         return;
     }
@@ -527,11 +535,11 @@ VOID HandleStrings (
     }
 } // static VOID HandleStrings()
 
-// Handle a parameter with a series of hexadecimal arguments, to replace
-// or be added to a linked list of UINT32 values. Any item with a non-hexadecimal
-// value is discarded, as is any value that exceeds MaxValue. If the first
-// non-keyword token is "+", the new list is added to the existing Target;
-// otherwise, the interpreted tokens replace the current Target.
+// Handle a parameter with a series of hexadecimal arguments, to replace or be
+// added to a linked list of UINT32 values. Items with non-hexadecimal values
+// or values that exceed "MaxValue" are discarded. If the first non-keyword
+// token is "+", the new list is added to the existing target;
+// otherwise, interpreted tokens replace the current target.
 static
 VOID HandleHexes (
     IN  CHAR16       **TokenList,
@@ -544,6 +552,7 @@ VOID HandleHexes (
     UINT32       Value;
     UINT32_LIST *EndOfList;
     UINT32_LIST *NewEntry;
+
 
     if (TokenCount > 2 && MyStriCmp (TokenList[1], L"+")) {
         InputIndex = 2;
@@ -591,14 +600,18 @@ VOID HandleHexes (
 
 // Convert TimeString (in "HH:MM" format) to a pure-minute format. Values should be
 // in the range from 0 (for 00:00, or midnight) to 1439 (for 23:59; aka LAST_MINUTE).
-// Any value outside that range denotes an error in the specification. Note that if
-// the input is a number that includes no colon, this function will return the original
-// number in UINTN form.
+// Any value outside that range denotes an error in the specification. Note that the
+// input value is returned in "UINTN" form if it is a number without a colon.
 static
 UINTN HandleTime (
     IN CHAR16 *TimeString
 ) {
-    UINTN i, Hour, Minute, TimeLength;
+    UINTN i;
+    UINTN Hour;
+    UINTN Minute;
+    UINTN TimeLength;
+    UINTN TimeMinutes;
+
 
     TimeLength = StrLen (TimeString);
     i = Hour = Minute = 0;
@@ -616,8 +629,11 @@ UINTN HandleTime (
         i++;
     } // while
 
-    return (Hour * 60 + Minute);
-} // static BOOLEAN HandleTime()
+    TimeMinutes =  (Hour == 0)
+        ? Minute : (Hour * 60) + Minute;
+
+    return TimeMinutes;
+} // static UINTN HandleTime()
 
 static
 BOOLEAN HandleBoolean (
@@ -625,6 +641,7 @@ BOOLEAN HandleBoolean (
     IN UINTN    TokenCount
 ) {
     BOOLEAN TruthValue;
+
 
     TruthValue = TRUE;
     if (TokenCount >= 2 &&
@@ -640,8 +657,8 @@ BOOLEAN HandleBoolean (
     return TruthValue;
 } // static BOOLEAN HandleBoolean()
 
-// Sets the default boot loader IF the current time is within the bounds
-// defined by the third and fourth tokens in the TokenList.
+// Sets the default boot loader *IF* the current time is within the
+// bounds defined by the third and fourth tokens in the TokenList.
 static
 VOID SetDefaultByTime (
     IN  CHAR16 **TokenList,
@@ -654,6 +671,7 @@ VOID SetDefaultByTime (
     CHAR16               *MsgStr;
     EFI_TIME              CurrentTime;
     BOOLEAN               SetIt;
+
 
     StartTime = HandleTime (TokenList[2]);
     EndTime   = HandleTime (TokenList[3]);
@@ -704,7 +722,7 @@ VOID SetDefaultByTime (
             MY_FREE_POOL(*Default);
             *Default = StrDuplicate (TokenList[1]);
         }
-    } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
+    } // if StartTime <= LAST_MINUTE
 } // static VOID SetDefaultByTime()
 
 static
@@ -918,15 +936,19 @@ VOID AddSubmenu (
     LOG_SEP(L"X");
 } // static VOID AddSubmenu()
 
-// Adds the options from a single config.conf stanza to a new loader entry and returns
-// that entry. The calling function is then responsible for adding the entry to the
-// list of entries.
+// Adds options from a configured stanza to a new loader entry
+// and returns that entry. The calling function is responsible
+// for adding the entry to the list of entries.
 static
 LOADER_ENTRY * AddStanzaEntries (
     REFIT_FILE   *File,
     REFIT_VOLUME *Volume,
     CHAR16       *Title
 ) {
+    #if REFIT_DEBUG > 0
+    static BOOLEAN  OtherCall = FALSE;
+    #endif
+
     UINTN           TokenCount;
     CHAR16        **TokenList;
     CHAR16         *OurEfiBootNumber;
@@ -939,38 +961,34 @@ LOADER_ENTRY * AddStanzaEntries (
     BOOLEAN         DefaultsSet;
     BOOLEAN         AddedSubmenu;
     BOOLEAN         FirmwareBootNum;
-    REFIT_VOLUME   *CurrentVolume;
     REFIT_VOLUME   *PreviousVolume;
-    LOADER_ENTRY   *Entry;
+    REFIT_VOLUME   *CurrentVolume;
+    LOADER_ENTRY   *StanzaEntry;
 
-    #if REFIT_DEBUG > 0
-    static BOOLEAN  OtherCall = FALSE;
-    #endif
 
     // Prepare the menu entry
-    Entry = InitializeLoaderEntry (NULL);
-    if (Entry == NULL) {
+    StanzaEntry = InitializeLoaderEntry (NULL);
+    if (StanzaEntry == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_STAR_SEPARATOR,
-            L"Could *NOT* Initialise Loader Entry for User Defined Stanza"
+            L"Could *NOT* Initialise User Defined Stanza"
         );
         #endif
 
         return NULL;
     }
 
-    Entry->Title = (Title != NULL)
+    StanzaEntry->Title = (Title != NULL)
         ? PoolPrint (L"Manual Stanza: %s", Title)
         : StrDuplicate (L"Manual Stanza: Title *NOT* Found");
-    Entry->me.Row          = 0;
-    Entry->Enabled         = TRUE;
-    Entry->Volume          = Volume;
-    Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
+    StanzaEntry->me.Row        = 0;
+    StanzaEntry->Enabled       = TRUE;
+    StanzaEntry->Volume        = Volume;
+    StanzaEntry->DiscoveryType = DISCOVERY_TYPE_MANUAL;
 
-    // Parse the config file to add options for a single stanza,
-    // terminating when the token is "}" or when the end of file is reached.
+    // Parse the config file to add options for a single stanza.
+    // Stop when the token is "}" or the end of file is reached.
     #if REFIT_DEBUG > 0
-    /* Exception for LOG_LINE_THIN_SEP */
     ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"%s",
         (!OtherCall) ? L"FIRST STANZA" : L"NEXT STANZA"
@@ -984,7 +1002,7 @@ LOADER_ENTRY * AddStanzaEntries (
     DoneLoader      = DoneIcon                        = FALSE;
 
     while (
-        Entry->Enabled &&
+        StanzaEntry->Enabled &&
         (TokenCount = ReadTokenLine (File, &TokenList)) > 0
     ) {
         if (MyStriCmp (TokenList[0], L"}")) {
@@ -993,14 +1011,18 @@ LOADER_ENTRY * AddStanzaEntries (
         }
 
         // Set options to pass to the loader program - START
-        if (TokenCount > 1 &&
+        if (MyStriCmp (TokenList[0], L"disabled")) {
+            StanzaEntry->Enabled = FALSE;
+        }
+        else if (
+            TokenCount > 1 &&
             MyStriCmp (TokenList[0], L"graphics")
         ) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'graphics'");
             #endif
 
-            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
+            StanzaEntry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
         }
         else if (
             TokenCount > 1 &&
@@ -1010,7 +1032,7 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'ostype'");
             #endif
 
-            Entry->OSType = TokenList[1][0];
+            StanzaEntry->OSType = TokenList[1][0];
         }
         else if (
             TokenCount > 1 &&
@@ -1021,16 +1043,15 @@ LOADER_ENTRY * AddStanzaEntries (
             #endif
 
             if (AllowGraphicsMode) {
-                // DA-TAG: Avoid Memory Leak
-                MY_FREE_IMAGE(Entry->me.Image);
-                Entry->me.Image = egLoadIcon (
+                MY_FREE_IMAGE(StanzaEntry->me.Image);
+                StanzaEntry->me.Image = egLoadIcon (
                     CurrentVolume->RootDir, TokenList[1],
                     GlobalConfig.IconSizes[ICON_SIZE_BIG]
                 );
 
-                if (Entry->me.Image == NULL) {
+                if (StanzaEntry->me.Image == NULL) {
                     // Set dummy image if icon was not found
-                    Entry->me.Image = DummyImage (
+                    StanzaEntry->me.Image = DummyImage (
                         GlobalConfig.IconSizes[ICON_SIZE_BIG]
                     );
                 }
@@ -1054,25 +1075,26 @@ LOADER_ENTRY * AddStanzaEntries (
                 }
                 else {
                     // Set the boot loader filename
-                    // DA-TAG: Avoid Memory Leak
-                    MY_FREE_POOL(Entry->LoaderPath);
-                    Entry->LoaderPath = StrDuplicate (TokenList[1]);
+                    MY_FREE_POOL(StanzaEntry->LoaderPath);
+                    StanzaEntry->LoaderPath = StrDuplicate (TokenList[1]);
 
                     HasPath = (
-                        Entry->LoaderPath &&
-                        StrLen (Entry->LoaderPath) > 0
+                        StanzaEntry->LoaderPath &&
+                        StrLen (StanzaEntry->LoaderPath) > 0
                     );
 
                     if (HasPath) {
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
                             L"Add Loader Path:- '%s'",
-                            Entry->LoaderPath
+                            StanzaEntry->LoaderPath
                         );
                         #endif
 
                         SetLoaderDefaults (
-                            Entry, TokenList[1], CurrentVolume
+                            StanzaEntry,
+                            TokenList[1],
+                            CurrentVolume
                         );
 
                         DefaultsSet = TRUE;
@@ -1104,11 +1126,10 @@ LOADER_ENTRY * AddStanzaEntries (
                     CurrentVolume->RootDir != NULL &&
                     CurrentVolume->IsReadable
                 ) {
-                    Entry->Volume = CurrentVolume;
+                    StanzaEntry->Volume = CurrentVolume;
 
-                    // DA-TAG: Avoid Memory Leak
-                    MY_FREE_IMAGE(Entry->me.BadgeImage);
-                    Entry->me.BadgeImage = egCopyImage (
+                    MY_FREE_IMAGE(StanzaEntry->me.BadgeImage);
+                    StanzaEntry->me.BadgeImage = egCopyImage (
                         CurrentVolume->VolBadgeImage
                     );
                 }
@@ -1133,9 +1154,8 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'initrd'");
             #endif
 
-            // DA-TAG: Avoid Memory Leak
-            MY_FREE_POOL(Entry->InitrdPath);
-            Entry->InitrdPath = StrDuplicate (TokenList[1]);
+            MY_FREE_POOL(StanzaEntry->InitrdPath);
+            StanzaEntry->InitrdPath = StrDuplicate (TokenList[1]);
         }
         else if (
             TokenCount > 1 &&
@@ -1145,7 +1165,6 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'options'");
             #endif
 
-            // DA-TAG: Avoid Memory Leak
             MY_FREE_POOL(LoadOptions);
             LoadOptions = StrDuplicate (TokenList[1]);
         }
@@ -1159,12 +1178,12 @@ LOADER_ENTRY * AddStanzaEntries (
             );
             #endif
 
-            Entry->me.Tag = TAG_FIRMWARE_LOADER;
+            StanzaEntry->me.Tag = TAG_FIRMWARE_LOADER;
 
-            Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
-            if (Entry->me.BadgeImage == NULL) {
+            StanzaEntry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
+            if (StanzaEntry->me.BadgeImage == NULL) {
                 // Set dummy image if badge was not found
-                Entry->me.BadgeImage = DummyImage (
+                StanzaEntry->me.BadgeImage = DummyImage (
                     GlobalConfig.IconSizes[ICON_SIZE_BADGE]
                 );
             }
@@ -1184,23 +1203,20 @@ LOADER_ENTRY * AddStanzaEntries (
             ALT_LOG(1, LOG_LINE_SPECIAL, L"***[ Add SubMenu Item(s) ]***");
             #endif
 
-            AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
+            AddSubmenu (StanzaEntry, File, CurrentVolume, TokenList[1]);
             AddedSubmenu = TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"disabled")) {
-            Entry->Enabled = FALSE;
         } // Set options to pass to the loader program - End
 
         FreeTokenLine (&TokenList, &TokenCount);
-    } // while Entry->Enabled
+    } // while StanzaEntry->Enabled
 
-    if (!Entry->Enabled) {
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
-        MY_FREE_POOL(LoadOptions     );
+    if (!StanzaEntry->Enabled) {
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) StanzaEntry);
         MY_FREE_POOL(OurEfiBootNumber);
+        MY_FREE_POOL(LoadOptions);
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"Entry is Disabled");
+        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"Stanza is Disabled");
         #endif
 
         return NULL;
@@ -1212,95 +1228,96 @@ LOADER_ENTRY * AddStanzaEntries (
         #endif
 
         // Set the boot loader filename
-        // DA-TAG: Avoid Memory Leak
-        MY_FREE_POOL(Entry->LoaderPath);
-        Entry->LoaderPath = StrDuplicate (LoaderToken);
+        MY_FREE_POOL(StanzaEntry->LoaderPath);
+        StanzaEntry->LoaderPath = StrDuplicate (LoaderToken);
 
-        SetLoaderDefaults (Entry, LoaderToken, CurrentVolume);
+        SetLoaderDefaults (StanzaEntry, LoaderToken, CurrentVolume);
         MY_FREE_POOL(LoaderToken);
 
         DefaultsSet = TRUE;
     }
 
     // Set Screen Title
-    if (!FirmwareBootNum && Entry->Volume->VolName != NULL) {
-        Entry->me.Title = PoolPrint (
+    if (!FirmwareBootNum && StanzaEntry->Volume->VolName != NULL) {
+        StanzaEntry->me.Title = PoolPrint (
             L"Load %s%s%s%s%s",
-            Entry->Title,
-            SetVolJoin (Entry->Title, TRUE                           ),
-            SetVolKind (Entry->Title, Volume->VolName, Volume->FSType),
-            SetVolFlag (Entry->Title, Volume->VolName                ),
-            SetVolType (Entry->Title, Volume->VolName, Volume->FSType)
+            StanzaEntry->Title,
+            SetVolJoin (StanzaEntry->Title, TRUE                           ),
+            SetVolKind (StanzaEntry->Title, Volume->VolName, Volume->FSType),
+            SetVolFlag (StanzaEntry->Title, Volume->VolName                ),
+            SetVolType (StanzaEntry->Title, Volume->VolName, Volume->FSType)
         );
     }
     else {
         if (!FirmwareBootNum) {
-            Entry->me.Title = PoolPrint (L"Load %s", Entry->Title);
+            StanzaEntry->me.Title = PoolPrint (L"Load %s", StanzaEntry->Title);
         }
         else {
             // Clear potentially wrongly set items
-            MY_FREE_POOL(Entry->InitrdPath   );
-            MY_FREE_POOL(Entry->LoaderPath   );
-            MY_FREE_POOL(Entry->EfiLoaderPath);
+            MY_FREE_POOL(StanzaEntry->InitrdPath   );
+            MY_FREE_POOL(StanzaEntry->LoaderPath   );
+            MY_FREE_POOL(StanzaEntry->EfiLoaderPath);
 
-            Entry->me.Title = PoolPrint (
+            StanzaEntry->me.Title = PoolPrint (
                 L"Load %s ... [Firmware Boot Number]",
-                Entry->Title
+                StanzaEntry->Title
             );
 
-            Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
+            StanzaEntry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
         }
     }
 
     // Set load options, if any
     // DA-TAG: Remove any previously set values first
-    MY_FREE_POOL(Entry->LoadOptions);
+    MY_FREE_POOL(StanzaEntry->LoadOptions);
     if (LoadOptions != NULL && StrLen (LoadOptions) > 0) {
-        Entry->LoadOptions = StrDuplicate (LoadOptions);
+        StanzaEntry->LoadOptions = StrDuplicate (LoadOptions);
     }
 
     if (AddedSubmenu) {
-        RetVal = GetMenuEntryReturn (&Entry->me.SubScreen);
+        RetVal = GetMenuEntryReturn (&StanzaEntry->me.SubScreen);
         if (!RetVal) {
-            FreeMenuScreen (&Entry->me.SubScreen);
+            FreeMenuScreen (&StanzaEntry->me.SubScreen);
         }
     }
 
-    if (Entry->InitrdPath != NULL   &&
-        StrLen (Entry->InitrdPath) > 0
+    if (StanzaEntry->InitrdPath != NULL   &&
+        StrLen (StanzaEntry->InitrdPath) > 0
     ) {
-        if (Entry->LoadOptions != NULL   &&
-            StrLen (Entry->LoadOptions) > 0
+        if (StanzaEntry->LoadOptions != NULL   &&
+            StrLen (StanzaEntry->LoadOptions) > 0
         ) {
-            MergeStrings (&Entry->LoadOptions, L"initrd=", L' '    );
-            MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+            MergeStrings (&StanzaEntry->LoadOptions, L"initrd=", L' ');
+            MergeStrings (&StanzaEntry->LoadOptions, StanzaEntry->InitrdPath, 0);
         }
         else {
-            if (Entry->LoadOptions != NULL    &&
-                StrLen (Entry->LoadOptions) == 0
+            if (StanzaEntry->LoadOptions != NULL    &&
+                StrLen (StanzaEntry->LoadOptions) == 0
             ) {
-                MY_FREE_POOL(Entry->LoadOptions);
+                MY_FREE_POOL(StanzaEntry->LoadOptions);
             }
 
-            Entry->LoadOptions = PoolPrint (
+            StanzaEntry->LoadOptions = PoolPrint (
                 L"initrd=%s",
-                Entry->InitrdPath
+                StanzaEntry->InitrdPath
             );
         }
 
-        MY_FREE_POOL(Entry->InitrdPath);
+        MY_FREE_POOL(StanzaEntry->InitrdPath);
     }
 
     if (!DefaultsSet) {
-        // No "loader" line ... use bogus one
+        // No "loader" line ... Set a bogus one
         SetLoaderDefaults (
-            Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume
+            StanzaEntry,
+            L"\\EFI\\BOOT\\bogusnemo.efi",
+            CurrentVolume
         );
     }
 
-    if (AllowGraphicsMode && Entry->me.Image == NULL) {
+    if (AllowGraphicsMode && StanzaEntry->me.Image == NULL) {
         // Still no icon ... set dummy image
-        Entry->me.Image = DummyImage (
+        StanzaEntry->me.Image = DummyImage (
             GlobalConfig.IconSizes[ICON_SIZE_BIG]
         );
     }
@@ -1308,7 +1325,7 @@ LOADER_ENTRY * AddStanzaEntries (
     MY_FREE_POOL(LoadOptions     );
     MY_FREE_POOL(OurEfiBootNumber);
 
-    return Entry;
+    return StanzaEntry;
 } // static VOID AddStanzaEntries()
 
 // Create an options file based on /etc/fstab. The resulting file has two options
@@ -1686,6 +1703,7 @@ EFI_STATUS RefitReadFile (
     CHAR16          *Message;
     UINT64           ReadSize;
 
+
     File->Buffer     = NULL;
     File->BufferSize =    0;
     *size            =    0;
@@ -1803,6 +1821,7 @@ UINTN ReadTokenLine (
     BOOLEAN  IsQuoted;
     CHAR16  *Line, *Token, *p;
     UINTN    TokenCount;
+
 
     *TokenList = NULL;
 
@@ -2146,8 +2165,8 @@ CHAR16 * GetFirstOptionsFromFile (
     IN REFIT_VOLUME *Volume
 ) {
     UINTN         TokenCount;
-    CHAR16       *Options;
     CHAR16      **TokenList;
+    CHAR16       *Options;
     REFIT_FILE   *File;
 
 
@@ -3404,19 +3423,6 @@ VOID ReadConfig (
                 GlobalConfig.SetAppleFB = (DeclineSetting) ? FALSE : TRUE;
             }
         }
-        else if (MyStriCmp (TokenList[0], L"handle_ventoy")) {
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                UpdatedToken = LogUpdate (
-                    TokenList[0], NotRunBefore, TRUE
-                );
-            }
-            #endif
-
-            GlobalConfig.HandleVentoy = HandleBoolean (
-                TokenList, TokenCount
-            );
-        }
         else if (MyStriCmp (TokenList[0], L"decline_help_icon")) {
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
@@ -4006,15 +4012,18 @@ VOID ReadConfig (
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
                 UpdatedToken = LogUpdate (
-                    TokenList[0], NotRunBefore, TRUE
+                    TokenList[0], NotRunBefore,
+                    (AppleFirmware) ? TRUE : FALSE
                 );
             }
             #endif
 
-            HandleString (
-                TokenList, TokenCount,
-                &(GlobalConfig.SpoofOSXVersion)
-            );
+            if (AppleFirmware) {
+                HandleString (
+                    TokenList, TokenCount,
+                    &(GlobalConfig.SpoofOSXVersion)
+                );
+            }
         }
         else if (MyStriCmp (TokenList[0], L"support_gzipped_loaders")) {
             #if REFIT_DEBUG > 0

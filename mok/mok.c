@@ -52,9 +52,9 @@
 
 #include "global.h"
 #include "mok.h"
-#include "../include/refit_call_wrapper.h"
 #include "../BootMaster/lib.h"
 #include "../BootMaster/screenmgt.h"
+#include "../include/refit_call_wrapper.h"
 
 BOOLEAN ShimFound  = FALSE;
 BOOLEAN SecureFlag = FALSE;

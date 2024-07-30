@@ -94,6 +94,7 @@ BOOLEAN line_edit (
     EFI_INPUT_KEY key;
     UINTN         i;
 
+
     DrawScreenHeader (L"Line Editor");
     REFIT_CALL_3_WRAPPER(
         gST->ConOut->SetCursorPosition, gST->ConOut,

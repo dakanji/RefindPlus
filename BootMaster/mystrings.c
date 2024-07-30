@@ -1206,6 +1206,36 @@ BOOLEAN IsInSubstring (
     return IsListItemSubstringIn (BigString, List);
 } // BOOLEAN IsInSubstring()
 
+// Returns TRUE if TestString matches a pattern in the comma-delimited List,
+// FALSE otherwise.
+BOOLEAN IsListMatch (
+    IN CHAR16 *TestString,
+    IN CHAR16 *List
+) {
+    UINTN     i;
+    BOOLEAN   Found;
+    CHAR16   *OnePattern;
+
+
+    if (TestString == NULL || List == NULL) {
+        return FALSE;
+    }
+
+    i     =     0;
+    Found = FALSE;
+    while (
+        !Found &&
+        (OnePattern = FindCommaDelimited (List, i++)) != NULL
+    ) {
+        if (RefitMetaiMatch (TestString, OnePattern)) {
+            Found = TRUE;
+        }
+        MY_FREE_POOL(OnePattern);
+    } // while
+
+   return Found;
+} // BOOLEAN IsListMatch()
+
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.
 BOOLEAN IsListItem (

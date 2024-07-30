@@ -24,14 +24,15 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
 
-#include "../BootMaster/screenmgt.h"
-#include "../BootMaster/rp_funcs.h"
 #include "lodepng.h"
+#include "../BootMaster/rp_funcs.h"
+#include "../BootMaster/screenmgt.h"
+#include "../include/refit_call_wrapper.h"
 
 typedef struct _lode_color {
    UINT8 red;
@@ -39,6 +40,7 @@ typedef struct _lode_color {
    UINT8 blue;
    UINT8 alpha;
 } lode_color;
+
 
 static
 size_t report_size (
@@ -93,45 +95,43 @@ VOID * lodepng_refit_realloc (
     new_pool = lodepng_refit_malloc (new_size);
     if (new_pool && ptr) {
         old_size = report_size (ptr);
-        CopyMem (new_pool, ptr, (old_size < new_size) ? old_size : new_size);
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, new_pool,
+            ptr, (old_size < new_size) ? old_size : new_size
+        );
     }
 
     return new_pool;
 } // VOID * lodepng_refit_realloc()
 
-// Finds length of ASCII string, which MUST be NULL-terminated.
-int MyStrlen (
-    const char *InString
-) {
-    int Length;
-
-    Length = 0;
-    if (InString) {
-        while (InString[Length] != '\0') {
-            Length++;
-        }
-    }
-
-    return Length;
-} // int MyStrlen()
-
+// DA-TAG: Investigate This
+//         Why does this live here?
+//         Only used in nanojpeg.c
 VOID * MyMemSet (
     VOID   *s,
     int     c,
     size_t  n
 ) {
-    // DA-TAG: Changed order of params
-    SetMem(s, n, c);
+    REFIT_CALL_3_WRAPPER(
+        gBS->SetMem, s,
+        c, n
+    );
 
     return s;
 } // VOID * MyMemSet()
 
+// DA-TAG: Investigate This
+//         Why does this live here?
+//         Only used in nanojpeg.c
 VOID * MyMemCpy (
-    VOID       *__restrict __dest,
-    const VOID *__restrict __src,
-    size_t      __n
+    VOID   *__restrict __dest,
+    VOID   *__restrict __src,
+    size_t  __n
 ) {
-    CopyMem (__dest, __src, __n);
+    REFIT_CALL_3_WRAPPER(
+        gBS->CopyMem, __dest,
+        __src, __n
+    );
 
     return __dest;
 } // VOID * MyMemCpy

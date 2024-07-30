@@ -76,7 +76,7 @@ jobs:
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!NOTE]
             > ${{ github.event.inputs.more_info }}
@@ -94,7 +94,7 @@ jobs:
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!CAUTION]
             > ${{ github.event.inputs.more_info }}
@@ -112,7 +112,7 @@ jobs:
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             Thank you for taking the time to report a problem with RefindPlus.
 

@@ -1275,11 +1275,11 @@
 #
 #spoof_osx_version 10.9
 
-# By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
-# devices. However, this does not always detect all available devices and
-# in such cases, this option triggers a forced scan and modification of
-# nvRAM variables on each boot. This option has no effect on Macs or
-# when no BIOS-mode options have been set via the "scanfor" option.
+# RefindPlus relies on the uEFI firmware to detect legacy BIOS boot
+# devices but this may not always detect all such available devices.
+# In such cases, this option triggers a forced scan and modification
+# of nvRAM variables on each boot. This option has no effect on Macs
+# or when legacy BIOS boot options are not set in the 'scanfor' token.
 #
 # Inactive when commented out (Does not result in a forced scan)
 #
@@ -1292,12 +1292,12 @@
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
-# Write to systemd UEFI variables (currently only LoaderDevicePartUUID)
+# Set 'systemd' nvRAM variables (currently only LoaderDevicePartUUID)
 # when launching Linux via an EFI stub loader, ELILO, or GRUB. This
 # variable, when present, causes systemd to mount the ESP at /boot
 # *IF* that directory is empty and nothing else is mounted there.
 #
-# Inactive when commented out (No systemd mount attempt)
+# Inactive when commented out (No nvRAM variable write attempt)
 #
 #write_systemd_vars
 
@@ -1417,7 +1417,7 @@ menuentry "Arch Linux" {
     }
 }
 
-# A sample entry for loading Ubuntu using its standard name for
+# A sample entry for loading Ubuntu using the standard name for
 # its GRUB 2 bootloader. Note use of Linux-style forward slashes
 #
 menuentry Ubuntu {
@@ -1458,9 +1458,9 @@ menuentry "Windows via shell script" {
     options "fs0:\EFI\tools\launch_windows.nsh"
 }
 
-# macOS is normally detected and run automatically; however,
+# macOS is normally detected and run automatically. However,
 # a manual boot stanza may permit customisation. This example
-# does nothing very unusual, but may serve as a start point.
+# does nothing very unusual but may serve as a start point.
 # Note that the "volume" line in the example will almost
 # certainly need modification for it to actually work.
 #

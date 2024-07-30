@@ -8,13 +8,26 @@
 - Fixes `ScanFirmwareDefined` Handling
   * Spurious items were added (Typically as firmware shell instances ... Thanks @emperor06)
   * This bug was introduced in v0.14.0.AC (Commit aad3298)
+- Fixes Jpeg Image Handling
+  * Garbled images were output
+  * This bug was introduced in v0.14.1.AA (Commit 3ae51e9)
+    - This reversed the order of two parameters in `MyMemSet` as part of an upstream sync
+      * `#define memset MyMemSet` to `#define memset(b, c, v) MyMemSet(b, v, c)` in `libeg/nanojpeg.c`
+    - These parameters had already been reversed elsewhere in v0.13.2.AG (Commit 2d8ab59)
+      * Ported from downstream: https://github.com/joevt/RefindPlus/commit/266fd8f
+    - The changes invalidated each other
 - Improves `Misc` Handling
   * Some entry types were mislabelled as `Linux`
   * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
+  * Now limits `spoof_osx_version` to Apple firmware to match documentation
   * No longer attempts to clear the `opencore-version` variable when booting into macOS
     - This variable is actually only stored in a volatile state
   * Addressed misc static analysis flags
     - These apply to some filesystem drivers; which are updated accordingly
+- Amends `Ventoy` Handling
+  * Instances are now automatically detected and processed
+    - Hence, specific handling is no longer user configurable
+    - The associated `handle_ventoy` configuration token is now removed and ignored if set
 
 
 0.14.1.AA (04 Jun 2024):

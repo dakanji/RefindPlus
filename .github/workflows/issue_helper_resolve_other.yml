@@ -74,7 +74,7 @@ jobs:
             This item has been resolved.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!NOTE]
             > ${{ github.event.inputs.more_info }}
@@ -90,7 +90,7 @@ jobs:
             This item has been resolved.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!CAUTION]
             > ${{ github.event.inputs.more_info }}
@@ -106,7 +106,7 @@ jobs:
             This item has been resolved.
 
             The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
-            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of new releases.
+            See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
         id: part_2a

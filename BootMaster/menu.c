@@ -129,9 +129,18 @@ extern BOOLEAN             OneMainLoop;
 extern EFI_GUID            RefindPlusGuid;
 
 
-//
-// Graphics helper functions
-//
+#if REFIT_DEBUG > 0
+VOID LogExit (
+    IN  UINTN       MenuExit,
+    IN  const char  FunctionName[],
+    IN  CHAR16     *ChosenOptionTitle
+) {
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) in '%a' Function from the \"%s\" Option in Menu Screen",
+        MenuExit, MenuExitInfo (MenuExit), FunctionName, ChosenOptionTitle
+    );
+}
+#endif
 
 static
 VOID InitSelection (VOID) {
@@ -267,10 +276,6 @@ VOID InitSelection (VOID) {
     MY_FREE_IMAGE(TempSmallImage);
     MY_FREE_IMAGE(TempBigImage);
 } // static VOID InitSelection()
-
-//
-// Scrolling functions
-//
 
 static
 VOID InitScroll (
@@ -2881,7 +2886,6 @@ VOID DisplaySimpleMessage (
     REFIT_MENU_ENTRY  *ChosenOption;
 
     #if REFIT_DEBUG > 0
-    CHAR16            *TypeMenuExit;
     CHAR16            *MsgStr;
     #endif
 
@@ -2931,15 +2935,7 @@ VOID DisplaySimpleMessage (
     );
 
     #if REFIT_DEBUG > 0
-    // DA-TAG: Run check on MenuExit for Coverity
-    //         L"UNKNOWN!!" is never reached
-    //         Constant ... Do Not Free
-    TypeMenuExit = (MenuExit < 0) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
-
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'DisplaySimpleMessage' Function from the '%s' Option in Menu Screen",
-        MenuExit, TypeMenuExit, Title
-    );
+    LogExit (MenuExit, __func__, Title);
     #endif
 
     FreeMenuScreen (&SimpleMessageMenu);
@@ -3147,10 +3143,7 @@ VOID ManageHiddenTags (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'ManageHiddenTags' Function from the '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
+        LogExit (MenuExit, __func__, ChosenOption->Title);
         #endif
 
         // Previously unset defaults
@@ -3344,10 +3337,7 @@ BOOLEAN HideEfiTag (
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'HideEfiTag' Function from the '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
+        LogExit (MenuExit, __func__, ChosenOption->Title);
         #endif
 
         if (MenuExit != MENU_EXIT_ENTER        ||
@@ -3437,10 +3427,7 @@ BOOLEAN HideFirmwareTag (
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'HideFirmwareTag' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit != MENU_EXIT_ENTER        ||
@@ -3531,10 +3518,7 @@ BOOLEAN HideLegacyTag (
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'HideLegacyTag' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit != MENU_EXIT_ENTER        ||
@@ -3749,10 +3733,7 @@ UINTN AbortSyncTrust (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'AbortSyncTrust' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit == MENU_EXIT_ESCAPE) {
@@ -3814,10 +3795,7 @@ BOOLEAN ConfirmSyncNVram (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmSyncNVram' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit == MENU_EXIT_ENTER &&
@@ -3922,10 +3900,7 @@ BOOLEAN ConfirmRotate (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmRotate' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit != MENU_EXIT_ENTER ||
@@ -4000,10 +3975,7 @@ BOOLEAN ConfirmRestart (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmRestart' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit == MENU_EXIT_ENTER &&
@@ -4069,10 +4041,7 @@ BOOLEAN ConfirmShutdown (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmShutdown' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     #endif
 
     if (MenuExit == MENU_EXIT_ENTER &&
@@ -4208,10 +4177,7 @@ UINTN RunMainMenu (
         );
 
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) in 'RunMainMenu' Function from the '%s' Option in Menu Screen",
-            MenuExit, MenuExitInfo (MenuExit), TempChosenOption->Title
-        );
+        LogExit (MenuExit, __func__, TempChosenOption->Title);
         #endif
 
         BREAD_CRUMB(L"%a:  9a 2", __func__);
@@ -4240,8 +4206,8 @@ UINTN RunMainMenu (
                 BREAD_CRUMB(L"%a:  9a 3a 1b 2", __func__);
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Returned '%d' (%s) in 'RunMainMenu' from DrawMenuScreen Call on SubScreen",
-                    MenuExit, MenuExitInfo (MenuExit)
+                    L"Returned '%d' (%s) in '%a' Function from DrawMenuScreen Call on SubScreen",
+                    MenuExit, MenuExitInfo (MenuExit), __func__
                 );
                 #endif
 
@@ -4480,13 +4446,16 @@ VOID FreeLoaderEntry (
 VOID FreeMenuEntry (
     REFIT_MENU_ENTRY **Entry
 ) {
-    CHAR16 *TagType;
+    #if REFIT_DEBUG > 1
+    CHAR16            *TagType;
+    #endif
+
     typedef enum {
         EntryTypeRefitMenuEntry,
         EntryTypeLoaderEntry,
         EntryTypeLegacyEntry,
     } ENTRY_TYPE;
-    ENTRY_TYPE EntryType;
+    ENTRY_TYPE       EntryType;
 
 
     if (*Entry == NULL) {
@@ -4500,14 +4469,26 @@ VOID FreeMenuEntry (
 
     BREAD_CRUMB(L"%a:  2", __func__);
     switch ((*Entry)->Tag) {
-        case TAG_TOOL:            EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_TOOL"           ; break;
-        case TAG_LOADER:          EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_LOADER"         ; break;
-        case TAG_LEGACY:          EntryType = EntryTypeLegacyEntry   ;  TagType = L"TAG_LEGACY"         ; break;
-        case TAG_LEGACY_UEFI:     EntryType = EntryTypeLegacyEntry   ;  TagType = L"TAG_LEGACY_UEFI"    ; break;
-        case TAG_RESET_NVRAM:     EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_RESET_NVRAM"    ; break;
-        case TAG_FIRMWARE_LOADER: EntryType = EntryTypeLoaderEntry   ;  TagType = L"TAG_FIRMWARE_LOADER"; break;
-        default:                  EntryType = EntryTypeRefitMenuEntry;  TagType = L"DEFAULT"            ; break;
+        case TAG_TOOL:            EntryType = EntryTypeLoaderEntry   ;  break;
+        case TAG_LOADER:          EntryType = EntryTypeLoaderEntry   ;  break;
+        case TAG_LEGACY:          EntryType = EntryTypeLegacyEntry   ;  break;
+        case TAG_LEGACY_UEFI:     EntryType = EntryTypeLegacyEntry   ;  break;
+        case TAG_RESET_NVRAM:     EntryType = EntryTypeLoaderEntry   ;  break;
+        case TAG_FIRMWARE_LOADER: EntryType = EntryTypeLoaderEntry   ;  break;
+        default:                  EntryType = EntryTypeRefitMenuEntry;  break;
     }
+
+    #if REFIT_DEBUG > 1
+    switch ((*Entry)->Tag) {
+        case TAG_TOOL:            TagType = L"TAG_TOOL"           ; break;
+        case TAG_LOADER:          TagType = L"TAG_LOADER"         ; break;
+        case TAG_LEGACY:          TagType = L"TAG_LEGACY"         ; break;
+        case TAG_LEGACY_UEFI:     TagType = L"TAG_LEGACY_UEFI"    ; break;
+        case TAG_RESET_NVRAM:     TagType = L"TAG_RESET_NVRAM"    ; break;
+        case TAG_FIRMWARE_LOADER: TagType = L"TAG_FIRMWARE_LOADER"; break;
+        default:                  TagType = L"DEFAULT"            ; break;
+    }
+    #endif
 
     BREAD_CRUMB(L"%a:  3", __func__);
     if (EntryType == EntryTypeLoaderEntry) {
@@ -4519,7 +4500,7 @@ VOID FreeMenuEntry (
         FreeLegacyEntry ((LEGACY_ENTRY **) Entry);
     }
     else {
-        BREAD_CRUMB(L"%a:  3b 1 - EntryType = EntryTypeRefitMenuEntry ... TagType = '%s'", __func__, TagType);
+        BREAD_CRUMB(L"%a:  3c 1 - EntryType = EntryTypeRefitMenuEntry ... TagType = '%s'", __func__, TagType);
         MY_FREE_POOL((*Entry)->Title);
         MY_FREE_IMAGE((*Entry)->Image);
         MY_FREE_IMAGE((*Entry)->BadgeImage);

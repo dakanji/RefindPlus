@@ -183,10 +183,14 @@ CHAR16 * FindLastDirName (IN CHAR16 *Path);
 CHAR16 * StripEfiExtension (IN CHAR16 *FileName);
 CHAR16 * GetVolumeName (IN REFIT_VOLUME *Volume);
 CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
+CHAR16 * RefitGetBootPathName (
+    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+);
 
 BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);
+BOOLEAN RefitMetaiMatch (IN CHAR16 *String, IN CHAR16 *Pattern);
 BOOLEAN FindVolume (IN REFIT_VOLUME **Volume, IN CHAR16 *Identifier);
 BOOLEAN FileExists (IN EFI_FILE_PROTOCOL *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);

@@ -52,12 +52,12 @@
 #include "gpt.h"
 #include "lib.h"
 #include "scan.h"
-#include "config.h"
 #include "apple.h"
+#include "config.h"
 #include "screenmgt.h"
 #include "mystrings.h"
-#include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
+#include "../include/refit_call_wrapper.h"
 
 #ifdef __MAKEWITH_GNUEFI
 #define EfiReallocatePool ReallocatePool
@@ -186,6 +186,17 @@ extern EFI_GUID             RefindPlusOldGuid;
 extern EFI_GUID             RefindPlusGuid;
 extern BOOLEAN              ScanningLoaders;
 
+extern
+UINTN OcFileDevicePathFullNameSize (
+    IN const EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+);
+extern
+VOID OcFileDevicePathFullName (
+    OUT CHAR16                      *PathName,
+    IN  CONST FILEPATH_DEVICE_PATH  *FilePath,
+    IN  UINTN                       PathNameSize
+);
+
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
 
@@ -204,7 +215,8 @@ extern BOOLEAN              ScanningLoaders;
 #define BUT_JOIN_TXT           L" but "
 #define UNKNOWN_OS             L"Unknown OS"
 
-#define NAME_FIX(Name) FindSubStr ((*Volume)->VolName, Name)) VolumeName = Name
+#define NAME_FIX(Name) FindSubStr  ((*Volume)->VolName, Name)) VolumeName = Name
+#define FAT_NAME(Name) MyStrBegins (Name, (*Volume)->VolName)) VolumeName = Name
 
 
 // DA-TAG: Stash here for later use
@@ -415,6 +427,79 @@ VOID ReinitVolume (
         }
     }
 } // static VOID ReinitVolume()
+
+
+/**
+ * The RefitGetBootPathName function below is derived from the OpenCore Project
+ * Copyright (C) 2019, vit9696
+ *
+ * All rights reserved.
+ *
+ * This program and the accompanying materials
+ * are licensed and made available under the terms and conditions of the BSD License
+ * which accompanies this distribution.  The full text of the license may be found at
+ * http://opensource.org/licenses/bsd-license.php
+ *
+ * THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+**/
+/**
+ * Modified for RefindPlus
+ * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+**/
+CHAR16 * RefitGetBootPathName (
+    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+) {
+    UINTN                            Len;
+    UINTN                            PathNameSize;
+    CHAR16                          *FilePathName;
+    CHAR16                          *PathName;
+    CHAR16                          *Slash;
+
+
+    if (DevicePathType    (DevicePath) != MEDIA_DEVICE_PATH ||
+        DevicePathSubType (DevicePath) != MEDIA_FILEPATH_DP
+    ) {
+        PathName = AllocateZeroPool (sizeof (L"\\"));
+        if (PathName != NULL) {
+            StrCpyS (PathName, sizeof (L"\\"), L"\\");
+        }
+
+        // Early Return ... Return Output ... Could be NULL
+        return PathName;
+    }
+
+    PathNameSize = OcFileDevicePathFullNameSize (DevicePath);
+
+    PathName = AllocateZeroPool (PathNameSize);
+    if (PathName == NULL) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    OcFileDevicePathFullName (
+        PathName,
+        (FILEPATH_DEVICE_PATH *) DevicePath,
+        PathNameSize
+    );
+
+    Slash = MyStrStr (PathName, L"\\");
+
+    if (Slash != NULL) {
+        Len = StrLen (PathName);
+
+        FilePathName = &PathName[Len - 1];
+
+        while (*FilePathName != L'\\') {
+            *FilePathName = L'\0';
+            --FilePathName;
+        }
+    }
+
+    return PathName;
+} // CHAR16 * RefitGetBootPathName
 
 // Converts forward slashes to backslashes, removes duplicate slashes, and
 // removes slashes from both the start and end of the pathname.
@@ -1021,13 +1106,13 @@ VOID SanitiseVolumeName (
         else if (NAME_FIX(L"Unknown Volume"              );
         else if (NAME_FIX(L"NTFS Volume"                 );
         else if (NAME_FIX(L"HFS+ Volume"                 );
-        else if (NAME_FIX(L"FAT Volume"                  );
+        else if (FAT_NAME(L"FAT Volume"                  ); // Special Case
         else if (NAME_FIX(L"XFS Volume"                  );
         else if (NAME_FIX(L"PreBoot"                     );
         else if (NAME_FIX(L"Ext4 Volume"                 );
         else if (NAME_FIX(L"Ext3 Volume"                 );
         else if (NAME_FIX(L"Ext2 Volume"                 );
-        else if (NAME_FIX(L"ExFAT Volume"                );
+        else if (FAT_NAME(L"ExFAT Volume"                ); // Special Case
         else if (NAME_FIX(L"BTRFS Volume"                );
         else if (NAME_FIX(L"ReiserFS Volume"             );
         else if (NAME_FIX(L"ISO-9660 Volume"             );
@@ -1201,27 +1286,31 @@ CHAR16 * FSTypeName (
     MY_MUTELOGGER_OFF;
     #endif
 
+    i = 0;
+    FoundVentoy = FALSE;
+    while (
+        !FoundVentoy &&
+        (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
+    ) {
+        if (MyStrBegins (VentoyName, Volume->VolName)) {
+            GlobalConfig.HandleVentoy = FoundVentoy = TRUE;
+        }
+
+        MY_FREE_POOL(VentoyName);
+
+        if (FoundVentoy && MyStriCmp (retval, L"Unknown")) {
+            return L"ExFAT (Assumed)";
+        }
+    } // while
+
     if (!MyStriCmp (retval, L"Unknown")) {
         return retval;
     }
 
-    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) {
-        i = 0;
-        FoundVentoy = FALSE;
-        while (
-            !FoundVentoy              &&
-            GlobalConfig.HandleVentoy &&
-            (VentoyName = FindCommaDelimited (VENTOY_NAMES, i++)) != NULL
-        ) {
-            if (MyStrBegins (VentoyName, Volume->VolName)) {
-                FoundVentoy = TRUE;
-            }
-
-            MY_FREE_POOL(VentoyName);
-        } // while
-
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData)) {
         retval = (FoundVentoy) ? L"ExFAT (Assumed)" : L"NTFS (Assumed)";
     }
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) retval = L"NTFS (Assumed)"  ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) retval = L"NTFS (Assumed)"  ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks      )) retval = L"LUKS Encrypted"  ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn )) retval = L"Apple Raid (ON)" ;
@@ -1281,7 +1370,10 @@ VOID SetFilesystemData (
     UINT16   *Magic16;
     char     *MagicString;
 
-    if (Buffer == NULL || Volume == NULL) {
+
+    if (Buffer == NULL ||
+        Volume == NULL
+    ) {
         return;
     }
 
@@ -3771,7 +3863,6 @@ VOID DirIterOpen (
 EFI_UNICODE_COLLATION_PROTOCOL * OcUnicodeCollationEngInstallProtocol (IN BOOLEAN  Reinstall);
 #endif
 
-static
 BOOLEAN RefitMetaiMatch (
     IN CHAR16 *String,
     IN CHAR16 *Pattern
@@ -3781,6 +3872,7 @@ BOOLEAN RefitMetaiMatch (
 #elif defined(__MAKEWITH_TIANO)
     EFI_STATUS Status;
     static EFI_UNICODE_COLLATION_PROTOCOL *UnicodeCollationEng = NULL;
+
 
     if (UnicodeCollationEng == NULL) {
         UnicodeCollationEng = OcUnicodeCollationEngInstallProtocol (GlobalConfig.UnicodeCollation);
@@ -3804,7 +3896,7 @@ BOOLEAN RefitMetaiMatch (
 #endif
 
     return FALSE;
-} // static BOOLEAN RefitMetaiMatch()
+} // BOOLEAN RefitMetaiMatch()
 
 BOOLEAN DirIterNext (
     IN  OUT REFIT_DIR_ITER  *DirIter,

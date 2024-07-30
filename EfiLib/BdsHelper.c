@@ -22,9 +22,9 @@
 
 #include "BdsHelper.h"
 #include "legacy.h"
-#include "mystrings.h"
-#include "../BootMaster/screenmgt.h"
 #include "../BootMaster/lib.h"
+#include "../BootMaster/mystrings.h"
+#include "../BootMaster/screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
 EFI_GUID gEfiLegacyBootProtocolGuid = { 0xdb9a1e3d, 0x45cb, 0x4abb, \
@@ -86,7 +86,7 @@ VOID UpdateBbsTable (
 
         // Set devices of a particular type to BootPriority of 0 or 1. 0 is the highest priority.
         if (LocalBbsTable[Idx].DeviceType == OptionBBS->DeviceType) {
-            if (MyStriCmp(Desc, Option->Description)) {
+            if (MyStriCmp (Desc, Option->Description)) {
                 // This entry exactly matches what we are looking for; make it highest priority
                 LocalBbsTable[Idx].BootPriority = 0;
             }
@@ -114,7 +114,7 @@ VOID UpdateBbsTable (
 
 **/
 EFI_STATUS BdsLibDoLegacyBoot (
-    IN  BDS_COMMON_OPTION *Option
+    IN  BDS_COMMON_OPTION     *Option
 ) {
     EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
@@ -131,7 +131,7 @@ EFI_STATUS BdsLibDoLegacyBoot (
         return EFI_UNSUPPORTED;
     }
 
-    UpdateBbsTable(Option);
+    UpdateBbsTable (Option);
 
     Status = REFIT_CALL_4_WRAPPER(
         LegacyBios->LegacyBoot, LegacyBios,

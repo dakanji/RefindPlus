@@ -66,7 +66,6 @@ extern BOOLEAN            DisplayLoader;
 extern EG_PIXEL           StdBackgroundPixel;
 extern REFIT_MENU_SCREEN *MainMenu;
 
-
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateHandle gBS->LocateHandleBuffer
 #define DevicePathProtocol gEfiDevicePathProtocolGuid
@@ -177,7 +176,7 @@ EFI_STATUS ActivateMbrPartition (
     }
 
     if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
-        // Safety measure #1
+        // Safety Measure #1
         return EFI_NOT_FOUND;
     }
 
@@ -207,7 +206,7 @@ EFI_STATUS ActivateMbrPartition (
     ExtBase = 0;
     for (i = 0; i < 4; i++) {
         if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80) {
-            // Safety measure #2
+            // Safety Measure #2
             return EFI_NOT_FOUND;
         }
 
@@ -235,9 +234,9 @@ EFI_STATUS ActivateMbrPartition (
     }
 
     if (PartitionIndex >= 4) {
-        // We have to activate a logical partition ... so walk the EMBR chain
-
-        // NOTE: ExtBase was set above while looking at the MBR table
+        // Must activate a logical partition ... Walk the EMBR chain
+        //
+        // NB: ExtBase was set above while looking at the MBR table
         for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
             // Read current EMBR
             Status = REFIT_CALL_5_WRAPPER(
@@ -250,11 +249,11 @@ EFI_STATUS ActivateMbrPartition (
             }
 
             if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
-                // Safety measure #3
+                // Safety Measure #3
                 return EFI_NOT_FOUND;
             }
 
-            // Scan EMBR, set appropriate partition active
+            // Scan EMBR ... Set appropriate partition active
             NextExtCurrent = 0;
             LogicalPartitionIndex = 4;
             MbrTableEx = (MBR_PARTITION_INFO *) (SectorBuffer + 446);
@@ -262,7 +261,7 @@ EFI_STATUS ActivateMbrPartition (
                 if (MbrTableEx[i].Flags != 0x00 &&
                     MbrTableEx[i].Flags != 0x80
                 ) {
-                    // Safety measure #4
+                    // Safety Measure #4
                     return EFI_NOT_FOUND;
                 }
 
@@ -273,7 +272,7 @@ EFI_STATUS ActivateMbrPartition (
                 }
 
                 if (IS_EXTENDED_PART_TYPE(MbrTableEx[i].Type)) {
-                    // link to next EMBR
+                    // Link to next EMBR
                     NextExtCurrent = ExtBase + MbrTableEx[i].StartLBA;
                     MbrTableEx[i].Flags = (PartitionIndex >= LogicalPartitionIndex)
                         ? 0x80 : 0x00;
@@ -288,7 +287,7 @@ EFI_STATUS ActivateMbrPartition (
                 LogicalPartitionIndex++;
             }
 
-            // Write current EMBR
+            // Write Current EMBR
             Status = REFIT_CALL_5_WRAPPER(
                 BlockIO->WriteBlocks, BlockIO,
                 BlockIO->Media->MediaId, ExtCurrent,
@@ -343,6 +342,7 @@ VOID ExtractLegacyLoaderPaths (
     EFI_HANDLE                            Handle;
     EFI_DEVICE_PATH_PROTOCOL             *DevicePath;
     EFI_LOADED_IMAGE_PROTOCOL            *LoadedImage;
+
 
     MaxPaths--;  // leave space for the terminating NULL pointer
 
@@ -443,6 +443,7 @@ EFI_STATUS StartLegacyImageList (
     EFI_HANDLE                        ChildImageHandle;
     EFI_LOADED_IMAGE_PROTOCOL        *ChildLoadedImage;
     UINTN                             DevicePathIndex;
+
 
     if (ErrorInStep != NULL) {
         *ErrorInStep = 0;
@@ -562,6 +563,7 @@ VOID StartLegacy (
         Entry->Volume->OSIconName,
         L"legacy", TRUE
     );
+
     BREAD_CRUMB(L"%a:  4", __func__);
     if (BootLogoImage != NULL) {
         BREAD_CRUMB(L"%a:  4a 1", __func__);
@@ -610,6 +612,7 @@ VOID StartLegacy (
         Entry->LoadOptions,
         &ErrorInStep
     );
+
     BREAD_CRUMB(L"%a:  10", __func__);
     if (Status == EFI_NOT_FOUND) {
         BREAD_CRUMB(L"%a:  10a 1", __func__);
@@ -825,7 +828,7 @@ VOID AddLegacyEntry (
     }
 
     SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-    SubScreen->Title  = PoolPrint (
+    SubScreen->Title = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         LoaderTitle,
         SetVolJoin (LoaderTitle, TRUE                   ),
@@ -1030,7 +1033,6 @@ VOID ScanLegacyUEFI (
         ? LOG_STAR_HEAD_SEP
         : LOG_LINE_THIN_SEP;
 
-    /* Exception for LOG_LINE_THIN_SEP */
     ALT_LOG(1, LogLineType, L"'UEFI-Style' Legacy Boot Options");
     #endif
 
@@ -1354,7 +1356,6 @@ VOID ScanLegacyDisc (VOID) {
             }
          } // for
     }
-
     FirstLegacyScan = FALSE;
 
     #if REFIT_DEBUG > 0

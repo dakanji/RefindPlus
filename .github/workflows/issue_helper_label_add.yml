@@ -158,7 +158,7 @@ jobs:
             > The template indicates these should be under Discussions.
             > The guidance in the template appears to have been ignored.
 
-            Please use Discussions for similar items in future.
+            Please use the Discussions Option for similar items in future.
 
             Thank you.
 
@@ -172,8 +172,6 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
             This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
-
-            Thank you.
 
       - name: Label - Add - Discussion - 4
         id: remove-labels

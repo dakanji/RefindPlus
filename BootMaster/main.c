@@ -213,6 +213,7 @@ REFIT_CONFIG GlobalConfig = {
 
 
 UINTN                  AppleFramebuffers    =                     0;
+UINTN                  EfiMajorVersion      =                     0;
 UINT32                 AccessFlagsBoot      =     ACCESS_FLAGS_BOOT;
 UINT32                 AccessFlagsFull      =     ACCESS_FLAGS_FULL;
 CHAR16                *ArchType             =                  NULL;
@@ -1884,10 +1885,7 @@ BOOLEAN ShowCleanNvramInfo (
     MenuExit = DrawMenuScreen (CleanNvramInfoMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ShowCleanNvramInfo' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
+    LogExit (MenuExit, __func__, ChosenOption->Title);
     LOG_MSG("Received User Input:");
     LOG_MSG("%s  - %s", OffsetNext, ChosenOption->Title);
     #endif
@@ -1973,8 +1971,8 @@ VOID AboutRefindPlus (VOID) {
         AboutMenu,
         PoolPrint (
             L"EFI Version   : %s %d.%02d%s",
-            ((gST->Hdr.Revision >> 16U) > 1) ? L"UEFI" : L"EFI",
-            gST->Hdr.Revision >> 16U,
+            (EfiMajorVersion > 1) ? L"UEFI" : L"EFI",
+            EfiMajorVersion,
             gST->Hdr.Revision & ((1 << 16) - 1),
             (WarnVersionEFI)
                 ? L" (Spoofed by Others)"
@@ -1983,18 +1981,9 @@ VOID AboutRefindPlus (VOID) {
         ),
         TRUE
     );
-    AddMenuInfoLine (
-        AboutMenu,
-        PoolPrint (
-            L"Secure Boot   : %s",
-            (SecureFlag)
-                ? (ShimFound) ? L"Active and Shim Present"   : L"Active but Shim Absent"
-                : (ShimFound) ? L"Inactive but Shim Present" : L"Inactive and Shim Absent"
-        ),
-        TRUE
-    );
+
     if (!AppleFirmware && !HasMacOS) {
-        TmpStr = StrDuplicate (L"Absent");
+        TmpStr = StrDuplicate (L"Not Applicable");
     }
     else {
         #if REFIT_DEBUG > 0
@@ -2027,8 +2016,19 @@ VOID AboutRefindPlus (VOID) {
             LimitStringLength (TmpStr, (MAX_LINE_LENGTH - 16));
         }
     }
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR for macOS : %s", TmpStr),                  TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"CSR Setting   : %s", TmpStr),                  TRUE);
     MY_FREE_POOL(TmpStr);
+
+    AddMenuInfoLine (
+        AboutMenu,
+        PoolPrint (
+            L"Secure Boot   : %s",
+            (SecureFlag)
+                ? (ShimFound) ? L"Active and Shim Present"   : L"Active but Shim Absent"
+                : (ShimFound) ? L"Inactive but Shim Present" : L"Inactive and Shim Absent"
+        ),
+        TRUE
+    );
 
     TmpStr = egScreenDescription();
     // More than ~65 causes empty info page on 800x600 display ... '16' is current preamble length
@@ -2091,7 +2091,7 @@ EFI_STATUS GetHardwareNvramVariable (
         VendorGuid, NULL,
         &BufferSize, TmpBuffer
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR(Status) || BufferSize < 1) {
         MY_FREE_POOL(TmpBuffer);
         *VariableData = NULL;
         *VariableSize = 0;
@@ -2100,7 +2100,7 @@ EFI_STATUS GetHardwareNvramVariable (
     }
 
     *VariableData = TmpBuffer;
-    *VariableSize = (BufferSize != 0) ? BufferSize : 0;
+    *VariableSize = BufferSize;
 
     return EFI_SUCCESS;
 } // EFI_STATUS GetHardwareNvramVariable()
@@ -2617,23 +2617,20 @@ VOID LogRevisionInfo (
         LOG_MSG(" (HeaderSize %d ... %d CompileSize)", Hdr->HeaderSize, CompileSize);
     }
 } // static VOID LogRevisionInfo()
-#endif
 
-// Log basic information (RefindPlus version, EFI version, etc.) to the log file.
-// Also sets some variables that may be needed later
+// Log basic information to the log file.
 static
-VOID LogBasicInfo (VOID) {
-    UINTN  EfiMajorVersion;
-
-#if REFIT_DEBUG > 0
+VOID LogBasicInfo (
+    BOOLEAN     GotMOK
+) {
     EFI_STATUS  Status;
     CHAR16     *MsgStr;
+    UINTN       CheckSize;
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
     EFI_GUID    ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 
-    UINTN       CheckSize;
 
     LogRevisionInfo (&gST->Hdr, L"    System Table", sizeof (*gST),  TRUE);
     LogRevisionInfo (&gBS->Hdr, L"   Boot Services", sizeof (*gBS),  TRUE);
@@ -2646,35 +2643,7 @@ VOID LogBasicInfo (VOID) {
         LOG_MSG("    DXE Services:- 'Not Found' ... Some Functionality Will be Lost!!");
     }
     LOG_MSG("\n\n");
-#endif
 
-
-    // Get AppleFramebuffer Count
-    AppleFramebuffers = egCountAppleFramebuffers();
-
-    EfiMajorVersion = (gST->Hdr.Revision >> 16U);
-    WarnVersionEFI  = WarnRevisionUEFI = FALSE;
-    if ((gST->Hdr.Revision >> 16U) != EfiMajorVersion ||
-        (gBS->Hdr.Revision >> 16U) != EfiMajorVersion ||
-        (gRT->Hdr.Revision >> 16U) != EfiMajorVersion
-    ) {
-        WarnVersionEFI = TRUE;
-    }
-    else if (
-        (gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff) ||
-        (gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff) ||
-        (gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff)
-    ) {
-        WarnRevisionUEFI = TRUE;
-    }
-
-
-/**
- * Function effectively ends here on RELEASE Builds
-**/
-
-
-#if REFIT_DEBUG > 0
     if (WarnVersionEFI || WarnRevisionUEFI) {
         LOG_MSG(
             "** WARN: Inconsistent %s Detected",
@@ -2778,11 +2747,16 @@ VOID LogBasicInfo (VOID) {
     LOG_MSG("\n");
 
     /* Secure Boot */
-    LOG_MSG("Secure Boot:- '%s'", (SecureFlag) ? L"Active"  : L"Inactive");
+    LOG_MSG("SecureBoot:- '%s'", (SecureFlag) ? L"Active"  : L"Inactive");
     LOG_MSG("\n");
 
-    /* Apple Framebuffers */
-    LOG_MSG("Apple Framebuffers:- '%d'", AppleFramebuffers);
+    /* Secure Boot Setup */
+    Status = (GotMOK) ? EFI_SUCCESS : EFI_NOT_STARTED;
+    LOG_MSG("MOK Activation:- '%r'", Status);
+    LOG_MSG("\n");
+
+    /* Apple Frame Buffers */
+    LOG_MSG("Apple Frame Buffer Count:- '%d'", AppleFramebuffers);
     LOG_MSG("\n");
 
     /* Compat Support Module Type */
@@ -2796,11 +2770,11 @@ VOID LogBasicInfo (VOID) {
         case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"       ); break;
         default:               MsgStr = StrDuplicate (L"Absent"           );
     }
-    LOG_MSG("Compat Support Module:- '%s'", MsgStr);
+    LOG_MSG("Legacy BIOS Boot Support:- '%s'", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
-#endif
 } // static VOID LogBasicInfo()
+#endif
 
 VOID RefitStall (
     UINTN StallLoops
@@ -2947,8 +2921,7 @@ EFI_STATUS EFIAPI efi_main (
     ArchType = L"Unknown";
 #endif
 
-#if REFIT_DEBUG > 0
-// Big REFIT_DEBUG - START
+    #if REFIT_DEBUG > 0
     if (ArchBits == NULL) {
         LOG_MSG("Arch/Type:- '%s'", ArchType);
     }
@@ -2975,19 +2948,30 @@ EFI_STATUS EFIAPI efi_main (
         NowDay, NowHour,
         NowMinute, NowSecond
     );
-// Big REFIT_DEBUG - END
-#endif
+    #endif
 
-    /* Log System Details */
-    LogBasicInfo ();
+    /* Vet EFI Version */
+    EfiMajorVersion = (gST->Hdr.Revision >> 16U);
+    WarnVersionEFI  = WarnRevisionUEFI = FALSE;
+    if ((gBS->Hdr.Revision >> 16U) != EfiMajorVersion ||
+        (gRT->Hdr.Revision >> 16U) != EfiMajorVersion
+    ) {
+        WarnVersionEFI = TRUE;
+    }
+    else if (
+        (gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff) ||
+        (gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff) ||
+        (gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff)
+    ) {
+        WarnRevisionUEFI = TRUE;
+    }
 
-    /* Set Secure Boot Up */
+    /* Run Secure Boot Update */
     MokProtocol = SecureBootSetup();
 
     #if REFIT_DEBUG > 0
-    Status = (MokProtocol) ? EFI_SUCCESS : EFI_NOT_STARTED;
-    LOG_MSG("INFO: MOK Protocol ... %r", Status);
-    LOG_MSG("\n\n");
+    /* Log System Details */
+    LogBasicInfo (MokProtocol);
     #endif
 
     // First scan volumes by calling ScanVolumes() to find "SelfVolume",
@@ -3034,7 +3018,7 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.ConfigFilename = L"refind.conf";
     }
 
-    /* Load config tokens */
+    /* Load Config Tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
     VarNoCheckAMFI     = GlobalConfig.DisableCheckAMFI    ;
     VarNoCheckCompat   = GlobalConfig.DisableCheckCompat  ;
@@ -3113,12 +3097,6 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      ScanAllESP:- '%s'",     TAG_ITEM_C(GlobalConfig.ScanAllESP      ));
     LOG_MSG("%s      DirectBoot:- '%s'",     TAG_ITEM_C(GlobalConfig.DirectBoot      ));
 
-    LOG_MSG(
-        "%s      TextRenderer:- '%s'",
-        OffsetNext,
-        (GlobalConfig.UseTextRenderer) ? L"Active" : L"Inactive"
-    );
-
     LOG_MSG("%s      ProtectNvram:- ",       OffsetNext                               );
     if (!AppleFirmware || RunningOC) {
         if (!AppleFirmware) {
@@ -3131,18 +3109,6 @@ EFI_STATUS EFIAPI efi_main (
     else {
         LOG_MSG("'%s'", (GlobalConfig.NvramProtect) ? L"Active" : L"Inactive"         );
     }
-
-    LOG_MSG(
-        "%s      NormaliseCSR:- '%s'",
-        OffsetNext,
-        (GlobalConfig.NormaliseCSR) ? L"Active" : L"Inactive"
-    );
-
-    LOG_MSG(
-        "%s      HandleVentoy:- '%s'",
-        OffsetNext,
-        (GlobalConfig.HandleVentoy) ? L"Active" : L"Inactive"
-    );
 
     LOG_MSG("%s      RansomDrives:- ",       OffsetNext                               );
     if (AppleFirmware) {
@@ -3884,7 +3850,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-            // No break ... Drop into TAG_REBOOT with FoundTool == TRUE
+            // No break ... Drop into TAG_REBOOT
             case TAG_REBOOT:    // Reboot
                 TypeStr = L"System Restart";
 

@@ -119,9 +119,9 @@ CHAR16 * FindInitrd (
 
     BREAD_CRUMB(L"%a:  5", __func__);
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Path                  : %s", Path          ? Path          : L"NULL");
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"FileName              : %s", FileName      ? FileName      : L"NULL");
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : %s", KernelVersion ? KernelVersion : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Path                  : %s", (Path          != NULL) ? Path          : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"FileName              : %s", (FileName      != NULL) ? FileName      : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : %s", (KernelVersion != NULL) ? KernelVersion : L"NULL");
     #endif
 
     BREAD_CRUMB(L"%a:  6", __func__);
@@ -336,7 +336,10 @@ CHAR16 * GetMainLinuxOptions (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    CHAR16 *Options, *FullOptions, *InitrdName, *KernelVersion;
+    CHAR16 *Options;
+    CHAR16 *InitrdName;
+    CHAR16 *FullOptions;
+    CHAR16 *KernelVersion;
 
 
     LOG_SEP(L"X");
@@ -396,6 +399,7 @@ VOID ParseReleaseFile (
     CHAR16      **TokenList;
     REFIT_FILE    File;
 
+
     if (Volume      == NULL || // Check Pointer 'Volume'
         FileName    == NULL || // Check Pointer 'FileName'
         OSIconName  == NULL || // Check Pointer 'OSIconName' (prevent NULL pointer dereferencing)
@@ -441,7 +445,7 @@ VOID GuessLinuxDistribution (
         (*OSIconName != NULL) ? *OSIconName : L"NULL"
     );
 
-    // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.
+    // If on Linux root fs, /etc/os-release or /etc/lsb-release may have clues.
     BREAD_CRUMB(L"%a:  3", __func__);
     ParseReleaseFile (OSIconName, Volume, L"etc\\lsb-release");
 
@@ -603,6 +607,7 @@ BOOLEAN HasSignedCounterpart (
 ) {
     CHAR16  *NewFile;
     BOOLEAN  retval;
+
 
     NewFile = NULL;
     MergeStrings(&NewFile, FullName, 0);

@@ -36,7 +36,7 @@
 /* Changes copyright (c) 2013 Roderick W. Smith */
 /*
 * Modified for RefindPlus
-* Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+* Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
 *
 * Modifications distributed under the preceding terms.
 */
@@ -44,22 +44,19 @@
 
 #include "gptsync.h"
 #include "../include/version.h"
-
 #include "../include/syslinux_mbr.h"
-#define memcpy(a, b, c) CopyMem(a, b, c)
+#include "../include/refit_call_wrapper.h"
 
-//
-// MBR functions
-//
 
-static UINTN check_mbr(VOID)
-{
+static
+UINTN check_mbr (VOID) {
     UINTN       i, k;
     BOOLEAN     found;
 
-    // check each entry
+
+    // Check each entry
     for (i = 0; i < mbr_part_count; i++) {
-        // check for overlap
+        // Check for overlap
         for (k = 0; k < mbr_part_count; k++) {
             if (k != i && !(mbr_parts[i].start_lba > mbr_parts[k].end_lba || mbr_parts[k].start_lba > mbr_parts[i].end_lba)) {
                 Print(L"Status: MBR partition table is invalid, partitions overlap.\n");
@@ -67,7 +64,7 @@ static UINTN check_mbr(VOID)
             }
         }
 
-        // check for extended partitions
+        // Check for extended partitions
         if (mbr_parts[i].mbr_type == 0x05 || mbr_parts[i].mbr_type == 0x0f || mbr_parts[i].mbr_type == 0x85) {
             Print(L"Status: Extended partition found in MBR table, will not touch this disk.\n",
                   gpt_parts[i].gpt_parttype->name);
@@ -94,8 +91,8 @@ static UINTN check_mbr(VOID)
     return 0;
 } // UINTN check_mbr()
 
-static UINTN write_mbr(VOID)
-{
+static
+UINTN write_mbr (VOID) {
     UINTN               status;
     UINTN               i, k;
     UINT8               active;
@@ -105,12 +102,12 @@ static UINTN write_mbr(VOID)
 
     Print(L"\nWriting new MBR...\n");
 
-    // read MBR data
+    // Read MBR data
     status = read_sector(0, sector);
     if (status != 0)
         return status;
 
-    // write partition table
+    // Write partition table
     *((UINT16 *)(sector + 510)) = 0xaa55;
 
     table = (MBR_PART_INFO *)(sector + 446);
@@ -121,7 +118,7 @@ static UINTN write_mbr(VOID)
                 break;
         }
         if (k >= new_mbr_part_count) {
-            // unused entry
+            // Unused entry
             table[i].flags        = 0;
             table[i].start_chs[0] = 0;
             table[i].start_chs[1] = 0;
@@ -162,7 +159,7 @@ static UINTN write_mbr(VOID)
         }
     }
 
-    // add boot code if necessary
+    // Add boot code if necessary
     have_bootcode = FALSE;
     for (i = 0; i < MBR_BOOTCODE_SIZE; i++) {
         if (sector[i] != 0) {
@@ -171,12 +168,18 @@ static UINTN write_mbr(VOID)
         }
     }
     if (!have_bootcode) {
-        // no boot code found in the MBR, add the syslinux MBR code
-        SetMem(sector, MBR_BOOTCODE_SIZE, 0);
-        CopyMem(sector, syslinux_mbr, SYSLINUX_MBR_SIZE);
+        // Add syslinux MBR code as boot code not found in the MBR.
+        REFIT_CALL_3_WRAPPER(
+            gBS->SetMem, sector,
+            MBR_BOOTCODE_SIZE, 0
+        );
+        REFIT_CALL_3_WRAPPER(
+            gBS->CopyMem, sector,
+            syslinux_mbr, SYSLINUX_MBR_SIZE
+        );
     }
 
-    // write MBR data
+    // Write MBR data
     status = write_sector(0, sector);
     if (status != 0)
         return status;
@@ -186,27 +189,24 @@ static UINTN write_mbr(VOID)
     return 0;
 }
 
-//
-// GPT functions
-//
-
-static UINTN check_gpt(VOID)
-{
+static
+UINTN check_gpt (VOID) {
     UINTN       i, k;
 
+
     if (gpt_part_count == 0) {
-        Print(L"Status: No GPT partition table, no need to sync.\n");
+        Print(L"Status: No GUID Partition Table ... No Need to Sync.\n");
         return EFI_UNSUPPORTED;
     }
 
-    // check each entry
+    // Check each entry
     for (i = 0; i < gpt_part_count; i++) {
-        // check sanity
+        // Check sanity
         if (gpt_parts[i].end_lba < gpt_parts[i].start_lba) {
             Print(L"Status: GPT partition table is invalid.\n");
             return EFI_UNSUPPORTED;
         }
-        // check for overlap
+        // Check for overlap
         for (k = 0; k < gpt_part_count; k++) {
             if (k != i && !(gpt_parts[i].start_lba > gpt_parts[k].end_lba || gpt_parts[k].start_lba > gpt_parts[i].end_lba)) {
                 Print(L"Status: GPT partition table is invalid, partitions overlap.\n");
@@ -214,7 +214,7 @@ static UINTN check_gpt(VOID)
             }
         }
 
-        // check for partitions kind
+        // Check for partitions kind
         if (gpt_parts[i].gpt_parttype->kind == GPT_KIND_FATAL) {
             Print(L"Status: GPT partition of type '%s' found, will not touch this disk.\n",
                   gpt_parts[i].gpt_parttype->name);
@@ -226,7 +226,7 @@ static UINTN check_gpt(VOID)
 } // VOID check_gpt()
 
 //
-// compare GPT and MBR tables
+// Compare GPT and MBR tables
 //
 
 #define ACTION_NONE        (0)
@@ -234,7 +234,11 @@ static UINTN check_gpt(VOID)
 #define ACTION_REWRITE     (2)
 
 // Copy a single GPT entry to the new_mbr_parts array.
-static VOID copy_gpt_to_new_mbr(UINTN gpt_num, UINTN mbr_num) {
+static
+VOID copy_gpt_to_new_mbr (
+    UINTN gpt_num,
+    UINTN mbr_num
+) {
    new_mbr_parts[mbr_num].index     = mbr_num;
    new_mbr_parts[mbr_num].start_lba = gpt_parts[gpt_num].start_lba;
    new_mbr_parts[mbr_num].end_lba   = gpt_parts[gpt_num].end_lba;
@@ -243,9 +247,13 @@ static VOID copy_gpt_to_new_mbr(UINTN gpt_num, UINTN mbr_num) {
 } // VOID copy_gpt_to_new_mbr()
 
 // A simple bubble sort for the MBR partitions.
-static VOID sort_mbr(PARTITION_INFO *parts) {
+static
+VOID sort_mbr (
+    PARTITION_INFO *parts
+) {
    PARTITION_INFO one_part;
    int c, d;
+
 
    if (parts == NULL)
       return;
@@ -263,12 +271,13 @@ static VOID sort_mbr(PARTITION_INFO *parts) {
    } // for
 } // VOID sort_mbr()
 
-// Generate a hybrid MBR based on the current GPT. Stores the result in the
-// new_mbr_parts[] array.
+// Generate a hybrid MBR based on the current GPT.
+// Stores the result in the new_mbr_parts[] array.
 static
 VOID generate_hybrid_mbr(VOID) {
     UINTN i, k, iter, count_active;
     UINT64 first_used_lba;
+
 
     new_mbr_part_count = 1;
     first_used_lba = (UINT64) MAX_MBR_LBA + (UINT64) 1;
@@ -295,13 +304,13 @@ VOID generate_hybrid_mbr(VOID) {
     } while (i < gpt_part_count && new_mbr_part_count <= 3);
 
     // Second, do Linux partitions. Note that we start from the END of the
-    // partition list, so as to maximize the space covered by the 0xEE
-    // partition if there are several Linux partitions before other hybridized partitions.
+    // partition list, so as to maximize the space covered by the 0xEE partition
+    // if there are several Linux partitions before other hybridized partitions.
 
     // Note that gpt_part_count can't be 0; filtered by check_gpt()
     i = gpt_part_count - 1;
     while (i < gpt_part_count && new_mbr_part_count <= 3) {
-        // if too few GPT partitions, i loops around to a huge value
+        // May loop around to a huge value when GPT partitions are very few
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
             (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
             ((gpt_parts[i].gpt_parttype->kind == GPT_KIND_DATA) || (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA)) &&
@@ -315,9 +324,8 @@ VOID generate_hybrid_mbr(VOID) {
        i--;
     } // while
 
-    // Third, do anything that is left to cover uncovered spaces; but this requires
-    // first creating the EFI protective entry, since we do not want to bother with
-    // anything already covered by this entry.
+    // Third, do anything that is left to cover uncovered spaces.
+    // Create the EFI protective entry first to skip items already covered.
     new_mbr_parts[0].index     = 0;
     new_mbr_parts[0].start_lba = 1;
     new_mbr_parts[0].end_lba   = (disk_size() > first_used_lba) ? (first_used_lba - 1) : disk_size() - 1;
@@ -338,30 +346,30 @@ VOID generate_hybrid_mbr(VOID) {
        i++;
     } // while
 
-    // find matching partitions in the old MBR table, copy undetected details.
+    // Find matching partitions in the old MBR table and copy undetected details.
     for (i = 1; i < new_mbr_part_count; i++) {
        for (k = 0; k < mbr_part_count; k++) {
            if (mbr_parts[k].start_lba == new_mbr_parts[i].start_lba) {
-               // keep type if not detected
+               // Keep type if not detected
                if (new_mbr_parts[i].mbr_type == 0) {
                    new_mbr_parts[i].mbr_type = mbr_parts[k].mbr_type;
                }
-               // keep active flag
+               // Keep active flag
                new_mbr_parts[i].active = mbr_parts[k].active;
                break;
            } // if
        } // for (k...)
        if (new_mbr_parts[i].mbr_type == 0) {
-          // final fallback: set to a (hopefully) unused type
+          // Final fallback: set to a (hopefully) unused type
           new_mbr_parts[i].mbr_type = 0xc0;
        } // if
     } // for (i...)
 
     sort_mbr(new_mbr_parts);
 
-    // make sure there is exactly one active partition
+    // Make sure there is exactly one active partition
     for (iter = 0; iter < 3; iter++) {
-        // check
+        // Check
         count_active = 0;
         for (i = 0; i < new_mbr_part_count; i++)
             if (new_mbr_parts[i].active)
@@ -369,7 +377,7 @@ VOID generate_hybrid_mbr(VOID) {
         if (count_active == 1)
             break;
 
-        // set active on the first matching partition
+        // Set active on the first matching partition
         if (count_active == 0) {
             for (i = 0; i < new_mbr_part_count; i++) {
                 if (((new_mbr_parts[i].mbr_type == 0x07 ||    // NTFS
@@ -382,13 +390,13 @@ VOID generate_hybrid_mbr(VOID) {
                 }
             }
         } else if (count_active > 1 && iter == 0) {
-            // too many active partitions, try deactivating the ESP / EFI Protective entry
+            // Too many active partitions ... Try deactivating the ESP / EFI Protective entry
             if ((new_mbr_parts[0].mbr_type == 0xee || new_mbr_parts[0].mbr_type == 0xef) &&
                 new_mbr_parts[0].active) {
                 new_mbr_parts[0].active = FALSE;
             }
         } else if (count_active > 1 && iter > 0) {
-            // too many active partitions, deactivate all but the first one
+            // Too many active partitions ... Deactivate all but the first one
             count_active = 0;
             for (i = 0; i < new_mbr_part_count; i++)
                 if (new_mbr_parts[i].active) {
@@ -401,16 +409,16 @@ VOID generate_hybrid_mbr(VOID) {
 } // VOID generate_hybrid_mbr()
 
 // Examine partitions and decide whether a rewrite is in order.
-// Note that this function MAY ask user for advice.
-// Note that this function assumes the new hybrid MBR has already
-// been computed and stored in new_mbr_parts[].
+// Note that this function *MAY* request guidance.
+// Note that this function assumes the new hybrid MBR
+// has already been computed and stored in new_mbr_parts[].
 static
-BOOLEAN should_rewrite(VOID) {
+BOOLEAN should_rewrite (VOID) {
    BOOLEAN retval, all_identical, invalid;
    UINTN i, num_existing_hybrid, num_new_hybrid;
 
-   // Check to see if the proposed table is identical to the current one;
-   // if so, synchronizing is pointless.
+   // Check to see if the proposed table is identical to the current one.
+   // Syncing is pointless if so.
    num_existing_hybrid = 0;
    num_new_hybrid = 0;
    all_identical = TRUE;
@@ -422,7 +430,7 @@ BOOLEAN should_rewrite(VOID) {
            (new_mbr_parts[i].mbr_type != mbr_parts[i].mbr_type)))
          all_identical = FALSE;
 
-      // while we are looping, count the number of old & new hybrid partitions.
+      // Count the old and new hybrid partitions while looping.
       if ((mbr_parts[i].mbr_type != 0x00) && (mbr_parts[i].mbr_type != 0xEE))
          num_existing_hybrid++;
       if ((new_mbr_parts[i].mbr_type != 0x00) && (new_mbr_parts[i].mbr_type != 0xEE))
@@ -434,8 +442,8 @@ BOOLEAN should_rewrite(VOID) {
       return FALSE;
    }
 
-   // If there is nothing to hybridize, but an existing hybrid MBR exists, offer to replace
-   // the hybrid MBR with a protective MBR.
+   // If there is nothing to hybridize but an existing hybrid MBR exists,
+   // offer to replace the hybrid MBR with a protective MBR.
    retval = TRUE;
    if ((num_new_hybrid == 0) && (num_existing_hybrid > 0)) {
       Print(L"Found no partitions that could be hybridized, but an existing hybrid MBR exists.\n");
@@ -445,8 +453,8 @@ BOOLEAN should_rewrite(VOID) {
          retval = FALSE;
    } // if
 
-   // If existing hybrid MBR that is NOT identical to the new one, ask the user
-   // before overwriting the old one.
+   // Ask the user before overwriting the old one if the
+   // existing hybrid MBR is *NOT* identical to the new one.
    if ((num_new_hybrid > 0) && (num_existing_hybrid > 0)) {
       Print(L"Existing hybrid MBR detected, but it is not identical to what this program\n");
       Print(L"would generate. Do you want to see the hybrid MBR that this program would\n");
@@ -466,7 +474,7 @@ UINTN analyze (VOID) {
 
     new_mbr_part_count = 0;
 
-    // determine correct MBR types for GPT partitions
+    // Determine correct MBR types for GPT partitions
     if (gpt_part_count == 0) {
         Print(L"Status: No GPT partitions defined, nothing to sync.\n");
         return 0;
@@ -481,17 +489,17 @@ UINTN analyze (VOID) {
             if (detected_parttype)
                 gpt_parts[i].mbr_type = detected_parttype;
             else
-                gpt_parts[i].mbr_type = 0x0b;  // fallback: FAT32
+                gpt_parts[i].mbr_type = 0x0b;  // Fallback: FAT32
         }
         // NOTE: mbr_type may still be 0 if content detection fails for exotic GPT types or file systems
     } // for
 
-    // generate the new table
+    // Generate the new table
     generate_hybrid_mbr();
     if (!should_rewrite())
        return EFI_ABORTED;
 
-    // display table
+    // Display table
     Print(L"\nProposed new MBR partition table:\n");
     Print(L" # A    Start LBA      End LBA  Type\n");
     for (i = 0; i < new_mbr_part_count; i++) {
@@ -508,10 +516,10 @@ UINTN analyze (VOID) {
 } // UINTN analyze()
 
 //
-// sync algorithm entry point
+// Sync algorithm entry point
 //
 
-UINTN gptsync(VOID) {
+UINTN gptsync (VOID) {
     UINTN   status;
     UINTN   status_gpt, status_mbr;
     BOOLEAN proceed;
@@ -524,27 +532,27 @@ UINTN gptsync(VOID) {
     if (status_gpt != 0 || status_mbr != 0)
         return (status_gpt || status_mbr);
 
-    // cross-check current situation
+    // Cross-check current situation
     Print(L"\n");
-    status = check_gpt();   // check GPT for consistency
+    status = check_gpt();   // Check GPT for consistency
     if (status != 0)
         return status;
-    status = check_mbr();   // check MBR for consistency
+    status = check_mbr();   // Check MBR for consistency
     if (status != 0)
         return status;
-    status = analyze();     // analyze the situation & compose new MBR table
+    status = analyze();     // Analyze the situation & compose new MBR table
     if (status != 0)
         return status;
     if (new_mbr_part_count == 0)
         return status;
 
-    // offer user the choice what to do
+    // Offer user the choice what to do
     proceed = FALSE;
     status = input_boolean(STR("\nMay I update the MBR as printed above? [y/N] "), &proceed);
     if (status != 0 || proceed != TRUE)
         return status;
 
-    // adjust the MBR and write it back
+    // Adjust the MBR and write it back
     status = write_mbr();
     if (status != 0)
         return status;

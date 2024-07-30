@@ -48,24 +48,24 @@
 
 #include "global.h"
 #include "config.h"
-#include "screenmgt.h"
 #include "lib.h"
+#include "mok.h"
 #include "icns.h"
 #include "menu.h"
-#include "mok.h"
+#include "scan.h"
+#include "linux.h"
 #include "apple.h"
+#include "install.h"
+#include "screenmgt.h"
 #include "mystrings.h"
-#include "security_policy.h"
-#include "driver_support.h"
 #include "launch_efi.h"
 #include "launch_legacy.h"
-#include "linux.h"
-#include "scan.h"
-#include "install.h"
+#include "driver_support.h"
+#include "security_policy.h"
 #include "../include/refit_call_wrapper.h"
 
-#define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
-#define IPXE_NAME               L"\\efi\\tools\\ipxe.efi"
+#define IPXE_NAME          L"\\efi\\tools\\ipxe.efi"
+#define IPXE_DISCOVER_NAME L"\\efi\\tools\\ipxe_discover.efi"
 
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
@@ -2184,6 +2184,8 @@ CHAR16 * SetVolType (
 
     if (0);
     else if (MyStrStr    (InstanceName, L"Manual Stanza:" )) RetVal = L""                 ;
+    else if (MyStrStr    (InstanceName, L"(Legacy"        )) RetVal = L""                 ;
+    else if (MyStrStr    (InstanceName, L"Instance:"      )) RetVal = L""                 ;
     else if (MyStrStr    (VolumeName,   L"Partition"      )) RetVal = L""                 ;
     else if (MyStrStr    (VolumeName,   L"Volume"         )) RetVal = L""                 ;
     else if (MyStriCmp   (VolumeName,   L"ESP"            )) RetVal = L""                 ;
@@ -2192,7 +2194,6 @@ CHAR16 * SetVolType (
     else if (MyStriCmp   (InstanceName, L"Legacy Bootcode")) RetVal = L" Partition"       ;
     else if (MyStrBegins (InstanceName, L"vmlinuz-"       )) RetVal = L" Partition"       ;
     else if (MyStrBegins (InstanceName, L"bzImage-"       )) RetVal = L" Partition"       ;
-    else if (MyStrStr    (InstanceName, L"(Legacy"        )) RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT32                 ) RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT16                 ) RetVal = L" Partition"       ;
     else if (VolumeFSType == FS_TYPE_FAT12                 ) RetVal = L" Partition"       ;
@@ -2607,6 +2608,11 @@ BOOLEAN ScanLoaderDir (
                             Volume, Path,
                             DirEntry->FileName,
                             GlobalConfig.DontScanFiles
+                        )
+                    ) || (
+                        IsListMatch (
+                            DirEntry->FileName,
+                            SKIPNAME_PATTERNS
                         )
                     ) || (
                         // TRUE == "SameName" + ".efi.signed" file present
@@ -3970,10 +3976,11 @@ VOID ScanForBootloaders (VOID) {
     OrigDontScanDirs =  NULL;
     AmendedDontScan  = FALSE;
     if (GlobalConfig.SyncAPFS) {
+        DontScanItem = NULL;
         OrigDontScanDirs = StrDuplicate (GlobalConfig.DontScanDirs);
 
         if (GlobalConfig.DontScanFiles) {
-            DontScanItem = NULL;
+            i = 0;
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanFiles, i)) != NULL) {
                 DeleteItem = (!FindSubStr (DontScanItem, L"PreBoot:"))
                     ? (MyStriCmp (DontScanItem, L"PreBoot")) ? TRUE : FALSE
@@ -3992,6 +3999,7 @@ VOID ScanForBootloaders (VOID) {
         } // if GlobalConfig.DontScanFiles
 
         if (GlobalConfig.DontScanDirs) {
+            i = 0;
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanDirs, i)) != NULL) {
                 DeleteItem = (!FindSubStr (DontScanItem, L"PreBoot:"))
                     ? (MyStriCmp (DontScanItem, L"PreBoot")) ? TRUE : FALSE
@@ -4010,6 +4018,7 @@ VOID ScanForBootloaders (VOID) {
         } // if GlobalConfig.DontScanDirs
 
         if (GlobalConfig.DontScanVolumes) {
+            i = 0;
             while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanVolumes, i)) != NULL) {
                 DeleteItem = (FindSubStr (DontScanItem, L"PreBoot:"))
                     ? TRUE

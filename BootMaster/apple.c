@@ -460,6 +460,11 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
 
+    if (!AppleFirmware) {
+        // Early Return
+        return EFI_NOT_STARTED;
+    }
+
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &apple_set_os_guid,
         NULL, (VOID **) &SetOs
@@ -532,7 +537,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -553,67 +558,6 @@ VOID * OcReadFile (
     OUT UINT32                           *FileSize    OPTIONAL,
     IN  UINT32                            MaxFileSize OPTIONAL
 );
-extern
-UINTN OcFileDevicePathNameSize (
-    IN CONST FILEPATH_DEVICE_PATH  *FilePath
-);
-
-static
-CHAR16 * RefitGetBootPathName (
-    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
-) {
-    UINTN                            Len;
-    UINTN                            Size;
-    UINTN                            PathNameSize;
-    CHAR16                          *PathName;
-    CHAR16                          *FilePathName;
-    FILEPATH_DEVICE_PATH            *FilePath;
-
-    if (DevicePathType    (DevicePath) != MEDIA_DEVICE_PATH ||
-        DevicePathSubType (DevicePath) != MEDIA_FILEPATH_DP
-    ) {
-        PathName = AllocateZeroPool (sizeof (L"\\"));
-        if (PathName == NULL) {
-            // Early Return ... Return NULL
-            return NULL;
-        }
-
-        StrCpyS (PathName, sizeof (L"\\"), L"\\");
-
-        // Early Return ... Return Output
-        return PathName;
-    }
-
-    FilePath     = (FILEPATH_DEVICE_PATH *) DevicePath;
-    Size         = OcFileDevicePathNameSize (FilePath);
-    PathNameSize = Size + sizeof (CHAR16);
-
-    PathName = AllocateZeroPool (PathNameSize);
-    if (PathName == NULL) {
-        // Early Return ... Return NULL
-        return NULL;
-    }
-
-    REFIT_CALL_3_WRAPPER(
-        gBS->CopyMem, PathName,
-        FilePath->PathName, Size
-    );
-    if (!MyStrStr (PathName, L"\\")) {
-        StrCpyS (PathName, PathNameSize, L"\\");
-
-        // Early Return ... Return Output
-        return PathName;
-    }
-
-    Len = StrLen (PathName);
-    FilePathName = &PathName[Len - 1];
-    while (*FilePathName != L'\\') {
-        *FilePathName = L'\0';
-        --FilePathName;
-    } // while
-
-    return PathName;
-} // static EFI_STATUS RefitGetBootPathName
 
 static
 VOID SetBootFlag (

@@ -49,8 +49,8 @@
 
 #include "global.h"
 #include "screenmgt.h"
-#include "config.h"
 #include "libegint.h"
+#include "config.h"
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"

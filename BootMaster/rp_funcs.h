@@ -1,7 +1,7 @@
 /*
  * BootMaster/rp_funcs.h
  *
- * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  * Licensed under the MIT License
  */
 
@@ -75,6 +75,7 @@ extern VOID RefitStall (
         }                                               \
     } while (0)
 
+// Convenience item for debugging memory conflicts
 #define MY_FAKE_FREE(Pointer)                           \
     do {                                                \
         if (!gKernelStarted) {                          \
@@ -84,7 +85,7 @@ extern VOID RefitStall (
         }                                               \
     } while (0)
 
-// Dereference to NULL When Actually Needed
+// Only dereference to NULL
 #define MY_SOFT_FREE(Pointer)                           \
     do {                                                \
         if (!gKernelStarted) {                          \

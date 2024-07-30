@@ -177,6 +177,13 @@ VOID DisplaySimpleMessage (
     CHAR16 *Message,
     CHAR16 *Title OPTIONAL
 );
+#if REFIT_DEBUG > 0
+VOID LogExit (
+    IN  UINTN       MenuExit,
+    IN  const char  FunctionName[],
+    IN  CHAR16     *ChosenOptionTitle
+);
+#endif
 
 UINTN ComputeRow0PosY (IN BOOLEAN ApplyOffset);
 UINTN WaitForInput (IN UINTN Timeout);
