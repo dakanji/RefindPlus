@@ -96,9 +96,6 @@ extern BOOLEAN   DefaultBanner;
 CHAR16          *OffsetNext = L"\n                   ";
 #endif
 
-//
-// Basic image handling
-//
 
 EG_IMAGE * egCreateImage (
     IN UINTN    Width,
@@ -227,6 +224,15 @@ EG_IMAGE * egScaleImage (
     UINTN      x_ratio, y_ratio;
 
 
+    #if REFIT_DEBUG > 0
+    ALT_LOG(
+        1, LOG_THREE_STAR_MID,
+        L"Scale Image from %dpx x %dpx to %dpx x %dpx",
+        Image->Width, Image->Height,
+        NewWidth, NewHeight
+    );
+    #endif
+
     if (Image          == NULL ||
         Image->Height  ==    0 ||
         Image->Width   ==    0 ||
@@ -241,10 +247,6 @@ EG_IMAGE * egScaleImage (
     ) {
         return egCopyImage (Image);
     }
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Scale Image to %d x %d", NewWidth, NewHeight);
-    #endif
 
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
@@ -319,10 +321,6 @@ VOID egFreeImage (
     MY_FREE_POOL(Image);
 }
 */
-
-//
-// Basic file operations
-//
 
 EFI_STATUS egLoadFile (
     IN EFI_FILE_PROTOCOL  *BaseDir,
@@ -476,10 +474,6 @@ EFI_STATUS egSaveFile (
 
     return Status;
 } // EFI_STATUS egSaveFile()
-
-//
-// Loading images from files and embedded data
-//
 
 // Decode the specified image data. The IconSize parameter is relevant only
 // for ICNS, for which it selects which ICNS sub-image is decoded.
@@ -980,10 +974,6 @@ EG_IMAGE * egPrepareEmbeddedImage (
     return NewImage;
 } // EG_IMAGE * egPrepareEmbeddedImage()
 
-//
-// Compositing
-//
-
 VOID egRestrictImageArea (
     IN EG_IMAGE   *Image,
     IN UINTN       AreaPosX,
@@ -1178,10 +1168,6 @@ VOID egComposeImage (
     }
 } // VOID egComposeImage()
 
-//
-// misc internal functions
-//
-
 VOID egInsertPlane (
     IN UINT8 *SrcDataPtr,
     IN UINT8 *DestPlanePtr,
@@ -1226,5 +1212,3 @@ VOID egCopyPlane (
         }
     }
 } // VOID egCopyPlane()
-
-/* EOF */

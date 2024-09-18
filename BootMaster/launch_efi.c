@@ -692,10 +692,10 @@ EFI_STATUS StartEFIImage (
         LoaderValid = IsValidLoader (Volume->RootDir, Filename);
         if (!LoaderValid) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"ERROR: Invalid Binary!!");
+            MsgStr = StrDuplicate (L"Found Invalid Binary");
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("* %s", MsgStr);
             LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -762,10 +762,10 @@ EFI_STATUS StartEFIImage (
             // It could conceivably do weird things if, say, RefindPlus were on
             // a USB drive that the user pulls before launching a program.
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Shim 'LoadImage' Hack Required");
+            MsgStr = StrDuplicate (L"Shim 0.8 'Load/Start Image' Hack Applied");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -787,8 +787,8 @@ EFI_STATUS StartEFIImage (
                 ReturnStatus, ImageTitle
             );
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-            LOG_MSG("* ERROR: %s", MsgStr);
             LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -822,14 +822,11 @@ EFI_STATUS StartEFIImage (
             //         Re-enable the EFI watchdog timer (optionally)
             //
             // Turn control over to the image
-            if (GlobalConfig.WriteSystemdVars &&
-                (
-                    OSType == 'L' ||
-                    OSType == 'E' ||
-                    OSType == 'G'
-                )
+            if (IsBoot &&
+                OSType == 'L' &&
+                GlobalConfig.WriteSystemdVars
             ) {
-                // Tell systemd what ESP RefindPlus used
+                // Inform SystemD of RefindPlus ESP
                 EspGUID = GuidAsString (&(SelfVolume->PartGuid));
 
                 #if REFIT_DEBUG > 0
@@ -838,8 +835,6 @@ EFI_STATUS StartEFIImage (
                     EspGUID
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("INFO: %s", MsgStr);
-                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
 
@@ -850,18 +845,18 @@ EFI_STATUS StartEFIImage (
                 #if REFIT_DEBUG > 0
                 if (EFI_ERROR(Status)) {
                     MsgStr = PoolPrint (
-                        L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable",
+                        L"'%r' When Setting 'LoaderDevicePartUUID' UEFI Variable",
                         Status
                     );
-                    ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- '%s'", MsgStr);
-                    LOG_MSG("* ERROR: %s", MsgStr);
+                    ALT_LOG(1, LOG_STAR_SEPARATOR, L"WARN: '%s'", MsgStr);
                     LOG_MSG("\n\n");
+                    LOG_MSG("WARN: %s", MsgStr);
                     MY_FREE_POOL(MsgStr);
                 }
                 #endif
 
                 MY_FREE_POOL(EspGUID);
-            } // if write systemd UEFI variables
+            } // if GlobalConfig.WriteSystemdVars
 
             // Store loader name if booting and set to do so
             if (BootSelection != NULL) {

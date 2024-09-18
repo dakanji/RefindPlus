@@ -56,7 +56,7 @@ BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN IsListItem (IN CHAR16 *SmallString, IN CHAR16 *List);
 BOOLEAN IsListMatch (IN CHAR16 *TestString, IN CHAR16 *List);
 BOOLEAN IsInSubstring (IN CHAR16 *BigString, IN CHAR16 *List);
-BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 *List);
+BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 **List);
 BOOLEAN FindSubStr (
     IN CHAR16 *RawString,
     IN CHAR16 *RawStrCharSet

@@ -38,18 +38,34 @@ concurrency:
 
 jobs:
 
-  # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_resolve_bug1:
     name: Issue - Resolve - Bug1
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - id: issue-get-state
+        uses: actions/github-script@v7
         with:
-          actions: 'unlock-issue'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.inputs.item_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = context.payload.inputs.item_id;
+            const { data } = await github.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            if (data.locked) {
+              console.log("::set-output name=islocked::true");
+            } else {
+              console.log("::set-output name=islocked::false");
+            }
+            if (data.state === 'closed') {
+              console.log("::set-output name=isclosed::true");
+            } else {
+              console.log("::set-output name=isclosed::false");
+            }
 
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_resolve_bug2:
     name: Issue - Resolve - Bug2
     needs: [issue_resolve_bug1]
@@ -57,8 +73,16 @@ jobs:
 
     if: ${{ success() || failure() }}
     steps:
+      - if: ${{ steps.issue-get-state.outputs.islocked == 'true' }}
+        id: part_2_1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' }}
-        id: part_1a
+        id: part_2_2a
         uses: oprypin/find-latest-tag@v1
         with:
           repository: ${{ github.repository }}
@@ -66,7 +90,7 @@ jobs:
           releases-only: true
 
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
-        id: part_1b
+        id: part_2_2b
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -75,7 +99,7 @@ jobs:
           body: |
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
-            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            The current RefindPlus release is **${{ steps.part_2_2a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!NOTE]
@@ -84,7 +108,7 @@ jobs:
             Thank you for taking the time to report a problem with RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
-        id: part_1c
+        id: part_2_2c
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -93,7 +117,7 @@ jobs:
           body: |
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
-            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            The current RefindPlus release is **${{ steps.part_2_2a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!CAUTION]
@@ -102,7 +126,7 @@ jobs:
             Thank you for taking the time to report a problem with RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
-        id: part_1d
+        id: part_2_2d
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -111,13 +135,13 @@ jobs:
           body: |
             This item was addressed by Commit ${{ github.event.inputs.commit_ref }}.
 
-            The current RefindPlus release is **${{ steps.part_1a.outputs.tag }}**.
+            The current RefindPlus release is **${{ steps.part_2_2a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             Thank you for taking the time to report a problem with RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
-        id: part_2a
+        id: part_2_3a
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -132,7 +156,7 @@ jobs:
             Thank you for taking the time to report a problem with RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
-        id: part_2b
+        id: part_2_3b
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -147,7 +171,7 @@ jobs:
             Thank you for taking the time to report a problem with RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'No' }}
-        id: part_2c
+        id: part_2_3c
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
@@ -165,12 +189,21 @@ jobs:
 
     if: ${{ success() || failure() }}
     steps:
-      - uses: actions-cool/issues-helper@v3
+      - id: part_3_1
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Bug,Resolved'
+
+      - id: part_3_2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
 
   issue_resolve_bug4:
     name: Issue - Resolve - Bug4
@@ -179,23 +212,19 @@ jobs:
 
     if: ${{ success() || failure() }}
     steps:
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
-
-  issue_resolve_bug5:
-    name: Issue - Resolve - Bug5
-    needs: [issue_resolve_bug4]
-    runs-on: ubuntu-24.04
-
-    if: ${{ success() || failure() }}
-    steps:
-      - uses: actions-cool/issues-helper@v3
+      - if: ${{ steps.issue-get-state.outputs.isclosed == 'false' }}
+        id: part_4_1
+        uses: actions-cool/issues-helper@v3
         with:
           actions: 'close-issue'
           close-reason: 'completed'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+      - if: ${{ steps.issue-get-state.outputs.islocked == 'true' }}
+        id: part_4_2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}

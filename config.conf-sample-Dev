@@ -1278,12 +1278,12 @@
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
-# Set 'systemd' nvRAM variables (currently only LoaderDevicePartUUID)
-# when launching Linux via an EFI stub loader, ELILO, or GRUB. This
-# variable, when present, causes systemd to mount the ESP at /boot
-# *IF* that directory is empty and nothing else is mounted there.
+# Passes variable settings to 'SystemD' (currently LoaderDevicePartUUID)
+# when launching Linux instances. This variable setting, when present,
+# causes SystemD to mount the ESP as '/boot' *IF* that directory
+# is empty and nothing else has been mounted there earlier.
 #
-# Inactive when commented out (No nvRAM variable write attempt)
+# Inactive when commented out (variable is not set)
 #
 #write_systemd_vars
 

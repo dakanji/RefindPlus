@@ -217,6 +217,7 @@ VOID OcFileDevicePathFullName (
 
 #define NAME_FIX(Name) FindSubStr  ((*Volume)->VolName, Name)) VolumeName = Name
 #define FAT_NAME(Name) MyStrBegins (Name, (*Volume)->VolName)) VolumeName = Name
+#define FIX_FLAG(Name) MyStriCmp   ((*Volume)->VolName, Name)) VolumeName = Name
 
 
 // DA-TAG: Stash here for later use
@@ -1013,9 +1014,10 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         if (VariableData != NULL && VariableSize != 0 && StrLen (VariableData) > 0) {
             ALT_LOG(1, LOG_THREE_STAR_MID,
-                L"%s %s:- '%r ... %s'",
+                L"%s %s:- '%r ... %s'%s",
                 NVRAM_LOG_SET, NVRAM_HARDWARE,
-                Status, VariableName
+                Status, VariableName,
+                (!Persistent) ? L" (Volatile)" : L""
             );
         }
         #endif
@@ -1119,11 +1121,12 @@ VOID SanitiseVolumeName (
         else if (FAT_NAME(L"FAT Volume"                  ); // Special Case
         else if (NAME_FIX(L"XFS Volume"                  );
         else if (NAME_FIX(L"PreBoot"                     );
+        else if (FIX_FLAG(L"Swap"                        ); // Match Required
         else if (NAME_FIX(L"Ext4 Volume"                 );
         else if (NAME_FIX(L"Ext3 Volume"                 );
         else if (NAME_FIX(L"Ext2 Volume"                 );
         else if (FAT_NAME(L"ExFAT Volume"                ); // Special Case
-        else if (NAME_FIX(L"BTRFS Volume"                );
+        else if (NAME_FIX(L"BtrFS Volume"                );
         else if (NAME_FIX(L"ReiserFS Volume"             );
         else if (NAME_FIX(L"ISO-9660 Volume"             );
         else if (NAME_FIX(L"System Reserved"             );
@@ -1322,8 +1325,9 @@ CHAR16 * FSTypeName (
     if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData)) {
         retval = (FoundVentoy) ? L"ExFAT (Assumed)" : L"NTFS (Assumed)";
     }
-    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) retval = L"NTFS (Assumed)"  ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS)) retval = L"NTFS (Assumed)"  ;
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData )) retval = L"NTFS (Assumed)"  ;
+    else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidSwap      )) retval = L"Linux Swap"      ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks      )) retval = L"LUKS Encrypted"  ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn )) retval = L"Apple Raid (ON)" ;
     else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) retval = L"Apple Raid (OFF)";

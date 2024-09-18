@@ -715,7 +715,7 @@ VOID MergeUniqueStrings (
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
 // merges each word separately. Words are defined as string fragments separated
-// by ' ', ':', '_', or '-'.
+// by ' ', ':', '_', '\', '/', or '-'.
 VOID MergeWords (
     CHAR16 **MergeTo,
     CHAR16  *InString,
@@ -734,10 +734,12 @@ VOID MergeWords (
         LineFinished = FALSE;
 
         while (!LineFinished) {
-            if ((*p == L' ') ||
-                (*p == L':') ||
-                (*p == L'_') ||
-                (*p == L'-') ||
+            if ((*p == L' ')  ||
+                (*p == L':')  ||
+                (*p == L'_')  ||
+                (*p == L'-')  ||
+                (*p == L'/')  ||
+                (*p == L'\\') ||
                 (*p == L'\0')
             ) {
                 if (*p == L'\0') {
@@ -779,10 +781,12 @@ VOID MergeUniqueWords (
         LineFinished = FALSE;
 
         while (!LineFinished) {
-            if ((*p == L' ') ||
-                (*p == L':') ||
-                (*p == L'_') ||
-                (*p == L'-') ||
+            if ((*p == L' ')  ||
+                (*p == L':')  ||
+                (*p == L'_')  ||
+                (*p == L'-')  ||
+                (*p == L'/')  ||
+                (*p == L'\\') ||
                 (*p == L'\0')
             ) {
                 if (*p == L'\0') {
@@ -1148,42 +1152,74 @@ CHAR16 * FindCommaDelimited (
 } // CHAR16 * FindCommaDelimited()
 
 // Delete an element from a list of comma separated values.
-// Modifies the *List string, but not the *ToDelete string!
+// Modifies the *List string, but not the *ToDelete string.
 // Returns TRUE if the item was deleted, FALSE otherwise.
 BOOLEAN DeleteItemFromCsvList (
     CHAR16  *ToDelete,
-    CHAR16  *List
+    CHAR16 **List
 ) {
-    UINTN    DestSize;
     CHAR16  *Found;
     CHAR16  *Comma;
+    CHAR16  *PartA;   // *DO NOT* Free
+    CHAR16  *PartB;   // *DO NOT* Free
+    CHAR16  *TmpStr;
     BOOLEAN  Retval;
 
 
-    if (ToDelete == NULL || List == NULL) {
+    if (ToDelete == NULL || *List == NULL) {
         return FALSE;
     }
 
     Retval = FALSE;
-    Found = MyStrStr (List, ToDelete);
+    Found = MyStrStr (*List, ToDelete);
     if (Found != NULL) {
         Comma = MyStrStr (Found, L",");
-        if (Comma != NULL) {
-            // 'Found' is NOT the final element
-            // Calculate the remaining buffer size in characters
-            DestSize = StrSize (Found) / sizeof (CHAR16);
-            StrCpyS (Found, DestSize, &Comma[1]);
-        }
-        else {
+        if (Comma == NULL) {
             // 'Found' is final element
-            if (Found == List) {
+            if (Found == *List) {
                 // 'Found' is ONLY element
-                List[0] = L'\0';
+                *List[0] = L'\0';
             }
             else {
                 // Delete the comma preceding 'Found'.
                 Found--;
                 Found[0] = L'\0';
+            }
+        }
+        else {
+            // 'Found' is NOT the final element
+            TmpStr = PoolPrint (L",%s", ToDelete);
+            PartA = GetSubStrBefore (TmpStr, *List);
+            if (PartA == *List) {
+                PartA = GetSubStrBefore (ToDelete, *List);
+                if (MyStriCmp (PartA, *List)) {
+                    PartA = NULL;
+                }
+            }
+            MY_FREE_POOL(TmpStr);
+
+            TmpStr = PoolPrint (L"%s,", ToDelete);
+            PartB = GetSubStrAfter (TmpStr, *List);
+            if (PartB == *List) {
+                PartA = GetSubStrAfter (ToDelete, *List);
+                if (MyStriCmp (PartB, *List)) {
+                    PartB = NULL;
+                }
+            }
+            MY_FREE_POOL(TmpStr);
+
+            if (PartA != NULL || PartB != NULL) {
+                MY_FREE_POOL(*List);
+
+                if (PartA != NULL && PartB != NULL) {
+                    *List = PoolPrint (L"%s,%s", PartA, PartB);
+                }
+                else if (PartA != NULL) {
+                    *List = StrDuplicate (PartA);
+                }
+                else {
+                    *List = StrDuplicate (PartB);
+                }
             }
         }
 

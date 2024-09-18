@@ -2944,63 +2944,6 @@ VOID DisplaySimpleMessage (
     FreeMenuScreen (&SimpleMessageMenu);
 } // VOID DisplaySimpleMessage()
 
-// Check each filename in FilenameList to be sure it refers to a valid file. If
-// not, delete it. This works only on filenames that are complete, with volume,
-// path, and filename components; if the filename omits the volume, the search
-// is not done and the item is left intact, no matter what.
-// Returns TRUE if any files were deleted, FALSE otherwise.
-static
-BOOLEAN RemoveInvalidFilenames (
-    CHAR16          *FilenameList,
-    CHAR16          *VarName
-) {
-    EFI_STATUS       Status;
-    UINTN            i;
-    CHAR16          *VolName;
-    CHAR16          *Filename;
-    CHAR16          *OneElement;
-    BOOLEAN          DeleteFlag;
-    BOOLEAN          DeleteThis;
-    REFIT_VOLUME    *Volume;
-    EFI_FILE_HANDLE  FileHandle;
-
-    VolName = NULL;
-    DeleteFlag = FALSE;
-    i = 0; // *DO NOT* increment in 'while' call
-    while ((OneElement = FindCommaDelimited (FilenameList, i)) != NULL) {
-        DeleteThis = FALSE;
-        Filename = StrDuplicate (OneElement);
-
-        if (SplitVolumeAndFilename (&Filename, &VolName)) {
-            DeleteThis = TRUE;
-
-            if (FindVolume (&Volume, VolName) && Volume->RootDir) {
-                Status = REFIT_CALL_5_WRAPPER(
-                    Volume->RootDir->Open, Volume->RootDir,
-                    &FileHandle, Filename,
-                    EFI_FILE_MODE_READ, 0
-                );
-
-                if (!EFI_ERROR(Status)) {
-                    DeleteThis = FALSE;
-                    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-                }
-            }
-        }
-
-        // Increment index here if not deleting
-        (DeleteThis) ? DeleteItemFromCsvList (OneElement, FilenameList) : i++;
-
-        MY_FREE_POOL(OneElement);
-        MY_FREE_POOL(Filename);
-        MY_FREE_POOL(VolName);
-
-        DeleteFlag |= DeleteThis;
-    } // while
-
-    return DeleteFlag;
-} // BOOLEAN RemoveInvalidFilenames()
-
 // Save a list of items to be hidden to NVRAM or disk,
 // as determined by GlobalConfig.UseNvram.
 static
@@ -3066,7 +3009,6 @@ VOID ManageHiddenTags (VOID) {
     if (HiddenTags != NULL &&
         HiddenTags[0] != L'\0'
     ) {
-        SaveTags = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
         AllTags = StrDuplicate (HiddenTags);
     }
 
@@ -3074,7 +3016,6 @@ VOID ManageHiddenTags (VOID) {
     if (HiddenTools != NULL &&
         HiddenTools[0] != L'\0'
     ) {
-        SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
         if (AllTags == NULL) {
             AllTags = StrDuplicate (HiddenTools);
         }
@@ -3151,10 +3092,10 @@ VOID ManageHiddenTags (VOID) {
 
         // Previously unset defaults
         if (MenuExit == MENU_EXIT_ENTER) {
-            if (HiddenTags    ) SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags    );
-            if (HiddenTools   ) SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools   );
-            if (HiddenLegacy  ) SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy  );
-            if (HiddenFirmware) SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
+            if (HiddenTags    ) SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, &HiddenTags    );
+            if (HiddenTools   ) SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, &HiddenTools   );
+            if (HiddenLegacy  ) SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, &HiddenLegacy  );
+            if (HiddenFirmware) SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, &HiddenFirmware);
         }
 
         if (SaveTags    ) SaveHiddenList (HiddenTags,     L"HiddenTags"    );

@@ -152,18 +152,12 @@ CHAR16 * GetShowName (
 
 
     // DA-TAG: *DO NOT* Free 'ShowName'
-    if (MyStriCmp (LinuxName, L"LinuxMint")) {
-        ShowName = L"Mint";
-    }
-    else if (MyStriCmp (LinuxName, L"Zorin")) {
-        ShowName = L"ZorinOS";
-    }
-    else if (MyStriCmp (LinuxName, L"Elementary")) {
-        ShowName = L"ElementaryOS";
-    }
-    else {
-        ShowName = LinuxName;
-    }
+    if (0);
+    else if (MyStriCmp (LinuxName, L"LinuxMint" )) ShowName = L"Mint";
+    else if (MyStriCmp (LinuxName, L"Zorin"     )) ShowName = L"ZorinOS";
+    else if (MyStriCmp (LinuxName, L"Arch"      )) ShowName = L"ArchLinux";
+    else if (MyStriCmp (LinuxName, L"Elementary")) ShowName = L"ElementaryOS";
+    else                                           ShowName = LinuxName;
 
     return ShowName;
 } // static CHAR16 * GetShowName()
@@ -453,7 +447,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                                 L"Instance: Linux - %s%s",
                                 ShowName,
                                 (FindSubStr (Entry->LoaderPath, L"SystemD"))
-                                    ? L" via SystemdBoot" : L""
+                                    ? L" via SD Boot" : L""
                             );
                         }
                         else if (Entry->OSType == 'G') {
@@ -1450,7 +1444,7 @@ VOID SetLoaderDefaults (
             BREAD_CRUMB(L"%a:  5c 1", __func__);
             if (Volume->DiskKind != DISK_KIND_NET) {
                 BREAD_CRUMB(L"%a:  5c 1a 1", __func__);
-                GuessLinuxDistribution (&TmpIconName, Volume, LoaderPath);
+                GuessLinuxDistribution (&TmpIconName, Volume, LoaderPath, FALSE);
 
                 BREAD_CRUMB(L"%a:  5c 1a 2", __func__);
                 Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
@@ -1458,7 +1452,23 @@ VOID SetLoaderDefaults (
 
             BREAD_CRUMB(L"%a:  5c 2", __func__);
             if (GetImage) {
-                MergeUniqueStrings (&TmpIconName, L"linux", L',');
+                BREAD_CRUMB(L"%a:  5c 2a 1", __func__);
+                Temp = StrDuplicate (L"linux");
+                if (!GlobalConfig.HelpIcon) {
+                    BREAD_CRUMB(L"%a:  5c 2a 1a 1", __func__);
+                    MergeUniqueItems (&TmpIconName, Temp, L',');
+                    MY_FREE_POOL(Temp);
+                    BREAD_CRUMB(L"%a:  5c 2a 1a 2", __func__);
+                }
+                else {
+                    BREAD_CRUMB(L"%a:  5c 2a 1b 1", __func__);
+                    MergeUniqueItems (&Temp, TmpIconName, ',');
+                    MY_FREE_POOL(TmpIconName);
+                    TmpIconName = StrDuplicate (Temp);
+                    BREAD_CRUMB(L"%a:  5c 2a 1b 2", __func__);
+                }
+                MY_FREE_POOL(Temp);
+                BREAD_CRUMB(L"%a:  5c 2a 2", __func__);
             }
             GotFlag       = TRUE;
             Entry->OSType =  'L';
@@ -1581,7 +1591,7 @@ VOID SetLoaderDefaults (
         else if (FindSubStr (NameClues, L"ipxe")) {
             BREAD_CRUMB(L"%a:  5m 1", __func__);
             if (GetImage) {
-                MergeUniqueItems (&TmpIconName, L"network", L',');
+                MergeUniqueStrings (&TmpIconName, L"network", L',');
             }
 
             BREAD_CRUMB(L"%a:  5m 2", __func__);
@@ -1834,6 +1844,7 @@ LOADER_ENTRY * AddLoaderEntry (
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     BOOLEAN                 Found;
+    BOOLEAN                 IsStub;
     BOOLEAN                 GotSysD;
     BOOLEAN                 GotGrub;
     BOOLEAN                 GotElilo;
@@ -1876,35 +1887,87 @@ LOADER_ENTRY * AddLoaderEntry (
                     ? TRUE : FALSE;
             }
 
+            IsStub = FALSE;
+            if (!GotGrub && !GotSysD && !GotElilo) {
+                i = 0;
+                while (
+                    !IsStub &&
+                    (SearchName = FindCommaDelimited (GlobalConfig.LinuxPrefixes, i++)) != NULL
+                ) {
+                    if (FindSubStr (LoaderPath, SearchName)) {
+                        IsStub = TRUE;
+
+                        if (Entry->OSType != 'L') {
+                            Entry->OSType  = 'L';
+                        }
+                    }
+                    MY_FREE_POOL(SearchName);
+                }
+            }
+
             i = 0;
             while (
                 !Found &&
-                GlobalConfig.HelpScan &&
                 (LinuxName = FindCommaDelimited (MAIN_LINUX_DISTROS, i++)) != NULL
             ) {
-                SearchName = PoolPrint (L"\\%s", LinuxName);
-                if (FindSubStr (LoaderPath, SearchName)) {
-                    Found = TRUE;
+                if (!IsStub) {
+                    SearchName = PoolPrint (L"\\%s", LinuxName);
+                    if (FindSubStr (LoaderPath, SearchName)) {
+                        Found = TRUE;
 
-                    // DA-TAG: *DO NOT* Free 'ShowName'
-                    ShowName = GetShowName (LinuxName);
+                        // DA-TAG: *DO NOT* Free 'ShowName'
+                        ShowName = GetShowName (LinuxName);
 
-                    Entry->Title = (!GotGrub && !GotSysD && !GotElilo)
-                        ? PoolPrint (
-                            L"Instance: Linux - %s", ShowName
-                        )
-                        : (GotGrub)
+                        Entry->Title = (!GotGrub && !GotSysD && !GotElilo)
                             ? PoolPrint (
-                                L"Instance: Linux - %s via Grub", ShowName
+                                L"Instance: Linux - %s", ShowName
                             )
-                            : (GotSysD)
+                            : (GotGrub)
                                 ? PoolPrint (
-                                    L"Instance: Linux - %s via SystemdBoot", ShowName
+                                    L"Instance: Linux - %s via Grub", ShowName
                                 )
-                                : PoolPrint (
-                                    L"Instance: Linux - %s via Elilo", ShowName
-                                );
+                                : (GotSysD)
+                                    ? PoolPrint (
+                                        L"Instance: Linux - %s via SystemdBoot", ShowName
+                                    )
+                                    : PoolPrint (
+                                        L"Instance: Linux - %s via Elilo", ShowName
+                                    );
+                    }
                 }
+
+                if (!Found) {
+                    MY_FREE_POOL(LinuxName);
+                    GuessLinuxDistribution (&LinuxName, Volume, LoaderPath, TRUE);
+
+                    if (LinuxName != NULL) {
+                        Found = TRUE;
+
+                        // DA-TAG: *DO NOT* Free 'ShowName'
+                        ShowName = GetShowName (LinuxName);
+
+                        Entry->Title = (IsStub)
+                            ? PoolPrint (
+                                L"Instance: Linux - %s via Stub Loader", ShowName
+                            )
+                            : (!GotGrub && !GotSysD && !GotElilo)
+                                ? PoolPrint (
+                                    L"Instance: Linux - %s", ShowName
+                                )
+                                : (GotGrub)
+                                    ? PoolPrint (
+                                        L"Instance: Linux - %s via Grub", ShowName
+                                    )
+                                    : (GotSysD)
+                                        ? PoolPrint (
+                                            L"Instance: Linux - %s via SystemdBoot", ShowName
+                                        )
+                                        : PoolPrint (
+                                            L"Instance: Linux - %s via Elilo", ShowName
+                                        );
+                    }
+                } // if !Found
+
                 MY_FREE_POOL(LinuxName);
                 MY_FREE_POOL(SearchName);
             } // while
@@ -2154,6 +2217,8 @@ CHAR16 * SetVolKind (
     else if (MyStriCmp (VolumeName,   L"ESP"      )) RetVal = L""         ;
     else if (MyStrStr  (VolumeName,   L"Volume"   )) RetVal = L""         ;
     else if (MyStrStr  (VolumeName,   L"Partition")) RetVal = L""         ;
+    else if (MyStrStr  (VolumeName,   L"XBOOTLDR" )) RetVal = L""         ;
+    else if (MyStrStr  (InstanceName, L" via "    )) RetVal = L""         ;
     else if (MyStrStr  (InstanceName, L"Instance:")) RetVal = L"Volume:- ";
     else                                             RetVal = L""         ;
 
@@ -2169,6 +2234,7 @@ CHAR16 * SetVolJoin (
 
     if (0);
     else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""      ;
+    else if (MyStrStr  (InstanceName, L" via "          )) RetVal = L" on "  ;
     else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for " ;
     else if (ForBoot                                     ) RetVal = L" from ";
     else                                                   RetVal = L" on "  ;
@@ -2202,22 +2268,34 @@ CHAR16 * SetVolType (
 
 
     if (0);
-    else if (MyStrStr    (InstanceName, L"Manual Stanza:" )) RetVal = L""                 ;
-    else if (MyStrStr    (InstanceName, L"(Legacy"        )) RetVal = L""                 ;
-    else if (MyStrStr    (InstanceName, L"Instance:"      )) RetVal = L""                 ;
-    else if (MyStrStr    (VolumeName,   L"Partition"      )) RetVal = L""                 ;
-    else if (MyStrStr    (VolumeName,   L"Volume"         )) RetVal = L""                 ;
-    else if (MyStriCmp   (VolumeName,   L"ESP"            )) RetVal = L""                 ;
-    else if (MyStriCmp   (VolumeName,   L"EFI"            )) RetVal = L" System Partition";
-    else if (MyStriCmp   (VolumeName,   L"BOOTCAMP"       )) RetVal = L" Partition"       ;
-    else if (MyStriCmp   (InstanceName, L"Legacy Bootcode")) RetVal = L" Partition"       ;
-    else if (MyStrBegins (InstanceName, L"vmlinuz-"       )) RetVal = L" Partition"       ;
-    else if (MyStrBegins (InstanceName, L"bzImage-"       )) RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT32                 ) RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT16                 ) RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_FAT12                 ) RetVal = L" Partition"       ;
-    else if (VolumeFSType == FS_TYPE_EXFAT                 ) RetVal = L" Partition"       ;
-    else                                                     RetVal = L""                 ;
+    else if (MyStrStr  (VolumeName,   L"Partition"     )) RetVal = L"";
+    else if (MyStrStr  (InstanceName, L"Stub Loader"   )) {
+        RetVal = (MyStrStr (VolumeName, L"Linux"))
+            ? L" Partition" : L" Linux Partition";
+    }
+    else if (MyStrStr  (InstanceName, L"Manual Stanza:")) RetVal = L"";
+    else if (MyStrStr  (InstanceName, L"Instance:"     )) RetVal = L"";
+    else if (MyStrStr  (InstanceName, L"(Legacy"       )) RetVal = L"";
+    else if (MyStrStr  (VolumeName,   L"Volume"        )) RetVal = L"";
+    else if (MyStriCmp (VolumeName,   L"ESP"           )) RetVal = L"";
+    else if (
+        MyStrStr  (InstanceName, L"vmlinuz-") ||
+        MyStrStr  (InstanceName, L"bzImage-") ||
+        MyStrStr  (InstanceName, L"kernel-")  ||
+        MyStrStr  (InstanceName, L"Image-")
+    ) {
+        RetVal = (MyStrStr (VolumeName, L"Linux"))
+            ? L" Partition" : L" Linux Partition";
+    }
+    else if (MyStriCmp (VolumeName,   L"EFI"            )) RetVal = L" System Partition";
+    else if (MyStriCmp (VolumeName,   L"BOOTCAMP"       )) RetVal = L" Partition"       ;
+    else if (MyStrStr  (VolumeName,   L"XBOOTLDR"       )) RetVal = L" Partition"       ;
+    else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT32               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT16               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_FAT12               ) RetVal = L" Partition"       ;
+    else if (VolumeFSType == FS_TYPE_EXFAT               ) RetVal = L" Partition"       ;
+    else                                                   RetVal = L""                 ;
 
     return RetVal;
 } // CHAR16 * SetVolType()
@@ -4011,7 +4089,7 @@ VOID ScanForBootloaders (VOID) {
                     i++;
                 }
                 else {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanFiles);
+                    DeleteItemFromCsvList (DontScanItem, &GlobalConfig.DontScanFiles);
                     AmendedDontScan = TRUE;
                 }
 
@@ -4030,7 +4108,7 @@ VOID ScanForBootloaders (VOID) {
                     i++;
                 }
                 else {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanDirs);
+                    DeleteItemFromCsvList (DontScanItem, &GlobalConfig.DontScanDirs);
                     AmendedDontScan = TRUE;
                 }
 
@@ -4049,7 +4127,7 @@ VOID ScanForBootloaders (VOID) {
                     i++;
                 }
                 else {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanVolumes);
+                    DeleteItemFromCsvList (DontScanItem, &GlobalConfig.DontScanVolumes);
                     AmendedDontScan = TRUE;
                 }
 

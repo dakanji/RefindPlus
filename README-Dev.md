@@ -53,7 +53,7 @@ Some features:
 
 ## Installation
 
-[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus on macOS running on Intel-based Macs. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) can be installed first and its efi file replaced with the RefindPlus efi file. (Ensure the RefindPlus efi file is renamed to match). This manual process allows installing RefindPlus on other operating systems supported upstream.
+[MyBootMgr](https://www.dakanji.com/creations/index.html) is recommended to automate installing RefindPlus when running macOS on Intel-based Macs. Alternatively, as the RefindPlus efi file can function as a drop-in replacement for the upstream efi file, the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) can be installed first and its efi file replaced with the RefindPlus efi file. (Ensure the RefindPlus efi file is renamed to match). This manual process allows installing RefindPlus on other operating systems supported upstream.
 
 > [!NOTE]
 >
@@ -91,7 +91,7 @@ csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit
 decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
 decline_help_scan     |Disables feature that skips showing misc typically unwanted loaders
 decline_help_size     |Disables feature that sets additional UI scaling for very high DPI screens
-decline_help_text     |Disables complementary text colours if not required
+decline_help_text     |Disables feature that sets screen text to complementary colours
 decouple_key_f10      |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
 disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
 disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")

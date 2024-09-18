@@ -392,26 +392,29 @@ static
 VOID ParseReleaseFile (
     CHAR16       **OSIconName,
     REFIT_VOLUME  *Volume,
-    CHAR16        *FileName
+    CHAR16        *FileName,
+    BOOLEAN        FirstOnly
 ) {
     UINTN         FileSize;
     UINTN         TokenCount;
     CHAR16      **TokenList;
+    CHAR16       *TempName;
+    BOOLEAN       Updated;
     REFIT_FILE    File;
 
 
-    if (Volume      == NULL || // Check Pointer 'Volume'
-        FileName    == NULL || // Check Pointer 'FileName'
-        OSIconName  == NULL || // Check Pointer 'OSIconName' (prevent NULL pointer dereferencing)
-        *OSIconName == NULL    // Check pointer 'OSIconName' points to (ensure valid for further use)
+    if (Volume   == NULL || // Check Pointer 'Volume'
+        FileName == NULL    // Check Pointer 'FileName'
     ) {
         return;
     }
 
     FileSize = 0;
+    TempName = NULL;
     if (FileExists (Volume->RootDir, FileName) &&
         (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)
     ) {
+        Updated = FALSE;
         do {
             TokenCount = ReadTokenLine (&File, &TokenList);
             if ((TokenCount > 1) &&
@@ -421,22 +424,53 @@ VOID ParseReleaseFile (
                     MyStriCmp (TokenList[0], L"DISTRIB_ID")
                 )
             ) {
-                MergeUniqueWords (OSIconName, TokenList[1], L',');
+                if (FirstOnly) {
+                    // Prefer 'ID' if 'FirstOnly' is true
+                    if (MyStriCmp (TokenList[0], L"ID")) {
+                        Updated = TRUE;
+                    }
+                    else {
+                        Updated = FALSE;
+                    }
+                }
+
+                MY_FREE_POOL(TempName);
+                TempName = StrDuplicate (TokenList[1]);
+                MergeUniqueWords (OSIconName, TempName, L',');
             }
 
             FreeTokenLine (&TokenList, &TokenCount);
+
+            if (Updated && FirstOnly) {
+                break;
+            }
         } while (TokenCount > 0);
 
+        if (!FirstOnly) {
+            ToLower (*OSIconName);
+        }
+        else {
+            // Capitalise First Letter
+            if ((TempName[0] >= L'a') && (TempName[0] <= L'z')) {
+                TempName[0] = TempName[0] - L'a' + L'A';
+            }
+
+            MY_FREE_POOL(*OSIconName);
+            *OSIconName = StrDuplicate (TempName);
+        }
+
+        MY_FREE_POOL(TempName);
         MY_FREE_POOL(File.Buffer);
     }
 } // VOID ParseReleaseFile()
 
-// Try to guess the name of the Linux distribution & add that name to
-// OSIconName list.
+// Try to guess the name of the Linux distribution
+// and add this to the OSIconName list.
 VOID GuessLinuxDistribution (
     CHAR16       **OSIconName,
     REFIT_VOLUME  *Volume,
-    CHAR16        *LoaderPath
+    CHAR16        *LoaderPath,
+    BOOLEAN        FirstOnly
 ) {
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -447,20 +481,39 @@ VOID GuessLinuxDistribution (
 
     // If on Linux root fs, /etc/os-release or /etc/lsb-release may have clues.
     BREAD_CRUMB(L"%a:  3", __func__);
-    ParseReleaseFile (OSIconName, Volume, L"etc\\lsb-release");
+    ParseReleaseFile (OSIconName, Volume, L"etc\\os-release", FirstOnly);
 
     BREAD_CRUMB(L"%a:  4", __func__);
-    ParseReleaseFile (OSIconName, Volume, L"etc\\os-release");
+    if (!FirstOnly || *OSIconName == NULL) {
+        BREAD_CRUMB(L"%a:  4a 1", __func__);
+        ParseReleaseFile (OSIconName, Volume, L"etc\\lsb-release", FirstOnly);
+    }
 
     // Search for clues in the kernel's filename.
     BREAD_CRUMB(L"%a:  5", __func__);
     if (FindSubStr (LoaderPath, L".fc")) {
-        BREAD_CRUMB(L"%a:  5a 1 - Found Fedora Loader", __func__);
-        MergeStrings (OSIconName, L"fedora", L',');
+        BREAD_CRUMB(L"%a:  5a 1 - Fedora Loader", __func__);
+        if (FirstOnly && *OSIconName == NULL) {
+            BREAD_CRUMB(L"%a:  5a 1a 1", __func__);
+            *OSIconName = StrDuplicate (L"Fedora");
+        }
+        else {
+            BREAD_CRUMB(L"%a:  5a 1b 1", __func__);
+            MergeUniqueStrings (OSIconName, L"fedora", L',');
+        }
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
     }
     else if (FindSubStr (LoaderPath, L".el")) {
-        BREAD_CRUMB(L"%a:  5b 1 - Found RedHat Loader", __func__);
-        MergeStrings (OSIconName, L"redhat", L',');
+        BREAD_CRUMB(L"%a:  5b 1 - RedHat Loader", __func__);
+        if (FirstOnly && *OSIconName == NULL) {
+            BREAD_CRUMB(L"%a:  5b 1a 1", __func__);
+            *OSIconName = StrDuplicate (L"RedHat");
+        }
+        else {
+            BREAD_CRUMB(L"%a:  5b 1b 1", __func__);
+            MergeUniqueStrings (OSIconName, L"redhat", L',');
+        }
+        BREAD_CRUMB(L"%a:  5b 2", __func__);
     }
 
     BREAD_CRUMB(L"%a:  6 - END:- VOID - Output OSIconNameList = %s", __func__,
