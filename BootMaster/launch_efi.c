@@ -101,6 +101,7 @@ VOID WarnSecureBootError(
     CHAR16 *MsgStrD;
     CHAR16 *MsgStrE;
 
+
     if (Name != NULL) {
         LoaderName = PoolPrint (L"'%s'", Name);
     }
@@ -225,6 +226,7 @@ VOID DoEnableAndLockVMX(VOID) {
     UINT32 low_bits;
     UINT32 high_bits;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Attempt to Enable and Lock VMX");
     #endif
@@ -269,7 +271,9 @@ EFI_STATUS RecoveryBootAPFS (
     DataNVRAM = NULL;
     InitNVRAM = L"RecoveryModeDisk";
     NameNVRAM = L"internet-recovery-mode";
+
     UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
+
     Status = EfivarSetRaw (
         &AppleBootGuid, NameNVRAM,
         DataNVRAM, AsciiStrSize (DataNVRAM), TRUE
@@ -830,7 +834,7 @@ EFI_STATUS StartEFIImage (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Systemd LoaderDevicePartUUID:- '%s'",
+                    L"LoaderDevicePartUUID Value for SystemD:- '%s'",
                     EspGUID
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -994,6 +998,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     UINT64      osind;
     BOOLEAN     ConfirmAction;
 
+
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
     Status = EfivarGetRaw (
@@ -1079,6 +1084,7 @@ VOID RebootIntoLoader (
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
+
 
     TmpStr = L"Reboot into nvRAM Boot Option";
 
@@ -1182,6 +1188,7 @@ VOID StartLoader (
     IN BOOLEAN       TrustSynced
 ) {
     CHAR16 *LoaderPath;
+
 
     IsBoot        = TRUE;
     BootSelection = SelectionName;

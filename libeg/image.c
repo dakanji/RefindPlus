@@ -63,8 +63,8 @@
  */
 
 #include "libegint.h"
-#include "../BootMaster/global.h"
 #include "../BootMaster/lib.h"
+#include "../BootMaster/global.h"
 #include "../BootMaster/screenmgt.h"
 #include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"

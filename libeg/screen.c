@@ -47,16 +47,16 @@
  * Modifications distributed under the preceding terms.
  */
 
-#include "libegint.h"
-#include "../BootMaster/screenmgt.h"
-#include "../BootMaster/global.h"
-#include "../BootMaster/apple.h"
 #include "../BootMaster/lib.h"
+#include "../BootMaster/apple.h"
+#include "../BootMaster/global.h"
+#include "../BootMaster/screenmgt.h"
 #include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"
-#include "libeg.h"
-#include "lodepng.h"
 #include "../include/Handle.h"
+#include "libegint.h"
+#include "lodepng.h"
+#include "libeg.h"
 
 #include <efiUgaDraw.h>
 #include <efiConsoleControl.h>
@@ -69,7 +69,6 @@
 #endif
 
 extern UINTN    AppleFramebuffers;
-extern BOOLEAN  ForceTextOnly;
 extern BOOLEAN  ObtainHandleGOP;
 extern EG_PIXEL MenuBackgroundPixel;
 
@@ -440,11 +439,14 @@ typedef struct {
   EFI_GRAPHICS_OUTPUT_PROTOCOL     GraphicsOutput;
 } RP_GOP_PROTOCOL;
 
+
 static
 VOID DisableGOP (VOID) {
-    GOPDraw->Mode->Info = NULL;
-    GOPDraw->Mode       = NULL;
-    GOPDraw             = NULL;
+    if (GOPDraw != NULL) {
+        GOPDraw->Mode->Info = NULL;
+        GOPDraw->Mode       = NULL;
+        GOPDraw             = NULL;
+    }
 } // static VOID DisableGOP()
 
 static
@@ -699,6 +701,10 @@ static
 EFI_STATUS RefitCheckGOP (
     BOOLEAN FixGOP
 ) {
+    #if REFIT_DEBUG > 0
+    CHAR16                               *TmpStr;
+    #endif
+
     EFI_STATUS                            Status;
     UINTN                                 index;
     UINTN                                 HandleCount;
@@ -713,9 +719,6 @@ EFI_STATUS RefitCheckGOP (
     EFI_GRAPHICS_OUTPUT_PROTOCOL         *Gop;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *TmpStr;
-    #endif
 
     // Search for GOP on ConsoleOut handle
     OrigGop = NULL;
@@ -739,7 +742,6 @@ EFI_STATUS RefitCheckGOP (
 
     #if REFIT_DEBUG > 0
     TmpStr = (FixGOP) ? L"Replacement" : L"Appropriate";
-    LOG_MSG("\n\n");
     LOG_MSG("Seek %s ConsoleOut GOP Candidates:", TmpStr);
     #endif
 
@@ -899,7 +901,7 @@ BOOLEAN SupplyConsoleGop (
 
         #if REFIT_DEBUG > 0
         LOG_MSG("%s ConOut GOP:", (FixGOP) ? L"Replace" : L"Provide");
-        LOG_MSG("%s  - Status:- '%r' ... RefitCheckGOP", OffsetNext, Status);
+        LOG_MSG("%s      RefitCheckGOP:- '%r'", OffsetNext, Status);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -907,7 +909,7 @@ BOOLEAN SupplyConsoleGop (
             Status = OcProvideConsoleGop (TRUE);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s  - Status:- '%r' ... SetConsoleOutGOP", OffsetNext, Status);
+            LOG_MSG("%s   SetConsoleOutGOP:- '%r'", OffsetNext, Status);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -917,7 +919,7 @@ BOOLEAN SupplyConsoleGop (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s  - Status:- '%r' ... HandleProtocolGOP", OffsetNext, Status);
+                LOG_MSG("%s  HandleProtocolGOP:- '%r'", OffsetNext, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -936,7 +938,11 @@ BOOLEAN SupplyConsoleGop (
 } // static BOOLEAN SupplyConsoleGop()
 
 EFI_STATUS egDumpGOPVideoModes (VOID) {
-    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+    #if REFIT_DEBUG > 0
+    UINT32     ModeLog;
+    CHAR16    *MsgStr;
+    CHAR16    *PixelFormatDesc;
+    #endif
 
     EFI_STATUS Status;
     UINT32     Mode;
@@ -946,11 +952,8 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     BOOLEAN    OurValidGOP;
     BOOLEAN    IncrementLoop;
 
-    #if REFIT_DEBUG > 0
-    UINT32     ModeLog;
-    CHAR16    *MsgStr;
-    CHAR16    *PixelFormatDesc;
-    #endif
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
@@ -1106,11 +1109,11 @@ static
 EFI_STATUS GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
-    EFI_STATUS Status;
-
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
+    CHAR16     *MsgStr;
     #endif
+
+    EFI_STATUS  Status;
 
 
     if (GOPDraw == NULL) {
@@ -1133,15 +1136,15 @@ static
 EFI_STATUS egSetGopMode (
     INT32 Next
 ) {
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+    #endif
+
     EFI_STATUS                            Status;
     UINT32                                i, MaxMode;
     UINTN                                 SizeOfInfo;
     INT32                                 Mode;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    #endif
 
 
     if (GOPDraw == NULL) {
@@ -1218,6 +1221,10 @@ EFI_STATUS egSetGopMode (
 // On systems with UGA, just record current resolution.
 static
 EFI_STATUS egSetMaxResolution (VOID) {
+    #if REFIT_DEBUG > 0
+    CHAR16                               *MsgStr;
+    #endif
+
     EFI_STATUS                            Status;
     EFI_STATUS                            XStatus;
     UINT32                                Mode;
@@ -1232,9 +1239,6 @@ EFI_STATUS egSetMaxResolution (VOID) {
     UINTN                                 SizeOfInfo;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    #if REFIT_DEBUG > 0
-    CHAR16                               *MsgStr;
-    #endif
 
     if (GOPDraw == NULL) {
         if (UGADraw != NULL) {
@@ -1382,6 +1386,7 @@ VOID egDetermineScreenSize (VOID) {
     UINT32     UgaDepth;
     UINT32     UgaRefreshRate;
 
+
     // Get screen size
     if (GOPDraw != NULL) {
         egHasGraphics  = TRUE;
@@ -1455,14 +1460,17 @@ VOID egGetScreenSize (
 
 static
 VOID egInitConsoleControl (VOID) {
-    EFI_STATUS                     Status;
-    UINTN                          i;
-    UINTN                          HandleCount;
-    EFI_HANDLE                    *HandleBuffer;
-
     #if REFIT_DEBUG > 0
     CHAR16     *MsgStr;
+    #endif
 
+    EFI_STATUS  Status;
+    UINTN       i;
+    UINTN       HandleCount;
+    EFI_HANDLE *HandleBuffer;
+
+
+    #if REFIT_DEBUG > 0
     LOG_MSG("%s  - Locate Console Control Protocol", OffsetNext);
     #endif
 
@@ -1542,6 +1550,7 @@ VOID LogUGADrawExit (
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
 
+
     MsgStr = (EFI_ERROR(Status))
         ? L"Assess Universal Graphics Adapter ... NOT OK!!"
         : L"Assess Universal Graphics Adapter ... ok";
@@ -1553,6 +1562,10 @@ VOID LogUGADrawExit (
 BOOLEAN egInitUGADraw (
     BOOLEAN LogOutput
 ) {
+    #if REFIT_DEBUG > 0
+    BOOLEAN    CheckMute = FALSE;
+    #endif
+
     EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
@@ -1564,9 +1577,8 @@ BOOLEAN egInitUGADraw (
     EFI_HANDLE                    *HandleBuffer;
     EFI_UGA_DRAW_PROTOCOL         *TmpUGA;
 
-    #if REFIT_DEBUG > 0
-    BOOLEAN    CheckMute = FALSE;
 
+    #if REFIT_DEBUG > 0
     if (!LogOutput) {
         MY_MUTELOGGER_SET;
     }
@@ -1684,6 +1696,12 @@ BOOLEAN egInitUGADraw (
 } // static BOOLEAN egInitUGADraw()
 
 VOID egInitScreen (VOID) {
+    #if REFIT_DEBUG > 0
+    CHAR16                                *MsgStr;
+    BOOLEAN                                PrevFlag;
+    BOOLEAN                                SelectedOnce;
+    #endif
+
     EFI_STATUS                             Status;
     EFI_STATUS                             XFlag;
     UINTN                                  i;
@@ -1707,16 +1725,14 @@ VOID egInitScreen (VOID) {
     BOOLEAN                                FoundHandleUGA;
     BOOLEAN                                FlagUGA;
     BOOLEAN                                thisValidGOP;
+    BOOLEAN                                GotConOutGOP;
     EFI_HANDLE                            *HandleBuffer;
     EFI_GRAPHICS_OUTPUT_PROTOCOL          *OldGop;
     EFI_GRAPHICS_OUTPUT_PROTOCOL          *TmpGop;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    #if REFIT_DEBUG > 0
-    CHAR16     *MsgStr;
-    BOOLEAN     PrevFlag;
-    BOOLEAN     SelectedOnce;
 
+    #if REFIT_DEBUG > 0
     LOG_MSG("Determine Graphics Control Method:");
     #endif
 
@@ -1769,8 +1785,15 @@ VOID egInitScreen (VOID) {
                 gBS->HandleProtocol, gST->ConsoleOutHandle,
                 &GOPDrawProtocolGuid, (VOID **) &OldGop
             );
-            if (Status == EFI_UNSUPPORTED) {
-                Status  = EFI_NOT_FOUND;
+            if (!EFI_ERROR(Status)) {
+                GotConOutGOP = TRUE;
+            }
+            else {
+                GotConOutGOP = FALSE;
+
+                if (Status == EFI_UNSUPPORTED) {
+                    Status  = EFI_NOT_FOUND;
+                }
             }
 
             #if REFIT_DEBUG > 0
@@ -1919,16 +1942,17 @@ VOID egInitScreen (VOID) {
                 #endif
 
                 if (!GlobalConfig.SetConsoleGOP) {
-                    GOPDraw = OldGop;
-                    thisValidGOP = TRUE;
-
                     #if REFIT_DEBUG > 0
                     LOG_MSG("\n\n");
                     #endif
+
+                    GOPDraw = OldGop;
+                    thisValidGOP = TRUE;
                 }
                 else {
                     thisValidGOP = SupplyConsoleGop (FALSE);
                     XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
+
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
                         MsgStr = PoolPrint (
@@ -1936,21 +1960,30 @@ VOID egInitScreen (VOID) {
                             XFlag
                         );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+                        LOG_MSG("\n\n");
                         LOG_MSG("INFO: %s", MsgStr);
                     }
                     #endif
-                    if (EFI_ERROR(XFlag)) {
+
+                    if (!EFI_ERROR(XFlag)) {
+                        #if REFIT_DEBUG > 0
+                        LOG_MSG("\n\n");
+                        #endif
+                    }
+                    else {
                         #if REFIT_DEBUG > 0
                         MY_FREE_POOL(MsgStr);
                         MsgStr = StrDuplicate (L"Leveraging GFX Handle GOP");
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         if (GotGoodGOP) {
+                            LOG_MSG("\n\n");
                             LOG_MSG("INFO: ");
                         }
                         else {
                             LOG_MSG("%s      ", OffsetNext);
                         }
                         LOG_MSG("%s", MsgStr);
+                        LOG_MSG("\n\n");
                         #endif
 
                         // Set to Needed Value ... Previous, EFI_LOAD_ERROR, was only for logging
@@ -1960,8 +1993,8 @@ VOID egInitScreen (VOID) {
                         GOPDraw = OldGop;
                         thisValidGOP = TRUE;
                     }
+
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -1973,25 +2006,25 @@ VOID egInitScreen (VOID) {
                 );
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
 
                 if (!GlobalConfig.SetConsoleGOP) {
-                    #if REFIT_DEBUG > 0
-                    LOG_MSG("\n\n");
-                    #endif
-
                     // Disable GOP
                     thisValidGOP = FALSE;
                     DisableGOP();
                 }
                 else {
-                    thisValidGOP = SupplyConsoleGop (TRUE);
+                    thisValidGOP = SupplyConsoleGop (
+                        (GotConOutGOP) ? TRUE : FALSE
+                    );
                     XFlag = (thisValidGOP) ? EFI_SUCCESS : EFI_LOAD_ERROR;
                     #if REFIT_DEBUG > 0
                     if (!GotGoodGOP) {
                         MsgStr = PoolPrint (
-                            L"Replace GOP on ConsoleOut Handle ... %r",
+                            L"%s GOP on ConsoleOut Handle ... %r",
+                            (GotConOutGOP) ? L"Replace" : L"Provide",
                             XFlag
                         );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
@@ -2002,7 +2035,7 @@ VOID egInitScreen (VOID) {
                         #if REFIT_DEBUG > 0
                         MY_FREE_POOL(MsgStr);
                         // DA-TAG: Actually already disabled
-                        MsgStr = StrDuplicate (L"Disabling Available GOP");
+                        MsgStr = StrDuplicate (L"Disable All GOP Instances");
                         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                         LOG_MSG("%s      %s", OffsetNext, MsgStr);
                         #endif
@@ -2182,12 +2215,12 @@ VOID egInitScreen (VOID) {
     if (!thisValidGOP && UGADraw == NULL) {
         // Graphics *IS NOT* Available
         // Fall Back on Text Mode
-        egHasGraphics         = FlagUGA       = FALSE;
-        GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
+        egHasGraphics = FlagUGA = FALSE;
+        GlobalConfig.TextOnly = TRUE;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Graphics *NOT* Available ... Falling Back on Text Mode"
+            L"Graphics *NOT* Detected ... Fall Back on Text Mode"
         );
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         if (PrevFlag) {
@@ -2207,7 +2240,9 @@ VOID egInitScreen (VOID) {
 
         if (SetPreferUGA) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Forcing Universal Graphics Adapter");
+            MsgStr = StrDuplicate (
+                L"GOP *WAS NOT* Retrieved ... Force UGA"
+            );
             #endif
 
             // Infer: Do not flag 'thisValidGOP' as no longer used
@@ -2220,7 +2255,7 @@ VOID egInitScreen (VOID) {
         else {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
-                L"GOP *NOT* Available ... Falling Back on UGA"
+                L"GOP *IS  NOT* Available ... Adopt UGA"
             );
             #endif
         }
@@ -2338,9 +2373,9 @@ VOID egInitScreen (VOID) {
         // Force Text Mode ... AppleFramebuffers Missing on Mac with UGA
         // Disable GOP
         DisableGOP();
-        UGADraw                               =  NULL;
-        egHasGraphics                         = FALSE;
-        GlobalConfig.TextOnly = ForceTextOnly =  TRUE;
+        UGADraw               =  NULL;
+        egHasGraphics         = FALSE;
+        GlobalConfig.TextOnly =  TRUE;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"YES (Without Display ... Forcing Text Mode)");
@@ -2372,6 +2407,7 @@ BOOLEAN egGetResFromMode (
     EFI_STATUS                             Status;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
+
     if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
         Info = NULL;
         Status = REFIT_CALL_4_WRAPPER(
@@ -2391,15 +2427,13 @@ BOOLEAN egGetResFromMode (
     return FALSE;
 } // BOOLEAN egGetResFromMode()
 
-// Sets the screen resolution to the specified value, if possible. If *ScreenHeight
-// is 0 and GOP mode is detected, assume that *ScreenWidth contains a GOP mode
-// number rather than a horizontal resolution. If the specified resolution is not
-// valid, displays a warning with the valid modes on GOP (UEFI) systems, or silently
-// fails on UGA (EFI 1.x) systems. Note that this function attempts to set ANY screen
-// resolution, even 1x1 or ridiculously large values.
-// Upon success, returns actual screen resolution in *ScreenWidth and *ScreenHeight.
-// These values are unchanged upon failure.
-// Returns TRUE if successful, FALSE if not.
+// Sets the screen resolution to the specified value on valid GOP setups if possible.
+// If *ScreenHeight is 0 and a GOP mode is detected, assumes *ScreenWidth refers to
+// a GOP mode number rather than a horizontal resolution. If the target resolution
+// is invalid, displays a warning and the valid GOP modes on GOP based graphics.
+// Note that this attempts to set ANY supplied screen resolution without checks.
+// On success, returns actual screen resolution in *ScreenWidth and *ScreenHeight.
+// These values are unchanged upon failure. Returns TRUE if successful, FALSE if not.
 BOOLEAN egSetScreenSize (
     IN OUT UINTN *ScreenWidth,
     IN OUT UINTN *ScreenHeight
@@ -2721,7 +2755,7 @@ BOOLEAN egSetTextMode (
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Set Text Mode to %d", RequestedMode);
+    MsgStr = PoolPrint (L"Set Text Mode to '%d'", RequestedMode);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
     MY_FREE_POOL(MsgStr);
@@ -2729,6 +2763,10 @@ BOOLEAN egSetTextMode (
 
     Status = REFIT_CALL_2_WRAPPER(gST->ConOut->SetMode, gST->ConOut, RequestedMode);
     if (!EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        LOG_MSG("\n");
+        #endif
+
         return TRUE;
     }
 
@@ -2892,7 +2930,7 @@ VOID egSetGraphicsModeEnabled (
     BREAD_CRUMB(L"%a:  5 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
-} // VOID egSetGraphicsModeEnabl()
+} // VOID egSetGraphicsModeEnabled()
 
 //
 // Drawing to the screen
@@ -3062,7 +3100,7 @@ VOID egDrawImageWithTransparency (
     );
 
     if (Background != NULL) {
-        BltImageCompositeBadge (
+        BltImageCompositeAny (
             Background,
             Image, BadgeImage,
             XPos, YPos

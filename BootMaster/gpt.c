@@ -27,8 +27,8 @@
 
  #include "gpt.h"
  #include "lib.h"
- #include "screenmgt.h"
  #include "crc32.h"
+ #include "screenmgt.h"
  #include "../include/refit_call_wrapper.h"
 
  #ifdef __MAKEWITH_TIANO
@@ -95,6 +95,7 @@ BOOLEAN GptHeaderValid (
     UINT32  CrcValue;
     UINTN   HeaderSize;
 
+
     if (GptData                == NULL ||
         GptData->Header        == NULL ||
         GptData->ProtectiveMBR == NULL
@@ -155,6 +156,7 @@ EFI_STATUS ReadGptData (
     UINT64      BufferSize;
     UINTN       i;
     GPT_DATA   *GptData; // Temporary storage ... Tansferred to *Data later
+
 
     if (Volume == NULL || Data == NULL) {
         // Early Return
@@ -278,6 +280,7 @@ GPT_ENTRY * FindPartWithGuid (
     GPT_ENTRY *Found;
     GPT_DATA  *GptData;
 
+
     if (Guid == NULL || gPartitions == NULL) {
         // Early Return
         return NULL;
@@ -315,6 +318,7 @@ GPT_ENTRY * FindPartWithGuid (
 VOID ForgetPartitionTables (VOID) {
     GPT_DATA  *Next;
 
+
     while (gPartitions != NULL) {
         Next = gPartitions->NextEntry;
         ClearGptData (gPartitions);
@@ -330,6 +334,7 @@ VOID AddPartitionTable (
     EFI_STATUS  Status;
     GPT_DATA   *GptList;
     GPT_DATA   *GptData;
+
 
     GptData = NULL;
     Status = ReadGptData (Volume, &GptData);

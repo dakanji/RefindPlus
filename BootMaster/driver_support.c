@@ -60,18 +60,18 @@
  */
 
 #include "driver_support.h"
-#include "lib.h"
 #include "mystrings.h"
+#include "lib.h"
 #include "screenmgt.h"
 #include "launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)
-#   define DRIVER_DIRS             L"drivers,drivers_x64"
+#   define DRIVER_DIRS             L"drivers_x64,drivers"
 #elif defined (EFI32)
-#   define DRIVER_DIRS             L"drivers,drivers_ia32"
+#   define DRIVER_DIRS             L"drivers_ia32,drivers"
 #elif defined (EFIAARCH64)
-#   define DRIVER_DIRS             L"drivers,drivers_aa64"
+#   define DRIVER_DIRS             L"drivers_aa64,drivers"
 #else
 #   define DRIVER_DIRS             L"drivers"
 #endif
@@ -152,6 +152,7 @@ EFI_STATUS LibScanHandleDatabase (
     UINTN                                  OpenInfoIndex;
     UINTN                                  ChildIndex;
     BOOLEAN                                DriverBindingHandleIndexValid;
+
 
     DriverBindingHandleIndexValid = FALSE;
     if (DriverBindingHandleIndex != NULL) {
@@ -370,6 +371,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
     BOOLEAN      Parent;
     BOOLEAN      Device;
 
+
     Status = LibLocateHandle (
         AllHandles,
         NULL, NULL,
@@ -463,6 +465,7 @@ VOID ConnectFilesystemDriver (
     MY_EFI_BLOCK_IO_PROTOCOL              *BlockIo;
     MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *Fs;
     EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
+
 
     // Get all DiskIo handles
     Handles = NULL;
@@ -564,6 +567,7 @@ UINTN ScanDriverDir (
     EFI_HANDLE                     DriverHandle;
     EFI_FILE_INFO                 *DirEntry;
     REFIT_DIR_ITER                 DirIter;
+
 
     CleanUpPathNameSlashes (Path);
 
@@ -684,7 +688,6 @@ BOOLEAN LoadDrivers (VOID) {
     EFI_HANDLE  *DriversListProg;
     EFI_HANDLE  *DriversListUser;
 
-
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
     UINTN        HandleSize;
@@ -705,7 +708,6 @@ BOOLEAN LoadDrivers (VOID) {
     LOG_MSG("\n");
 #endif
     #endif
-
 
     DriversListProg = DriversListUser = DriversListAll = NULL;
     NumFound = CurFound = i = 0;

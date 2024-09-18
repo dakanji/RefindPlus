@@ -249,14 +249,14 @@ L"EFI\\tools\\ipxe.efi,EFI\\BOOT\\tools\\ipxe.efi,EFI\\ipxe.efi,\\ipxe.efi"
 #endif
 
 #define BASE_LINUX_DISTROS \
-L"Alpine,Arch,Artful,Bionic,Cachy,Centos,Chakra,Crunchbang,Debian,Deepin,\
-Devuan,Elementary,Endeavour,Fedora,Frugalware,Gentoo,Gummiboot,LinuxMint,\
-Mageia,Mandriva,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,SUSE,\
-Trusty,Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Xenial,Zesty"
+L"Arch,Artful,Bionic,CachyOS,Centos,Chakra,Crunchbang,Debian,Deepin,Devuan,\
+Elementary,EndeavourOS,Fedora,Frugalware,Gentoo,LinuxMint,\
+Mageia,Mandriva,Manjaro,OpenSUSE,Redhat,Slackware,SUSE,\
+Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Zorin"
 
 #define MAIN_LINUX_DISTROS \
-L"Arch,Debian,Deepin,Elementary,Endeavour,Fedora,Gentoo,\
-LinuxMint,Manjaro,NixOS,OpenSUSE,Redhat,Slackware,Ubuntu,Zorin"
+L"Arch,CachyOS,Debian,Deepin,Elementary,EndeavourOS,Fedora,Gentoo,\
+LinuxMint,Manjaro,OpenSUSE,Redhat,Slackware,SUSE,Ubuntu,Zorin"
 
 
 EG_IMAGE * GetDiskBadge (IN UINTN DiskType);

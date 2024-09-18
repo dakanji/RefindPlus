@@ -8,11 +8,11 @@
 
 #include <global.h>
 
-#include "guid.h"
-#include "../BootMaster/lib.h"
-#include "simple_file.h"
-#include "../include/refit_call_wrapper.h"
 #include "mok.h"
+#include "guid.h"
+#include "simple_file.h"
+#include "../BootMaster/lib.h"
+#include "../include/refit_call_wrapper.h"
 
 #include <security_policy.h>
 

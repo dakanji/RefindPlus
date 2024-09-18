@@ -403,11 +403,11 @@
 #
 #persist_boot_args
 
-# RefindPlus defaults to using the Graphic Output Protocol (GOP) for graphics
-# output if available and only falls backs on the Universal Graphics Adapter
+# RefindPlus defaults to using the Graphics Output Protocol (GOP)
+# to render displays and only falls backs on the Universal Graphics Adapter
 # (UGA) when this is available and GOP is not. When this setting is active,
 # it will instead always use UGA when available and will not consider GOP.
-# This may also improve RefindPlus loading speed on legacy UGA-Only GPUs.
+# This may also improve RefindPlus loading speed on legacy UGA-only GPUs.
 #
 # Inactive when commented out (Does not prefer UGA over GOP for graphics)
 #
@@ -823,15 +823,15 @@
 # That is, 'use_graphics_for' alone works like setting 'everything'.
 #
 # Valid options:
-#   none        - No loader
-#   osx         - macOS loader
-#   windows     - Windows loader
-#   linux       - Linux stub loader
-#   grub        - The GRUB boot loader
-#   elilo       - The ELILO boot loader
-#   clover      - The Clover boot loader
-#   opencore    - The OpenCore boot loader
-#   everything  - Graphics for every loader
+#   none        - No Loader
+#   osx         - macOS Loader
+#   windows     - Windows Loader
+#   linux       - Linux Stub loader
+#   grub        - The GRUB Boot Loader
+#   elilo       - The ELILO Boot Loader
+#   clover      - The Clover Boot Loader
+#   opencore    - The OpenCore Boot Loader
+#   everything  - For All Loaders and Tools
 #
 # NOTES:
 # 1. The 'everything' option takes precedence over others apart from 'none'

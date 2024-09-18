@@ -79,6 +79,7 @@ UINTN                  ValidEntryCount =     0;
 BOOLEAN                OuterLoop       =  TRUE;
 BOOLEAN                SetShowTools    = FALSE;
 BOOLEAN                ManualInclude   = FALSE;
+BOOLEAN                ForceTextOnly   = FALSE;
 
 #if REFIT_DEBUG > 0
 BOOLEAN                FoundFontImage  =  TRUE;
@@ -90,8 +91,6 @@ BOOLEAN                FoundFontImage  =  TRUE;
 #else
     BOOLEAN            ForensicLogging = FALSE;
 #endif
-
-extern BOOLEAN         ForceTextOnly;
 
 
 #if REFIT_DEBUG > 0
@@ -785,9 +784,13 @@ VOID AddSubmenu (
 
     while (
         SubEntry->Enabled &&
-        (TokenCount = ReadTokenLine (File, &TokenList)) > 0 &&
-        StrCmp (TokenList[0], L"}") != 0
+        (TokenCount = ReadTokenLine (File, &TokenList)) > 0
     ) {
+        if (MyStriCmp (TokenList[0], L"}")) {
+            FreeTokenLine (&TokenList, &TokenCount);
+            break;
+        }
+
         LOG_SEP(L"X");
         BREAD_CRUMB(L"%a:  5a 1 - WHILE LOOP:- START", __func__);
         if (MyStriCmp (TokenList[0], L"disabled")) {
@@ -1601,6 +1604,9 @@ VOID ExitOuter (
 
 
     // Set a few defaults if required
+    if (AppleFirmware && !GlobalConfig.LegacySync) {
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
+    }
     if (GlobalConfig.DontScanVolumes == NULL) {
         GlobalConfig.DontScanVolumes = StrDuplicate (
             DONT_SCAN_VOLUMES

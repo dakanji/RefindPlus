@@ -150,6 +150,7 @@ CHAR16 * GetShowName (
 ) {
     CHAR16 *ShowName;
 
+
     // DA-TAG: *DO NOT* Free 'ShowName'
     if (MyStriCmp (LinuxName, L"LinuxMint")) {
         ShowName = L"Mint";
@@ -159,12 +160,6 @@ CHAR16 * GetShowName (
     }
     else if (MyStriCmp (LinuxName, L"Elementary")) {
         ShowName = L"ElementaryOS";
-    }
-    else if (MyStriCmp (LinuxName, L"Endeavour")) {
-        ShowName = L"EndeavourOS";
-    }
-    else if (MyStriCmp (LinuxName, L"Cachy")) {
-        ShowName = L"CachyOS";
     }
     else {
         ShowName = LinuxName;
@@ -239,6 +234,7 @@ REFIT_MENU_ENTRY * CopyMenuEntry (
 ) {
     REFIT_MENU_ENTRY *NewEntry;
 
+
     if (Entry == NULL) {
         // Early Return
         return NULL;
@@ -279,6 +275,7 @@ LOADER_ENTRY * InitializeLoaderEntry (
     IN LOADER_ENTRY *Entry
 ) {
     LOADER_ENTRY *NewEntry;
+
 
     NewEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
     if (NewEntry == NULL) {
@@ -355,12 +352,17 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         return NULL;
     }
 
-    DisplayName = NULL;
     if (GlobalConfig.SyncAPFS                           &&
         Entry->Volume->FSType  == FS_TYPE_APFS          &&
         Entry->Volume->VolRole == APFS_VOLUME_ROLE_PREBOOT
     ) {
-        DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
+        DisplayName = GetVolumeGroupName (
+            Entry->LoaderPath,
+            Entry->Volume
+        );
+    }
+    else {
+        DisplayName = NULL;
     }
 
     FileName = (Entry->LoaderPath != NULL) ? Basename (Entry->LoaderPath) : NULL;
@@ -448,7 +450,10 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
 
                         if (Entry->OSType == 'L') {
                             DisplayName = PoolPrint (
-                                L"Instance: Linux - %s", ShowName
+                                L"Instance: Linux - %s%s",
+                                ShowName,
+                                (FindSubStr (Entry->LoaderPath, L"SystemD"))
+                                    ? L" via SystemdBoot" : L""
                             );
                         }
                         else if (Entry->OSType == 'G') {
@@ -1829,6 +1834,7 @@ LOADER_ENTRY * AddLoaderEntry (
     CHAR16                 *LinuxName;
     CHAR16                 *SearchName;
     BOOLEAN                 Found;
+    BOOLEAN                 GotSysD;
     BOOLEAN                 GotGrub;
     BOOLEAN                 GotElilo;
     BOOLEAN                 FoundPreBootName;
@@ -1855,10 +1861,17 @@ LOADER_ENTRY * AddLoaderEntry (
         if (CheckLinux) {
             if (FindSubStr (LoaderPath, L"Grub")) {
                 GotElilo = FALSE;
+                GotSysD  = FALSE;
                 GotGrub  =  TRUE;
+            }
+            else if (FindSubStr (LoaderPath, L"SystemD")) {
+                GotSysD  =  TRUE;
+                GotGrub  = FALSE;
+                GotElilo = FALSE;
             }
             else {
                 GotGrub  = FALSE;
+                GotSysD  = FALSE;
                 GotElilo = (FindSubStr (LoaderPath, L"Elilo"))
                     ? TRUE : FALSE;
             }
@@ -1876,7 +1889,7 @@ LOADER_ENTRY * AddLoaderEntry (
                     // DA-TAG: *DO NOT* Free 'ShowName'
                     ShowName = GetShowName (LinuxName);
 
-                    Entry->Title = (!GotGrub && !GotElilo)
+                    Entry->Title = (!GotGrub && !GotSysD && !GotElilo)
                         ? PoolPrint (
                             L"Instance: Linux - %s", ShowName
                         )
@@ -1884,9 +1897,13 @@ LOADER_ENTRY * AddLoaderEntry (
                             ? PoolPrint (
                                 L"Instance: Linux - %s via Grub", ShowName
                             )
-                            : PoolPrint (
-                                L"Instance: Linux - %s via Elilo", ShowName
-                            );
+                            : (GotSysD)
+                                ? PoolPrint (
+                                    L"Instance: Linux - %s via SystemdBoot", ShowName
+                                )
+                                : PoolPrint (
+                                    L"Instance: Linux - %s via Elilo", ShowName
+                                );
                 }
                 MY_FREE_POOL(LinuxName);
                 MY_FREE_POOL(SearchName);
@@ -2060,7 +2077,8 @@ LOADER_LIST * AddLoaderListEntry (
     struct LOADER_LIST *LatestEntry;
     struct LOADER_LIST *CurrentEntry;
     struct LOADER_LIST *PrevEntry;
-    BOOLEAN LinuxRescue;
+    BOOLEAN             LinuxRescue;
+
 
     if (LoaderList == NULL) {
         LatestEntry = NewEntry;
@@ -2105,6 +2123,7 @@ VOID CleanUpLoaderList (
     struct LOADER_LIST *LoaderList
 ) {
     struct LOADER_LIST *Temp;
+
 
     if (LoaderList == NULL) {
         return;
@@ -2363,6 +2382,7 @@ BOOLEAN DuplicatesFallback (
     UINTN            FallbackSize;
     BOOLEAN          AreIdentical;
 
+
     if (!FileExists (Volume->RootDir, FileName) ||
         !FileExists (Volume->RootDir, FALLBACK_FULLNAME)
     ) {
@@ -2461,6 +2481,7 @@ BOOLEAN IsSymbolicLink (
     EFI_FILE_INFO   *FileInfo;
     EFI_STATUS       Status;
     UINTN            FileSize2;
+
 
     FileSize2 = 0;
     Status = REFIT_CALL_5_WRAPPER(

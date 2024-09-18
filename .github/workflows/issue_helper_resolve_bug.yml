@@ -41,7 +41,7 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_resolve_bug1:
     name: Issue - Resolve - Bug1
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions-cool/issues-helper@v3
@@ -53,7 +53,7 @@ jobs:
   issue_resolve_bug2:
     name: Issue - Resolve - Bug2
     needs: [issue_resolve_bug1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ success() || failure() }}
     steps:
@@ -161,7 +161,7 @@ jobs:
   issue_resolve_bug3:
     name: Issue - Resolve - Bug3
     needs: [issue_resolve_bug2]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ success() || failure() }}
     steps:
@@ -175,7 +175,7 @@ jobs:
   issue_resolve_bug4:
     name: Issue - Resolve - Bug4
     needs: [issue_resolve_bug3]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ success() || failure() }}
     steps:
@@ -189,13 +189,13 @@ jobs:
   issue_resolve_bug5:
     name: Issue - Resolve - Bug5
     needs: [issue_resolve_bug4]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ success() || failure() }}
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
-          close-reason: 'completed'
           actions: 'close-issue'
+          close-reason: 'completed'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}

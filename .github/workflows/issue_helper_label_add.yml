@@ -21,7 +21,9 @@ on:
         - 'Label - Add - Tagged'
         - 'Label - Add - Queries'
         - 'Label - Add - Upstream'
-        - 'Label - Add - Not-Planned'
+        - 'Label - Add - Enhancement - Only'
+        - 'Label - Add - Not-Planned_and_Enhancement'
+        - 'Label - Add - Not-Planned - Only'
       item_id:
         description: 'Item ID'
         required: true
@@ -43,7 +45,7 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   label_add_abandoned:
     name: Label - Add - Abandoned
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Abandoned'
     steps:
@@ -56,7 +58,7 @@ jobs:
 
   label_add_cancelled:
     name: Label - Add - Cancelled
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Cancelled'
     steps:
@@ -80,14 +82,14 @@ jobs:
       - name: Label - Add - Cancelled - 3
         uses: actions-cool/issues-helper@v3
         with:
-          close-reason: 'completed'
           actions: 'close-issue'
+          close-reason: 'completed'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
   label_add_discussion:
     name: Label - Add - Discussion
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Discussion'
     steps:
@@ -195,8 +197,8 @@ jobs:
         id: close-original-issue
         uses: actions-cool/issues-helper@v3
         with:
-          close-reason: 'completed'
           actions: 'close-issue'
+          close-reason: 'completed'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
@@ -210,7 +212,7 @@ jobs:
 
   label_add_cannot-replicate:
     name: Label - Add - Cannot-Replicate
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
     steps:
@@ -234,14 +236,14 @@ jobs:
       - name: Label - Add - Cannot-Replicate - 3
         uses: actions-cool/issues-helper@v3
         with:
-          close-reason: 'completed'
           actions: 'close-issue'
+          close-reason: 'completed'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
   label_add_incomplete_issue:
     name: Label - Add - Incomplete - Issues
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Incomplete - Issues'
     steps:
@@ -277,7 +279,7 @@ jobs:
 
   label_add_incomplete_enhancement:
     name: Label - Add - Incomplete - Enhancement
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Incomplete - Enhancement'
     steps:
@@ -313,7 +315,7 @@ jobs:
 
   label_add_invalid:
     name: Label - Add - Invalid
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Invalid'
     steps:
@@ -326,7 +328,7 @@ jobs:
 
   label_add_pending:
     name: Label - Add - Triage
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Triage'
     steps:
@@ -339,7 +341,7 @@ jobs:
 
   label_add_parked:
     name: Label - Add - Parked
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Parked'
     steps:
@@ -352,7 +354,7 @@ jobs:
 
   label_add_prorogued:
     name: Label - Add - Prorogued
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Prorogued'
     steps:
@@ -365,7 +367,7 @@ jobs:
 
   label_add_resolved:
     name: Label - Add - Resolved
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Resolved'
     steps:
@@ -378,7 +380,7 @@ jobs:
 
   label_add_tagged:
     name: Label - Add - Tagged
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Tagged'
     steps:
@@ -391,7 +393,7 @@ jobs:
 
   label_add_queries:
     name: Label - Add - Queries
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Queries'
     steps:
@@ -404,7 +406,7 @@ jobs:
 
   label_add_upstream:
     name: Label - Add - Upstream
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Label - Add - Upstream'
     steps:
@@ -415,15 +417,69 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Upstream'
 
-  label_add_wontfix:
-    name: Label - Add - Not-Planned
-    runs-on: ubuntu-20.04
+  label_add_enhancement:
+    name: Label - Add - Enhancement - Only
+    runs-on: ubuntu-24.04
 
-    if: github.event.inputs.operation == 'Label - Add - Not-Planned'
+    if: github.event.inputs.operation == 'Label - Add - Enhancement - Only'
     steps:
       - uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Enhancement'
+
+  label_add_not-planned_enhancement:
+    name: Label - Add - Not-Planned_and_Enhancement
+    runs-on: ubuntu-24.04
+
+    if: github.event.inputs.operation == 'Label - Add - Not-Planned_and_Enhancement'
+    steps:
+
+      - name: Label - Add - Not-Planned_and_Enhancement - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Enhancement,Not-Planned'
+
+      - name: Label - Add - Not-Planned_and_Enhancement - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,Queries'
+
+      - name: Label - Add - Not-Planned_and_Enhancement - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'not planned'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  label_add_not-planned:
+    name: Label - Add - Not-Planned - Only
+    runs-on: ubuntu-24.04
+
+    if: github.event.inputs.operation == 'Label - Add - Not-Planned - Only'
+    steps:
+
+      - name: Label - Add - Not-Planned - Only - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Not-Planned'
+
+      - name: Label - Add - Not-Planned - Only - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'not planned'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}

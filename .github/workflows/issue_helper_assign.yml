@@ -24,7 +24,7 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   add_assignees:
     name: Assignment - Self - Add
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Assignment - Self - Add'
     steps:
@@ -37,7 +37,7 @@ jobs:
 
   remove_assignees:
     name: Assignment - Self - Remove
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.event.inputs.operation == 'Assignment - Self - Remove'
     steps:

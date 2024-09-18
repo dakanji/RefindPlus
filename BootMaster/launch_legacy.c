@@ -887,6 +887,7 @@ VOID AddLegacyEntryUEFI (
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
 
+
     if (IsListItemSubstringIn (
             BdsOption->Description,
             GlobalConfig.DontScanVolumes
@@ -1363,6 +1364,7 @@ VOID ScanLegacyDisc (VOID) {
         ALT_LOG(1, LOG_STAR_HEAD_SEP, L"None Found");
     }
     #endif
+
     DisplayLoader = TRUE;
 
     BREAD_CRUMB(L"%a:  Z - END:- VOID", __func__);

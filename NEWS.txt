@@ -16,6 +16,8 @@
     - These parameters had already been reversed elsewhere in v0.13.2.AG (Commit 2d8ab59)
       * Ported from downstream: https://github.com/joevt/RefindPlus/commit/266fd8f
     - The changes invalidated each other
+- Fixes `UGA Graphics` Handling
+  * RefindPlus Crashed when run with UGA-based GPUs
 - Improves `Misc` Handling
   * Some entry types were mislabelled as `Linux`
   * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
@@ -49,7 +51,7 @@
 - Adds `HelpSize` Feature
   * Provides option to force non-standard or otherwise unsupported screen resolutions
     - This can help work around issues where pre-boot configuration screen are not displayed
-    - The issues are typically EDID related or the auto-selection of incorrect/incompatible resolutions
+    - The issues are typically `EDID` related or the auto-selection of incorrect/incompatible resolutions
     - This aspect of the `HelpSize` feature requires booting into systems that fully support the graphics
   * An `ExDPI` category for screens with resolutions of `6400 x 4000` or more was created
     - UI elements are scaled up by four (4) on such screens when UI element scaling is active
@@ -78,7 +80,7 @@
   * The `LoaderDevicePartUUID` UEFI Variable is written to vRAM and not nvRAM
   * See: https://sf.net/p/refind/discussion/general/thread/d8dad2c475/
 - Improves `GraphicsFor` Handling
-  * Users can now set `none` under the `use_graphics_for` token to disable graphic mode boot
+  * Users can now set `none` under the `use_graphics_for` token to disable graphics mode boot
   * Users can now set `everything` to activate this for all boots
     - The previous option of setting `use_graphics_for` alone has also been fixed and remains
 - Improves `HiddenTags` Handling
@@ -834,7 +836,7 @@
   * Previously only checked the vertical resolution
   * This allows rotated screens to be properly accounted for
   * Some rare monitors, such as the 30` Apple Cinema Display, may be wrongly identified as HiDPI
-  * This is because EDID information is not used at this time
+  * This is because `EDID` information is not used at this time
   * However, the more common WQHD monitors are correctly identified as not being HiDPI monitors
   * Laptops with `Retina` screens should be correctly identified as having HiDPI monitors
 - Amends Log Levels

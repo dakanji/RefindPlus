@@ -233,6 +233,7 @@ UINTN GetUserInput (
     BOOLEAN             ErrorOut;
     EFI_INPUT_KEY       Key;
 
+
     ReadAllKeyStrokes(); // Remove buffered key strokes
 
     Print(prompt);
@@ -276,6 +277,7 @@ BOOLEAN IsSystemVolume (
 ) {
     UINTN         i;
     BOOLEAN       FoundSysVol;
+
 
     FoundSysVol = FALSE;
     for (i = 0; i < SystemVolumesCount; i++) {
@@ -375,6 +377,7 @@ VOID ReinitVolume (
     EFI_HANDLE                 DeviceHandle;
     EFI_HANDLE                 WholeDiskHandle;
     EFI_DEVICE_PATH_PROTOCOL  *RemainingDevicePath;
+
 
     if (Volume == NULL || *Volume == NULL) {
         return;
@@ -515,6 +518,7 @@ VOID CleanUpPathNameSlashes (
     UINTN Dest;
     UINTN Source;
 
+
     if (PathName == NULL || PathName[0] == '\0') {
         return;
     }
@@ -577,6 +581,7 @@ CHAR16 * SplitDeviceString (
     CHAR16  *FileName;
     BOOLEAN  Found;
 
+
     FileName = NULL;
     if (InString != NULL) {
         Found = FALSE;
@@ -605,6 +610,7 @@ EFI_STATUS InitRefitLib (
     EFI_STATUS   Status;
     CHAR16      *Temp;
     CHAR16      *DevicePathAsString;
+
 
     SelfImageHandle = ImageHandle;
     Status = REFIT_CALL_3_WRAPPER(
@@ -681,6 +687,7 @@ VOID UninitRefitLib (VOID) {
 EFI_STATUS ReinitRefitLib (VOID) {
     EFI_STATUS Status;
 
+
     ReinitVolumes();
     Status = FinishInitRefitLib();
 
@@ -701,6 +708,7 @@ EFI_STATUS FindVarsDir (VOID) {
     EFI_STATUS       Status;
     CHAR16          *VarsFolder;
     EFI_FILE_HANDLE  EspRootDir;
+
 
     if (gVarsDir != NULL) {
         // Early Return
@@ -764,6 +772,7 @@ EFI_STATUS EfivarGetRaw (
     UINTN        BufferSize;
     VOID        *TmpBuffer;
     BOOLEAN      TypeRP;
+
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
@@ -1095,6 +1104,7 @@ VOID SanitiseVolumeName (
 ) {
     CHAR16 *VolumeName;
 
+
     VolumeName = NULL;
     if (Volume != NULL &&
         *Volume != NULL &&
@@ -1116,6 +1126,7 @@ VOID SanitiseVolumeName (
         else if (NAME_FIX(L"BTRFS Volume"                );
         else if (NAME_FIX(L"ReiserFS Volume"             );
         else if (NAME_FIX(L"ISO-9660 Volume"             );
+        else if (NAME_FIX(L"System Reserved"             );
         else if (NAME_FIX(L"Basic Data Partition"        );
         else if (NAME_FIX(L"Microsoft Reserved Partition");
     }
@@ -1163,6 +1174,7 @@ REFIT_VOLUME * CopyVolume (
 ) {
     REFIT_VOLUME *Volume;
     UINTN         SizeMBR;
+
 
     if (VolumeToCopy == NULL) {
         // Early Exit
@@ -1327,6 +1339,7 @@ VOID SetFilesystemName (
     IN OUT REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO *FileSystemInfoPtr;
+
 
     if (Volume          == NULL ||
         Volume->RootDir == NULL
@@ -1930,6 +1943,7 @@ CHAR16 * SizeInIEEEUnits (
     CHAR16       *TheValue;
     UINT64        SizeInIeee;
 
+
     NumPrefixes = StrLen (Prefixes);
     SizeInIeee = SizeInBytes;
     Index = 0;
@@ -1961,6 +1975,7 @@ VOID SetPartGuidAndName (
     HARDDRIVE_DEVICE_PATH    *HdDevicePath;
     GPT_ENTRY                *PartInfo;
     EFI_GUID                  GuidMBR = MBR_GUID_VALUE;
+
 
     if (Volume == NULL || DevicePath == NULL) {
         return;
@@ -2131,6 +2146,7 @@ BOOLEAN VolumeScanAllowed (
     BOOLEAN      FoundVentoy;
     BOOLEAN      ScanAllowed;
 
+
     if (Volume == NULL          ||
         Volume->VolName == NULL ||
         !Volume->IsReadable
@@ -2252,6 +2268,7 @@ VOID ScanVolume (
     EFI_HANDLE                 WholeDiskHandle;
     UINTN                      PartialLength;
     BOOLEAN                    Bootable;
+
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
@@ -2812,6 +2829,7 @@ CHAR16 * GetApfsRoleString (
 ) {
     CHAR16 *retval;
 
+
     switch (VolumeRole) {
         case APFS_VOLUME_ROLE_UNDEFINED: retval = L"0x00 - APFS Undefined"   ; break;
         case APFS_VOLUME_ROLE_SYSTEM:    retval = L"0x01 - APFS System"      ; break;
@@ -3118,7 +3136,7 @@ MY_MUTELOGGER_SET;
             else if (MyStriCmp (Volume->VolName,  L"Boot OS X"               )) RoleStr = L" * Part BootAssist (Mac)";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD )) RoleStr = L" * Part RecoveryHD (HFS)";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidWindowsRE  )) RoleStr = L" * Part RecoveryHD (Win)";
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS )) RoleStr = L" * Type ReservedHD (Win)";
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS )) RoleStr = L" * Part ReservedHD (Win)";
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks       )) RoleStr = L" * Type Encrypted Volume";
             else if (MyStriCmp (Volume->VolName,  L"Unknown Volume"          )) RoleStr = L"?? Role Unknown"         ;
             else {
@@ -3230,7 +3248,9 @@ MY_MUTELOGGER_SET;
             }
             else {
                 if (Volume->FSType == FS_TYPE_NTFS) {
-                    RoleStr = (MyStriCmp (Volume->VolName, L"NTFS Volume"))
+                    RoleStr = (MyStriCmp (Volume->VolName, L"System Reserved"))
+                        ? L" * Part SysReserve (Win)"
+                        : (MyStriCmp (Volume->VolName, L"NTFS Volume"))
                             ? L" * Type Windows (Other)"
                             : L" * Type Windows (Named)";
                 }
@@ -3259,7 +3279,7 @@ MY_MUTELOGGER_SET;
                     (VentoyName = FindCommaDelimited (VENTOY_NAMES, j++)) != NULL
                 ) {
                     if (MyStrBegins (VentoyName, Volume->VolName)) {
-                        RoleStr = L" * Part Ventoy Tool";
+                        RoleStr = L" * Part Ventoy ISO Boot";
                         FoundVentoy = TRUE;
                     }
 
@@ -3607,6 +3627,7 @@ BOOLEAN FileExists (
     EFI_STATUS      Status;
     EFI_FILE_HANDLE TestFile;
 
+
     if (BaseDir != NULL) {
         Status = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
@@ -3833,7 +3854,6 @@ VOID DirIterOpen (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-
     BREAD_CRUMB(L"%a:  2", __func__);
     if (RelativePath == NULL) {
         BREAD_CRUMB(L"%a:  2a 1 - RelativePath == NULL", __func__);
@@ -4027,6 +4047,7 @@ CHAR16 * Basename (
     CHAR16  *FileName;
     UINTN    i;
 
+
     FileName = Path;
 
     if (Path != NULL) {
@@ -4049,6 +4070,7 @@ CHAR16 * StripEfiExtension (
 ) {
     UINTN   Length;
     CHAR16 *Copy;
+
 
     if (FileName == NULL) {
         return NULL;
@@ -4076,6 +4098,7 @@ INTN FindMem (
     UINT8 *BufferPtr;
     UINTN  Offset;
 
+
     BufferPtr = Buffer;
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
@@ -4098,6 +4121,7 @@ CHAR16 * FindExtension (
     CHAR16    *Extension;
     BOOLEAN    FoundSlash;
     BOOLEAN    Found;
+
 
     if (Path == NULL) {
         return NULL;
@@ -4148,6 +4172,7 @@ CHAR16 * FindLastDirName (
     UINTN   StartOfElement;
     CHAR16 *Found;
 
+
     if (Path == NULL) {
         return NULL;
     }
@@ -4193,6 +4218,7 @@ CHAR16 * FindPath (
     UINTN   LastBackslash;
     CHAR16 *PathOnly;
 
+
     if (FullPath == NULL) {
         return NULL;
     }
@@ -4222,6 +4248,7 @@ VOID FindVolumeAndFilename (
     CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
     UINTN i;
     BOOLEAN Found;
+
 
     if (loader       == NULL ||
         loadpath     == NULL ||
@@ -4272,6 +4299,7 @@ BOOLEAN SplitVolumeAndFilename (
     UINTN   Length, i;
     CHAR16 *Filename;
 
+
     if (*Path == NULL) {
         return FALSE;
     }
@@ -4311,6 +4339,7 @@ VOID SplitPathName (
 ) {
     CHAR16 *Temp;
 
+
     MY_FREE_POOL(*Path);
     MY_FREE_POOL(*VolName);
     MY_FREE_POOL(*Filename);
@@ -4346,6 +4375,7 @@ BOOLEAN FindVolume (
     UINTN     i;
     BOOLEAN   Found;
 
+
     if (Identifier == NULL) {
         return FALSE;
     }
@@ -4371,6 +4401,7 @@ BOOLEAN VolumeMatchesDescription (
 ) {
     CHAR16   *FilteredDescription;
     EFI_GUID  TargetVolGuid = NULL_GUID_VALUE;
+
 
     if (Volume == NULL || Description == NULL) {
         return FALSE;
@@ -4410,6 +4441,7 @@ BOOLEAN FilenameIn (
     CHAR16    *TargetVolName;
     CHAR16    *TargetFilename;
     BOOLEAN    Found;
+
 
     if (Filename == NULL || List == NULL) {
         return FALSE;
@@ -4464,6 +4496,7 @@ BOOLEAN EjectMedia (VOID) {
     EFI_HANDLE                      Handle;
     APPLE_REMOVABLE_MEDIA_PROTOCOL *Ejectable;
 
+
     HandleCount = 0;
     Status = LibLocateHandle (
         ByProtocol,
@@ -4509,6 +4542,7 @@ VOID EraseUint32List (
     IN UINT32_LIST **TheList
 ) {
     UINT32_LIST *NextItem;
+
 
     while (*TheList != NULL) {
         NextItem = (*TheList)->Next;

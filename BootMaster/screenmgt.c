@@ -88,7 +88,6 @@ extern BOOLEAN            IsBoot;
 extern BOOLEAN            IconScaleSet;
 extern BOOLEAN            ExtremeHiDPI;
 extern BOOLEAN            egHasGraphics;
-extern BOOLEAN            ForceTextOnly;
 extern BOOLEAN            FlushFailedTag;
 extern BOOLEAN            GotConsoleControl;
 
@@ -132,29 +131,31 @@ VOID FixIconScale (VOID) {
             ScreenShortest >= EXDPI_SHORT
         ) {
             ExtremeHiDPI = TRUE;
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 4;
         }
         else {
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
         }
     }
     else if (GlobalConfig.ScaleUI == -1) {
-        if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+        if (ScreenLongest  > BASE_REZ &&
+            ScreenShortest > BASE_REZ
+        ) {
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
         }
         else {
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
         }
     }
@@ -164,37 +165,45 @@ VOID FixIconScale (VOID) {
             ScreenShortest >= EXDPI_SHORT
         ) {
             ExtremeHiDPI = TRUE;
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 4;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 4;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 4;
         }
-        else if (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG) {
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+        else if (
+            ScreenLongest  >= HIDPI_LONG &&
+            ScreenShortest >= HIDPI_SHORT
+        ) {
             GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
         }
-        else if (ScreenLongest < LOREZ_LIMIT || ScreenShortest < LOREZ_LIMIT) {
-            if (ScreenShortest > BASE_REZ && ScreenLongest > BASE_REZ) {
-                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
-                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+        else if (
+            ScreenLongest  < LOREZ_LIMIT ||
+            ScreenShortest < LOREZ_LIMIT
+        ) {
+            if (ScreenLongest  > BASE_REZ &&
+                ScreenShortest > BASE_REZ
+            ) {
                 GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 2;
             }
             else {
-                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
-                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
                 GlobalConfig.IconSizes[ICON_SIZE_BIG]   /= 4;
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] /= 4;
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] /= 4;
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] /= 4;
             }
         }
     } // if/else GlobalConfig.ScaleUI
 } // VOID FixIconScale()
 
-
 VOID PrepareBlankLine (VOID) {
     UINTN i;
+
 
     MY_FREE_POOL(BlankLine);
 
@@ -207,10 +216,6 @@ VOID PrepareBlankLine (VOID) {
         BlankLine[i] = 0;
     }
 } // VOID PrepareBlankLine()
-
-//
-// Screen initialisation and switching
-//
 
 VOID InitScreen (VOID) {
     LOG_SEP(L"X");
@@ -276,17 +281,19 @@ VOID InitScreen (VOID) {
 
 // Set the screen resolution and mode (text vs. graphics).
 VOID SetupScreen (VOID) {
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+    CHAR16 *TmpStr;
+    #endif
+
     UINTN   NewWidth;
     UINTN   NewHeight;
     BOOLEAN TextOption;
 
     static BOOLEAN BannerLoaded = FALSE;
 
+
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    CHAR16 *TmpStr;
-
-
     if (!BannerLoaded) {
         LOG_MSG("D I S P L A Y   T I T L E   B A N N E R");
         LOG_MSG("\n");
@@ -296,6 +303,7 @@ VOID SetupScreen (VOID) {
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  A - START", __func__);
+
 
     // Convert mode number to horizontal & vertical resolution values
     if (GlobalConfig.RequestedScreenWidth   > 0 &&
@@ -313,8 +321,8 @@ VOID SetupScreen (VOID) {
     }
 
     // Set the believed-to-be current resolution to the LOWER of the current
-    // believed-to-be resolution and the requested resolution. This is done to
-    // enable setting a lower-than-default resolution.
+    // believed-to-be resolution and the requested resolution (if exists).
+    // This is done to enable setting a lower-than-default resolution.
     if (GlobalConfig.RequestedScreenWidth  > 0 &&
         GlobalConfig.RequestedScreenHeight > 0
     ) {
@@ -403,7 +411,7 @@ VOID SetupScreen (VOID) {
         LOG_MSG("\n\n");
         #endif
 
-        GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+        GlobalConfig.TextOnly = TRUE;
         AllowGraphicsMode = FALSE;
         SwitchToText (FALSE);
     }
@@ -563,19 +571,21 @@ VOID SetupScreen (VOID) {
 VOID SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
-    EFI_STATUS Status;
-
     #if REFIT_DEBUG > 0
     BOOLEAN TextModeOnEntry;
     #endif
+
+    EFI_STATUS Status;
 
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  A - START", __func__);
 
-#ifdef __MAKEWITH_TIANO
-// DA-TAG: Limit to TianoCore
+
+
+    #ifdef __MAKEWITH_TIANO
+    // DA-TAG: Limit to TianoCore
     if (!GlobalConfig.UseTextRenderer && !IsBoot && AppleFirmware) {
         // Override Text Renderer Setting on Apple Firmware
         //
@@ -591,11 +601,14 @@ VOID SwitchToText (
             GlobalConfig.UseTextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    ** Config Setting Forced On:- 'renderer_text'", OffsetNext);
+            LOG_MSG("INFO: Config Setting Forced On:- 'renderer_text'");
+            LOG_MSG("\n\n");
             #endif
         }
     }
-#endif
+    #endif
+
+
 
     egSetGraphicsModeEnabled (FALSE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
@@ -608,7 +621,6 @@ VOID SwitchToText (
     );
 
     if (TextModeOnEntry) {
-        LOG_MSG("\n");
         LOG_MSG("Determine Text Console Size:");
         LOG_MSG("\n");
     }
@@ -694,9 +706,6 @@ EFI_STATUS SwitchToGraphics (VOID) {
     return EFI_SUCCESS;
 } // EFI_STATUS SwitchToGraphics()
 
-//
-// Screen control for running tools
-//
 VOID BeginTextScreen (
     IN CHAR16 *Title
 ) {
@@ -704,6 +713,7 @@ VOID BeginTextScreen (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
     DrawScreenHeader (Title);
+
     BREAD_CRUMB(L"%a:  2", __func__);
     SwitchToText (FALSE);
 
@@ -741,6 +751,11 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr;
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
@@ -756,11 +771,6 @@ VOID BeginExternalScreen (
         // Early Return
         return;
     }
-
-    #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr;
-    BOOLEAN  CheckMute = FALSE;
-    #endif
 
     BREAD_CRUMB(L"%a:  2", __func__);
     if (!AllowGraphicsMode) {
@@ -887,21 +897,17 @@ VOID DrawScreenHeader (
     REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
 } // VOID DrawScreenHeader()
 
-//
-// Keyboard input
-//
-
 BOOLEAN ReadAllKeyStrokes (VOID) {
+    #if REFIT_DEBUG > 0
+    CHAR16              *MsgStr;
+    #endif
+
     EFI_STATUS           Status;
     BOOLEAN              GotKeyStrokes;
     BOOLEAN              EmptyBuffer;
     EFI_INPUT_KEY        key;
 
     static BOOLEAN       FirstCall = TRUE;
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    #endif
 
 
     GotKeyStrokes = FALSE;
@@ -992,13 +998,14 @@ VOID PrintUglyText (
 } // VOID PrintUglyText()
 
 VOID PauseForKey (VOID) {
-    UINTN   i, WaitOut;
-    BOOLEAN Breakout  = FALSE;
-
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr;
     BOOLEAN  CheckMute = FALSE;
     #endif
+
+    UINTN   i, WaitOut;
+    BOOLEAN Breakout  = FALSE;
+
 
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
@@ -1111,12 +1118,13 @@ VOID PauseForKey (VOID) {
 VOID PauseSeconds (
     UINTN Seconds
 ) {
-    UINTN   i, WaitOut;
-    BOOLEAN Breakout  = FALSE;
-
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
+
+    UINTN   i, WaitOut;
+    BOOLEAN Breakout  = FALSE;
+
 
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
@@ -1174,11 +1182,12 @@ VOID PauseSeconds (
 VOID HaltSeconds (
     UINTN Seconds
 ) {
-    UINTN   i;
-
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
+
+    UINTN   i;
+
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Halting for %d Seconds", Seconds);
@@ -1205,11 +1214,13 @@ VOID HaltSeconds (
 } // VOID HaltSeconds()
 
 VOID RefitDeadLoop (VOID) {
+    #if REFIT_DEBUG > 0
+    BOOLEAN CheckMute = FALSE;
+    #endif
+
     UINTN   index;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-
     MY_MUTELOGGER_SET;
     #endif
     for (;;) {
@@ -1225,10 +1236,6 @@ VOID RefitDeadLoop (VOID) {
     #endif
 } // VOID RefitDeadLoop()
 
-//
-// Error handling
-//
-
 BOOLEAN CheckFatalError (
     IN EFI_STATUS  Status,
     IN CHAR16     *where
@@ -1238,6 +1245,8 @@ BOOLEAN CheckFatalError (
     if (!EFI_ERROR(Status)) {
         return FALSE;
     }
+
+
 
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
@@ -1257,6 +1266,9 @@ BOOLEAN CheckFatalError (
     LOG_MSG("\n");
     #endif
 #endif
+
+
+
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (Temp, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -1282,6 +1294,8 @@ BOOLEAN CheckError (
         return FALSE;
     }
 
+
+
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
     StatusToString (ErrorName, Status);
@@ -1300,6 +1314,9 @@ BOOLEAN CheckError (
     LOG_MSG("\n\n");
     #endif
 #endif
+
+
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
@@ -1322,10 +1339,6 @@ BOOLEAN CheckError (
 
     return haveError;
 } // BOOLEAN CheckError()
-
-//
-// Graphics functions
-//
 
 VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
@@ -1423,22 +1436,22 @@ EG_PIXEL FontComplement (VOID) {
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
-    EG_IMAGE         *CompImage;
-    EG_IMAGE         *NewBanner;
-    EG_PIXEL          BannerFont;
-    UINTN             BannerType;
-    INTN              BannerPosX;
-    INTN              BannerPosY;
-    BOOLEAN           BannerPass;
-
-    static EG_IMAGE  *Banner = NULL;
-
     #if REFIT_DEBUG > 0
-    CHAR16         *MsgStr;
-    CHAR16         *StrSpacer;
+    CHAR16          *MsgStr;
+    CHAR16          *StrSpacer;
 
-    static BOOLEAN  LoggedBanner = FALSE;
+    static BOOLEAN   LoggedBanner = FALSE;
     #endif
+
+    EG_IMAGE        *CompImage;
+    EG_IMAGE        *NewBanner;
+    EG_PIXEL         BannerFont;
+    UINTN            BannerType;
+    INTN             BannerPosX;
+    INTN             BannerPosY;
+    BOOLEAN          BannerPass;
+
+    static EG_IMAGE *Banner = NULL;
 
 
     LOG_SEP(L"X");
@@ -1708,9 +1721,10 @@ VOID BltImageAlpha (
     IN UINTN     YPos,
     IN EG_PIXEL *BackgroundPixel
 ) {
-    EG_IMAGE *CompImage;
+    EG_IMAGE    *CompImage;
 
-    // compose on background
+
+    // Compose on background
     CompImage = egCreateFilledImage (
         Image->Width,
         Image->Height,
@@ -1720,47 +1734,15 @@ VOID BltImageAlpha (
 
     egComposeImage (CompImage, Image, 0, 0);
 
-    // blit to screen and clean up
+    // Blt to screen and clean up
     egDrawImage (CompImage, XPos, YPos);
     MY_FREE_IMAGE(CompImage);
 
     GraphicsScreenDirty = TRUE;
 } // VOID BltImageAlpha()
 
-//VOID BltImageComposite (
-//    IN EG_IMAGE *BaseImage,
-//    IN EG_IMAGE *TopImage,
-//    IN UINTN     XPos,
-//    IN UINTN     YPos
-//) {
-//    UINTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
-//    EG_IMAGE *CompImage;
-//
-//    // initialize buffer with base image
-//    CompImage = egCopyImage (BaseImage);
-//    TotalWidth  = BaseImage->Width;
-//    TotalHeight = BaseImage->Height;
-//
-//    // Place the top image
-//    CompWidth = TopImage->Width;
-//    if (CompWidth > TotalWidth) {
-//        CompWidth = TotalWidth;
-//    }
-//    OffsetX = (TotalWidth - CompWidth) >> 1;
-//    CompHeight = TopImage->Height;
-//    if (CompHeight > TotalHeight) {
-//        CompHeight = TotalHeight;
-//    }
-//    OffsetY = (TotalHeight - CompHeight) >> 1;
-//    egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
-//
-//    // blit to screen and clean up
-//    egDrawImage (CompImage, XPos, YPos);
-//    MY_FREE_IMAGE(CompImage);
-//    GraphicsScreenDirty = TRUE;
-//} // VOID BltImageComposite()
-
-VOID BltImageCompositeBadge (
+// DA_TAG: Combines original 'BltImageComposite' and 'BltImageCompositeBadge'
+VOID BltImageCompositeAny (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,
@@ -1775,14 +1757,15 @@ VOID BltImageCompositeBadge (
     UINTN     OffsetY     = 0;
     EG_IMAGE *CompImage   = NULL;
 
-    // initialize buffer with base image
+
+    // Initialize buffer with base image
     if (BaseImage != NULL) {
         CompImage   = egCopyImage (BaseImage);
         TotalWidth  = BaseImage->Width;
         TotalHeight = BaseImage->Height;
     }
 
-    // place the top image
+    // Place the top image
     if (TopImage != NULL && CompImage != NULL) {
         CompWidth = TopImage->Width;
 
@@ -1801,7 +1784,7 @@ VOID BltImageCompositeBadge (
         egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
     }
 
-    // place the badge image
+    // Place the badge image
     if (BadgeImage != NULL && CompImage != NULL &&
         (BadgeImage->Width  + 8) < CompWidth &&
         (BadgeImage->Height + 8) < CompHeight
@@ -1811,7 +1794,7 @@ VOID BltImageCompositeBadge (
         egComposeImage (CompImage, BadgeImage, OffsetX, OffsetY);
     }
 
-    // blit to screen and clean up
+    // Blt to screen and clean up
     if (CompImage != NULL) {
         if (CompImage->HasAlpha) {
             egDrawImageWithTransparency (
@@ -1827,4 +1810,4 @@ VOID BltImageCompositeBadge (
         MY_FREE_IMAGE(CompImage);
         GraphicsScreenDirty = TRUE;
     }
-} // VOID BltImageCompositeBadge()
+} // VOID BltImageCompositeAny()

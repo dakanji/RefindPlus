@@ -48,24 +48,24 @@
  */
 
 #include "global.h"
-#include "screenmgt.h"
-#include "lib.h"
 #include "menu.h"
-#include "config.h"
+#include "icns.h"
+#include "scan.h"
+#include "lib.h"
+#include "apple.h"
 #include "libeg.h"
+#include "config.h"
 #include "libegint.h"
 #include "line_edit.h"
 #include "mystrings.h"
-#include "icns.h"
-#include "scan.h"
-#include "apple.h"
+#include "screenmgt.h"
 #include "../include/version.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_back_selected_small.h"
 #include "../include/egemb_back_selected_big.h"
-#include "../include/egemb_arrow_left.h"
 #include "../include/egemb_arrow_right.h"
+#include "../include/egemb_arrow_left.h"
 
 // Other menu definitions
 
@@ -633,6 +633,7 @@ VOID IdentifyRows (
 ) {
     UINTN i;
 
+
     State->FinalRow0   = 0;
     State->InitialRow1 = State->MaxIndex;
     for (i = 0; i <= State->MaxIndex; i++) {
@@ -662,21 +663,54 @@ VOID IdentifyRows (
 //         E.g., power-saving mode and dynamic images
 static
 VOID SaveScreen (VOID) {
-    UINTN  retval;
-    UINTN  ColourIndex;
-    UINT64 TimeWait;
-    UINT64 BaseTimeWait;
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr;
+    CHAR16  *LoopChange;
+    BOOLEAN  CheckMute = FALSE;
+    #endif
+
+    UINTN    Retval;
+    UINTN    OurIndex;
+    UINT64   TimeWait;
+    UINT64   BaseWait;
+    EG_PIXEL OUR_COLOR;
+    EG_PIXEL COLOR_01 = {   0,  51,  51,  0 };
+    EG_PIXEL COLOR_02 = {   0, 102, 102,  0 };
+    EG_PIXEL COLOR_03 = {   0, 153, 153,  0 };
+    EG_PIXEL COLOR_04 = {   0, 204, 204,  0 };
+    EG_PIXEL COLOR_05 = {   0, 255, 255,  0 };
+    EG_PIXEL COLOR_06 = {  51,   0, 204,  0 };
+    EG_PIXEL COLOR_07 = {  51,  51, 153,  0 };
+    EG_PIXEL COLOR_08 = {  51, 102, 102,  0 };
+    EG_PIXEL COLOR_09 = {  51, 153,  51,  0 };
+    EG_PIXEL COLOR_10 = {  51, 204,   0,  0 };
+    EG_PIXEL COLOR_11 = {  51, 255,  51,  0 };
+    EG_PIXEL COLOR_12 = { 102,   0, 102,  0 };
+    EG_PIXEL COLOR_13 = { 102,  51, 153,  0 };
+    EG_PIXEL COLOR_14 = { 102, 102, 204,  0 };
+    EG_PIXEL COLOR_15 = { 102, 153, 255,  0 };
+    EG_PIXEL COLOR_16 = { 102, 204, 204,  0 };
+    EG_PIXEL COLOR_17 = { 102, 255, 153,  0 };
+    EG_PIXEL COLOR_18 = { 153,   0, 102,  0 };
+    EG_PIXEL COLOR_19 = { 153,  51,  51,  0 };
+    EG_PIXEL COLOR_20 = { 153, 102,   0,  0 };
+    EG_PIXEL COLOR_21 = { 153, 153,  51,  0 };
+    EG_PIXEL COLOR_22 = { 153, 204, 102,  0 };
+    EG_PIXEL COLOR_23 = { 153, 255, 153,  0 };
+    EG_PIXEL COLOR_24 = { 204,   0, 204,  0 };
+    EG_PIXEL COLOR_25 = { 204,  51, 255,  0 };
+    EG_PIXEL COLOR_26 = { 204, 102, 204,  0 };
+    EG_PIXEL COLOR_27 = { 204, 153, 153,  0 };
+    EG_PIXEL COLOR_28 = { 204, 204, 102,  0 };
+    EG_PIXEL COLOR_29 = { 204, 255,  51,  0 };
+    EG_PIXEL COLOR_30 = { 255,   0,   0,  0 };
+
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
-    CHAR16 *LoopChange;
-
-    BOOLEAN CheckMute = FALSE;
-
-    MsgStr = L"Activity Wait Threshold Exceeded";
+    MsgStr = L"Input Activity Wait Threshold Exceeded";
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,  L"%s", MsgStr);
-    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("%s", MsgStr);
 
     MsgStr = L"Start Screensaver";
     ALT_LOG(1, LOG_THREE_STAR_MID,  L"%s", MsgStr);
@@ -684,54 +718,22 @@ VOID SaveScreen (VOID) {
     LOG_MSG("\n");
     #endif
 
-    EG_PIXEL OUR_COLOUR;
-    EG_PIXEL COLOUR_01 = {   0,  51,  51,  0 };
-    EG_PIXEL COLOUR_02 = {   0, 102, 102,  0 };
-    EG_PIXEL COLOUR_03 = {   0, 153, 153,  0 };
-    EG_PIXEL COLOUR_04 = {   0, 204, 204,  0 };
-    EG_PIXEL COLOUR_05 = {   0, 255, 255,  0 };
-    EG_PIXEL COLOUR_06 = {  51,   0, 204,  0 };
-    EG_PIXEL COLOUR_07 = {  51,  51, 153,  0 };
-    EG_PIXEL COLOUR_08 = {  51, 102, 102,  0 };
-    EG_PIXEL COLOUR_09 = {  51, 153,  51,  0 };
-    EG_PIXEL COLOUR_10 = {  51, 204,   0,  0 };
-    EG_PIXEL COLOUR_11 = {  51, 255,  51,  0 };
-    EG_PIXEL COLOUR_12 = { 102,   0, 102,  0 };
-    EG_PIXEL COLOUR_13 = { 102,  51, 153,  0 };
-    EG_PIXEL COLOUR_14 = { 102, 102, 204,  0 };
-    EG_PIXEL COLOUR_15 = { 102, 153, 255,  0 };
-    EG_PIXEL COLOUR_16 = { 102, 204, 204,  0 };
-    EG_PIXEL COLOUR_17 = { 102, 255, 153,  0 };
-    EG_PIXEL COLOUR_18 = { 153,   0, 102,  0 };
-    EG_PIXEL COLOUR_19 = { 153,  51,  51,  0 };
-    EG_PIXEL COLOUR_20 = { 153, 102,   0,  0 };
-    EG_PIXEL COLOUR_21 = { 153, 153,  51,  0 };
-    EG_PIXEL COLOUR_22 = { 153, 204, 102,  0 };
-    EG_PIXEL COLOUR_23 = { 153, 255, 153,  0 };
-    EG_PIXEL COLOUR_24 = { 204,   0, 204,  0 };
-    EG_PIXEL COLOUR_25 = { 204,  51, 255,  0 };
-    EG_PIXEL COLOUR_26 = { 204, 102, 204,  0 };
-    EG_PIXEL COLOUR_27 = { 204, 153, 153,  0 };
-    EG_PIXEL COLOUR_28 = { 204, 204, 102,  0 };
-    EG_PIXEL COLOUR_29 = { 204, 255,  51,  0 };
-    EG_PIXEL COLOUR_30 = { 255,   0,   0,  0 };
+    // Start with COLOR_01 ... 0 will be incremented to 1
+    OurIndex = 0;
 
-    // Start with COLOUR_01 ... 0 will be incremented to 1
-    ColourIndex = 0;
-
-    // Start with BaseTimeWait
-    BaseTimeWait = 3750;
-    TimeWait = BaseTimeWait;
+    // Start with BaseWait
+    BaseWait = 3750;
+    TimeWait = BaseWait;
     for (;;) {
-        ColourIndex = ColourIndex + 1;
+        ++OurIndex;
 
-        if (ColourIndex > 30) {
-            ColourIndex = 1;
+        if (OurIndex > 30) {
+            OurIndex = 1;
 
             TimeWait = TimeWait * 2;
             if (TimeWait > 120000) {
                 // Reset TimeWait if greater than 2 minutes
-                TimeWait = BaseTimeWait;
+                TimeWait = BaseWait;
 
                 #if REFIT_DEBUG > 0
                 LoopChange = L"Reset";
@@ -751,57 +753,57 @@ VOID SaveScreen (VOID) {
             #endif
         }
 
-        switch (ColourIndex) {
-            case  1: OUR_COLOUR = COLOUR_01; break;
-            case  2: OUR_COLOUR = COLOUR_02; break;
-            case  3: OUR_COLOUR = COLOUR_03; break;
-            case  4: OUR_COLOUR = COLOUR_04; break;
-            case  5: OUR_COLOUR = COLOUR_05; break;
-            case  6: OUR_COLOUR = COLOUR_06; break;
-            case  7: OUR_COLOUR = COLOUR_07; break;
-            case  8: OUR_COLOUR = COLOUR_08; break;
-            case  9: OUR_COLOUR = COLOUR_09; break;
-            case 10: OUR_COLOUR = COLOUR_10; break;
-            case 11: OUR_COLOUR = COLOUR_11; break;
-            case 12: OUR_COLOUR = COLOUR_12; break;
-            case 13: OUR_COLOUR = COLOUR_13; break;
-            case 14: OUR_COLOUR = COLOUR_14; break;
-            case 15: OUR_COLOUR = COLOUR_15; break;
-            case 16: OUR_COLOUR = COLOUR_16; break;
-            case 17: OUR_COLOUR = COLOUR_17; break;
-            case 18: OUR_COLOUR = COLOUR_18; break;
-            case 19: OUR_COLOUR = COLOUR_19; break;
-            case 20: OUR_COLOUR = COLOUR_20; break;
-            case 21: OUR_COLOUR = COLOUR_21; break;
-            case 22: OUR_COLOUR = COLOUR_22; break;
-            case 23: OUR_COLOUR = COLOUR_23; break;
-            case 24: OUR_COLOUR = COLOUR_24; break;
-            case 25: OUR_COLOUR = COLOUR_25; break;
-            case 26: OUR_COLOUR = COLOUR_26; break;
-            case 27: OUR_COLOUR = COLOUR_27; break;
-            case 28: OUR_COLOUR = COLOUR_28; break;
-            case 29: OUR_COLOUR = COLOUR_29; break;
-            default: OUR_COLOUR = COLOUR_30; break;
+        switch (OurIndex) {
+            case  1: OUR_COLOR = COLOR_01; break;
+            case  2: OUR_COLOR = COLOR_02; break;
+            case  3: OUR_COLOR = COLOR_03; break;
+            case  4: OUR_COLOR = COLOR_04; break;
+            case  5: OUR_COLOR = COLOR_05; break;
+            case  6: OUR_COLOR = COLOR_06; break;
+            case  7: OUR_COLOR = COLOR_07; break;
+            case  8: OUR_COLOR = COLOR_08; break;
+            case  9: OUR_COLOR = COLOR_09; break;
+            case 10: OUR_COLOR = COLOR_10; break;
+            case 11: OUR_COLOR = COLOR_11; break;
+            case 12: OUR_COLOR = COLOR_12; break;
+            case 13: OUR_COLOR = COLOR_13; break;
+            case 14: OUR_COLOR = COLOR_14; break;
+            case 15: OUR_COLOR = COLOR_15; break;
+            case 16: OUR_COLOR = COLOR_16; break;
+            case 17: OUR_COLOR = COLOR_17; break;
+            case 18: OUR_COLOR = COLOR_18; break;
+            case 19: OUR_COLOR = COLOR_19; break;
+            case 20: OUR_COLOR = COLOR_20; break;
+            case 21: OUR_COLOR = COLOR_21; break;
+            case 22: OUR_COLOR = COLOR_22; break;
+            case 23: OUR_COLOR = COLOR_23; break;
+            case 24: OUR_COLOR = COLOR_24; break;
+            case 25: OUR_COLOR = COLOR_25; break;
+            case 26: OUR_COLOR = COLOR_26; break;
+            case 27: OUR_COLOR = COLOR_27; break;
+            case 28: OUR_COLOR = COLOR_28; break;
+            case 29: OUR_COLOR = COLOR_29; break;
+            default: OUR_COLOR = COLOR_30; break;
         }
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
         #endif
-        egClearScreen (&OUR_COLOUR);
+        egClearScreen (&OUR_COLOR);
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_OFF;
         #endif
 
-        retval = WaitForInput (TimeWait);
-        if (retval == INPUT_KEY      ||
-            retval == INPUT_TIMER_ERROR
+        Retval = WaitForInput (TimeWait);
+        if (Retval == INPUT_KEY      ||
+            Retval == INPUT_TIMER_ERROR
         ) {
             break;
         }
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Detected Keypress ... Halt Screensaver";
+    MsgStr = L"Activity Detected ... Halt Screensaver";
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
@@ -823,27 +825,28 @@ static
 CHAR16 * GetScanCodeText (
     IN UINTN ScanCode
 ) {
-    CHAR16 *retval;
+    CHAR16 *Retval;
+
 
     switch (ScanCode) {
-        case SCAN_END:       retval = L"SCROLL_LAST";   break;
-        case SCAN_HOME:      retval = L"SCROLL_FIRST";  break;
-        case SCAN_PAGE_UP:   retval = L"PAGE_UP";       break;
-        case SCAN_PAGE_DOWN: retval = L"PAGE_DOWN";     break;
-        case SCAN_UP:        retval = L"ARROW_UP";      break;
-        case SCAN_LEFT:      retval = L"ARROW_LEFT";    break;
-        case SCAN_DOWN:      retval = L"ARROW_DOWN";    break;
-        case SCAN_RIGHT:     retval = L"ARROW_RIGHT";   break;
-        case SCAN_ESC:       retval = L"ESC-Rescan";    break;
-        case SCAN_DELETE:    retval = L"DEL-Hide";      break;
-        case SCAN_INSERT:    retval = L"INS-Details";   break;
-        case SCAN_F2:        retval = L"F2-Details";    break;
-        case SCAN_F10:       retval = L"F10-ScrnSht";   break; // 'ScrnSht' limits length
-        case 0x0016:         retval = L"F12-Eject";     break;
-        default:             retval = L"KEY_UNKNOWN";   break;
+        case SCAN_END:       Retval = L"SCROLL_LAST";   break;
+        case SCAN_HOME:      Retval = L"SCROLL_FIRST";  break;
+        case SCAN_PAGE_UP:   Retval = L"PAGE_UP";       break;
+        case SCAN_PAGE_DOWN: Retval = L"PAGE_DOWN";     break;
+        case SCAN_UP:        Retval = L"ARROW_UP";      break;
+        case SCAN_LEFT:      Retval = L"ARROW_LEFT";    break;
+        case SCAN_DOWN:      Retval = L"ARROW_DOWN";    break;
+        case SCAN_RIGHT:     Retval = L"ARROW_RIGHT";   break;
+        case SCAN_ESC:       Retval = L"ESC-Rescan";    break;
+        case SCAN_DELETE:    Retval = L"DEL-Hide";      break;
+        case SCAN_INSERT:    Retval = L"INS-Details";   break;
+        case SCAN_F2:        Retval = L"F2-Details";    break;
+        case SCAN_F10:       Retval = L"F10-ScrnSht";   break; // 'ScrnSht' limits length
+        case 0x0016:         Retval = L"F12-Eject";     break;
+        default:             Retval = L"KEY_UNKNOWN";   break;
     } // switch
 
-    return retval;
+    return Retval;
 } // static CHAR16 * GetScanCodeText()
 #endif
 
@@ -2212,7 +2215,7 @@ VOID DrawMainMenuEntry (
             0, 0
         );
 
-        BltImageCompositeBadge (
+        BltImageCompositeAny (
             Background,
             Entry->Image,
             Entry->BadgeImage,
@@ -3828,6 +3831,7 @@ BOOLEAN ConfirmRotate (VOID) {
     REFIT_MENU_ENTRY  *ChosenOption;
     REFIT_MENU_SCREEN *ConfirmRotateMenu;
 
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
     ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'Confirm CSR Rotation'");
@@ -4522,6 +4526,7 @@ BDS_COMMON_OPTION * CopyBdsOption (
 ) {
     BDS_COMMON_OPTION *NewBdsOption;
 
+
     if (BdsOption == NULL) {
         // Early Return
         return NULL;
@@ -4592,6 +4597,7 @@ BOOLEAN GetMenuEntryReturn (
 ) {
     REFIT_MENU_ENTRY *MenuEntryReturn;
 
+
     if (Screen == NULL || *Screen == NULL) {
         // Early Return
         return FALSE;
@@ -4615,6 +4621,7 @@ BOOLEAN GetMenuEntryYesNo (
 ) {
     REFIT_MENU_ENTRY *MenuEntryYes;
     REFIT_MENU_ENTRY *MenuEntryNo;
+
 
     if (Screen == NULL || *Screen == NULL) {
         // Early Return

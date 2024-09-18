@@ -1,7 +1,7 @@
 /* mok/mok.c
  *
- * Based mostly on shim.c by Matthew J. Garrett/Red Hat (see below
- * copyright notice).
+ * Based mostly on shim.c by Matthew J. Garrett/Red Hat
+ * (see copyright notice below)
  *
  * Code to perform Secure Boot verification of boot loader programs
  * using the Shim program and its Machine Owner Keys (MOKs), to
@@ -40,12 +40,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Significant portions of this code are derived from Tianocore
- * (http://tianocore.sf.net) and are Copyright 2009-2012 Intel
- * Corporation.
+ * (http://tianocore.sf.net) and are Copyright 2009-2012 The Intel Corporation.
  */
  /*
   * Modified for RefindPlus
-  * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  * Copyright (c) 2021-2024 Dayo Akanji (sf.net/u/dakanji/profile)
+  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
   *
   * Modifications distributed under the preceding terms.
   */
@@ -59,21 +59,22 @@
 BOOLEAN ShimFound  = FALSE;
 BOOLEAN SecureFlag = FALSE;
 
+
 /*
  * Check whether we are in Secure Boot and user mode
  */
 BOOLEAN secure_mode (VOID) {
-    EFI_STATUS  Status;
-    EFI_GUID    GlobalVar = EFI_GLOBAL_VARIABLE;
-    UINTN       CharSize;
-    UINT8      *SetupMode = NULL;
-    UINT8      *Sec       = NULL;
-
-    static BOOLEAN DoneOnce   = FALSE;
-
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
+
+    EFI_STATUS  Status;
+    EFI_GUID    GlobalVar = EFI_GLOBAL_VARIABLE;
+    UINTN       CharSize;
+    UINT8      *SetupMode;
+    UINT8      *Sec;
+
+    static BOOLEAN DoneOnce   = FALSE;
 
 
     if (DoneOnce) {
@@ -83,6 +84,7 @@ BOOLEAN secure_mode (VOID) {
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_SET;
     #endif
+    Sec = NULL;
     Status = EfivarGetRaw (
         &GlobalVar, L"SecureBoot",
         (VOID **) &Sec, &CharSize
@@ -96,6 +98,7 @@ BOOLEAN secure_mode (VOID) {
         SecureFlag = FALSE;
     }
     else {
+        SetupMode = NULL;
         Status = EfivarGetRaw (
             &GlobalVar, L"SetupMode",
             (VOID **) &SetupMode, &CharSize
@@ -109,6 +112,7 @@ BOOLEAN secure_mode (VOID) {
         else {
             SecureFlag = TRUE;
         }
+        MY_FREE_POOL(SetupMode);
     }
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -117,13 +121,11 @@ BOOLEAN secure_mode (VOID) {
     DoneOnce = TRUE;
 
     MY_FREE_POOL(Sec);
-    MY_FREE_POOL(SetupMode);
 
     return SecureFlag;
 } // secure_mode()
 
-// Returns TRUE if the shim program is available to verify binaries,
-// FALSE if not
+// Returns TRUE if the shim program is available to verify items or FALSE if not
 BOOLEAN ShimLoaded (VOID) {
     EFI_STATUS   Status;
     SHIM_LOCK   *shim_lock;
@@ -140,9 +142,9 @@ BOOLEAN ShimLoaded (VOID) {
     return ShimFound;
 } // ShimLoaded()
 
-// The following is based on the grub_linuxefi_secure_validate() function in Fedora's
-// version of GRUB 2.
-// Returns TRUE if the specified data is validated by Shim's MOK, FALSE otherwise
+// The following is based on the 'grub_linuxefi_secure_validate()'
+// function in Fedora's version of GRUB 2.
+// Returns TRUE if the specified data is validated by Shim's MOK or FALSE if not
 BOOLEAN ShimValidate (
     VOID   *data,
     UINT32  size

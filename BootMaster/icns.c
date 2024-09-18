@@ -472,6 +472,7 @@ EG_IMAGE * DummyImage (
 ) {
     static EG_IMAGE *Image = NULL;
 
+
     if (Image == NULL) {
         Image = DummyImageEx (PixelSize);
     }

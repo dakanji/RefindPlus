@@ -156,6 +156,7 @@ BOOLEAN StriSubCmp (
     BOOLEAN Terminate;
     BOOLEAN Found;
 
+
     if (SmallStr == NULL || BigStr == NULL) {
         return FALSE;
     }
@@ -215,6 +216,7 @@ BOOLEAN MyStrBegins (
     IN const CHAR16 *String2
 ) {
     BOOLEAN StrBegins;
+
 
     if (String1 == NULL || String2 == NULL) {
         return FALSE;
@@ -401,6 +403,7 @@ CHAR8 * MyAsciiStrStr (
     const CHAR8 *FirstMatch;
     const CHAR8 *SearchStringTmp;
 
+
     //
     // ASSERT both strings are shorter than PcdMaximumAsciiStringLength
     //
@@ -441,6 +444,7 @@ VOID ToLower (
 ) {
     UINTN i;
 
+
     if (MyString == NULL) {
         return;
     }
@@ -459,6 +463,7 @@ VOID ToUpper (
     IN OUT CHAR16 *MyString
 ) {
     UINTN i;
+
 
     if (MyString == NULL) {
         return;
@@ -719,6 +724,7 @@ VOID MergeWords (
     CHAR16  *Temp, *Word, *p;
     BOOLEAN  LineFinished;
 
+
     if (InString == NULL) {
         return;
     }
@@ -762,6 +768,7 @@ VOID MergeUniqueWords (
 ) {
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished;
+
 
     if (InString == NULL) {
         return;
@@ -807,6 +814,7 @@ VOID MergeUniqueItems (
     UINTN   i;
     CHAR16 *Item;
 
+
     if (InString == NULL) {
         return;
     }
@@ -825,6 +833,7 @@ CHAR16 * SanitiseString (
     CHAR16  *Temp, *Word, *p;
     CHAR16  *OutString;
     BOOLEAN  LineFinished;
+
 
     if (InString == NULL) {
         return NULL;
@@ -961,6 +970,7 @@ BOOLEAN TruncateString (
 ) {
     BOOLEAN WasTruncated;
 
+
     if (StrLen (TheString) <= Limit) {
         WasTruncated = FALSE;
     }
@@ -982,6 +992,7 @@ CHAR16 * FindNumbers (
 ) {
     UINTN   i, EndOfElement, StartOfElement, CopyLength;
     CHAR16 *Found, *ExtraFound, *LookFor;
+
 
     if (InString == NULL) {
         return NULL;
@@ -1081,6 +1092,7 @@ CHAR16 * FindCommaDelimited (
     BOOLEAN   LeadingSpace;
     CHAR16   *FoundString;
 
+
     if (InString == NULL) {
         return NULL;
     }
@@ -1146,6 +1158,7 @@ BOOLEAN DeleteItemFromCsvList (
     CHAR16  *Found;
     CHAR16  *Comma;
     BOOLEAN  Retval;
+
 
     if (ToDelete == NULL || List == NULL) {
         return FALSE;
@@ -1246,6 +1259,7 @@ BOOLEAN IsListItem (
     BOOLEAN   Found;
     CHAR16   *OneElement;
 
+
     if (SmallString == NULL || List == NULL) {
         return FALSE;
     }
@@ -1275,6 +1289,7 @@ BOOLEAN IsListItemSubstringIn (
     BOOLEAN  Found;
     UINTN    ElementLength, i;
     CHAR16  *OneElement;
+
 
     if (BigString == NULL || List == NULL) {
         return FALSE;
@@ -1402,6 +1417,7 @@ BOOLEAN IsValidHex (
     UINTN   i;
     BOOLEAN IsHex;
 
+
     i = 0;
     IsHex = TRUE;
     while (IsHex && (Input[i] != L'\0')) {
@@ -1434,6 +1450,7 @@ UINT64 StrToHex (
     UINTN  NumDone, InputLength;
     UINT64 retval;
     CHAR16 a;
+
 
     if (Input == NULL ||
         NumChars == 0 ||
@@ -1483,6 +1500,7 @@ BOOLEAN IsGuid (
     CHAR16  a;
     BOOLEAN retval;
 
+
     if (UnknownString == NULL) {
         return FALSE;
     }
@@ -1528,6 +1546,7 @@ CHAR16 * GuidAsString (
 ) {
     CHAR16 *TheString;
 
+
     if (GuidData == NULL) {
         // Early Return
         return NULL;
@@ -1564,6 +1583,7 @@ EFI_GUID StringAsGuid (
 ) {
     EFI_GUID  Guid = NULL_GUID_VALUE;
 
+
     if (!IsGuid (InString)) {
         return Guid;
     }
@@ -1591,6 +1611,7 @@ CHAR16 * GetTimeString (VOID) {
     EFI_TIME    CurrentTime;
     CHAR16     *TimeStr;
 
+
     Status  = REFIT_CALL_2_WRAPPER(gST->RuntimeServices->GetTime, &CurrentTime, NULL);
     TimeStr = EFI_ERROR(Status)
         ? StrDuplicate (L"Unknown Time")
@@ -1609,6 +1630,7 @@ VOID DeleteStringList (
     STRING_LIST *StringList
 ) {
     STRING_LIST *Current, *Previous;
+
 
     if (StringList == NULL) {
         return;
@@ -1637,6 +1659,7 @@ CHAR16 * MyAsciiStrCopyToUnicode (
     CHAR16  *UnicodeString;
     CHAR16  *UnicodeStringWalker;
     UINTN    UnicodeStringSize;
+
 
     if (AsciiString == NULL) {
         return NULL;

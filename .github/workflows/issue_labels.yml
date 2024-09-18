@@ -15,7 +15,7 @@ jobs:
   # Check Labels - https://github.com/mheap/github-action-required-labels
   add_label_user_close_check:
     name: Close Issue Label - Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     outputs:
@@ -35,7 +35,7 @@ jobs:
   add_label_user_close_act:
     name: Close Issue Label - Cancel
     needs: add_label_user_close_check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: needs.add_label_user_close_check.outputs.status == 'success'
     steps:
@@ -48,7 +48,7 @@ jobs:
 
   add_label_user_open_enhance:
     name: Enhancement Request Label
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
     steps:
@@ -63,7 +63,7 @@ jobs:
   add_label_user_open:
     name: Default Issue Label
     needs: [add_label_user_open_enhance]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ !failure() && github.actor != 'dakanji' && github.event.action == 'opened' }}
     steps:
@@ -78,7 +78,7 @@ jobs:
   similarity_analysis:
     name: Check Similarity
     needs: [add_label_user_open]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ !failure() && github.actor != 'dakanji' && github.event.action == 'opened' }}
     steps:
@@ -93,7 +93,7 @@ jobs:
 
   add_label_base_reopen:
     name: Reopen Issue Label - Base
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor == 'dakanji' && github.event.action == 'reopened'
     steps:
@@ -106,7 +106,7 @@ jobs:
 
   add_label_user_reopen:
     name: Reopen Issue Label - User
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
@@ -120,7 +120,7 @@ jobs:
   # Del Labels - https://github.com/actions-cool/issues-helper
   del_label_user_reopen:
     name: Remove Cancelled Label
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'reopened'
     steps:
@@ -133,7 +133,7 @@ jobs:
 
   del_label_user_close:
     name: Remove Misc Labels
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
@@ -147,7 +147,7 @@ jobs:
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_bug_check1:
     name: Bounce Bug - Check1
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     outputs:
@@ -167,7 +167,7 @@ jobs:
   bounce_bug_act1:
     name: Bounce Bug - Act1
     needs: [bounce_bug_check1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: needs.bounce_bug_check1.outputs.status == 'success'
     steps:
@@ -181,7 +181,7 @@ jobs:
   bounce_bug_act2:
     name: Bounce Bug - Act2
     needs: [bounce_bug_act1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
@@ -197,7 +197,7 @@ jobs:
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_enhance_check1:
     name: Bounce Enhance - Check1
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     outputs:
@@ -217,7 +217,7 @@ jobs:
   bounce_enhance_check2:
     name: Bounce Enhance - Check2
     needs: [bounce_enhance_check1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: needs.bounce_enhance_check1.outputs.status == 'success'
     steps:
@@ -233,7 +233,7 @@ jobs:
   bounce_enhance_act1:
     name: Bounce Enhance - Act1
     needs: [bounce_enhance_check2]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:
@@ -247,7 +247,7 @@ jobs:
   bounce_enhance_act2:
     name: Bounce Enhance - Act2
     needs: [bounce_enhance_act1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.actor != 'dakanji' && github.event.action == 'closed'
     steps:

@@ -132,7 +132,7 @@ VOID BltImageAlpha (
     IN UINTN     YPos,
     IN EG_PIXEL *BackgroundPixel
 );
-VOID BltImageCompositeBadge (
+VOID BltImageCompositeAny (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,

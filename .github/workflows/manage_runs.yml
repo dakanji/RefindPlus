@@ -12,7 +12,7 @@ jobs:
   # Prune Old Runs - https://github.com/Mattraks/delete-workflow-runs
   del_runs:
     name: Prune Runs
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: Mattraks/delete-workflow-runs@v2

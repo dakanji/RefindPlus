@@ -597,6 +597,7 @@ CHAR16 * RefitGetAppleDiskLabelEx (
     CHAR16   *UnicodeDiskLabel;
     UINT32    DiskLabelLength;
 
+
     DiskLabelPathSize = StrSize (BootDirectoryName) + StrSize (LabelFilename) - sizeof (CHAR16);
 
     DiskLabelPath = AllocatePool (DiskLabelPathSize);
@@ -641,6 +642,7 @@ CHAR16 * RefitGetAppleDiskLabel (
     CHAR16                           *BootDirectoryName;
     CHAR16                           *AppleDiskLabel;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
+
 
     BootDirectoryName = RefitGetBootPathName (Volume->DevicePath);
     if (BootDirectoryName == NULL) {
@@ -687,6 +689,7 @@ VOID * RefitGetFileInfo (
     EFI_STATUS  Status;
     UINTN       FileInfoSize;
     VOID       *FileInfoBuffer;
+
 
     FileInfoSize   = 0;
     FileInfoBuffer = NULL;
@@ -748,6 +751,7 @@ EFI_STATUS RefitGetApfsSpecialFileInfo (
     EFI_GUID AppleApfsVolumeInfoGuid    = GUID_APFS_INFO_VOLUME;
     EFI_GUID AppleApfsContainerInfoGuid = GUID_APFS_INFO_CONTAINER;
 
+
     if (ContainerInfo == NULL && VolumeInfo == NULL) {
         // Early Return ... Return Error
         return EFI_INVALID_PARAMETER;
@@ -793,6 +797,7 @@ EFI_STATUS RefitGetApfsVolumeInfo (
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
     APFS_INFO_CONTAINER             *ApfsContainerInfo;
     APFS_INFO_VOLUME                *ApfsVolumeInfo;
+
 
     if (ContainerGuid == NULL
         && VolumeGuid == NULL

@@ -814,7 +814,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Reload OptionROM");
     MsgStr = PoolPrint (
-        L"Status:- '%r' ... Acquire OptionROM from Volatile Memory",
+        L"Status:- '%r ... Acquire OptionROM from Volatile Memory'",
         Status
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -833,7 +833,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Status:- '%r' ... Amend Boot Services Table",
+        L"Status:- '%r ... Amend Boot Services Table'",
         Status
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -903,7 +903,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
                 MsgStr = PoolPrint (
-                    L"Status:- '%r' ... Issue OptionROM from Volatile Memory",
+                    L"Status:- '%r ... Issue OptionROM from Volatile Memory'",
                     Status
                 );
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);

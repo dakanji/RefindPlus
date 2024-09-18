@@ -233,7 +233,6 @@ BOOLEAN                BlockRescan          =                 FALSE;
 BOOLEAN                NativeLogger         =                 FALSE;
 BOOLEAN                IconScaleSet         =                 FALSE;
 BOOLEAN                ExtremeHiDPI         =                 FALSE;
-BOOLEAN                ForceTextOnly        =                 FALSE;
 BOOLEAN                AppleFirmware        =                 FALSE;
 BOOLEAN                FlushFailedTag       =                 FALSE;
 BOOLEAN                FlushFailReset       =                 FALSE;
@@ -285,6 +284,7 @@ extern BOOLEAN                       ShimFound;
 extern BOOLEAN                       SecureFlag;
 extern BOOLEAN                       SelfVolSet;
 extern BOOLEAN                       SelfVolRun;
+extern BOOLEAN                       ForceTextOnly;
 extern BOOLEAN                       NormaliseCall;
 extern BOOLEAN                       SubScreenBoot;
 extern BOOLEAN                       ForceRescanDXE;
@@ -760,7 +760,7 @@ EFI_STATUS FilterCSR (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Normalise CSR ... %r", Status);
-    LOG_MSG("%s    * Status:- %r' ... Normalise CSR", OffsetNext, Status);
+    LOG_MSG("%s    * Status:- '%r ... Normalise CSR'", OffsetNext, Status);
     #endif
 
     return Status;
@@ -932,7 +932,7 @@ VOID LogDisableCheck (
     CHAR16 *MsgStr;
 
     MsgStr = PoolPrint (
-        L"Status:- '%r' ... %s",
+        L"Status:- '%r ... %s'",
         Result, TypStr
     );
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -1134,7 +1134,7 @@ VOID SetBootArgs (VOID) {
     if (LogDisableNvramPanicLog) LogDisableCheck (BOOT_FIX_STR_03, Status);
 
     MsgStr = PoolPrint (
-        L"Status:- '%r' ... Set Boot Arguments: '%s'",
+        L"Status:- '%r ... Set Boot Arguments: %s'",
         Status, GlobalConfig.SetBootArgs
     );
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -1628,7 +1628,7 @@ UINTN RunTrustSync (
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"Status:- 'Success' ... Native Boot Chain Setup");
+    MsgStr = StrDuplicate (L"Status:- 'Success ... Native Boot Chain Setup'");
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     LOG_MSG("%s", OffsetNext);
@@ -1776,7 +1776,7 @@ VOID RunNVramSync (
     );
 
     #if REFIT_DEBUG > 0
-    MsgStr = L"Status:- 'Success' ... Apply nvRAM Sync";
+    MsgStr = L"Status:- 'Success ... Apply nvRAM Sync'";
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     #endif
@@ -2269,9 +2269,9 @@ VOID RescanAll (
     FixIconScale();
 
     if (OverrideSB) {
-        GlobalConfig.DirectBoot =                           FALSE;
-        GlobalConfig.TextOnly   = ForceTextOnly            = TRUE;
-        GlobalConfig.Timeout    = MainMenu->TimeoutSeconds =    0;
+        GlobalConfig.DirectBoot = FALSE;
+        GlobalConfig.TextOnly   =  TRUE;
+        GlobalConfig.Timeout    = MainMenu->TimeoutSeconds = 0;
     }
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -2736,43 +2736,34 @@ VOID LogBasicInfo (
     LOG_MSG(
         "%s  - %sMode = Graphics (GOP) : %s",
         OffsetNext,
-        (AppleFirmware)   ? L"ConOut " : L"",
-        EFI_ERROR(Status) ? L" NO"     : L"YES"
+        (AppleFirmware)     ? L"ConOut " : L"",
+        (EFI_ERROR(Status)) ? L" NO"     : L"YES"
     );
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
 
-    /* Shim */
-    LOG_MSG("Shim:- '%s'", (ShimFound) ? L"Present" : L"Absent");
-    LOG_MSG("\n");
+    /* Apple Framebuffers */
+    LOG_MSG("Apple Framebuffer Count:- '%d'", AppleFramebuffers);
+    LOG_MSG("\n\n");
 
     /* Secure Boot */
-    LOG_MSG("SecureBoot:- '%s'", (SecureFlag) ? L"Active"  : L"Inactive");
-    LOG_MSG("\n");
-
-    /* Secure Boot Setup */
-    Status = (GotMOK) ? EFI_SUCCESS : EFI_NOT_STARTED;
-    LOG_MSG("MOK Activation:- '%r'", Status);
-    LOG_MSG("\n");
-
-    /* Apple Frame Buffers */
-    LOG_MSG("Apple Frame Buffer Count:- '%d'", AppleFramebuffers);
-    LOG_MSG("\n");
-
-    /* Compat Support Module Type */
-    if (AppleFirmware && !GlobalConfig.LegacySync) {
-        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
-    }
-    switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Mac-Style"        ); break;
-        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac"); break;
-        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent on Mac"    ); break;
-        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"       ); break;
-        default:               MsgStr = StrDuplicate (L"Absent"           );
-    }
-    LOG_MSG("Legacy BIOS Boot Support:- '%s'", MsgStr);
+    LOG_MSG("Secure Boot Items:");
+    LOG_MSG(
+        "%s  - Preloaders:- %s",
+        OffsetNext,
+        (ShimFound) ? L"  'Active'"  : L"'Inactive'"
+    );
+    LOG_MSG(
+        "%s  - SecureTags:- %s",
+        OffsetNext,
+        (SecureFlag) ? L"  'Active'"  : L"'Inactive'"
+    );
+    LOG_MSG(
+        "%s  - MOK Extras:- %s",
+        OffsetNext,
+        (GotMOK) ? L"  'Active'"  : L"'Inactive'"
+    );
     LOG_MSG("\n\n");
-    MY_FREE_POOL(MsgStr);
 } // static VOID LogBasicInfo()
 #endif
 
@@ -2950,6 +2941,12 @@ EFI_STATUS EFIAPI efi_main (
     );
     #endif
 
+    /* Run Secure Boot Update and Proceed Accordingly */
+    MokProtocol = SecureBootSetup();
+
+    /* Get Apple Framebuffer Count */
+    AppleFramebuffers = egCountAppleFramebuffers();
+
     /* Vet EFI Version */
     EfiMajorVersion = (gST->Hdr.Revision >> 16U);
     WarnVersionEFI  = WarnRevisionUEFI = FALSE;
@@ -2965,9 +2962,6 @@ EFI_STATUS EFIAPI efi_main (
     ) {
         WarnRevisionUEFI = TRUE;
     }
-
-    /* Run Secure Boot Update */
-    MokProtocol = SecureBootSetup();
 
     #if REFIT_DEBUG > 0
     /* Log System Details */
@@ -3024,8 +3018,9 @@ EFI_STATUS EFIAPI efi_main (
     VarNoCheckCompat   = GlobalConfig.DisableCheckCompat  ;
     VarDisablePanicLog = GlobalConfig.DisableNvramPanicLog;
 
-// DA-TAG: Limit to TianoCore
-#ifdef __MAKEWITH_TIANO
+
+    // DA-TAG: Limit to TianoCore
+    #ifdef __MAKEWITH_TIANO
     Status = CheckStatusOC();
     if (Status == EFI_ALREADY_STARTED) {
         // Disable 'NvramProtect' and 'NvramProtectEx' if chainloaded via OpenCore
@@ -3050,7 +3045,7 @@ EFI_STATUS EFIAPI efi_main (
         OcUnblockUnmountedPartitions();
         ReinitRefitLib();
     }
-#endif
+    #endif
 
     /* Init MainMenu */
     InitMainMenu();
@@ -3171,6 +3166,18 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s      Supply Support:- 'NVME  :  %r'", OffsetNext, Status);
+    LOG_MSG("\n\n");
+
+    /* Record Compat Support Module Type */
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Mac-Style"        ); break;
+        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac"); break;
+        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent on Mac"    ); break;
+        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"       ); break;
+        default:               MsgStr = StrDuplicate (L"Absent"           );
+    }
+    LOG_MSG("INFO: Legacy BIOS Boot Support:- '%s'", MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     // Load Drivers
@@ -3289,7 +3296,7 @@ EFI_STATUS EFIAPI efi_main (
             MsgStr = StrDuplicate (L"Maintain");
             #endif
 
-            GlobalConfig.TextOnly = ForceTextOnly = TRUE;
+            GlobalConfig.TextOnly = TRUE;
         }
 
         #if REFIT_DEBUG > 0

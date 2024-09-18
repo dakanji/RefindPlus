@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
-        Please [USE THE DISCUSSIONS OPTION INSTEAD](https://github.com/dakanji/RefindPlus/discussions) if you wish to ask a question, make a comment or request support.
+        Please use the [DISCUSSIONS OPTION](https://github.com/dakanji/RefindPlus/discussions) instead if you wish to ask a question, make a comment or similar.
 
         NB: Before continuing, try running RefindPlus with the 'ransom_drives' configuration option set if the problem is that RefindPlus hangs on UEFI-PC with HP firmware.
   - type: dropdown
@@ -62,8 +62,8 @@ body:
       description: You can make more than one selection
       multiple: true
       options:
-        - 'One or More Tools (Second Row Items)'
-        - 'All OS Loaders (First Row Items)'
+        - 'One/More Tools (2nd Row Items)'
+        - 'All OS Loaders (1st Row Items)'
         - 'Mac OS Loader'
         - 'Win OS Loader'
         - 'Lin OS Loader'
@@ -71,6 +71,7 @@ body:
         - 'Clover Loader'
         - 'Other Loader'
         - 'Other Item'
+        - 'All Items'
     validations:
       required: true
   - type: textarea
@@ -95,5 +96,5 @@ body:
         Additional details that may provide clarity on the problem.
       placeholder: |
         You can attach files by dragging/dropping them on this field.
-        You can also add screenshots to aid understanding the problem.
-        Screenshots can be saved by pressing the F10 key in RefindPlus.
+        You can also use screenshots to shed some light on the problem.
+        Screenshots can be saved in RefindPlus by pressing the F10 key.

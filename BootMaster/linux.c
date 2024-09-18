@@ -50,11 +50,11 @@
 
 #include "global.h"
 #include "config.h"
+#include "linux.h"
+#include "scan.h"
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"
-#include "linux.h"
-#include "scan.h"
 
 // Locate an initrd or initramfs file that matches the kernel specified by LoaderPath.
 // The matching file has a name that begins with "init" and includes the same version

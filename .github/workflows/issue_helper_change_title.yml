@@ -1,0 +1,113 @@
+name: 'Issue Helper Change Title'
+
+on:
+  workflow_dispatch:
+    inputs:
+      item_id:
+        description: 'The Issue ID'
+        required: true
+        type: number
+      new_title:
+        description: 'The New Issue Title'
+        required: true
+        type: string
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+
+  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  issue_change_title1:
+    name: Issue - Change - Title1
+    runs-on: ubuntu-24.04
+
+    steps:
+      - id: changetitle_01
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueNumber = context.payload.inputs.item_id;
+            const { data } = await github.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+            if (data.locked) {
+              console.log("::set-output name=islocked::true");
+            } else {
+              console.log("::set-output name=islocked::false");
+            }
+
+  issue_change_title2:
+    name: Issue - Change - Title2
+    needs: [changetitle_01]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - id: changetitle_02
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'unlock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  issue_change_title3:
+    name: Issue - Change - Title3
+    needs: [changetitle_02]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - id: changetitle_03
+        uses: actions/checkout@v2
+
+  issue_change_title4:
+    name: Issue - Change - Title4
+    needs: [changetitle_03]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - id: changetitle_04
+        uses: actions/setup-node@v2
+        with:
+          # Using range for flexibility
+          node-version: '>=20 <22'
+
+  issue_change_title5:
+    name: Issue - Change - Title5
+    needs: [changetitle_04]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - id: changetitle_05
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_ID=${{ github.event.inputs.item_id }}
+          NEW_TITLE="${{ github.event.inputs.new_title }}"
+
+          # Update issue title using GitHub API
+          curl -X PATCH \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_ID \
+            -d "{\"title\": \"$NEW_TITLE\"}"
+
+  issue_change_title6:
+    name: Issue - Change - Title6
+    needs: [changetitle_05]
+    runs-on: ubuntu-24.04
+
+    if: ${{ steps.changetitle_01.outputs.islocked == 'true' }}
+    steps:
+      - id: changetitle_06
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          issue-state: 'closed'

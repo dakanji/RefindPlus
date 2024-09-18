@@ -21,7 +21,7 @@ jobs:
   # Misc Issue Items - https://github.com/actions-cool/issues-helper
   issue_duplicate1:
     name: Issue - Duplicate1
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_01
@@ -44,7 +44,7 @@ jobs:
   issue_duplicate2:
     name: Issue - Duplicate2
     needs: [issue_duplicate1]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_02
@@ -57,7 +57,7 @@ jobs:
   issue_duplicate3:
     name: Issue - Duplicate3
     needs: [issue_duplicate2]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_03
@@ -74,7 +74,7 @@ jobs:
   issue_duplicate4:
     name: Issue - Duplicate4
     needs: [issue_duplicate3]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_04
@@ -88,7 +88,7 @@ jobs:
   issue_duplicate5:
     name: Issue - Duplicate5
     needs: [issue_duplicate4]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_05
@@ -102,21 +102,21 @@ jobs:
   issue_duplicate6:
     name: Issue - Duplicate6
     needs: [issue_duplicate5]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - id: issueduplicate_06
         uses: actions-cool/issues-helper@v3
         with:
-          close-reason: 'completed'
           actions: 'close-issue'
+          close-reason: 'completed'
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.inputs.item_id }}
 
   issue_duplicate7:
     name: Issue - Duplicate7
     needs: [issue_duplicate6]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: ${{ steps.issueduplicate_01.outputs.islocked == 'true' }}
     steps:

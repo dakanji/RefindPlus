@@ -25,11 +25,11 @@
  * Modifications distributed under the preceding terms.
  */
 
-#include "pointer.h"
 #include "global.h"
+#include "pointer.h"
 #include "screenmgt.h"
-#include "icns.h"
 #include "rp_funcs.h"
+#include "icns.h"
 #include "../include/refit_call_wrapper.h"
 
 UINTN                           NumSPointerDevices =                                  0;
@@ -508,7 +508,7 @@ VOID pdDraw (VOID) {
             Width, Height
         );
         if (Background != NULL) {
-            BltImageCompositeBadge (
+            BltImageCompositeAny (
                 Background, MouseImage,
                 NULL, State.X, State.Y
             );
