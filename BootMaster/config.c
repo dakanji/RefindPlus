@@ -146,7 +146,7 @@ VOID SyncLinuxPrefixes (VOID) {
             LINUX_PREFIXES
         );
     }
-    else if (GlobalConfig.HelpScan) {
+    else {
         MergeUniqueItems (
             &GlobalConfig.LinuxPrefixes,
             LINUX_PREFIXES, L','
@@ -163,7 +163,7 @@ VOID SyncAlsoScan (VOID) {
             ALSO_SCAN_DIRS
         );
     }
-    else if (GlobalConfig.HelpScan) {
+    else {
         MergeUniqueItems (
             &GlobalConfig.AlsoScan,
             ALSO_SCAN_DIRS, L','
@@ -216,16 +216,13 @@ VOID SyncDontScanFiles (VOID) {
             DONT_SCAN_FILES
         );
     }
-    else if (GlobalConfig.HelpScan) {
+    else {
         MergeUniqueItems (
             &GlobalConfig.DontScanFiles,
             DONT_SCAN_FILES, L','
         );
     }
 
-    if (!GlobalConfig.HelpScan) {
-        return;
-    }
 
     // Handle MEMTEST_NAMES in 'ScanLoaderDir' and not here
     // to accomodate fallback loaders in the list.
@@ -3462,18 +3459,6 @@ VOID ReadConfig (
             // DA_TAG: Accomodate Deprecation
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.HelpText = (DeclineSetting) ? FALSE : TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"decline_help_scan")) {
-            #if REFIT_DEBUG > 0
-            if (!OuterLoop) {
-                UpdatedToken = LogUpdate (
-                    TokenList[0], NotRunBefore, TRUE
-                );
-            }
-            #endif
-
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.HelpScan = (DeclineSetting) ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_help_size")) {
             #if REFIT_DEBUG > 0

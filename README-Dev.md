@@ -89,7 +89,6 @@ continue_on_warning   |Proceed as if a key was pressed after screen warnings (fo
 csr_dynamic           |Actively enables or disables Apple's `System Integrity Protection` (SIP)
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
-decline_help_scan     |Disables feature that skips showing misc typically unwanted loaders
 decline_help_size     |Disables feature that sets additional UI scaling for very high DPI screens
 decline_help_text     |Disables feature that sets screen text to complementary colours
 decouple_key_f10      |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)

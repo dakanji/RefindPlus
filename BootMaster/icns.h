@@ -101,7 +101,8 @@ EG_IMAGE * BuiltinIcon (IN UINTN Id);
 #define BASE_OS_ICON_OPENCORE               (6)
 #define BASE_OS_ICON_UNKNOWN                (7)
 #define BASE_OS_ICON_DUMMY                  (8)
-#define BASE_OS_ICON_COUNT                  (9)
+#define BASE_OS_ICON_UEFI                   (9)
+#define BASE_OS_ICON_COUNT                 (10)
 
 #endif
 

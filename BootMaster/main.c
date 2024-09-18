@@ -131,7 +131,6 @@ REFIT_CONFIG GlobalConfig = {
     .HiddenTags                =                    TRUE,
     .LegacySync                =                    TRUE,
     .HelpIcon                  =                    TRUE,
-    .HelpScan                  =                    TRUE,
     .HelpSize                  =                    TRUE,
     .HelpText                  =                    TRUE,
     .SetAppleFB                =                    TRUE,
@@ -3069,7 +3068,6 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncTrust:- '%03d'",    TAG_ITEM_A(GlobalConfig.SyncTrust       ));
     LOG_MSG("%s      SyncAPFS:- '%s'",       TAG_ITEM_C(GlobalConfig.SyncAPFS        ));
     LOG_MSG("%s      HelpIcon:- '%s'",       TAG_ITEM_C(GlobalConfig.HelpIcon        ));
-    LOG_MSG("%s      HelpScan:- '%s'",       TAG_ITEM_C(GlobalConfig.HelpScan        ));
     LOG_MSG("%s      CheckDXE:- '%s'",       TAG_ITEM_C(GlobalConfig.RescanDXE       ));
 
     LOG_MSG("%s      TextOnly:- ",           OffsetNext                               );

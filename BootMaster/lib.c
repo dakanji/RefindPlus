@@ -2177,20 +2177,18 @@ BOOLEAN VolumeScanAllowed (
         }
     }
 
-    if (GlobalConfig.HelpScan) {
-        if (Volume->FSType == FS_TYPE_HFSPLUS                    &&
-            GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)
+    if (Volume->FSType == FS_TYPE_HFSPLUS                    &&
+        GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)
+    ) {
+        return FALSE;
+    }
+
+    if (Volume->FSType == FS_TYPE_NTFS) {
+        if (MyStriCmp (Volume->VolName, L"System Reserved"             )  ||
+            MyStriCmp (Volume->VolName, L"System Device Bay"           )  ||
+            MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
         ) {
             return FALSE;
-        }
-
-        if (Volume->FSType == FS_TYPE_NTFS) {
-            if (MyStriCmp (Volume->VolName, L"System Reserved"             )  ||
-                MyStriCmp (Volume->VolName, L"System Device Bay"           )  ||
-                MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")
-            ) {
-                return FALSE;
-            }
         }
     }
 
@@ -3531,6 +3529,8 @@ VOID LoadVolumeIcon (
     CHAR16  *MsgStr;
     #endif
 
+    CHAR16  *BootDirectoryName;
+
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -3590,12 +3590,25 @@ VOID LoadVolumeIcon (
             MY_FREE_POOL(MsgStr);
             #endif
 
-            Volume->VolIconImage = egLoadIconAnyType (
-                Volume->RootDir,
-                L"",
-                L".VolumeIcon",
-                GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
+            BootDirectoryName = RefitGetBootPathName (Volume->DevicePath);
+            if (BootDirectoryName != NULL) {
+                Volume->VolIconImage = egLoadIconAnyType (
+                    Volume->RootDir,
+                    BootDirectoryName,
+                    L".VolumeIcon",
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
+                MY_FREE_POOL(BootDirectoryName);
+            }
+
+            if (Volume->VolIconImage == NULL) {
+                Volume->VolIconImage = egLoadIconAnyType (
+                    Volume->RootDir,
+                    L"",
+                    L".VolumeIcon",
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
+            }
         }
         else {
             #if REFIT_DEBUG > 0

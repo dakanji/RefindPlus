@@ -549,7 +549,6 @@ typedef struct {
     BOOLEAN                     HiddenTags;
     BOOLEAN                     LegacySync;
     BOOLEAN                     HelpIcon;
-    BOOLEAN                     HelpScan;
     BOOLEAN                     HelpSize;
     BOOLEAN                     HelpText;
     BOOLEAN                     SetAppleFB;

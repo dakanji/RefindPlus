@@ -73,7 +73,8 @@ BUILTIN_ICON TableBuiltinIconOS[BASE_OS_ICON_COUNT] = {
     { NULL, L"os_clover",           ICON_SIZE_BIG   },
     { NULL, L"os_opencore",         ICON_SIZE_BIG   },
     { NULL, L"os_unknown",          ICON_SIZE_BIG   },
-    { NULL, L"os_dummy",            ICON_SIZE_BIG   }
+    { NULL, L"os_dummy",            ICON_SIZE_BIG   },
+    { NULL, L"os_uefi",             ICON_SIZE_BIG   }
 };
 
 BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
@@ -204,6 +205,52 @@ EG_IMAGE * BuiltinIcon (
 // Load an icon for an operating system
 //
 
+static
+VOID UpdateBaseIcon (
+    IN     CHAR16    *BaseName,
+    IN OUT EG_IMAGE **Image
+) {
+    if (*Image != NULL) {
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Find an Icon from '%s'",
+        BaseName
+    );
+    #endif
+
+    *Image = egFindIcon (
+        BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
+    );
+} // static VOID UpdateBaseIcon()
+
+static
+EG_IMAGE * LoadIndexedIcon (
+    IN  CHAR16 *BaseName OPTIONAL,
+    IN  UINTN   Id
+) {
+    if (TableBuiltinIconOS[Id].Image == NULL) {
+        return NULL;
+    }
+
+    if (BaseName != NULL &&
+        !MyStriCmp (BaseName, TableBuiltinIconOS[Id].FileName)
+    ) {
+        return NULL;
+    }
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_THREE_STAR_MID,
+        L"Use Cached Icon:- '%s'",
+        TableBuiltinIconOS[Id].FileName
+    );
+    #endif
+
+    return TableBuiltinIconOS[Id].Image;
+} // static EG_IMAGE * LoadIndexedIcon()
+
 // Load an OS icon from among the comma-delimited list provided in OSIconName.
 // Searches for icons with extensions in the ICON_EXTENSIONS list (via
 // egFindIcon()).
@@ -219,7 +266,6 @@ EG_IMAGE * LoadOSIcon (
     UINTN            Index2;
     UINTN            Index;
     INTN             OurId; // 'INTN' is important
-    INTN             Id;    // 'INTN' is important
 
 
     if (!AllowGraphicsMode) {
@@ -227,9 +273,8 @@ EG_IMAGE * LoadOSIcon (
     }
 
     // First, try to find an icon from the OSIconName list.
-    Id    =   -1;
-    OurId =   -1;
     Index =    0;
+    OurId =   -1;
     Image = NULL;
     while (
         Image == NULL &&
@@ -241,199 +286,91 @@ EG_IMAGE * LoadOSIcon (
             CutoutName
         );
 
+        // Skip cache check if BootLogo is set
+        // BootLogo is not cached
         if (GlobalConfig.HelpIcon && !BootLogo) {
             for (Index2 = 0; Index2 < BASE_OS_ICON_COUNT; Index2++) {
-                if (MyStriCmp (BaseName, TableBuiltinIconOS[Index2].FileName)) {
-                    OurId = Id = Index2;
-                    if (TableBuiltinIconOS[Id].Image != NULL) {
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_THREE_STAR_MID,
-                            L"Use Cached Icon:- '%s'",
-                            TableBuiltinIconOS[Id].FileName
-                        );
-                        #endif
-
-                        Image = TableBuiltinIconOS[Id].Image;
-                    }
+                Image = LoadIndexedIcon (BaseName, Index2);
+                if (Image != NULL) {
+                    OurId = (Index2 < BASE_OS_ICON_COUNT)
+                        ? Index2 : (BASE_OS_ICON_COUNT - 1);
 
                     break;
                 }
             } // for
-        } // if GlobalConfig.HelpIcon
-
-        if (Image == NULL) {
-            Image = egFindIcon (
-                BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
         }
 
-        MY_FREE_POOL(CutoutName);
+        UpdateBaseIcon (BaseName, &Image);
+
         MY_FREE_POOL(BaseName);
+        MY_FREE_POOL(CutoutName);
     } // while
 
     // If that fails, try again using the FallbackIconName.
     if (Image == NULL) {
-        Id       = -1;
         BaseName = PoolPrint (
             L"%s_%s",
             (BootLogo) ? L"boot" : L"os",
             FallbackIconName
         );
 
+        // Skip cache check if BootLogo is set
+        // BootLogo is not cached
         if (GlobalConfig.HelpIcon && !BootLogo) {
             for (Index2 = 0; Index2 < BASE_OS_ICON_COUNT; Index2++) {
-                if (MyStriCmp (BaseName, TableBuiltinIconOS[Index2].FileName)) {
-                    Id = Index2;
-                    if (TableBuiltinIconOS[Id].Image != NULL) {
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_THREE_STAR_MID,
-                            L"Use Cached Icon:- '%s'",
-                            TableBuiltinIconOS[Id].FileName
-                        );
-                        #endif
-
-                        Image = TableBuiltinIconOS[Id].Image;
-                    }
+                Image = LoadIndexedIcon (BaseName, Index2);
+                if (Image != NULL) {
+                    OurId = (Index2 < BASE_OS_ICON_COUNT)
+                        ? Index2 : (BASE_OS_ICON_COUNT - 1);
 
                     break;
                 }
             } // for
-        } // if GlobalConfig.HelpIcon
-
-        if (Image == NULL) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Find an Icon from '%s'",
-                BaseName
-            );
-            #endif
-
-            Image = egFindIcon (
-                BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
         }
 
+        UpdateBaseIcon (BaseName, &Image);
         MY_FREE_POOL(BaseName);
     }
 
-    // If that fails and if BootLogo was set, try again using the "os_" start of the name.
+    // If that fails and BootLogo was set, try again with "os_".
     if (BootLogo && Image == NULL) {
-        Id       = -1;
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
         if (GlobalConfig.HelpIcon) {
             for (Index2 = 0; Index2 < BASE_OS_ICON_COUNT; Index2++) {
-                if (MyStriCmp (BaseName, TableBuiltinIconOS[Index2].FileName)) {
-                    Id = Index2;
-                    if (TableBuiltinIconOS[Id].Image != NULL) {
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_THREE_STAR_MID,
-                            L"Use Cached Icon:- '%s'",
-                            TableBuiltinIconOS[Id].FileName
-                        );
-                        #endif
-
-                        Image = TableBuiltinIconOS[Id].Image;
-                    }
+                Image = LoadIndexedIcon (BaseName, Index2);
+                if (Image != NULL) {
+                    OurId = (Index2 < BASE_OS_ICON_COUNT)
+                        ? Index2 : (BASE_OS_ICON_COUNT - 1);
 
                     break;
                 }
             } // for
-        } // if GlobalConfig.HelpIcon
-
-        if (Image == NULL) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Find an Icon from '%s'",
-                BaseName
-            );
-            #endif
-
-            Image = egFindIcon (
-                BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
         }
 
+        UpdateBaseIcon (BaseName, &Image);
         MY_FREE_POOL(BaseName);
     }
 
-    // If that fails try again using the "unknown" icon.
-    if (Image == NULL &&
+    // If that fails try using the "unknown" icon specifically.
+    // Only if BootLogo is *NOT* set ... No "unknown" BootLogo icon
+    if (!BootLogo     &&
+        Image == NULL &&
         !MyStriCmp (FallbackIconName, L"unknown")
     ) {
-        Id       = -1;
-        BaseName = PoolPrint (L"%s_unknown", (BootLogo) ? L"boot" : L"os");
+        BaseName = StrDuplicate (L"os_unknown");
 
-        if (GlobalConfig.HelpIcon && !BootLogo) {
-            for (Index2 = 0; Index2 < BASE_OS_ICON_COUNT; Index2++) {
-                if (MyStriCmp (BaseName, TableBuiltinIconOS[Index2].FileName)) {
-                    Id = Index2;
-                    if (TableBuiltinIconOS[Id].Image != NULL) {
-                        #if REFIT_DEBUG > 0
-                        ALT_LOG(1, LOG_THREE_STAR_MID,
-                            L"Use Cached Icon:- '%s'",
-                            TableBuiltinIconOS[Id].FileName
-                        );
-                        #endif
-
-                        Image = TableBuiltinIconOS[Id].Image;
-                    }
-
-                    break;
-                }
-            } // for
-        } // if GlobalConfig.HelpIcon
-
-        if (Image == NULL) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Find an Icon from '%s'",
-                BaseName
-            );
-            #endif
-
-            Image = egFindIcon (
-                BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
+        if (GlobalConfig.HelpIcon) {
+            Image = LoadIndexedIcon (BaseName, BASE_OS_ICON_UNKNOWN);
         }
 
+        UpdateBaseIcon (BaseName, &Image);
         MY_FREE_POOL(BaseName);
 
-        // If still fails, try again specifically using the "os_unknown" icon.
-        if (Image == NULL) {
-            Id       = -1;
-            BaseName = StrDuplicate (L"os_unknown");
-
-            if (GlobalConfig.HelpIcon) {
-                Id = BASE_OS_ICON_UNKNOWN;
-                if (TableBuiltinIconOS[Id].Image != NULL) {
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Use Cached Icon:- '%s'",
-                        TableBuiltinIconOS[Id].FileName
-                    );
-                    #endif
-
-                    Image = TableBuiltinIconOS[Id].Image;
-                }
-            } // if GlobalConfig.HelpIcon
-
-            if (Image == NULL) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Find an Icon from '%s'",
-                    BaseName
-                );
-                #endif
-
-                Image = egFindIcon (
-                    BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
-            }
-
-            MY_FREE_POOL(BaseName);
-        } // Image == NULL
-    } // Image == NULL && !MyStriCmp FallbackIconName
+        if (Image != NULL) {
+            OurId = BASE_OS_ICON_UNKNOWN;
+        }
+    }
 
     // If all of these fail, return the dummy image.
     if (Image == NULL) {
@@ -441,28 +378,30 @@ EG_IMAGE * LoadOSIcon (
         ALT_LOG(1, LOG_LINE_NORMAL, L"Set Dummy Image");
         #endif
 
-        Id = -1;
         if (GlobalConfig.HelpIcon) {
-            Id = BASE_OS_ICON_DUMMY;
-            if (TableBuiltinIconOS[Id].Image != NULL) {
-                Image = TableBuiltinIconOS[Id].Image;
-            }
-        } // if GlobalConfig.HelpIcon
+            Image = LoadIndexedIcon (NULL, BASE_OS_ICON_DUMMY);
+        }
 
         if (Image == NULL) {
             Image = DummyImageEx (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
         }
+
+        if (Image != NULL) {
+            OurId = BASE_OS_ICON_DUMMY;
+        }
     }
 
-    if (GlobalConfig.HelpIcon && Image != NULL) {
+    if (Image == NULL) {
+        return NULL;
+    }
+
+    // Cache the image if appropriate
+    // BootLogo is never cached
+    if (GlobalConfig.HelpIcon && !BootLogo) {
         if (OurId >= 0 && TableBuiltinIconOS[OurId].Image == NULL) {
             TableBuiltinIconOS[OurId].Image = Image;
         }
-
-        if (Id >= 0 && TableBuiltinIconOS[Id].Image == NULL) {
-            TableBuiltinIconOS[Id].Image = Image;
-        }
-    } // if GlobalConfig.HelpIcon
+    }
 
     return egCopyImage (Image);
 } // EG_IMAGE * LoadOSIcon()

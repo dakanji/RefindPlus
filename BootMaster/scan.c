@@ -420,7 +420,6 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             MY_MUTELOGGER_SET;
             #endif
             CheckFlag = (
-                GlobalConfig.HelpScan                      &&
                 !FindSubStr (SubScreen->Title, L"vmlinuz") &&
                 !FindSubStr (SubScreen->Title, L"bzImage") &&
                 !FindSubStr (SubScreen->Title, L"Manual Stanza:")
@@ -1361,15 +1360,15 @@ VOID SetLoaderDefaults (
                             }
                             #endif
 
-                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 4", __func__);
+                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 3", __func__);
                             if (GlobalConfig.HelpIcon) {
-                                BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 4a 1", __func__);
+                                BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 3a 1", __func__);
                                 MergeUniqueItems (&OSIconName, TargetName, L',');
-                                BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 4a 2", __func__);
+                                BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 3a 2", __func__);
                             }
-                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 5", __func__);
+                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 4", __func__);
                             MergeUniqueWords (&OSIconName, TargetName, L',');
-                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 6", __func__);
+                            BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 2a 5", __func__);
                         }
                         BREAD_CRUMB(L"%a:  3a 1b 3b 5a 1a 3", __func__);
                     }
@@ -1630,12 +1629,69 @@ VOID SetLoaderDefaults (
     BREAD_CRUMB(L"%a:  8", __func__);
     Entry->me.ShortcutLetter = ShortcutLetter;
     if (GetImage) {
-        BREAD_CRUMB(L"%a:  8a 0", __func__);
+        BREAD_CRUMB(L"%a:  7a 0", __func__);
         if (GotUEFI) {
-            BREAD_CRUMB(L"%a:  8a 0a 1", __func__);
-            MergeUniqueItems (&OSIconName, L"uefi", L',');
-            BREAD_CRUMB(L"%a:  8a 0a 2", __func__);
+            BREAD_CRUMB(L"%a:  7a 0a 1", __func__);
+            TmpIconName = StrDuplicate (L"uefi");
+            if (!GlobalConfig.HelpIcon || Entry->OSType != 0) {
+                BREAD_CRUMB(L"%a:  7a 0a 1a 1", __func__);
+                MergeUniqueItems (&OSIconName, TmpIconName, L',');
+                MY_FREE_POOL(TmpIconName);
+                BREAD_CRUMB(L"%a:  7a 0a 1a 2", __func__);
+            }
+            else {
+                BREAD_CRUMB(L"%a:  7a 0a 1b 1", __func__);
+                MergeUniqueItems (&TmpIconName, OSIconName, L',');
+                MY_FREE_POOL(OSIconName);
+                OSIconName = TmpIconName;
+                BREAD_CRUMB(L"%a:  7a 0a 1b 2", __func__);
+            }
+            BREAD_CRUMB(L"%a:  7a 0a 2", __func__);
         }
+
+        BREAD_CRUMB(L"%a:  7a 1", __func__);
+        if (!GotFlag             &&
+            !MacFlag             &&
+            ThisIconName != NULL &&
+            GlobalConfig.HelpIcon
+        ) {
+            BREAD_CRUMB(L"%a:  7a 1a 1", __func__);
+            i = 0;
+            while (
+                !GotFlag &&
+                (Temp = FindCommaDelimited (OSIconName, i++)) != NULL
+            ) {
+                LOG_SEP(L"X");
+                BREAD_CRUMB(L"%a:  7a 1a 1a 1 - WHILE LOOP:- START", __func__);
+                if (IsListItem (Temp, BASE_LINUX_DISTROS)) {
+                    GotFlag = TRUE;
+                    TmpIconName = StrDuplicate (L"linux");
+                    BREAD_CRUMB(L"%a:  7a 1a 1a 1a 1", __func__);
+                    if (!GlobalConfig.HelpIcon) {
+                        BREAD_CRUMB(L"%a:  7a 1a 1a 1a 1a 1", __func__);
+                        MergeUniqueItems (&OSIconName, TmpIconName, L',');
+                        MY_FREE_POOL(TmpIconName);
+                        BREAD_CRUMB(L"%a:  7a 1a 1a 1a 1a 2", __func__);
+                    }
+                    else {
+                        BREAD_CRUMB(L"%a:  7a 1a 1a 1a 1b 1", __func__);
+                        MergeUniqueItems (&TmpIconName, OSIconName, L',');
+                        MY_FREE_POOL(OSIconName);
+                        OSIconName = TmpIconName;
+                        BREAD_CRUMB(L"%a:  7a 1a 1a 1a 1b 2", __func__);
+                    }
+                    BREAD_CRUMB(L"%a:  7a 1a 1a 1a 2", __func__);
+                }
+                MY_FREE_POOL(Temp);
+
+                BREAD_CRUMB(L"%a:  7a 1a 1a 2 - WHILE LOOP:- END", __func__);
+                LOG_SEP(L"X");
+            } // while
+            BREAD_CRUMB(L"%a:  7a 1a 2", __func__);
+        }
+
+        BREAD_CRUMB(L"%a:  7a 2", __func__);
+        ToLower (OSIconName);
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1644,37 +1700,9 @@ VOID SetLoaderDefaults (
         );
         #endif
 
-        BREAD_CRUMB(L"%a:  8a 1", __func__);
-        if (!GotFlag             &&
-            !MacFlag             &&
-            ThisIconName != NULL &&
-            GlobalConfig.HelpIcon
-        ) {
-            BREAD_CRUMB(L"%a:  8a 1a 1", __func__);
-            i = 0;
-            while (
-                !GotFlag &&
-                (Temp = FindCommaDelimited (OSIconName, i++)) != NULL
-            ) {
-                LOG_SEP(L"X");
-                BREAD_CRUMB(L"%a:  8a 1a 1a 1 - WHILE LOOP:- START", __func__);
-                if (IsListItem (Temp, BASE_LINUX_DISTROS)) {
-                    BREAD_CRUMB(L"%a:  8a 1a 1a 1a 1", __func__);
-                    GotFlag = TRUE;
-                    MergeUniqueItems (&OSIconName, L"linux", L',');
-                    BREAD_CRUMB(L"%a:  8a 1a 1a 1a 1", __func__);
-                }
-                MY_FREE_POOL(Temp);
-
-                BREAD_CRUMB(L"%a:  8a 1a 1a 2 - WHILE LOOP:- END", __func__);
-                LOG_SEP(L"X");
-            } // while
-            BREAD_CRUMB(L"%a:  8a 1a 2", __func__);
-        }
-
-        BREAD_CRUMB(L"%a:  8a 2", __func__);
+        BREAD_CRUMB(L"%a:  7a 3", __func__);
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
-        BREAD_CRUMB(L"%a:  8a 3", __func__);
+        BREAD_CRUMB(L"%a:  7a 3", __func__);
     }
 
     BREAD_CRUMB(L"%a:  9", __func__);

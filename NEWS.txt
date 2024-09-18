@@ -18,6 +18,12 @@
     - The changes invalidated each other
 - Fixes `UGA Graphics` Handling
   * RefindPlus Crashed when run with UGA-based GPUs
+- Improves `HelpIcon` Handling
+  * The `os_uefi` icon is now cached on first use
+  * Misc other icon caching related optimisations
+- Improves `.VolumeIcon` Handling
+  * These can now the located under the same folder as a loader
+  * Such are preferred over any in the volume root
 - Improves `Misc` Handling
   * Some entry types were mislabelled as `Linux`
   * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
@@ -26,6 +32,10 @@
     - This variable is actually only stored in a volatile state
   * Addressed misc static analysis flags
     - These apply to some filesystem drivers; which are updated accordingly
+- Amends `HelpScan` Feature
+  * The feature is now essentially included upstream
+  * Now removed as a standalone feature in RefindPlus and active as a default core item
+  * The associated `decline_help_scan` configuration token is now removed and ignored if set
 - Amends `Ventoy` Handling
   * Instances are now automatically detected and processed
     - Hence, specific handling is no longer user configurable
