@@ -84,12 +84,14 @@ EG_PIXEL   MenuBackgroundPixel    = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
 
 
-extern BOOLEAN            IsBoot;
-extern BOOLEAN            IconScaleSet;
-extern BOOLEAN            ExtremeHiDPI;
-extern BOOLEAN            egHasGraphics;
-extern BOOLEAN            FlushFailedTag;
-extern BOOLEAN            GotConsoleControl;
+extern BOOLEAN                       IsBoot;
+extern BOOLEAN                       IconScaleSet;
+extern BOOLEAN                       ExtremeHiDPI;
+extern BOOLEAN                       egHasGraphics;
+extern BOOLEAN                       FlushFailedTag;
+extern BOOLEAN                       UserDefinedRez;
+extern BOOLEAN                       GotConsoleControl;
+extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 
 #if 0
@@ -304,6 +306,12 @@ VOID SetupScreen (VOID) {
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  A - START", __func__);
 
+    if (GOPDraw == NULL) {
+        // Not Using GOP ... Force Max Resolution
+        UserDefinedRez                     = FALSE;
+        GlobalConfig.RequestedScreenWidth  =     0;
+        GlobalConfig.RequestedScreenHeight =     0;
+    }
 
     // Convert mode number to horizontal & vertical resolution values
     if (GlobalConfig.RequestedScreenWidth   > 0 &&
@@ -346,53 +354,58 @@ VOID SetupScreen (VOID) {
     ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
     ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
-    // Set text mode. If this requires increasing the size of the graphics mode, do so.
-    if (egSetTextMode (GlobalConfig.RequestedTextMode)) {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("Set Text Mode:");
-        LOG_MSG("\n");
-        #endif
+    // Set user requested resolution
+    if (UserDefinedRez) {
+        // Set text mode
+        TextOption = egSetTextMode (GlobalConfig.RequestedTextMode);
+        if (TextOption) {
+            egGetScreenSize (&NewWidth, &NewHeight);
+            if ((NewWidth > ScreenW) || (NewHeight > ScreenH)) {
+                ScreenW = NewWidth;
+                ScreenH = NewHeight;
+            }
 
-        egGetScreenSize (&NewWidth, &NewHeight);
-        if ((NewWidth > ScreenW) || (NewHeight > ScreenH)) {
-            ScreenW = NewWidth;
-            ScreenH = NewHeight;
-        }
+            // Get longest and shortest edge dimensions
+            ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+            ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
-        // Get longest and shortest edge dimensions
-        ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
-        ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
-
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Record *NEW* Current Text Mode Resolution as '%d x %d'",
-            ScreenLongest, ScreenShortest
-        );
-        #endif
-
-        if (ScreenW > GlobalConfig.RequestedScreenWidth ||
-            ScreenH > GlobalConfig.RequestedScreenHeight
-        ) {
             #if REFIT_DEBUG > 0
-            MsgStr = L"Match Requested Resolution to Actual Resolution";
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s", MsgStr);
-            LOG_MSG("\n");
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Record *NEW* Current Text Mode Resolution as '%d x %d'",
+                ScreenLongest, ScreenShortest
+            );
             #endif
 
-            // Requested text mode forces us to use a bigger graphics mode
-            GlobalConfig.RequestedScreenWidth  = ScreenW;
-            GlobalConfig.RequestedScreenHeight = ScreenH;
-        }
-    }
+            if (ScreenW > GlobalConfig.RequestedScreenWidth ||
+                ScreenH > GlobalConfig.RequestedScreenHeight
+            ) {
+                #if REFIT_DEBUG > 0
+                MsgStr = L"Match Requested Resolution to Actual Resolution";
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("  - %s", MsgStr);
+                LOG_MSG("\n");
+                #endif
 
-    if (GlobalConfig.RequestedScreenWidth > 0) {
+                // Increase graphics mode size to match requested text mode
+                GlobalConfig.RequestedScreenWidth  = ScreenW;
+                GlobalConfig.RequestedScreenHeight = ScreenH;
+            }
+        }
+
         egSetScreenSize (
             &(GlobalConfig.RequestedScreenWidth),
             &(GlobalConfig.RequestedScreenHeight)
         );
-        egGetScreenSize (&ScreenW, &ScreenH);
-    } // if user requested a particular screen resolution
+
+        if (GlobalConfig.RequestedScreenWidth  == 0 &&
+            GlobalConfig.RequestedScreenHeight == 0
+        ) {
+            UserDefinedRez = FALSE;
+        }
+        else {
+            egGetScreenSize (&ScreenW, &ScreenH);
+        }
+    }
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0

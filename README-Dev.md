@@ -57,7 +57,7 @@ Some features:
 
 > [!NOTE]
 >
-> MyBootMgr can also be used to optionally create a flexible and powerful `RefindPlus|OpenCore` chain-loading arrangement for MacPro3,1 to MacPro5,1 as well as for Xserve2,1 and Xserve3,1.
+> MyBootMgr can optionally also be used to create a flexible and powerful `RefindPlus|OpenCore` chain-loading arrangement for MacPro3,1 to MacPro5,1 as well as for Xserve2,1 and Xserve3,1.
 
 Upstream post-release code updates are typically ported to RefindPlus as they happen and as such, the RefindPlus code base is usually at the state of the base upstream release version plus any such updates. The code base typically also includes updates for subsequent upstream release versions since the base version.
 
@@ -165,33 +165,33 @@ In addition to the new functionality listed above, the following upstream tokens
 
 Significant visible implementation differences vis-a-vis the upstream base are:
 - **GZipped Loaders:** RefindPlus only provides stub support for handling GZipped loaders as this is largely only relevant for units on the ARM architecture.
-> This stub support is only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` configuration token as upstream.
+  - > This stub support is only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` configuration token as upstream.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size.
-> Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
+  - > Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Flags:** RefindPlus requires that any desired previously set `hideui` configuration token options are explicitly defined in supplementary/theme configuration files; as whenever the token is found in such files, the token setting is reset by RefindPlus to the specified option(s). The upstream implementation effectively adds new settings to any previously existing ones for this configuration token instead.
-> The RefindPlus implementation maintains consistency with how other configuration tokens are handled.
+  - > The RefindPlus implementation maintains consistency with how other configuration tokens are handled.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientated screens into account and additionally scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
-> Additionally, UI elements on extremely high resultion screens (greater than 5999px on the longest edge) receive a `4X scaling` as opposed to the `2X scaling` applied for standard HiDPI screens.
+  - > Additionally, UI elements on extremely high resultion screens (greater than 5999px on the longest edge) receive a `4X scaling` as opposed to the `2X scaling` applied for standard HiDPI screens.
 - **Loader Icons:** RefindPlus defaults to preferring generic icons for loaders ahead of the slower to load custom icons where possible. The upstream icon search implementation involves only loading such icons after a search for custom icons has not turned anything up.
-> Activate the RefindPlus-specific `decline_help_icon` configuration token to use the upstream icon search implementation instead of the RefindPlus default.
+  - > Activate the RefindPlus-specific `decline_help_icon` configuration token to use the upstream icon search implementation instead of the RefindPlus default.
 - **GOP Driver Provision:** RefindPlus attempts to ensure that UEFI 2.x GOP drivers are available on EFI 1.x units by attempting to reload such drivers when it detects an absence of GOP on such units to permit the use of modern GPUs on legacy units.
-> Activate the RefindPlus-specific `disable_reload_gop` configuration token to switch this feature off.
+  - > Activate the RefindPlus-specific `disable_reload_gop` configuration token to switch this feature off.
 - **Apple Framebuffer Provision:** RefindPlus defaults to always providing Apple framebuffers on Macs, when not available under certain circumstances. This is done using an inbuilt `SetAppleFB` feature.
-> Activate the RefindPlus-specific `disable_set_applefb` configuration token to switch this feature off.
+  - > Activate the RefindPlus-specific `disable_set_applefb` configuration token to switch this feature off.
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using an inbuilt `SupplyAPFS` feature.
-> Activate the RefindPlus-specific `disable_apfs_load` configuration token to switch this feature off.
+  - > Activate the RefindPlus-specific `disable_apfs_load` configuration token to switch this feature off.
 - **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted macOS. Hence, a single option for booting macOS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility.
-> Activate the RefindPlus-specific `disable_apfs_sync` configuration token to switch this feature off.
+  - > Activate the RefindPlus-specific `disable_apfs_sync` configuration token to switch this feature off.
 - **Mac nvRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Mac nvRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Macs. This filtering only happens when Mac firmware is detected and is not applied to other types of firmware.
-> Activate the RefindPlus-specific `disable_nvram_protect` configuration token to switch this feature off.
+  - > Activate the RefindPlus-specific `disable_nvram_protect` configuration token to switch this feature off.
 - **Mac Legacy BIOS Boot:** RefindPlus originally assumed all Macs were capable of legacy BIOS boot based on code that went in upstream back in 2012 when this was a reasonable default. However, some later Intel Macs do not support legacy BIOS boot and RefindPlus now attempts to categorise Macs to enable/disable legacy boot accordingly.
-> Activate the RefindPlus-specific `disable_legacy_sync` configuration token to base legacy BIOS boot availability on the old assumption.
+  - > Activate the RefindPlus-specific `disable_legacy_sync` configuration token to base legacy BIOS boot availability on the old assumption.
 - **Secondary Configuration Files:** While the upstream documentation prohibits including tertiary configuration files from secondary configuration files, there is no mechanism enforcing this prohibition. Hence, tertiary, quaternary, quinary, and more, configuration files can in fact be included.
-> The RefindPlus implementation enforces the limitation for inclusion to secondary configuration files.
+  - > The RefindPlus implementation enforces the limitation for inclusion to secondary configuration files.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted, and the `Entry` object immediately discarded, once a `Disabled` setting is encountered. The outcome is the same as upstream, which always continues to create and return a fully built object in such cases to be discarded later. The approach adopted in RefindPlus allows for an optimised loading process particularly when such `Disabled` tokens are placed immediately after the `menuentry` line (see examples near the bottom of the `config.conf-sample-Dev` file).
-> This also applies to `submenuentry` items which can be enabled or disabled separately.
+  - > This also applies to `submenuentry` items which can be enabled or disabled separately.
 - **Pointer Device Priority:** The upstream implementation of pointer device priority is based on how the `enable_mouse` and `enable_touch` pointer device control tokens appear in the configuration file(s) when both are active. The last pointer device control token read in the main configuration file and/or any supplementary/override configuration file will be used and the other disregarded. In RefindPlus however, `enable_touch` always takes priority when both tokens are active without regard to the order of appearance in the configuration file(s).
-> Hence, to use a mouse in RefindPlus, `enable_touch` must be disabled (default) in addition to enabling `enable_mouse`.
+  - > Hence, to use a mouse in RefindPlus, `enable_touch` must be disabled (default) in addition to enabling `enable_mouse`.
 
 ## Roll Your Own
 

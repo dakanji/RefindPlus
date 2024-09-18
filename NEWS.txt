@@ -30,6 +30,8 @@
   * Instances are now automatically detected and processed
     - Hence, specific handling is no longer user configurable
     - The associated `handle_ventoy` configuration token is now removed and ignored if set
+- Amends `WriteSystemdVars` Handling
+  * The `write_systemd_vars` configuration token is now active by default
 
 
 0.14.1.AA (04 Jun 2024):

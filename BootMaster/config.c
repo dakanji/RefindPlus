@@ -80,6 +80,8 @@ BOOLEAN                OuterLoop       =  TRUE;
 BOOLEAN                SetShowTools    = FALSE;
 BOOLEAN                ManualInclude   = FALSE;
 BOOLEAN                ForceTextOnly   = FALSE;
+BOOLEAN                UserDefinedRez  = FALSE;
+
 
 #if REFIT_DEBUG > 0
 BOOLEAN                FoundFontImage  =  TRUE;
@@ -3046,6 +3048,8 @@ VOID ReadConfig (
             #endif
 
             if (MyStriCmp(TokenList[1], L"max")) {
+                // DA-TAG: Treat 'max' as undefined being the default
+                UserDefinedRez = FALSE;
                 // DA-TAG: Has been set to 0 so as to ignore the 'max' setting
                 //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
                 //GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
@@ -3053,6 +3057,7 @@ VOID ReadConfig (
                 GlobalConfig.RequestedScreenHeight = 0;
             }
             else {
+                UserDefinedRez = TRUE;
                 GlobalConfig.RequestedScreenWidth  = Atoi(TokenList[1]);
                 GlobalConfig.RequestedScreenHeight = (TokenCount == 3)
                     ? Atoi(TokenList[2]) : 0;
