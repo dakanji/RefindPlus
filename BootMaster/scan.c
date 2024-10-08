@@ -80,6 +80,9 @@ BOOLEAN  HasMacOS        = FALSE;
 BOOLEAN  DisplayLoader   = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
 
+extern CHAR16                *AllToolLocations;
+
+
 // Structure used to hold boot loader filenames and time stamps
 // in a linked list ... For sorting entries within a directory.
 struct
@@ -1703,6 +1706,27 @@ VOID SetLoaderDefaults (
         BREAD_CRUMB(L"%a:  7a 3", __func__);
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
         BREAD_CRUMB(L"%a:  7a 3", __func__);
+    } // if GetImage
+
+    BREAD_CRUMB(L"%a:  8", __func__);
+    if (Entry->OSType == 'L' ||
+        Entry->OSType == 'E' ||
+        Entry->OSType == 'G'
+    ) {
+        BREAD_CRUMB(L"%a:  8a 1", __func__);
+        if (GlobalConfig.ToolLocationsExtra == NULL) {
+            BREAD_CRUMB(L"%a:  8a 1a 1", __func__);
+            GlobalConfig.ToolLocationsExtra = StrDuplicate (PathOnly);
+            BREAD_CRUMB(L"%a:  8a 1a 2", __func__);
+        }
+        else {
+            BREAD_CRUMB(L"%a:  8a 1b 1", __func__);
+            MergeUniqueStrings (
+                &GlobalConfig.ToolLocationsExtra, PathOnly, L','
+            );
+            BREAD_CRUMB(L"%a:  8a 1b 2", __func__);
+        }
+        BREAD_CRUMB(L"%a:  8a 2", __func__);
     }
 
     BREAD_CRUMB(L"%a:  9", __func__);
@@ -2711,20 +2735,29 @@ BOOLEAN ScanLoaderDir (
                 MY_MUTELOGGER_OFF;
                 #endif
 
-                if (!ShouldScanThis               ||
-                    DirEntry->FileName[0] ==  '.' ||
+                // Handle MEMTEST_FILES below, not in 'SyncDontScanFiles'
+                if (!ShouldScanThis ||
+                    DirEntry->FileName[0] == '.' ||
+                    MyStrStr   (Path, L"\\memtest") ||
+                    IsListItem (Path, GlobalConfig.ToolLocations) ||
                     (
-                        IsListItem (Path, MEMTEST_LOCATIONS)
-                    ) || (
                         IsFallbackLoader &&
                         MyStriCmp (Path, L"EFI\\BOOT")
                     ) || (
-                        // Handle MEMTEST_NAMES here and not in 'SyncDontScanFiles'
-                        // to accomodate fallback loaders in the list.
                         !IsFallbackLoader &&
                         IsListItem (
                             DirEntry->FileName,
-                            MEMTEST_NAMES
+                            MEMTEST_FILES
+                        )
+                    ) || (
+                        IsListItem (
+                            DirEntry->FileName,
+                            MEMTEST_FILES_MORE
+                        )
+                    ) || (
+                        IsListItem (
+                            DirEntry->FileName,
+                            MEMTEST_FILES_EXTRA
                         )
                     ) || (
                         IsListItem (
@@ -2768,9 +2801,33 @@ BOOLEAN ScanLoaderDir (
                         FoundFallbackDuplicate = TRUE;
                     }
                 }
+
+                //BREAD_CRUMB(L"%a:  2a 2a 1a 8", __func__);
+                IsLinux = IsListItemSubstringIn (
+                    FullName, GlobalConfig.LinuxPrefixes
+                );
+
+                //BREAD_CRUMB(L"%a:  2a 2a 1a 9", __func__);
+                if (IsLinux) {
+                    //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 1", __func__);
+                    if (GlobalConfig.ToolLocationsExtra == NULL) {
+                        //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 1a 1", __func__);
+                        GlobalConfig.ToolLocationsExtra = StrDuplicate (Path);
+                        //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 1a 2", __func__);
+                    }
+                    else {
+                        //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 1b 1", __func__);
+                        MergeUniqueStrings (
+                            &GlobalConfig.ToolLocationsExtra, Path, L','
+                        );
+                        //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 1b 2", __func__);
+                    }
+                    //BREAD_CRUMB(L"%a:  2a 2a 1a 9a 2", __func__);
+                }
+                //BREAD_CRUMB(L"%a:  2a 2a 1a 10", __func__);
             } while (0); // This 'loop' only runs once
 
-            //BREAD_CRUMB(L"%a:  2a 2a 1a 8", __func__);
+            //BREAD_CRUMB(L"%a:  2a 2a 1a 11", __func__);
             MY_FREE_POOL(FullName);
             MY_FREE_POOL(DirEntry);
 
@@ -3348,16 +3405,20 @@ VOID ScanEfiFiles (
         //BREAD_CRUMB(L"%a:  10a 1 - WHILE LOOP:- START", __func__);
         do {
             //BREAD_CRUMB(L"%a:  10a 1a 1", __func__);
-            Extension = FindExtension (EfiDirEntry->FileName);
+            if (EfiDirEntry->FileName[0] == '.' ||
+                MyStriCmp  (EfiDirEntry->FileName, L"tools")
+            ) {
+                //BREAD_CRUMB(L"%a:  10a 1a 1a 1", __func__);
+                // Skip ... Not boot loader or scanned later
+                break;
+            }
 
             //BREAD_CRUMB(L"%a:  10a 1a 2", __func__);
-            if (EfiDirEntry->FileName[0] ==  '.'             ||
-                MyStriCmp  (EfiDirEntry->FileName, L"tools") ||
-                (
-                    Extension != NULL &&
-                    !MyStriCmp (Extension, L".efi")
-                )
+            Extension = FindExtension (EfiDirEntry->FileName);
+            if (Extension != NULL &&
+                !MyStriCmp (Extension, L".efi")
             ) {
+                //BREAD_CRUMB(L"%a:  10a 1a 2a 1", __func__);
                 // Skip ... Not boot loader or scanned later
                 break;
             }
@@ -3904,92 +3965,212 @@ BOOLEAN IsValidTool (
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
 static
+VOID FindToolEx (
+    UINTN         Icon,
+    CHAR16       *Description,
+    CHAR16       *FileName,
+    CHAR16       *PathName,
+    BOOLEAN       FoundTool,
+    REFIT_VOLUME *Volume
+) {
+    #if REFIT_DEBUG > 0
+    CHAR16 *ToolStr;
+
+
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Adding Tag for '%s' on '%s'",
+        FileName, Volume->VolName
+    );
+    #endif
+
+    AddToolEntry (
+        Volume,
+        StrDuplicate (PathName),
+        PoolPrint (
+            L"%s from %s%s via %s",
+            Description,
+            Volume->VolName,
+            SetVolType (
+                NULL,
+                Volume->VolName,
+                Volume->FSType
+            ),
+            PathName
+        ),
+        BuiltinIcon (Icon), 0,
+        GlobalConfig.GraphicsFor & GRAPHICS_FOR_TOOLS
+    );
+
+    #if REFIT_DEBUG > 0
+    ToolStr = PoolPrint (
+        L"Added Tool:- '%-18s     :::     %s'",
+        Description, PathName
+    );
+
+    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+
+    if (FoundTool) {
+        LOG_MSG("%s%s", OffsetNext, Spacer);
+    }
+    LOG_MSG("%s", ToolStr);
+    MY_FREE_POOL(ToolStr);
+    #endif
+} // static VOID FindToolEx()
+
+// Locate a single tool from the specified Locations using one of the
+// specified Names and add it to the menu.
+static
 BOOLEAN FindTool (
-    CHAR16 *Locations,
-    CHAR16 *Names,
-    CHAR16 *Description,
-    UINTN   Icon
+    CHAR16  *Locations,
+    CHAR16  *Names,
+    CHAR16  *Description,
+    UINTN    Icon,
+    BOOLEAN  SelfVolOnly,
+    BOOLEAN  ScanMultiple
 ) {
     UINTN    i, j;
-    UINTN    VolumeIndex;
+    UINTN    Index;
+    CHAR16  *VolName;
     CHAR16  *DirName;
     CHAR16  *FileName;
     CHAR16  *PathName;
-    CHAR16  *ToolData;
+    CHAR16  *PrevFind;
+    BOOLEAN  VolMatch;
     BOOLEAN  FoundTool;
+    BOOLEAN  BreakLoop;
+    BOOLEAN  MemtestDir;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *ToolStr;
-    #endif
 
+    VolName   =  NULL;
     DirName   =  NULL;
+    PrevFind  =  NULL;
     FoundTool = FALSE;
+    BreakLoop = FALSE;
+
+    MemtestDir = FindSubStr (Locations, L"\\memtest");
 
     i = 0;
-    while ((DirName = FindCommaDelimited (Locations, i++)) != NULL) {
+    while (
+        !BreakLoop &&
+        (DirName = FindCommaDelimited (Locations, i++)) != NULL
+    ) {
+        if (MemtestDir) {
+            if (MyStriCmp (Locations, MEMTEST_LOCATIONS)      ||
+                MyStriCmp (Locations, MEMTEST_LOCATIONS_MORE) ||
+                MyStriCmp (Locations, MEMTEST_LOCATIONS_EXTRA)
+            ) {
+                if (MyStrBegins (SelfDirPath, DirName)) {
+                    MY_FREE_POOL(DirName);
+
+                    continue;
+                }
+            }
+        }
+
+        SplitVolumeAndFilename (&DirName, &VolName);
+        if (SelfVolOnly) {
+            VolMatch = (
+                VolName == NULL                           ||
+                MyStriCmp (VolName, SelfVolume->FsName)   ||
+                MyStriCmp (VolName, SelfVolume->PartName) ||
+                MyStriCmp (VolName, SelfVolume->VolName)
+            );
+
+            if (!VolMatch) {
+                MY_FREE_POOL(DirName);
+                MY_FREE_POOL(VolName);
+
+                continue;
+            }
+        }
+
         j = 0;
-        while ((FileName = FindCommaDelimited (Names, j++)) != NULL) {
+        while (
+            !BreakLoop &&
+            (FileName = FindCommaDelimited (Names, j++)) != NULL
+        ) {
+            if (MyStriCmp (FileName, FALLBACK_BASENAME)) {
+                if (!MemtestDir ||
+                    !FindSubStr (DirName, L"\\memtest")
+                ) {
+                    MY_FREE_POOL(FileName);
+
+                    continue;
+                }
+            }
+
             PathName = StrDuplicate (DirName);
             MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
 
-            for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if (Volumes[VolumeIndex]->RootDir == NULL ||
-                    !IsValidTool (Volumes[VolumeIndex], PathName)
+            if (SelfVolOnly) {
+                if (!FileExists (SelfVolume->RootDir, DirName) ||
+                    !IsValidTool (SelfVolume, PathName)
                 ) {
+                    MY_FREE_POOL(PathName);
+                    MY_FREE_POOL(FileName);
+
                     continue;
                 }
 
-                // DA-TAG: Do not free 'ToolData'
-                //         Used in 'AddToolEntry'
-                ToolData = PoolPrint (
-                    L"%s on %s%s via %s",
-                    Description,
-                    Volumes[VolumeIndex]->VolName,
-                    SetVolType (
-                        NULL,
-                        Volumes[VolumeIndex]->VolName,
-                        Volumes[VolumeIndex]->FSType
-                    ),
-                    PathName
+                FindToolEx (
+                    Icon, Description,
+                    FileName, PathName,
+                    FoundTool, SelfVolume
                 );
-
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Adding Tag for '%s' on '%s'",
-                    FileName, Volumes[VolumeIndex]->VolName
-                );
-                #endif
-
-                AddToolEntry (
-                    Volumes[VolumeIndex],
-                    StrDuplicate (PathName),
-                    ToolData, BuiltinIcon (Icon),
-                    'S', FALSE
-                );
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (
-                    L"Added Tool:- '%-18s     :::     %s'",
-                    Description, PathName
-                );
-
-                ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-
-                if (FoundTool) {
-                    LOG_MSG("%s%s", OffsetNext, Spacer);
-                }
-                LOG_MSG("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
 
                 FoundTool = TRUE;
-            } // for
+            }
+            else {
+                for (Index = 0; Index < VolumesCount; Index++) {
+                    VolMatch = (
+                        VolName == NULL                               ||
+                        MyStriCmp (VolName, Volumes[Index]->VolName)  ||
+                        MyStriCmp (VolName, Volumes[Index]->PartName) ||
+                        MyStriCmp (VolName, Volumes[Index]->FsName)
+                    );
+
+                    if (!VolMatch                                      ||
+                        Volumes[Index]->RootDir == NULL                ||
+                        !FileExists (Volumes[Index]->RootDir, DirName) ||
+                        !IsValidTool (Volumes[Index], PathName)
+                    ) {
+                        // Do *NOT* Free Items Here
+                        continue;
+                    }
+
+                    if (PrevFind == NULL) {
+                        PrevFind = StrDuplicate (PathName);
+                    }
+                    else {
+                        if (IsListItem (PathName, PrevFind)) {
+                            // Do *NOT* Free Items Here
+                            continue;
+                        }
+
+                        MergeStrings (&PrevFind, PathName, L',');
+                    }
+
+                    FindToolEx (
+                        Icon, Description,
+                        FileName, PathName,
+                        FoundTool, Volumes[Index]
+                    );
+
+                    FoundTool = TRUE;
+                } // for
+
+                if (!ScanMultiple && FoundTool) {
+                    BreakLoop = TRUE;
+                }
+            }
 
             MY_FREE_POOL(PathName);
             MY_FREE_POOL(FileName);
         } // while Names
 
+        MY_FREE_POOL(PrevFind);
         MY_FREE_POOL(DirName);
+        MY_FREE_POOL(VolName);
     } // while Locations
 
     return FoundTool;
@@ -4019,7 +4200,6 @@ VOID ScanForBootloaders (VOID) {
     #endif
 
     ScanningLoaders = TRUE;
-
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
@@ -4440,8 +4620,6 @@ VOID ScanForTools (VOID) {
     CHAR16                 *FileName;
     CHAR16                 *VolumeTag;
     CHAR16                 *RecoverVol;
-    CHAR16                 *MokLocations;
-    CHAR16                 *Description;
     UINT64                  osind;
     UINT32                  CsrValue;
     BOOLEAN                 FoundTool;
@@ -4547,9 +4725,6 @@ VOID ScanForTools (VOID) {
     LOG_MSG("\n");
     LOG_MSG("%s:", LogSection);
     #endif
-
-    MokLocations = StrDuplicate (MOK_LOCATIONS);
-    MergeUniqueStrings (&MokLocations, SelfDirPath, L',');
 
     ToolTotal = 0;
     VolumeTag = NULL;
@@ -4859,123 +5034,42 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_SHELL:
-                j = 0;
-                OtherFind = FALSE;
-                while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
-                    if (!IsValidTool (SelfVolume, FileName)) {
-                        MY_FREE_POOL(FileName);
+                FoundTool = FindTool (
+                    AllToolLocations,
+                    SHELL_FILES,
+                    ToolName,
+                    BUILTIN_ICON_TOOL_SHELL,
+                    TRUE, FALSE
+                );
 
-                        continue;
-                    }
-
-                    // DA-TAG: Do not free 'Description' or 'FileName'
-                    //         Used in 'AddToolEntry'
-                    Description = PoolPrint (
-                        L"%s on %s%s via %s",
-                        ToolName,
-                        SelfVolume->VolName,
-                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                        FileName
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Add '%s' Tag:- '%s' on '%s'",
-                        ToolName, FileName,
-                        SelfVolume->VolName
-                    );
-                    #endif
-
-                    FoundTool = TRUE;
-                    AddToolEntry (
-                        SelfVolume, FileName,
-                        Description,
-                        BuiltinIcon (BUILTIN_ICON_TOOL_SHELL),
-                        'S', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    if (OtherFind) {
-                        LOG_MSG("%s%s", OffsetNext, Spacer);
-                    }
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-
-                    OtherFind = TRUE;
-                } // while
-
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (
                         L"Could *NOT* Find Tool:- '%s'", ToolName
                     );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     LOG_MSG("*_ WARN _*    %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
-                    #endif
                 }
 
-                #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_NORMAL,
                     L"Scan for Firmware Defined Shell Options"
                 );
                 #endif
 
-                ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
+                ScanFirmwareDefined (
+                    1, L"Shell", BuiltinIcon (BUILTIN_ICON_TOOL_SHELL)
+                );
+
             break;
             case TAG_GPTSYNC:
-                j = 0;
-                OtherFind = FALSE;
-                while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
-                    // DA-TAG: Do not free 'FileName'
-                    //         If used in 'AddToolEntry'
-                    if (!IsValidTool (SelfVolume, FileName)) {
-                        MY_FREE_POOL(FileName);
-
-                        continue;
-                    }
-
-                    // DA-TAG: Do not free 'Description' or 'FileName'
-                    //         Used in 'AddToolEntry'
-                    Description = PoolPrint (
-                        L"%s on %s%s via %s",
-                        ToolName,
-                        SelfVolume->VolName,
-                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                        FileName
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Add '%s' Tag:- '%s' on '%s'",
-                        ToolName, FileName,
-                        SelfVolume->VolName
-                    );
-                    #endif
-
-                    FoundTool = TRUE;
-                    AddToolEntry (
-                        SelfVolume, FileName,
-                        Description,
-                        BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                        'P', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    if (OtherFind) {
-                        LOG_MSG("%s%s", OffsetNext, Spacer);
-                    }
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-
-                    OtherFind = TRUE;
-                } // while
+                FoundTool = FindTool (
+                    AllToolLocations,
+                    GPTSYNC_FILES,
+                    ToolName,
+                    BUILTIN_ICON_TOOL_PART,
+                    TRUE, FALSE
+                );
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
@@ -4990,55 +5084,13 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_GDISK:
-                j = 0;
-                OtherFind = FALSE;
-                while ((FileName = FindCommaDelimited (GDISK_NAMES, j++)) != NULL) {
-                    // DA-TAG: Do not free 'FileName'
-                    //         If used in 'AddToolEntry'
-                    if (!IsValidTool (SelfVolume, FileName)) {
-                        MY_FREE_POOL(FileName);
-
-                        continue;
-                    }
-
-                    // DA-TAG: Do not free 'Description' or 'FileName'
-                    //         Used in 'AddToolEntry'
-                    Description = PoolPrint (
-                        L"%s on %s%s via %s",
-                        ToolName,
-                        SelfVolume->VolName,
-                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                        FileName
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Add '%s' Tag:- '%s' on '%s'",
-                        ToolName, FileName,
-                        SelfVolume->VolName
-                    );
-                    #endif
-
-                    FoundTool = TRUE;
-                    AddToolEntry (
-                        SelfVolume, FileName,
-                        Description,
-                        BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                        'G', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    if (OtherFind) {
-                        LOG_MSG("%s%s", OffsetNext, Spacer);
-                    }
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-
-                    OtherFind = TRUE;
-                } // while
+                FoundTool = FindTool (
+                    AllToolLocations,
+                    GDISK_FILES,
+                    ToolName,
+                    BUILTIN_ICON_TOOL_PART,
+                    TRUE, FALSE
+                );
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
@@ -5053,55 +5105,13 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_NETBOOT:
-                j = 0;
-                OtherFind = FALSE;
-                while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
-                    // DA-TAG: Do not free 'FileName'
-                    //         If used in 'AddToolEntry'
-                    if (!IsValidTool (SelfVolume, FileName)) {
-                        MY_FREE_POOL(FileName);
-
-                        continue;
-                    }
-
-                    // DA-TAG: Do not free 'Description' or 'FileName'
-                    //         Used in 'AddToolEntry'
-                    Description = PoolPrint (
-                        L"%s on %s%s via %s",
-                        ToolName,
-                        SelfVolume->VolName,
-                        SetVolType (NULL, SelfVolume->VolName, SelfVolume->FSType),
-                        FileName
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL,
-                        L"Add '%s' Tag:- '%s' on '%s'",
-                        ToolName, FileName,
-                        SelfVolume->VolName
-                    );
-                    #endif
-
-                    FoundTool = TRUE;
-                    AddToolEntry (
-                        SelfVolume, FileName,
-                        Description,
-                        BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
-                        'N', FALSE
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%-18s     :::     %s'", ToolName, FileName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    if (OtherFind) {
-                        LOG_MSG("%s%s", OffsetNext, Spacer);
-                    }
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-
-                    OtherFind = TRUE;
-                } // while
+                FoundTool = FindTool (
+                    AllToolLocations,
+                    NETBOOT_FILES,
+                    ToolName,
+                    BUILTIN_ICON_TOOL_NETBOOT,
+                    TRUE, FALSE
+                );
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
@@ -5149,22 +5159,24 @@ VOID ScanForTools (VOID) {
 
                             FoundTool = TRUE;
                             FoundThis = TRUE;
-                            // DA-TAG: Do not free 'Description'
-                            //         Used in 'AddToolEntry'
-                            Description = PoolPrint (
-                                L"%s for %s",
-                                ToolName, VolumeTag
-                            );
+
+                            // DA-TAG: PoolPrint below does not leak memory
                             AddToolEntry (
                                 HfsRecovery[VolumeIndex],
-                                FileName, Description,
-                                BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                                'R', TRUE
+                                FileName,
+                                PoolPrint (
+                                    L"%s : %s",
+                                    ToolName, VolumeTag
+                                ),
+                                BuiltinIcon (
+                                    BUILTIN_ICON_TOOL_APPLE_RESCUE
+                                ),
+                                0, TRUE
                             );
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (
-                                L"Added Tool:- '%-18s     :::     %s for %s'",
+                                L"Added Tool:- '%-18s     :::     %s : %s'",
                                 ToolName, FileName, VolumeTag
                             );
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -5239,22 +5251,24 @@ VOID ScanForTools (VOID) {
                         #endif
 
                         FoundTool = TRUE;
-                        // DA-TAG: Do not free 'Description'
-                        //         Used in 'AddToolEntry'
-                        Description = PoolPrint (
-                            L"%s for %s",
-                            ToolName, VolumeTag
-                        );
+
+                        // DA-TAG: PoolPrint below does not leak memory
                         AddToolEntry (
                             RecoveryVolumes[j],
-                            FileName, Description,
-                            BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                            'R', FALSE
+                            FileName,
+                            PoolPrint (
+                                L"%s : %s",
+                                ToolName, VolumeTag
+                            ),
+                            BuiltinIcon (
+                                BUILTIN_ICON_TOOL_APPLE_RESCUE
+                            ),
+                            0, TRUE
                         );
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (
-                            L"Added Tool:- '%-18s     :::     %s for %s'",
+                            L"Added Tool:- '%-18s     :::     %s : %s'",
                             ToolName, FileName, VolumeTag
                         );
                         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -5303,7 +5317,7 @@ VOID ScanForTools (VOID) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)        &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
                             (
-                                (VolumeTag == NULL) ||
+                                VolumeTag == NULL ||
                                 MyStriCmp (
                                     VolumeTag,
                                     Volumes[VolumeIndex]->VolName
@@ -5320,21 +5334,26 @@ VOID ScanForTools (VOID) {
 
                             FoundTool = TRUE;
                             FoundThis = TRUE;
-                            // DA-TAG: Do not free 'Description'
-                            //         Used in 'AddToolEntry'
-                            Description = PoolPrint (
-                                L"%s on %s%s via %s",
-                                ToolName,
-                                Volumes[VolumeIndex]->VolName,
-                                SetVolType (NULL, Volumes[VolumeIndex]->VolName, Volumes[VolumeIndex]->FSType),
-                                FileName
-                            );
+
+                            // DA-TAG: PoolPrint below does not leak memory
                             AddToolEntry (
                                 Volumes[VolumeIndex],
                                 FileName,
-                                Description,
-                                BuiltinIcon (BUILTIN_ICON_TOOL_WINDOWS_RESCUE),
-                                'R', TRUE
+                                PoolPrint (
+                                    L"%s from %s%s via %s",
+                                    ToolName,
+                                    Volumes[VolumeIndex]->VolName,
+                                    SetVolType (
+                                        NULL,
+                                        Volumes[VolumeIndex]->VolName,
+                                        Volumes[VolumeIndex]->FSType
+                                    ),
+                                    FileName
+                                ),
+                                BuiltinIcon (
+                                    BUILTIN_ICON_TOOL_WINDOWS_RESCUE
+                                ),
+                                0, TRUE
                             );
 
                             #if REFIT_DEBUG > 0
@@ -5374,10 +5393,11 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_MOK_TOOL:
                 FoundTool = FindTool (
-                    MokLocations,
-                    MOK_NAMES,
+                    AllToolLocations,
+                    MOK_FILES,
                     ToolName,
-                    BUILTIN_ICON_TOOL_MOK_TOOL
+                    BUILTIN_ICON_TOOL_MOK_TOOL,
+                    FALSE, TRUE
                 );
 
                 #if REFIT_DEBUG > 0
@@ -5394,10 +5414,11 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_FWUPDATE_TOOL:
                 FoundTool = FindTool (
-                    MokLocations,
-                    FWUPDATE_NAMES,
+                    AllToolLocations,
+                    FWUPDATE_FILES,
                     ToolName,
-                    BUILTIN_ICON_TOOL_FWUPDATE
+                    BUILTIN_ICON_TOOL_FWUPDATE,
+                    FALSE, TRUE
                 );
 
                 #if REFIT_DEBUG > 0
@@ -5548,12 +5569,168 @@ VOID ScanForTools (VOID) {
 
             break;
             case TAG_MEMTEST:
+                // 'VolumeTag' is a temp string holder
+                j = 0;
+                while (
+                    (FileName = FindCommaDelimited (L"memtest,memtest86,memtest86+,memtest86p", j++)) != NULL
+                ) {
+                    TmpStr = PoolPrint (L"%s\\%s", SelfDirPath, FileName);
+                    if (VolumeTag == NULL) {
+                        VolumeTag = StrDuplicate (TmpStr);
+                    }
+                    else {
+                        MergeStrings (
+                            &VolumeTag,
+                            TmpStr, L','
+                        );
+                    }
+                    MY_FREE_POOL(TmpStr);
+                    TmpStr = PoolPrint (L"%s\\%s", SelfToolPath, FileName);
+                    MergeStrings (
+                        &VolumeTag,
+                        TmpStr, L','
+                    );
+                    MY_FREE_POOL(TmpStr);
+                    MY_FREE_POOL(FileName);
+                } // while
+
                 FoundTool = FindTool (
-                    MEMTEST_LOCATIONS,
-                    MEMTEST_NAMES,
+                    VolumeTag,
+                    MEMTEST_FILES,
                     ToolName,
-                    BUILTIN_ICON_TOOL_MEMTEST
+                    BUILTIN_ICON_TOOL_MEMTEST,
+                    FALSE, FALSE
                 );
+                if (!FoundTool) {
+                    FoundTool = FindTool (
+                        GlobalConfig.ToolLocations,
+                        MEMTEST_FILES,
+                        ToolName,
+                        BUILTIN_ICON_TOOL_MEMTEST,
+                        FALSE, FALSE
+                    );
+                    if (!FoundTool) {
+                        FoundTool = FindTool (
+                            MEMTEST_LOCATIONS,
+                            MEMTEST_FILES,
+                            ToolName,
+                            BUILTIN_ICON_TOOL_MEMTEST,
+                            FALSE, FALSE
+                        );
+                        if (!FoundTool) {
+                            FoundTool = FindTool (
+                                MEMTEST_LOCATIONS_MORE,
+                                MEMTEST_FILES,
+                                ToolName,
+                                BUILTIN_ICON_TOOL_MEMTEST,
+                                FALSE, FALSE
+                            );
+                        }
+                    }
+                }
+
+                if (!FoundTool) {
+                    FoundTool = FindTool (
+                        VolumeTag,
+                        MEMTEST_FILES_MORE,
+                        ToolName,
+                        BUILTIN_ICON_TOOL_MEMTEST,
+                        FALSE, FALSE
+                    );
+                    if (!FoundTool) {
+                        FoundTool = FindTool (
+                            GlobalConfig.ToolLocations,
+                            MEMTEST_FILES_MORE,
+                            ToolName,
+                            BUILTIN_ICON_TOOL_MEMTEST,
+                            FALSE, FALSE
+                        );
+                        if (!FoundTool) {
+                            FoundTool = FindTool (
+                                MEMTEST_LOCATIONS,
+                                MEMTEST_FILES_MORE,
+                                ToolName,
+                                BUILTIN_ICON_TOOL_MEMTEST,
+                                FALSE, FALSE
+                            );
+                            if (!FoundTool) {
+                                FoundTool = FindTool (
+                                    MEMTEST_LOCATIONS_MORE,
+                                    MEMTEST_FILES_MORE,
+                                    ToolName,
+                                    BUILTIN_ICON_TOOL_MEMTEST,
+                                    FALSE, FALSE
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if (!FoundTool) {
+                    FoundTool = FindTool (
+                        VolumeTag,
+                        MEMTEST_FILES_EXTRA,
+                        ToolName,
+                        BUILTIN_ICON_TOOL_MEMTEST,
+                        FALSE, FALSE
+                    );
+                    if (!FoundTool) {
+                        FoundTool = FindTool (
+                            GlobalConfig.ToolLocations,
+                            MEMTEST_FILES_EXTRA,
+                            ToolName,
+                            BUILTIN_ICON_TOOL_MEMTEST,
+                            FALSE, FALSE
+                        );
+                        if (!FoundTool) {
+                            FoundTool = FindTool (
+                                MEMTEST_LOCATIONS,
+                                MEMTEST_FILES_EXTRA,
+                                ToolName,
+                                BUILTIN_ICON_TOOL_MEMTEST,
+                                FALSE, FALSE
+                            );
+                            if (!FoundTool) {
+                                FoundTool = FindTool (
+                                    MEMTEST_LOCATIONS_MORE,
+                                    MEMTEST_FILES_EXTRA,
+                                    ToolName,
+                                    BUILTIN_ICON_TOOL_MEMTEST,
+                                    FALSE, FALSE
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if (!FoundTool) {
+                    FoundTool = FindTool (
+                        MEMTEST_LOCATIONS_EXTRA,
+                        MEMTEST_FILES,
+                        ToolName,
+                        BUILTIN_ICON_TOOL_MEMTEST,
+                        FALSE, FALSE
+                    );
+                    if (!FoundTool) {
+                        FoundTool = FindTool (
+                            MEMTEST_LOCATIONS_EXTRA,
+                            MEMTEST_FILES_MORE,
+                            ToolName,
+                            BUILTIN_ICON_TOOL_MEMTEST,
+                            FALSE, FALSE
+                        );
+                        if (!FoundTool) {
+                            FoundTool = FindTool (
+                                MEMTEST_LOCATIONS_EXTRA,
+                                MEMTEST_FILES_EXTRA,
+                                ToolName,
+                                BUILTIN_ICON_TOOL_MEMTEST,
+                                FALSE, FALSE
+                            );
+                        }
+                    }
+                }
+                MY_FREE_POOL(VolumeTag);
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {

@@ -158,65 +158,6 @@ VOID WarnSecureBootError(
     MY_FREE_POOL(LoaderName);
 } // static VOID WarnSecureBootError()
 
-static
-BOOLEAN ConfirmReboot (
-    CHAR16 *PromptUser
-) {
-    INTN               DefaultEntry;
-    UINTN              MenuExit;
-    BOOLEAN            RetVal;
-    BOOLEAN            Confirmation;
-    MENU_STYLE_FUNC    Style;
-    REFIT_MENU_ENTRY  *ChosenOption;
-    REFIT_MENU_SCREEN *ConfirmRebootMenu;
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'Confirm %s'", PromptUser);
-    #endif
-
-    ConfirmRebootMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (ConfirmRebootMenu == NULL) {
-        // Early Return ... Fail
-        return FALSE;
-    }
-
-    ConfirmRebootMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
-    ConfirmRebootMenu->Title      = PoolPrint (L"Confirm %s", PromptUser   );
-    ConfirmRebootMenu->Hint1      = StrDuplicate (SELECT_OPTION_HINT       );
-    ConfirmRebootMenu->Hint2      = StrDuplicate (RETURN_MAIN_SCREEN_HINT  );
-
-    RetVal = GetMenuEntryYesNo (&ConfirmRebootMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&ConfirmRebootMenu);
-
-        // Early Return
-        return FALSE;
-    }
-
-    DefaultEntry = 9999; // Use the Max Index
-    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    MenuExit = DrawMenuScreen (ConfirmRebootMenu, Style, &DefaultEntry, &ChosenOption);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) in 'ConfirmReboot' Function from the '%s' Option in Menu Screen",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-    );
-    #endif
-
-    if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
-        Confirmation = FALSE;
-    }
-    else {
-        Confirmation = TRUE;
-    }
-
-    FreeMenuScreen (&ConfirmRebootMenu);
-
-    return Confirmation;
-} // static BOOLEAN ConfirmReboot()
-
 // See http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 // for information on Intel VMX features
 static
@@ -991,7 +932,6 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     CHAR16     *MsgStr;
     UINT64     *ItemBuffer;
     UINT64      osind;
-    BOOLEAN     ConfirmAction;
 
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
@@ -1009,17 +949,6 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", TmpStr);
     #endif
-
-    ConfirmAction = ConfirmReboot(TmpStr);
-    if (!ConfirmAction) {
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted by User");
-        LOG_MSG("%s    ** Aborted by User", OffsetNext);
-        LOG_MSG("\n\n");
-        #endif
-
-        return EFI_NOT_STARTED;
-    }
 
     Status = EfivarSetRaw (
         &GlobalGuid, L"OsIndications",
@@ -1074,7 +1003,6 @@ VOID RebootIntoLoader (
     EFI_STATUS  Status;
     CHAR16     *TmpStr;
     CHAR16     *MsgStr;
-    BOOLEAN     ConfirmAction;
 
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
@@ -1086,19 +1014,6 @@ VOID RebootIntoLoader (
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", TmpStr);
     #endif
-
-    ConfirmAction = ConfirmReboot(TmpStr);
-    if (!ConfirmAction) {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Aborted by User");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
-
-        return;
-    }
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
@@ -1285,7 +1200,8 @@ VOID StartTool (
         Entry->LoadOptions,
         LoaderPath,
         Entry->OSType,
-        TRUE, FALSE, NULL
+        !Entry->UseGraphicsMode,
+        FALSE, NULL
     );
 
     MY_FREE_POOL(MsgStr);

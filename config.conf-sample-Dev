@@ -832,6 +832,7 @@
 #   elilo       - The ELILO Boot Loader
 #   clover      - The Clover Boot Loader
 #   opencore    - The OpenCore Boot Loader
+#   tools       - 2nd Row Items:- All Tools
 #   everything  - For All Loaders and Tools
 #
 # NOTES:
@@ -950,17 +951,11 @@
 # This token takes precedence if a directory is listed both here and in
 # "also_scan_dirs". Note that this applies to ALL the filesystems that
 # RefindPlus scans, and not just the ESP, unless the directory name
-# is preceded by a filesystem name or partition unique GUID, such
-# as "myvol:EFI/somedir", to exclude EFI/somedir from the scan
-# on the "myvol" volume but not on other volumes.
+# is preceded by a filesystem name or unique partition GUID, such
+# as "myvol:EFI/somedir", to exclude the "EFI/somedir" path from
+# being scanned on the "myvol" volume but not on other volumes.
 #
-# The default setting is L"EFI/tools_{arch},EFI\tools,
-# EFI\tools_{arch}\memtest86,EFI\tools_{arch}\memtest,EFI\tools_{arch}\memtest86p,
-# EFI\tools\memtest86,EFI\tools\memtest,EFI\tools\memtest86p,
-# EFI\BOOT\tools_{arch}\memtest86,EFI\BOOT\tools_{arch}\memtest,
-# EFI\BOOT\tools_{arch}\memtest86p,EFI\BOOT\tools\memtest86,EFI\BOOT\tools\memtest,
-# EFI\BOOT\tools\memtest86p,EFI\BOOT\memtest86,EFI\BOOT\memtest,EFI\BOOT\memtest86p,
-# EFI\memtest86,EFI\memtest,EFI\memtest86p" ("{arch}" is architecture, such as "x64").
+# The default is the "SelfDir" path.
 #
 # Uses default setting when commented out
 #

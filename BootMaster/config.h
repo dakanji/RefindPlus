@@ -72,7 +72,7 @@ typedef struct {
 #define DONT_SCAN_VOLUMES L"LRS_ESP"
 #define ALSO_SCAN_DIRS    L"boot,@/boot"
 
-// Note: Below is combined with MOK_NAMES and FWUPDATE_NAMES to make default
+// Note: Combined with misc 'XYZ_FILES' items to create default
 #if defined (EFIX64)
 #define DONT_SCAN_FILES \
 L"shim.efi,shimx64.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi,fbx64.efi"
@@ -114,6 +114,9 @@ REFIT_FILE * ReadLinuxOptionsFile (
 CHAR16 * GetFirstOptionsFromFile (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
+);
+CHAR16 * ReadLine (
+    REFIT_FILE *File
 );
 
 #endif

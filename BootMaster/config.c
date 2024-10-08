@@ -157,6 +157,20 @@ VOID SyncLinuxPrefixes (VOID) {
 } // static VOID SyncLinuxPrefixes()
 
 static
+VOID SyncToolPaths (VOID) {
+    MY_FREE_POOL(GlobalConfig.ToolLocations);
+
+    GlobalConfig.ToolLocations = StrDuplicate (
+        SelfToolPath
+    );
+
+    MergeUniqueItems (
+        &GlobalConfig.ToolLocations,
+        TOOL_LOCATIONS, L','
+    );
+} // static VOID SyncToolPaths()
+
+static
 VOID SyncAlsoScan (VOID) {
     if (GlobalConfig.AlsoScan == NULL) {
         GlobalConfig.AlsoScan = StrDuplicate (
@@ -223,10 +237,8 @@ VOID SyncDontScanFiles (VOID) {
         );
     }
 
-
-    // Handle MEMTEST_NAMES in 'ScanLoaderDir' and not here
-    // to accomodate fallback loaders in the list.
-
+    // Handle MEMTEST_FILES in 'ScanLoaderDir'
+    // to accomodate fallback loaders.
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
         SHELL_FILES, L','
@@ -245,11 +257,11 @@ VOID SyncDontScanFiles (VOID) {
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
-        FWUPDATE_NAMES, L','
+        FWUPDATE_FILES, L','
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
-        MOK_NAMES, L','
+        MOK_FILES, L','
     );
     MergeUniqueItems (
         &GlobalConfig.DontScanFiles,
@@ -285,121 +297,6 @@ VOID SyncShowTools (VOID) {
     GlobalConfig.ShowTools[10] =      TAG_FIRMWARE;
     GlobalConfig.ShowTools[11] = TAG_FWUPDATE_TOOL;
 } // static VOID SyncShowTools()
-
-// Get a single line of text from a file
-static
-CHAR16 * ReadLine (
-    REFIT_FILE *File
-) {
-    CHAR16  *Line;
-    CHAR16  *qChar16;
-    CHAR16  *pChar16;
-    CHAR16  *LineEndChar16;
-    CHAR16  *LineStartChar16;
-
-    CHAR8   *pChar08;
-    CHAR8   *LineEndChar08;
-    CHAR8   *LineStartChar08;
-    UINTN    LineLength;
-
-
-    if (File->Buffer == NULL) {
-        // Early Return
-        return NULL;
-    }
-
-    if (File->Encoding != ENCODING_UTF8      &&
-        File->Encoding != ENCODING_UTF16_LE  &&
-        File->Encoding != ENCODING_ISO8859_1
-    ) {
-        // Early Return ... Unsupported encoding
-        return NULL;
-    }
-
-    if (File->Encoding == ENCODING_UTF8 ||
-        File->Encoding == ENCODING_ISO8859_1
-    ) {
-        pChar08 = File->Current8Ptr;
-        if (pChar08 >= File->End8Ptr) {
-            // Early Return
-            return NULL;
-        }
-
-        LineStartChar08 = pChar08;
-        for (; pChar08 < File->End8Ptr; pChar08++) {
-            if (*pChar08 == 13 || *pChar08 == 10) {
-                break;
-            }
-        }
-        LineEndChar08 = pChar08;
-        for (; pChar08 < File->End8Ptr; pChar08++) {
-            if (*pChar08 != 13 && *pChar08 != 10) {
-                break;
-            }
-        }
-        File->Current8Ptr = pChar08;
-
-        LineLength = (UINTN) (LineEndChar08 - LineStartChar08) + 1;
-        Line = AllocatePool (sizeof (CHAR16) * LineLength);
-        if (Line == NULL) {
-            // Early Return
-            return NULL;
-        }
-
-        qChar16 = Line;
-        if (File->Encoding == ENCODING_ISO8859_1) {
-            for (pChar08 = LineStartChar08; pChar08 < LineEndChar08; ) {
-                *qChar16++ = *pChar08++;
-            }
-        }
-        else if (File->Encoding == ENCODING_UTF8) {
-            // DA-TAG: Investigate This
-            //         Actually handle UTF-8
-            //         Currently just duplicates previous block
-            for (pChar08 = LineStartChar08; pChar08 < LineEndChar08; ) {
-                *qChar16++ = *pChar08++;
-            }
-        }
-        *qChar16 = 0;
-
-        return Line;
-    }
-
-    // Encoding is ENCODING_UTF16_LE
-    pChar16 = File->Current16Ptr;
-    if (pChar16 >= File->End16Ptr) {
-        // Early Return
-        return NULL;
-    }
-
-    LineStartChar16 = pChar16;
-    for (; pChar16 < File->End16Ptr; pChar16++) {
-        if (*pChar16 == 13 || *pChar16 == 10) {
-            break;
-        }
-    }
-    LineEndChar16 = pChar16;
-    for (; pChar16 < File->End16Ptr; pChar16++) {
-        if (*pChar16 != 13 && *pChar16 != 10) {
-            break;
-        }
-    }
-    File->Current16Ptr = pChar16;
-
-    LineLength = (UINTN) (LineEndChar16 - LineStartChar16) + 1;
-    Line = AllocatePool (sizeof (CHAR16) * LineLength);
-    if (Line == NULL) {
-        // Early Return
-        return NULL;
-    }
-
-    for (pChar16 = LineStartChar16, qChar16 = Line; pChar16 < LineEndChar16; ) {
-        *qChar16++ = *pChar16++;
-    }
-    *qChar16 = 0;
-
-    return Line;
-} // static CHAR16 * ReadLine
 
 // Returns FALSE if *p points to the end of a token, TRUE otherwise.
 // Also modifies *p **IF** the first and second characters are both
@@ -1626,6 +1523,7 @@ VOID ExitOuter (
     }
 
     SyncShowTools();
+    SyncToolPaths();
     SyncAlsoScan();
     SyncDontScanDirs();
     SyncDontScanFiles();
@@ -1695,6 +1593,119 @@ VOID ExitOuter (
     LOG_MSG("\n\n");
     #endif
 } // static VOID ExitOuter()
+
+// Get a single line of text from a file
+CHAR16 * ReadLine (
+    REFIT_FILE *File
+) {
+    CHAR16  *Line;
+    CHAR16  *qChar16;
+    CHAR16  *pChar16;
+    CHAR16  *LineEndChar16;
+    CHAR16  *LineStartChar16;
+    CHAR8   *pChar08;
+    CHAR8   *LineEndChar08;
+    CHAR8   *LineStartChar08;
+    UINTN    LineLength;
+
+
+    if (File->Buffer == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    if (File->Encoding != ENCODING_UTF8      &&
+        File->Encoding != ENCODING_UTF16_LE  &&
+        File->Encoding != ENCODING_ISO8859_1
+    ) {
+        // Early Return ... Unsupported encoding
+        return NULL;
+    }
+
+    if (File->Encoding == ENCODING_UTF8 ||
+        File->Encoding == ENCODING_ISO8859_1
+    ) {
+        pChar08 = File->Current8Ptr;
+        if (pChar08 >= File->End8Ptr) {
+            // Early Return
+            return NULL;
+        }
+
+        LineStartChar08 = pChar08;
+        for (; pChar08 < File->End8Ptr; pChar08++) {
+            if (*pChar08 == 13 || *pChar08 == 10) {
+                break;
+            }
+        }
+        LineEndChar08 = pChar08;
+        for (; pChar08 < File->End8Ptr; pChar08++) {
+            if (*pChar08 != 13 && *pChar08 != 10) {
+                break;
+            }
+        }
+        File->Current8Ptr = pChar08;
+
+        LineLength = (UINTN) (LineEndChar08 - LineStartChar08) + 1;
+        Line = AllocatePool (sizeof (CHAR16) * LineLength);
+        if (Line == NULL) {
+            // Early Return
+            return NULL;
+        }
+
+        qChar16 = Line;
+        if (File->Encoding == ENCODING_ISO8859_1) {
+            for (pChar08 = LineStartChar08; pChar08 < LineEndChar08; ) {
+                *qChar16++ = *pChar08++;
+            }
+        }
+        else if (File->Encoding == ENCODING_UTF8) {
+            // DA-TAG: Investigate This
+            //         Actually handle UTF-8
+            //         Currently just duplicates previous block
+            for (pChar08 = LineStartChar08; pChar08 < LineEndChar08; ) {
+                *qChar16++ = *pChar08++;
+            }
+        }
+        *qChar16 = 0;
+
+        return Line;
+    }
+
+    // Encoding is ENCODING_UTF16_LE
+    pChar16 = File->Current16Ptr;
+    if (pChar16 >= File->End16Ptr) {
+        // Early Return
+        return NULL;
+    }
+
+    LineStartChar16 = pChar16;
+    for (; pChar16 < File->End16Ptr; pChar16++) {
+        if (*pChar16 == 13 || *pChar16 == 10) {
+            break;
+        }
+    }
+    LineEndChar16 = pChar16;
+    for (; pChar16 < File->End16Ptr; pChar16++) {
+        if (*pChar16 != 13 && *pChar16 != 10) {
+            break;
+        }
+    }
+    File->Current16Ptr = pChar16;
+
+    LineLength = (UINTN) (LineEndChar16 - LineStartChar16) + 1;
+    Line = AllocatePool (sizeof (CHAR16) * LineLength);
+    if (Line == NULL) {
+        // Early Return
+        return NULL;
+    }
+
+    for (pChar16 = LineStartChar16, qChar16 = Line; pChar16 < LineEndChar16; ) {
+        *qChar16++ = *pChar16++;
+    }
+    *qChar16 = 0;
+
+    return Line;
+} // CHAR16 * ReadLine
 
 EFI_STATUS RefitReadFile (
     IN     EFI_FILE_HANDLE  BaseDir,
@@ -2528,6 +2539,7 @@ VOID ReadConfig (
                         if (0);
                         else if (MyStriCmp (TokenList[i], L"osx"     )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
                         else if (MyStriCmp (TokenList[i], L"grub"    )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
+                        else if (MyStriCmp (TokenList[i], L"tools"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_TOOLS;
                         else if (MyStriCmp (TokenList[i], L"linux"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
                         else if (MyStriCmp (TokenList[i], L"elilo"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
                         else if (MyStriCmp (TokenList[i], L"clover"  )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
@@ -2666,6 +2678,20 @@ VOID ReadConfig (
             HandleStrings (
                 TokenList, TokenCount,
                 &(GlobalConfig.AlsoScan)
+            );
+        }
+        else if (MyStriCmp (TokenList[0], L"also_scan_tool_dirs")) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            HandleStrings (
+                TokenList, TokenCount,
+                &(GlobalConfig.ToolLocationsExtra)
             );
         }
         else if (

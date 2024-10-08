@@ -189,75 +189,47 @@
 
 // Names of binaries that can manage MOKs
 #if defined (EFIX64)
-#   define MOK_NAMES \
+#   define MOK_FILES \
 L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
-KeyTool.efi,KeyTool-signed.efi,mm.efi,mmx64.efi"
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mm_x64.efi,mmx64.efi"
 #elif defined(EFI32)
-#   define MOK_NAMES \
+#   define MOK_FILES \
 L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
-KeyTool.efi,KeyTool-signed.efi,mm.efi,mmia32.efi"
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mm_ia32.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-#   define MOK_NAMES \
+#   define MOK_FILES \
 L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
-KeyTool.efi,KeyTool-signed.efi,mm.efi,mmaa64.efi"
+KeyTool.efi,KeyTool-signed.efi,mm.efi,mm_aa64.efi,mmaa64.efi"
 #else
-#   define MOK_NAMES \
+#   define MOK_FILES \
 L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
 KeyTool.efi,KeyTool-signed.efi,mm.efi"
 #endif
 
 // Names of binaries that can update firmware
 #if defined (EFIX64)
-#   define FWUPDATE_NAMES     L"fwupx64.efi,fwup.efi"
+#   define FWUPDATE_FILES     L"fwup.efi,fwup_x64,fwupx64.efi"
 #elif defined(EFI32)
-#   define FWUPDATE_NAMES     L"fwupia32.efi,fwup.efi"
+#   define FWUPDATE_FILES     L"fwup.efi,fwup_ia32,fwupia32.efi"
 #elif defined(EFIAARCH64)
-#   define FWUPDATE_NAMES     L"fwupaa64.efi,fwup.efi"
+#   define FWUPDATE_FILES     L"fwup.efi,fwup_aa64,fwupaa64.efi"
 #else
-#   define FWUPDATE_NAMES     L"fwup.efi"
+#   define FWUPDATE_FILES     L"fwup.efi"
 #endif
 
-// Directories to search for these MOK-managing programs.
-// Note that SelfDir is searched in addition to these locations.
-#define MOK_LOCATIONS \
-L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
+// Directories to search for memtest
+#define MEMTEST_LOCATIONS \
+L"EFI\\tools\\memtest,EFI\\tools\\memtest86,\
+EFI\\tools\\memtest86+,EFI\\tools\\memtest86p"
+#define MEMTEST_LOCATIONS_MORE \
+L"EFI\\memtest,EFI\\memtest86,\
+EFI\\memtest86+,EFI\\memtest86p"
+#define MEMTEST_LOCATIONS_EXTRA \
+L"EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86,\
+EFI\\BOOT\\tools\\memtest86+,EFI\\BOOT\\tools\\memtest86p"
 
-// Directories to search for memtest86
-#if defined (EFIX64)
-#   define MEMTEST_LOCATIONS \
-L"EFI\\tools_x64,EFI\\tools,\
-EFI\\tools_x64\\memtest86,EFI\\tools_x64\\memtest,EFI\\tools_x64\\memtest86p,\
-EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
-EFI\\BOOT\\tools_x64\\memtest86,EFI\\BOOT\\tools_x64\\memtest,EFI\\BOOT\\tools_x64\\memtest86p,\
-EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
-EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
-EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
-#elif defined(EFI32)
-#   define MEMTEST_LOCATIONS \
-L"EFI\\tools_ia32,EFI\\tools,\
-EFI\\tools_ia32\\memtest86,EFI\\tools_ia32\\memtest,EFI\\tools_ia32\\memtest86p,\
-EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
-EFI\\BOOT\\tools_ia32\\memtest86,EFI\\BOOT\\tools_ia32\\memtest,EFI\\BOOT\\tools_ia32\\memtest86p,\
-EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
-EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
-EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
-#elif defined(EFIAARCH64)
-#   define MEMTEST_LOCATIONS \
-L"EFI\\tools_aa64,EFI\\tools,\
-EFI\\tools_aa64\\memtest86,EFI\\tools_aa64\\memtest,EFI\\tools_aa64\\memtest86p,\
-EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
-EFI\\BOOT\\tools_aa64\\memtest86,EFI\\BOOT\\tools_aa64\\memtest,EFI\\BOOT\\tools_aa64\\memtest86p,\
-EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
-EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
-EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
-#else
-#   define MEMTEST_LOCATIONS \
-L"EFI\\tools,\
-EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\tools\\memtest86p,\
-EFI\\BOOT\\tools\\memtest86,EFI\\BOOT\\tools\\memtest,EFI\\BOOT\\tools\\memtest86p,\
-EFI\\BOOT\\memtest86,EFI\\BOOT\\memtest,EFI\\BOOT\\memtest86p,\
-EFI\\memtest86,EFI\\memtest,EFI\\memtest86p"
-#endif
+// Directories to search for tools
+#define TOOL_LOCATIONS L"EFI\\tools,EFI\\BOOT\\tools"
 
 // Files that may be Windows recovery files
 #if defined (EFIX64)
@@ -340,11 +312,12 @@ EFI\\OEM\\Boot\\bootmgfw.efi"
 #define GRAPHICS_FOR_OSX          (1)
 #define GRAPHICS_FOR_LINUX        (2)
 #define GRAPHICS_FOR_WINDOWS      (4)
-#define GRAPHICS_FOR_ELILO        (8)
-#define GRAPHICS_FOR_GRUB        (16)
-#define GRAPHICS_FOR_CLOVER      (32)
-#define GRAPHICS_FOR_OPENCORE    (64)
-#define GRAPHICS_FOR_EVERYTHING (127) // 1 + 2 + 4 + 8 + 16 + 32 + 64
+#define GRAPHICS_FOR_GRUB         (8)
+#define GRAPHICS_FOR_ELILO       (16)
+#define GRAPHICS_FOR_TOOLS       (32)
+#define GRAPHICS_FOR_CLOVER      (64)
+#define GRAPHICS_FOR_OPENCORE   (128)
+#define GRAPHICS_FOR_EVERYTHING (255) // 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128
 
 // Default hint text for program-launch submenus
 #define SUBSCREEN_HINT1            L"Use arrow keys to move selection and press 'Enter' to run selected item"
@@ -579,6 +552,8 @@ typedef struct {
     REFIT_VOLUME               *DiscoveredRoot;
     EFI_DEVICE_PATH_PROTOCOL   *SelfDevicePath;
     EG_IMAGE                   *ScreenBackground;
+    CHAR16                     *ToolLocations;
+    CHAR16                     *ToolLocationsExtra;
     CHAR16                     *ConfigFilename;
     CHAR16                     *BannerFileName;
     CHAR16                     *SelectionSmallFileName;
@@ -609,6 +584,7 @@ typedef struct {
 extern CHAR16                  *OffsetNext;
 extern CHAR16                  *SelfDirPath;
 extern CHAR16                  *SelfBaseName;
+extern CHAR16                  *SelfToolPath;
 extern CHAR16                  *gHiddenTools;
 
 extern UINTN                    PadPosition;

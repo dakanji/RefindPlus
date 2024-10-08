@@ -123,6 +123,7 @@ EFI_LOADED_IMAGE_PROTOCOL  *SelfLoadedImage         = NULL;
 CHAR16                     *StrSelfUUID             = NULL;
 CHAR16                     *SelfDirPath             = NULL;
 CHAR16                     *SelfBaseName            = NULL;
+CHAR16                     *SelfToolPath            = NULL;
 
 EFI_FILE_PROTOCOL          *SelfRootDir             = NULL;
 EFI_FILE_PROTOCOL          *SelfDir                 = NULL;
@@ -638,6 +639,9 @@ EFI_STATUS InitRefitLib (
 
     MY_FREE_POOL(SelfBaseName);
     SelfBaseName = Basename (Temp);
+
+    MY_FREE_POOL(SelfToolPath);
+    SelfToolPath = PoolPrint (L"%s\\tools", SelfDirPath);
 
     MY_FREE_POOL(DevicePathAsString);
     MY_FREE_POOL(Temp);

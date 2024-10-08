@@ -161,6 +161,8 @@ REFIT_CONFIG GlobalConfig = {
     .DiscoveredRoot            =                    NULL,
     .SelfDevicePath            =                    NULL,
     .ScreenBackground          =                    NULL,
+    .ToolLocations             =                    NULL,
+    .ToolLocationsExtra        =                    NULL,
     .ConfigFilename            =                    NULL,
     .BannerFileName            =                    NULL,
     .SelectionSmallFileName    =                    NULL,
@@ -199,15 +201,6 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define NVRAMCLEAN_PATHS L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\
-\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\
-\\EFI\\BOOT\\tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools\\CleanNvram_x64.efi,\
-\\EFI\\BOOT\\tools\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\
-\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\
-\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
-\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\
-\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
-
 #define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware"
 
 
@@ -219,6 +212,7 @@ CHAR16                *ArchType             =                  NULL;
 CHAR16                *ArchBits             =                  NULL;
 CHAR16                *VendorInfo           =                  NULL;
 CHAR16                *gHiddenTools         =                  NULL;
+CHAR16                *AllToolLocations     =                  NULL;
 BOOLEAN                gKernelStarted       =                 FALSE;
 BOOLEAN                KeepTrustChain       =                 FALSE;
 BOOLEAN                IsBoot               =                 FALSE;
@@ -1822,8 +1816,9 @@ BOOLEAN ShowCleanNvramInfo (
     CHAR16 *ToolPurpose
 ) {
     INTN               DefaultEntry;
-    UINTN              MenuExit, k;
+    UINTN              MenuExit, i, j;
     CHAR16            *FilePath;
+    CHAR16            *FileName;
     BOOLEAN            RetVal;
     MENU_STYLE_FUNC    Style;
     REFIT_MENU_ENTRY  *ChosenOption;
@@ -1851,10 +1846,17 @@ BOOLEAN ShowCleanNvramInfo (
     AddMenuInfoLine (CleanNvramInfoMenu, L" - You will be returned to the main menu if not found",    FALSE);
     AddMenuInfoLine (CleanNvramInfoMenu, L"",                                                         FALSE);
 
-    k = 0;
-    while ((FilePath = FindCommaDelimited (NVRAMCLEAN_PATHS, k++)) != NULL) {
-        AddMenuInfoLine (CleanNvramInfoMenu, FilePath, TRUE);
-    }
+    i = 0;
+    while ((FilePath = FindCommaDelimited (GlobalConfig.ToolLocations, i++)) != NULL) {
+        j = 0;
+        while ((FileName = FindCommaDelimited (NVRAMCLEAN_FILES, j++)) != NULL) {
+            AddMenuInfoLine (CleanNvramInfoMenu, PoolPrint (L"%s\\%s", FilePath, FileName), TRUE);
+
+            MY_FREE_POOL(FileName);
+        } // while
+
+        MY_FREE_POOL(FilePath);
+    } // while
 
     AddMenuInfoLine (CleanNvramInfoMenu, L"", FALSE);
 
@@ -1926,11 +1928,11 @@ VOID AboutRefindPlus (VOID) {
     BOOLEAN CheckMute = FALSE;
 
     ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- 'About RefindPlus'");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Screen Title:- '%s'", LABEL_ABOUT);
     #endif
 
     AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT                 );
-    AboutMenu->Title      = PoolPrint (L"About RefindPlus %s", REFINDPLUS_VERSION);
+    AboutMenu->Title      = PoolPrint (L"%s %s", LABEL_ABOUT, REFINDPLUS_VERSION );
     AboutMenu->Hint1      = StrDuplicate (L"Press 'Enter' to Return to Main Menu");
     AboutMenu->Hint2      = StrDuplicate (L""                                    );
 
@@ -2766,6 +2768,52 @@ VOID LogBasicInfo (
 } // static VOID LogBasicInfo()
 #endif
 
+static
+VOID ResetCall (
+    CHAR16            *TypeStr,
+    BOOLEAN            IsRestart
+) {
+    #if REFIT_DEBUG > 0
+    CHAR16            *MsgStr;
+    #endif
+
+
+    egDisplayMessage (
+        TypeStr, &BGColorBase,
+        CENTER, 3, L"PauseSeconds"
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgStr = (IsRestart)
+        ? StrDuplicate (L"R U N   S Y S T E M   R E S T A R T")
+        : StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    MY_FREE_POOL(MsgStr);
+
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Run %s", TypeStr);
+    LOG_MSG("Run %s", TypeStr);
+    END_TAG();
+    #endif
+
+    // Terminate Screen
+    TerminateScreen();
+
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, (IsRestart) ? EfiResetCold : EfiResetShutdown,
+        EFI_SUCCESS, 0, NULL
+    );
+
+    // Just in case we get this far
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"%s Failed", TypeStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+    LOG_MSG("WARN: %s", MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
+} // static VOID ResetCall()
+
 VOID RefitStall (
     UINTN StallLoops
 ) {
@@ -2795,6 +2843,7 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16            *MsgStr;
     CHAR16            *PartMsg;
     CHAR16            *TypeStr;
+    CHAR16            *FileName;
     CHAR16            *FilePath;
     CHAR16            *SelectionName;
     CHAR16            *VentoyName;
@@ -3017,6 +3066,11 @@ EFI_STATUS EFIAPI efi_main (
     VarNoCheckCompat   = GlobalConfig.DisableCheckCompat  ;
     VarDisablePanicLog = GlobalConfig.DisableNvramPanicLog;
 
+    /* Update Tool Scan Locations */
+    AllToolLocations = StrDuplicate (GlobalConfig.ToolLocations);
+    if (GlobalConfig.ToolLocationsExtra != NULL) {
+        MergeUniqueItems (&AllToolLocations, GlobalConfig.ToolLocationsExtra, L',');
+    }
 
     // DA-TAG: Limit to TianoCore
     #ifdef __MAKEWITH_TIANO
@@ -3728,34 +3782,43 @@ EFI_STATUS EFIAPI efi_main (
                     break;
                 }
 
-                k = 0;
+                i = 0;
                 while (
                     !FoundTool &&
-                    (FilePath = FindCommaDelimited (NVRAMCLEAN_PATHS, k++)) != NULL
+                    (FilePath = FindCommaDelimited (GlobalConfig.ToolLocations, i++)) != NULL
                 ) {
-                    for (i = 0; i < VolumesCount; i++) {
-                        if (Volumes[i]->RootDir != NULL &&
-                            FileExists (Volumes[i]->RootDir, FilePath)
-                        ) {
-                            FoundTool = TRUE;
-                            OurLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                            if (OurLoaderEntry) {
-                                OurLoaderEntry->me.Title        =  StrDuplicate (TypeStr);
-                                OurLoaderEntry->me.Tag          =         TAG_RESET_NVRAM;
-                                OurLoaderEntry->Volume          =              Volumes[i];
-                                OurLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
-                                OurLoaderEntry->UseGraphicsMode =                   FALSE;
+                    k = 0;
+                    while (
+                        !FoundTool &&
+                        (FileName = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL
+                    ) {
+                        for (i = 0; i < VolumesCount; i++) {
+                            FileName = PoolPrint (L"%s\\%s", FilePath, FileName);
+                            if (Volumes[i]->RootDir != NULL &&
+                                FileExists (Volumes[i]->RootDir, FilePath)
+                            ) {
+                                FoundTool = TRUE;
+                                OurLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                                if (OurLoaderEntry) {
+                                    OurLoaderEntry->me.Title        =                    StrDuplicate (TypeStr);
+                                    OurLoaderEntry->me.Tag          =                           TAG_RESET_NVRAM;
+                                    OurLoaderEntry->Volume          =                                Volumes[i];
+                                    OurLoaderEntry->LoaderPath      = PoolPrint (L"%s\\%s", FilePath, FileName);
+                                    OurLoaderEntry->UseGraphicsMode =                                     FALSE;
+                                }
+
+                                // Break out of 'for' loop
+                                break;
                             }
+                        } // for
 
-                            // Break out of 'for' loop
-                            break;
+                        // Reset 'FoundTool' if 'OurLoaderEntry' is NULL
+                        if (FoundTool && OurLoaderEntry == NULL) {
+                            FoundTool = FALSE;
                         }
-                    } // for
 
-                    // Reset 'FoundTool' if 'OurLoaderEntry' is NULL
-                    if (FoundTool && OurLoaderEntry == NULL) {
-                        FoundTool = FALSE;
-                    }
+                        MY_FREE_POOL(FileName);
+                    } // while
 
                     MY_FREE_POOL(FilePath);
                 } // while
@@ -3857,110 +3920,17 @@ EFI_STATUS EFIAPI efi_main (
 
             // No break ... Drop into TAG_REBOOT
             case TAG_REBOOT:    // Reboot
-                TypeStr = L"System Restart";
+                ResetCall (L"System Restart", TRUE);
 
-                // FoundTool == FALSE if hit directly
-                //   - FALSE == Show Confirmation Screen ... YES
-                //   - TRUE  == Show Confirmation Screen ... NO
-                if (!FoundTool) {
-                    // Request confirmation
-                    FoundTool = ConfirmRestart();
-                    if (!FoundTool) {
-                        MainLoopRunning = TRUE;
-
-                        #if REFIT_DEBUG > 0
-                        MsgStr = PoolPrint (L"Aborted %s", TypeStr);
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-                        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                        LOG_MSG("INFO: %s", MsgStr);
-                        LOG_MSG("\n\n");
-                        MY_FREE_POOL(MsgStr);
-                        #endif
-
-                        // Early Exit
-                        break;
-                    }
-                }
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"R U N   S Y S T E M   R E S T A R T");
-                ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n");
-                MY_FREE_POOL(MsgStr);
-
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Run %s", TypeStr);
-                LOG_MSG("Run %s", TypeStr);
-                END_TAG();
-                #endif
-
-                egDisplayMessage (
-                    TypeStr, &BGColorBase,
-                    CENTER, 3, L"PauseSeconds"
-                );
-                TerminateScreen();
-                REFIT_CALL_4_WRAPPER(
-                    gRT->ResetSystem, EfiResetCold,
-                    EFI_SUCCESS, 0, NULL
-                );
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"System Reset Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-
+                // Just in case we get this far
                 MainLoopRunning = FALSE;
 
             break;
             case TAG_SHUTDOWN: // Shut Down
-                TypeStr = L"Running System Shutdown";
+                ResetCall (L"System Shutdown", FALSE);
 
-                RunOurTool = ConfirmShutdown();
-                if (!RunOurTool) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Aborted %s", TypeStr);
-                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                    ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-                    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                    LOG_MSG("INFO: %s", MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"R U N   S Y S T E M   S H U T D O W N");
-                    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-                    LOG_MSG("%s", MsgStr);
-                    LOG_MSG("\n");
-                    MY_FREE_POOL(MsgStr);
-
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
-                    LOG_MSG("%s", TypeStr);
-                    END_TAG();
-                    #endif
-
-                    // Terminate Screen
-                    TerminateScreen();
-
-                    REFIT_CALL_4_WRAPPER(
-                        gRT->ResetSystem, EfiResetShutdown,
-                        EFI_SUCCESS, 0, NULL
-                    );
-
-                    // Just in case we get this far
-                    MainLoopRunning = FALSE;
-
-                    #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"System Shutdown Failed");
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                    LOG_MSG("WARN: %s", MsgStr);
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                } // if/else !RunOurTool
+                // Just in case we get this far
+                MainLoopRunning = FALSE;
 
             break;
             case TAG_ABOUT:    // About RefindPlus

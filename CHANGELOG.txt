@@ -37,6 +37,17 @@
   * The feature is now essentially included upstream
   * Now removed as a standalone feature in RefindPlus and active as a default core item
   * The associated `decline_help_scan` configuration token is now removed and ignored if set
+- Amends `Tool` Handling
+  * Largely aligned with the new approach introduced with `Upstream v0.14.2`
+    - RefindPlus variation:
+      * `EFI/BOOT/tools` is scanned in addition to `EFI/tools` by default
+      * The `Memtest` tool is effectively handled the `old` way
+        - `memtest` and `memtestXYZ` folders are scanned
+        - Memtest fallback loader files (`Boot{arch}.efi`) are handled
+  * Adds `tools` option to `use_graphics_for` configuration token
+    - These can now be set to load in graphics screen mode
+    - Verbose screen output is disabled when set to use graphics
+    - NB: Some tools, such as some uEFI shell, may require text mode
 - Amends `Ventoy` Handling
   * Instances are now automatically detected and processed
     - Hence, specific handling is no longer user configurable

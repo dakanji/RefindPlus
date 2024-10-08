@@ -136,8 +136,9 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"timeout":** The default is no timeout unless explicitly set.
 - **"use_nvram":** RefindPlus variables are written to the file system, not the motherboard's nvRAM chip, unless explicitly set to do so by activating this configuration token.
 - **"use_graphics_for":** Additional options added:
-  - `none` option to disable graphics mode loading for everything.
-  - `everything` option to enable graphics mode loading for everything.
+  - `tools` option to _enable_ graphics mode loading for such.
+  - `none` option to _disable_ graphics mode loading for everything.
+  - `everything` option to _enable_ graphics mode loading for everything.
   - `OpenCore` and `Clover` can be specifically set to load in graphics mode.
 - **"showtools":** Additional tool added:
   - `clean_nvram` : Allows resetting nvRAM directly from RefindPlus.

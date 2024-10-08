@@ -212,8 +212,6 @@ CHAR16 * MenuExitInfo (IN UINTN MenuExit);
 BOOLEAN GetMenuEntryYesNo (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN GetMenuEntryReturn (IN OUT REFIT_MENU_SCREEN **Screen);
 BOOLEAN ConfirmSyncNVram (VOID);
-BOOLEAN ConfirmShutdown (VOID);
-BOOLEAN ConfirmRestart (VOID);
 BOOLEAN ConfirmRotate (VOID);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
