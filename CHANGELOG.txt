@@ -1,4 +1,4 @@
-0.14.2.AA (PRE-RELEASE):
+0.14.2.AA (08 OCT 2024):
 -----------------------
 - Synced with Upstream v0.14.2
 - Fixes Handling `Windows Recovery Tools` Volumes

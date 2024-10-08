@@ -63,16 +63,6 @@
 #
 #decline_help_icon
 
-# The "HelpScan" feature always adds program defaults to 'dont_scan-xyz' lists.
-# This deviates from the upstream implementation where such program defaults are
-# overwritten unless a "+" item is added as the first item of user defined entries.
-# These program defaults ensure that certain items are not shown as first row icons.
-# Users that wish to disable the default "HelpScan" feature can activate this option.
-#
-# The "HelpScan" feature is active when commented out
-#
-#decline_help_scan
-
 # The "HelpSize" feature always adds additional UI scaling whenever screens
 # with 'ExDPI' resolutions are detected for which the 2x scaling applied for
 # the 'HiDPI' resolutions may not be sufficient. The 'ExDPI' resolutions are
@@ -289,16 +279,6 @@
 #
 #force_trim
 
-# The 'Ventoy' tool allows flexibly running ISO images, typically Linux.
-# However, it comes with multiple loaders, many of which have incompatible
-# CPU architectures, that show on the RefindPlus screen but are not unusable.
-# When this token is active, only the relevant Ventoy loader is shown instead.
-# NB: Default Ventoy naming is required for proper instance identification.
-#
-# Inactive when commented out (Does not specifically manage Ventoy)
-#
-#handle_ventoy
-
 # RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
 # volumes. However, when this token is active (and the "hidden_icons_ignore"
 # token is not) RefindPlus will also scan "external" volumes for these icons.
@@ -423,11 +403,11 @@
 #
 #persist_boot_args
 
-# RefindPlus defaults to using the Graphic Output Protocol (GOP) for graphics
-# output if available and only falls backs on the Universal Graphics Adapter
+# RefindPlus defaults to using the Graphics Output Protocol (GOP)
+# to render displays and only falls backs on the Universal Graphics Adapter
 # (UGA) when this is available and GOP is not. When this setting is active,
 # it will instead always use UGA when available and will not consider GOP.
-# This may also improve RefindPlus loading speed on legacy UGA-Only GPUs.
+# This may also improve RefindPlus loading speed on legacy UGA-only GPUs.
 #
 # Inactive when commented out (Does not prefer UGA over GOP for graphics)
 #
@@ -541,7 +521,6 @@
 #   - bluetoothInternalControllerinfo
 #   - bluetoothActiveControllerInfo
 #   - bluetoothExternalDongleFailed
-#   - opencore-version (macOS boots ... including installers)
 #
 # This token accepts these options:
 #   0    - Sync is never attempted                     (Default/Base Option:- Y)
@@ -555,7 +534,6 @@
 # 2. Option '1' is as '4' when 'transient_boot' is active
 # 3. Option '2' is as '3' when 'transient_boot' is active
 # 4. Qualifying boots are macOS, OpenCore or Clover boots
-# 5. opencore-version when *NOT* chainloaded via OpenCore
 #
 # Inactive when commented out (Does not sync nvRAM)
 #
@@ -566,22 +544,22 @@
 # this issue. The 'SyncTrust' feature is useful on computers running enhanced
 # boot security setups, particularly in conjunction with T2/TPM chipped units.
 #
-#   macos       - macOS loader
-#   linux       - Linux loaders
-#   windows     - Windows loader
-#   clover      - The Clover boot-loader
-#   opencore    - The OpenCore boot-loader
-#   similar     - Any other uEFI loader
-#   verify      - Always check first
-#   every       - All of the above
-#   none        - None of the above (default)
+#   macos       - macOS Loader
+#   windows     - Windows Loader
+#   linux       - Linux Stub Loader
+#   clover      - Clover Boot Loader
+#   opencore    - OpenCore Boot Loader
+#   similar     - Any Other uEFI Loader
+#   verify      - Always Check First
+#   every       - All of the Above
+#   none        - None of the Above (Default)
 #
 # NOTES:
 # 1. The 'every' option takes precedence over others apart from 'none'
 # 2. The 'none' option takes precedence over every other setting
 # 3. The 'DirectBoot' feature is disabled by this token
 #
-# Inactive when commented out or set to 'none' (Does not trigger native reboots)
+# Inactive when commented out or set to 'none' (Does not trigger reboots)
 #
 #sync_trust macos verify
 
@@ -772,7 +750,8 @@
 #                       NB: Requires external program
 #                           See documentation for details
 #  memtest          - Memory Testing Utility.
-#                       NB: Requires external memtest program
+#                       NB: Requires external program
+#                           Only the first valid instance found is presented
 #  gptsync          - The (Dangerous) 'GPTsync' Utility.
 #                       NB: Requires external program
 #                           See documentation for details
@@ -780,7 +759,8 @@
 #                       NB: Requires external program
 #                           See documentation for details
 #  clean_nvram      - Enables nvRAM Reset from RefindPlus.
-#                       NB: Needs External program.
+#                       NB: Requires external program
+#                           Only the first valid instance found is presented
 #  apple_recovery   - Loads Apple Mac Recovery partitions, if present
 #  windows_recovery - Boots an OEM Windows recovery tool, if present.
 #                       NB: Also refer to the "windows_recovery_files" option
@@ -844,15 +824,16 @@
 # That is, 'use_graphics_for' alone works like setting 'everything'.
 #
 # Valid options:
-#   none        - No loader
-#   osx         - macOS loader
-#   windows     - Windows loader
-#   linux       - Linux stub loader
-#   grub        - The GRUB boot loader
-#   elilo       - The ELILO boot loader
-#   clover      - The Clover boot loader
-#   opencore    - The OpenCore boot loader
-#   everything  - Graphics for every loader
+#   none        - No Loader
+#   osx         - macOS Loader
+#   windows     - Windows Loader
+#   linux       - Linux Stub Loader
+#   grub        - The GRUB Boot Loader
+#   elilo       - The ELILO Boot Loader
+#   clover      - The Clover Boot Loader
+#   opencore    - The OpenCore Boot Loader
+#   tools       - 2nd Row Items:- All Tools
+#   everything  - For All Loaders and Tools
 #
 # NOTES:
 # 1. The 'everything' option takes precedence over others apart from 'none'
@@ -903,6 +884,13 @@
 #
 #also_scan_dirs ESP2:EFI/linux/kernels
 #also_scan_dirs @/kernels,@/root/boot
+
+# Additional directories to scan for tools. You may specify a directory
+# alone or a volume identifier plus pathname. The default is to scan no
+# extra directories, beyond EFI/tools, EFI/BOOT/tools and any directory
+# in which a uEFI loader is found.
+#
+#also_scan_tool_dirs EFI/memtest,ESP2:/EFI/tools/memtest86
 
 # Use a custom title banner and not the default (embedded) banner. The
 # file path is relative to the directory where the RefindPlus binary is
@@ -963,17 +951,11 @@
 # This token takes precedence if a directory is listed both here and in
 # "also_scan_dirs". Note that this applies to ALL the filesystems that
 # RefindPlus scans, and not just the ESP, unless the directory name
-# is preceded by a filesystem name or partition unique GUID, such
-# as "myvol:EFI/somedir", to exclude EFI/somedir from the scan
-# on the "myvol" volume but not on other volumes.
+# is preceded by a filesystem name or unique partition GUID, such
+# as "myvol:EFI/somedir", to exclude the "EFI/somedir" path from
+# being scanned on the "myvol" volume but not on other volumes.
 #
-# The default setting is L"EFI/tools_{arch},EFI\tools,
-# EFI\tools_{arch}\memtest86,EFI\tools_{arch}\memtest,EFI\tools_{arch}\memtest86p,
-# EFI\tools\memtest86,EFI\tools\memtest,EFI\tools\memtest86p,
-# EFI\BOOT\tools_{arch}\memtest86,EFI\BOOT\tools_{arch}\memtest,
-# EFI\BOOT\tools_{arch}\memtest86p,EFI\BOOT\tools\memtest86,EFI\BOOT\tools\memtest,
-# EFI\BOOT\tools\memtest86p,EFI\BOOT\memtest86,EFI\BOOT\memtest,EFI\BOOT\memtest86p,
-# EFI\memtest86,EFI\memtest,EFI\memtest86p" ("{arch}" is architecture, such as "x64").
+# The default is the "SelfDir" path.
 #
 # Uses default setting when commented out
 #
@@ -1292,12 +1274,12 @@
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
-# Set 'systemd' nvRAM variables (currently only LoaderDevicePartUUID)
-# when launching Linux via an EFI stub loader, ELILO, or GRUB. This
-# variable, when present, causes systemd to mount the ESP at /boot
-# *IF* that directory is empty and nothing else is mounted there.
+# Passes variable settings to 'SystemD' (currently LoaderDevicePartUUID)
+# when launching Linux instances. This variable setting, when present,
+# causes SystemD to mount the ESP as '/boot' *IF* that directory
+# is empty and nothing else has been mounted there earlier.
 #
-# Inactive when commented out (No nvRAM variable write attempt)
+# Inactive when commented out (variable is not set)
 #
 #write_systemd_vars
 
