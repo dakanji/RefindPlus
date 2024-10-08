@@ -2031,7 +2031,8 @@ VOID SetPartGuidAndName (
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
-CHAR16 * GetVolumeName (
+static
+CHAR16 * GetVolumeNameEx (
     IN REFIT_VOLUME *Volume
 ) {
     CHAR16                *SISize;
@@ -2134,6 +2135,23 @@ CHAR16 * GetVolumeName (
                 }
             }
         }
+    }
+
+    return FoundName;
+} // static CHAR16 * GetVolumeNameEx()
+
+CHAR16 * GetVolumeName (
+    IN REFIT_VOLUME *Volume
+) {
+    CHAR16                *FoundName;
+
+
+    FoundName = GetVolumeNameEx (Volume);
+    if (FoundName[0] >= L'a' &&
+        FoundName[0] <= L'z'
+    ) {
+        // Capitalise First Letter
+        FoundName[0] = FoundName[0] - L'a' + L'A';
     }
 
     return FoundName;
@@ -3259,7 +3277,7 @@ MY_MUTELOGGER_SET;
                 else if (Volume->FSType == FS_TYPE_HFSPLUS) {
                     if (GuidsAreEqual (&GuidHFS, &(Volume->PartTypeGuid))) {
                         RoleStr = (FileExists (Volume->RootDir, MACOSX_LOADER_PATH))
-                            ? L" * Part macOS Boot (HFS)"
+                            ? L" * Part MacOS Boot (HFS)"
                             : L" * Part Other/Data (HFS)";
                     }
                     else {
@@ -4321,25 +4339,24 @@ BOOLEAN SplitVolumeAndFilename (
         return FALSE;
     }
 
-    MY_FREE_POOL(*VolName);
-
     Length = StrLen (*Path);
     i = 0;
     while ((i < Length) && ((*Path)[i] != L':')) {
         i++;
     }
 
-    if (i < Length) {
-        Filename   =  StrDuplicate ((*Path) + i + 1);
-        (*Path)[i] =  0;
-        *VolName   = *Path;
-        *Path      =  Filename;
-
-        return TRUE;
-    }
-    else {
+    if (i >= Length) {
         return FALSE;
     }
+
+    MY_FREE_POOL(*VolName);
+
+    Filename   =  StrDuplicate ((*Path) + i + 1);
+    (*Path)[i] =  0;
+    *VolName   = *Path;
+    *Path      =  Filename;
+
+    return TRUE;
 } // BOOLEAN SplitVolumeAndFilename()
 
 // Take an input path name, which may include a volume specification and/or
@@ -4474,12 +4491,13 @@ BOOLEAN FilenameIn (
     ) {
         AnElement = GetSubStrAfter (DEFAULT_STRING_DELIM, OneElement);
         SplitPathName (AnElement, &TargetVolName, &TargetPath, &TargetFilename);
+        MY_FREE_POOL(OneElement); // Freed here to avoid potential memory leak
 
         if (TargetPath     == NULL &&
             TargetVolName  == NULL &&
             TargetFilename == NULL
         ) {
-            return FALSE;
+            continue;
         }
 
         if (MyStriCmp (TargetPath, Directory)    &&
@@ -4488,11 +4506,7 @@ BOOLEAN FilenameIn (
         ) {
             Found = TRUE;
         }
-        else {
-            Found = FALSE;
-        }
 
-        MY_FREE_POOL(OneElement);
         MY_FREE_POOL(TargetPath);
         MY_FREE_POOL(TargetVolName);
         MY_FREE_POOL(TargetFilename);

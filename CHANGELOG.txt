@@ -6,7 +6,8 @@
   * Effectively results in an unending scan loop otherwise
   * This bug was inherited from upstream code
 - Fixes `ScanFirmwareDefined` Handling
-  * Spurious items were added (Typically as firmware shell instances ... Thanks @emperor06)
+  * Spurious items were added (Typically as firmware shell instances)
+    - Ref: https://github.com/dakanji/RefindPlus/issues/184
   * This bug was introduced in v0.14.0.AC (Commit aad3298)
 - Fixes Jpeg Image Handling
   * Garbled images were output
@@ -14,8 +15,8 @@
     - This reversed the order of two parameters in `MyMemSet` as part of an upstream sync
       * `#define memset MyMemSet` to `#define memset(b, c, v) MyMemSet(b, v, c)` in `libeg/nanojpeg.c`
     - These parameters had already been reversed elsewhere in v0.13.2.AG (Commit 2d8ab59)
-      * Ported from downstream: https://github.com/joevt/RefindPlus/commit/266fd8f
-    - The changes invalidated each other
+      * Ported from @joevt downstream: https://github.com/joevt/RefindPlus/commit/266fd8f
+    - The changes previously invalidated each other
 - Fixes `UGA Graphics` Handling
   * RefindPlus Crashed when run with UGA-based GPUs
 - Improves `HelpIcon` Handling
@@ -28,7 +29,7 @@
   * Some entry types were mislabelled as `Linux`
   * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
   * Now limits `spoof_osx_version` to Apple firmware to match documentation
-  * No longer attempts to clear the `opencore-version` variable when booting into macOS
+  * No longer attempts to clear the `opencore-version` variable when booting into Mac OS
     - This variable is actually only stored in a volatile state
   * Addressed misc static analysis flags
     - These apply to some filesystem drivers; which are updated accordingly
@@ -108,11 +109,11 @@
 - Improves `ProtectNvram` Handling
   * Now also blocks the `CurrentPolicy` and `CurrentActivePolicy` variables
 - Improves `SyncNVram` Handling
-  * Now also clears the `opencore-version` variable, if present, when booting into macOS directly
-    - This variable is effectively an `OpenCore Present` flag that is checked by the macOS kernel
+  * Now also clears the `opencore-version` variable, if present, when booting into Mac OS directly
+    - This variable is effectively an `OpenCore Present` flag that is checked by the Mac OS kernel
     - This variable removal only applies when RefindPlus is *NOT* chain-loaded via OpenCore
-    - This variable removal also applies to macOS installers
-  * Separately, the implementation of the base feature was not functional on macOS boots and was fixed
+    - This variable removal also applies to Mac OS installers
+  * Separately, the implementation of the base feature was not functional on Mac OS boots and was fixed
 - Improves `HelpIcon` Handling
   * The following `OS Icons` are now cached on first load and reused as required afterwards when this feature is active
     - List is "os_mac", "os_win", "os_win8", "os_linux", "os_legacy", "os_clover", "os_opencore", "os_unknown", and "dummy image"
@@ -144,13 +145,13 @@
 -----------------------
 - Adds `SyncNVram` Feature
   * Sets RefindPlus to always clear some nvRAM settings on certain boot types
-    - Currently applied to Bluetooth settings for macOS
+    - Currently applied to Bluetooth settings for Mac OS
       * bluetoothInternalControllerinfo
       * bluetoothActiveControllerInfo
       * bluetoothExternalDongleFailed
   * The feature can be enabled using a new `sync_nvram` configuration token
 - Adds `PersistBootArgs` Feature
-  * Outputs of macOS boot argument related settings are now written to vRAM instead of to nvRAM
+  * Outputs of Mac OS boot argument related settings are now written to vRAM instead of to nvRAM
     - This is to reduce wear and tear on the nvRAM storage chip
   * Enabled by default but can be disabled using a new `persist_boot_args` configuration token
 - Fixes `HelpIcon` Feature
@@ -191,7 +192,7 @@
   * Optimises `VolumeIcon` and `VolumeBadges` searches
   * These items are now only scanned for displayed volumes
   * Improves loading speed by reducing disk I/O access
-- Improves `macOS Installer` Handling
+- Improves `Mac OS Installer` Handling
   * Now better identified and labelled
 - Improves `RotateCSR` Handling
   * Now displays a confirmation input screen before execution
@@ -454,12 +455,12 @@
   * Boots from subscreens, such as after pressing F2, were handled as generic UEFI files
   * This resulted in some processes being skipped or unwanted processes being applied
   * RefindPlus now tries to make such boots specific as follows:
-    - `Opencore`, `Clover`, `Linux`, `macOS`, `Windows` and `Misc Others`
+    - `Opencore`, `Clover`, `Linux`, `Mac OS`, `Windows` and `Misc Others`
 - Fixes Apple Hardware Test Option
   * While Apple stopped providing this feature after June 2013, some users may have restored this
     - Ref: https://github.com/upekkha/AppleHardwareTest
   * In such cases however, RefindPlus did not provide the option on APFS volumes when `SyncAPFS` is active
-  * Now reinstated subject to not having multiple macOS instances in any single APFS container
+  * Now reinstated subject to not having multiple Mac OS instances in any single APFS container
 - Fixes Misc Items
   * Always block UEFI Windows NVRAM items (Disregard Volatility)
   * Address misidentification of certain volume types as HFS+ volumes
@@ -491,11 +492,11 @@
 -----------------------
 - Synced with Upstream v0.13.3
 - Adds `EnableMacosFilter` Feature
-  * This feature is active by default and activates the `ProtectNVRAM` feature, if enabled, on macOS boots
+  * This feature is active by default and activates the `ProtectNVRAM` feature, if enabled, on Mac OS boots
   * The `ProtectNVRAM` feature, if enabled, is activated for other applicable OS types regardless
   * The `EnableMacosFilter` feature can be disabled using a new `decline_macos_filter` configuration token
 - Adds `DisableNvramPanicLog` Feature
-  * Sets a macOS `nvram_paniclog=0` boot argument to disable kernel panic logging to NVRAM
+  * Sets a Mac OS `nvram_paniclog=0` boot argument to disable kernel panic logging to NVRAM
   * Replaces the `PanicFilter` feature which has been removed
 - Adds `NvramVariableLimit` Feature
   * Filters NVRAM variable write attempts
@@ -537,7 +538,7 @@
 - Adds `PanicFilter` Feature
   * RefindPlus now discards NVRAM write attempts of kernel panic information by default
   * Can be disabled using a new `decline_panicfilter` configuration token
-  * Currently limited to when directly booting macOS from RefindPlus
+  * Currently limited to when directly booting Mac OS from RefindPlus
 - Adds `SupplyAppleFB` Feature
   * Attempts to provide AppleFramebuffers on Macs when absent under certain circumstances
   * Can be disabled using a new `decline_applefb` configuration token
@@ -656,8 +657,8 @@
   * The `uga_pass_through` token is renamed as `pass_uga_through`
   * The `XYZ_hidden_icons` tokens are renamed as `hidden_icons_XYZ`
   * The `XYZ_renderer` tokens are renamed as `renderer_XYZ`
-- Extends fixes on Mac Recovery Implementation for macOS on APFS
-  * Adjusted to cover all macOS instances on APFS
+- Extends fixes on Mac Recovery Implementation for Mac OS on APFS
+  * Adjusted to cover all Mac OS instances on APFS
   * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders
   * IMPORTANT:
     - This implementation is still a work in progress ... feedback required/welcome
@@ -709,7 +710,7 @@
   * The disabled features can typically also be set in OpenCore
 - Improves `ProtectNVRAM` Implementation
   * RefindPlus classifies UEFI Loaders into one of the following categories:
-    - `Opencore`, `Clover`, `Linux`, `macOS`, `Windows` and `Others`
+    - `Opencore`, `Clover`, `Linux`, `Mac OS`, `Windows` and `Others`
   * Only security certificates generated by Windows UEFI Loaders were blocked by ProtectNVRAM
   * However, UEFI Windows installers/updaters may fall into the `Others` category and generate such certificates
   * Hence, certificates generated by UEFI Loaders that fall into the `Others` category are now also blocked
@@ -752,7 +753,7 @@
 -----------------------
 - Reverts Ported APFS Volume Group Identification
   * Does not appear the Volume Group information was correctly isolated and hence, not unique
-  * This resulted in macOS volume instance conflicts
+  * This resulted in Mac OS volume instance conflicts
   * NOTE: Multi Instance APFS Container restrictions apply again
 
 
@@ -787,7 +788,7 @@
   * LogLevel 2 is exposed when the `REFIT_DEBUG` build flag is set to two (2) at compilation time.
   * Unless LogLevel 2 is exposed when compiling, selected levels above one (1) will be capped at LogLevel 1
   * When LogLevel 2 is exposed, selected levels above two (2) will be capped at LogLevel 2
-- Initial activation of fixes on Mac Recovery For macOS 11 (Big Sur) and Later
+- Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * IMPORTANT:
     - This implementation is still a work in progress ... feedback required/welcome
 
@@ -804,11 +805,11 @@
 - Fixes Display of Mac Recovery Tool Name in RELEASE builds
   * The variable holding the Mac Recovery tool name was wrapped in `Debug` tags
   * Hence the tool name was not displayed in RELEASE builds
-- Initial fixes on Mac Recovery For macOS 11 (Big Sur) and Later
+- Initial fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * The Mac Recovery implementation inherited by RefindPlus was designed for the HFS+ filesystem
-  * Hence, it does not recognise recovery volumes of macOS versions with full APFS implementation
-    - macOS 10.13 (High Sierra) to macOS 10.15 (Catalina) have partial/transitional APFS implementations
-    - macOS 11 (Big Sur) and newer have full APFS implementations
+  * Hence, it does not recognise recovery volumes of Mac OS versions with full APFS implementation
+    - Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
+    - Mac OS 11 (Big Sur) and newer have full APFS implementations
   * ADDITIONAL NOTES:
     - This implementation does not support setups with more than one APFS instance in a single container
     - This implementation is still a work in progress
@@ -834,7 +835,7 @@
 - Improves Time Bound Primed Buffer Mitigation
   * Mitigates against RefindPlus spontaneously running default items
   * Intervention is now based on a minumum 1.25 second interval between load and run attempt
-  * Extended scope now covers macOS again (previously removed)
+  * Extended scope now covers Mac OS again (previously removed)
 - Improves `ProtectNVRAM` Implementation
   * Now ensures this is reset on each loop through the RefindPlus Main Loop
   * This ensures the filtering is not on if UEFI Windows boot fails
@@ -911,7 +912,7 @@
   * RefindPlus now works around this issue by automatically toggling such menu items
   * This toggling may however not happen on some units
 - Improves Mac Recovery Tool Identification
-  * RefindPlus now attempts to associate Apple Mac Recovery Tool instances to specific macOS Volumes
+  * RefindPlus now attempts to associate Apple Mac Recovery Tool instances to specific Mac OS Volumes
   * The same generic name was previously used for all instances
   * This had made it difficult to know which volume a specific recovery instance applied to
 - Improves Keystroke Flushing
@@ -986,8 +987,8 @@
   * Extends fixes applied in v0.13.2.AF
 - Improves `Sync_APFS` Implementation
   * Fixes memory allocation issues with `PreBoot` volume object separation
-- Improves macOS Volume Type Identification on UEFI PC
-  * Several macOS volume types, such as APFS, are now identified correctly on UEFI PC
+- Improves Mac OS Volume Type Identification on UEFI PC
+  * Several Mac OS volume types, such as APFS, are now identified correctly on UEFI PC
   * These were previously `Unknown`
 - Reduces Excessive Tool Validation Loops
   * Tools are now only checked for validity if they actually exist on disk
@@ -997,7 +998,7 @@
   * Mainly related to memory management
   * https://github.com/joevt/RefindPlus
 - Amends `ActiveCSR` Implementation
-  * Now only run when booting into macOS, OpenCore or Clover
+  * Now only run when booting into Mac OS, OpenCore or Clover
 - Amends `ScanDelay` Implementation
   * Now immediately implemented after `SetupScreen` to allow for improved UX
 
@@ -1021,12 +1022,12 @@
 -----------------------
 - Adds `NormaliseCSR` Feature
   * Filters out the `CSR_ALLOW_APPLE_INTERNAL` bit on Macs (for consumer use)
-  * This facilitates `Over The Air` (OTA) updates when running macOS v11.x (Big Sur)
-  * This filtering works on earlier versions of macOS which function as usual
+  * This facilitates `Over The Air` (OTA) updates when running Mac OS v11.x (Big Sur)
+  * This filtering works on earlier versions of Mac OS which function as usual
 - Improves Handling of CSR Policy Toggling
-  * Adds option to clear CSR to facilitate `Over The Air` updates on macOS v11.x (Big Sur)
+  * Adds option to clear CSR to facilitate `Over The Air` updates on Mac OS v11.x (Big Sur)
   * Activated by entering `0` in place of `10` for the option to enable SIP
-  * This setting is also valid when used on earlier versions of macOS
+  * This setting is also valid when used on earlier versions of Mac OS
 - Improves Upstream Logging Format
   * Formatted for clarity
 - Improves Handling of Manual Stanza Icons
@@ -1214,7 +1215,7 @@
   * These had largely been introduced after the v0.12.0.AN Release
   * One outcome had been a failure to run on some units
 - Adds `ReinforceAPFS` Feature
-  * Allows booting macOS Big Sur when SIP is disabled.
+  * Allows booting Mac OS Big Sur when SIP is disabled.
   * Allows booting FileVault encrypted volumes directly.
 - Attempts to Avoid Hardware Memory Writes of Unchanged Variables
   * Now compares new variables with existing NVRAM variables and does not write if already present.
@@ -1287,17 +1288,17 @@
 - Fixes ESP detection for saving screenshots
   * ESP detection may have sometimes returned `true` on other locations
 - Implements `force_trim` config option
-  * Enables `TRIM` on non-Apple SSDs when booting into macOS
+  * Enables `TRIM` on non-Apple SSDs when booting into Mac OS
 - Implements `disable_mac_compat_check` config option
-  * Disables macOS compatibility checks to allow booting new macOS Versions on unsupported Macs
+  * Disables Mac OS compatibility checks to allow booting new Mac OS Versions on unsupported Macs
 - Implements `disable_amfi` config option
-  * Disables the Apple Mobile File Integrity (AMFI) checks in macOS
-  * Disabling AMFI may further facilitate booting new macOS Versions on unsupported Macs
+  * Disables the Apple Mobile File Integrity (AMFI) checks in Mac OS
+  * Disabling AMFI may further facilitate booting new Mac OS Versions on unsupported Macs
 - Implements `protect_mac_nvram` config option
   * Prevents UEFI Windows from saving certificates to the NVRAM on Macs
   * These certificates damage Apple NVRAM and result in an inability to start Macs up
 - Implements `set_mac_boot_args` config option
-  * Allows setting arbitrary boot arguments on macOS
+  * Allows setting arbitrary boot arguments on Mac OS
 
 
 0.12.0.AM (07 Dec 2020):
@@ -1438,13 +1439,13 @@
   * Units such as the Classic MacPro 3,1 Models running Semi Compatible GPUs
     can still display Boot Screens as before.
 - Implements UGAPassThrough from OpenCore
-  * This allows Boot Screen on Operating Systems such as macOS v10.4 (Tiger) that use old EFIBoot processes
+  * This allows Boot Screen on Operating Systems such as Mac OS v10.4 (Tiger) that use old EFIBoot processes
 - Implements BuiltinText Renderer from OpenCore
   * This fixes Text Mode on units with broken text display implementations such as Classic MacPros.
   * This allows running uEFI Shell on such units.
-- Includes all macOS SIP Values for CSR Rotation (Thanks, Github User @startergo)
-  * This implements the actual macOS default value of 877 in place of the previously defined value of 77.
-  * This allows disabling SIP on, and booting with caveats, pre-release versions of macOS v11.x (Big Sur)
+- Includes all Mac OS SIP Values for CSR Rotation (Thanks, Github User @startergo)
+  * This implements the actual Mac OS default value of 877 in place of the previously defined value of 77.
+  * This allows disabling SIP on, and booting with caveats, pre-release versions of Mac OS v11.x (Big Sur)
 - Expands Debug Logging
 - Improves Boot Speed
 

@@ -400,7 +400,7 @@ VOID ParseReleaseFile (
     CHAR16      **TokenList;
     CHAR16       *TempName;
     BOOLEAN       Updated;
-    REFIT_FILE    File;
+    REFIT_FILE   *File;
 
 
     if (Volume   == NULL || // Check Pointer 'Volume'
@@ -409,14 +409,19 @@ VOID ParseReleaseFile (
         return;
     }
 
+    File = AllocateZeroPool (sizeof (REFIT_FILE));
+    if (File == NULL) {
+        return;
+    }
+
     FileSize = 0;
     TempName = NULL;
     if (FileExists (Volume->RootDir, FileName) &&
-        (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)
+        (RefitReadFile (Volume->RootDir, FileName, File, &FileSize) == EFI_SUCCESS)
     ) {
         Updated = FALSE;
         do {
-            TokenCount = ReadTokenLine (&File, &TokenList);
+            TokenCount = ReadTokenLine (File, &TokenList);
             if ((TokenCount > 1) &&
                 (
                     MyStriCmp (TokenList[0], L"ID") ||
@@ -460,12 +465,11 @@ VOID ParseReleaseFile (
         }
 
         MY_FREE_POOL(TempName);
-        MY_FREE_POOL(File.Buffer);
+        MY_FREE_FILE(File);
     }
 } // VOID ParseReleaseFile()
 
-// Try to guess the name of the Linux distribution
-// and add this to the OSIconName list.
+// Try to guess Linux distribution name and add to OSIconName list
 VOID GuessLinuxDistribution (
     CHAR16       **OSIconName,
     REFIT_VOLUME  *Volume,
@@ -479,7 +483,7 @@ VOID GuessLinuxDistribution (
         (*OSIconName != NULL) ? *OSIconName : L"NULL"
     );
 
-    // If on Linux root fs, /etc/os-release or /etc/lsb-release may have clues.
+    // /etc/os-release or /etc/lsb-release on Linux root fs may have clues
     BREAD_CRUMB(L"%a:  3", __func__);
     ParseReleaseFile (OSIconName, Volume, L"etc\\os-release", FirstOnly);
 
@@ -523,7 +527,7 @@ VOID GuessLinuxDistribution (
     LOG_SEP(L"X");
 } // VOID GuessLinuxDistribution()
 
-// Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
+// Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry
 VOID AddKernelToSubmenu (
     LOADER_ENTRY *TargetLoader,
     CHAR16       *FileName,

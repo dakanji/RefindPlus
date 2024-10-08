@@ -144,13 +144,13 @@ VOID LogExit (
 
 static
 VOID InitSelection (VOID) {
-    EG_IMAGE  *TempBigImage;
-    EG_IMAGE  *TempSmallImage;
-    UINTN      MaxAllowedImageSize;
-
     #if REFIT_DEBUG > 0
     CHAR16    *MsgStr;
     #endif
+
+    EG_IMAGE  *TempBigImage;
+    EG_IMAGE  *TempSmallImage;
+    UINTN      MaxAllowedSize;
 
 
     if (!AllowGraphicsMode         ||
@@ -167,7 +167,7 @@ VOID InitSelection (VOID) {
     #endif
 
     // Load small selection image
-    MaxAllowedImageSize = 256;
+    MaxAllowedSize = 256;
     if (GlobalConfig.SelectionSmallFileName == NULL) {
         TempSmallImage = NULL;
     }
@@ -181,15 +181,15 @@ VOID InitSelection (VOID) {
         // DA-TAG: Impose maximum size for security
         if (TempSmallImage != NULL &&
             (
-                TempSmallImage->Width  > MaxAllowedImageSize ||
-                TempSmallImage->Height > MaxAllowedImageSize
+                TempSmallImage->Width  > MaxAllowedSize ||
+                TempSmallImage->Height > MaxAllowedSize
             )
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"Dropped Custom Small Selection Image ... %d x %d Exceeds %d x %d",
                 TempSmallImage->Height, TempSmallImage->Width,
-                MaxAllowedImageSize, MaxAllowedImageSize
+                MaxAllowedSize, MaxAllowedSize
             );
             LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");
@@ -234,17 +234,19 @@ VOID InitSelection (VOID) {
         );
 
         // DA-TAG: Impose maximum size for security
+        //         Using double the small image max
+        MaxAllowedSize *= 2;
         if (TempBigImage != NULL &&
             (
-                TempBigImage->Width  > (MaxAllowedImageSize * 2) ||
-                TempBigImage->Height > (MaxAllowedImageSize * 2)
+                TempBigImage->Width  > MaxAllowedSize ||
+                TempBigImage->Height > MaxAllowedSize
             )
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"Dropped Custom Big Selection Image ... %d x %d Exceeds %d x %d",
                 TempBigImage->Height, TempBigImage->Width,
-                MaxAllowedImageSize, MaxAllowedImageSize
+                MaxAllowedSize, MaxAllowedSize
             );
             LOG_MSG("INFO: %s", MsgStr);
             LOG_MSG("\n\n");

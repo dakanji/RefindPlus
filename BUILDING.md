@@ -90,6 +90,15 @@ $ brew uninstall mtoc && brew install ocmtoc && brew upgrade ocmtoc
 `mtoc` and `ocmtoc` are only available as packages on HomeBrew.
 Prebuilt versions of `ocmtoc` can be found here: https://github.com/acidanthera/ocmtoc/releases
 
+### Install Binutlis (Optional)
+
+Signing binaries for UEFI Secure Boot support requires the presence of SBAT sections in such binaries.  
+SBAT sections can be added with the GNU binary tools for native development included in this package.
+
+```
+$ brew install binutils && brew upgrade binutils
+```
+
 ## Prepare RefindPlus Environment
 
 ### Fork the RefindPlus Repository
@@ -145,7 +154,7 @@ Your local RefindPlusUDK repository will be under `Documents/RefindPlus/edk2`.
 
 ## Source Repository Alignment
 
-If some time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with the source repositories in order to incorporate updates added in the intervening period.
+If some time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with the source repositories to incorporate updates added in the intervening period.
 
 ### OPTION 1: Scripted Sync (Recommended)
 

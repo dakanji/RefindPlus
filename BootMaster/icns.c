@@ -216,7 +216,7 @@ VOID UpdateBaseIcon (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Find an Icon from '%s'",
+        L"Find Icon File '%s.xyz'",
         BaseName
     );
     #endif
@@ -272,7 +272,7 @@ EG_IMAGE * LoadOSIcon (
         return NULL;
     }
 
-    // First, try to find an icon from the OSIconName list.
+    // Try to find an icon from the OSIconName list
     Index =    0;
     OurId =   -1;
     Image = NULL;
@@ -306,7 +306,7 @@ EG_IMAGE * LoadOSIcon (
         MY_FREE_POOL(CutoutName);
     } // while
 
-    // If that fails, try again using the FallbackIconName.
+    // Try again using "FallbackIconName" if that fails
     if (Image == NULL) {
         BaseName = PoolPrint (
             L"%s_%s",
@@ -332,7 +332,7 @@ EG_IMAGE * LoadOSIcon (
         MY_FREE_POOL(BaseName);
     }
 
-    // If that fails and BootLogo was set, try again with "os_".
+    // Try again with "os_" if that fails and BootLogo was set
     if (BootLogo && Image == NULL) {
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
@@ -352,7 +352,7 @@ EG_IMAGE * LoadOSIcon (
         MY_FREE_POOL(BaseName);
     }
 
-    // If that fails try using the "unknown" icon specifically.
+    // Try again with the "unknown" icon specifically if that fails.
     // Only if BootLogo is *NOT* set ... No "unknown" BootLogo icon
     if (!BootLogo     &&
         Image == NULL &&
@@ -372,7 +372,7 @@ EG_IMAGE * LoadOSIcon (
         }
     }
 
-    // If all of these fail, return the dummy image.
+    // Use the "dummy" image if still fails
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"Set Dummy Image");
@@ -391,12 +391,12 @@ EG_IMAGE * LoadOSIcon (
         }
     }
 
+    // Return NULL if all failed
     if (Image == NULL) {
         return NULL;
     }
 
-    // Cache the image if appropriate
-    // BootLogo is never cached
+    // Cache the image if appropriate and not BootLogo
     if (GlobalConfig.HelpIcon && !BootLogo) {
         if (OurId >= 0 && TableBuiltinIconOS[OurId].Image == NULL) {
             TableBuiltinIconOS[OurId].Image = Image;

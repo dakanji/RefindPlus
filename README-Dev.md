@@ -24,15 +24,15 @@ RefindPlus is particularly useful for those with additional configuration needs 
 
 Some features:
 - Maintains feature and configuration parity with the base upstream version.
-- Provides protection against damage to Mac nvRAM when booting UEFI Windows.
-- Provides option to avoid boot failures and associated freezes on T2/TPM chipped units.
+- Provides protection against damage to vulnerable Mac nvRAM by UEFI Windows boot.
+- Provides mitigation against boot failures and related issues on T2/TPM chipped units.
 - Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
-- Extensive memory management improvements with associated speed and stability gains.
 - Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
-- Provides improved support for languages that use unicode text.
-- Identifies and automatically handles `Ventoy` instances.
+- Extensive memory management improvements with associated speed and stability gains.
+- Provides improved text display support for languages that require unicode text.
+- Identifies and automatically handles `Ventoy` instances if present.
   - Rationalises binaries displayed.
-  - Displays an `os_ventoy` icon if present.
+  - Displays an `os_ventoy` icon if available.
 - Adds a debug (DBG) binary that provides extensive logging.
   - The release (REL) binary is an optimised build for day to day use.
 - Fixes inability to print to screen on some Macs.
@@ -69,7 +69,7 @@ RefindPlus will function with the upstream configuration file, `refind.conf`, bu
 
 > [!TIP]
 >
-> RefindPlus-specific options can be simply added to upstream configuration files.
+> RefindPlus-specific options can also be simply added to upstream configuration files.
 
 When run without activating RefindPlus-specific configuration options, as will be the case with unmodified upstream configuration files, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.2. That is, the additional options provided in RefindPlus must be actively enabled if they are required.
 

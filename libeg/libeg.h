@@ -33,6 +33,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifndef __LIBEG_LIBEG_H__
 #define __LIBEG_LIBEG_H__
@@ -104,11 +110,11 @@ VOID egGetScreenSize (OUT UINTN *ScreenWidth, OUT UINTN *ScreenHeight);
 VOID egMeasureText (IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height);
 VOID egDrawImage (IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY);
 VOID egDisplayMessage (
-    CHAR16    *Text,
-    EG_PIXEL  *MessageBG,
-    UINTN      PositionCode,
-    UINTN      PauseLength,
-    CHAR16    *PauseType     OPTIONAL
+    CHAR16   *Text,
+    EG_PIXEL *MessageBG,
+    UINTN     PositionCode,
+    UINTN     PauseLength,
+    CHAR16   *PauseType     OPTIONAL
 );
 VOID egRenderText (
     IN     CHAR16   *Text,
@@ -210,10 +216,10 @@ EG_IMAGE * egDecodeJPEG (
 
 EFI_STATUS egFindESP (OUT EFI_FILE_HANDLE *RootDir);
 EFI_STATUS egLoadFile (
-    IN EFI_FILE_PROTOCOL  *BaseDir,
-    IN  CHAR16            *FileName,
-    OUT UINT8            **FileData,
-    OUT UINTN             *FileDataLength
+    IN  EFI_FILE_PROTOCOL  *BaseDir,
+    IN  CHAR16             *FileName,
+    OUT UINT8             **FileData,
+    OUT UINTN              *FileDataLength
 );
 EFI_STATUS egSaveFile(
     IN EFI_FILE_PROTOCOL  *BaseDir OPTIONAL,

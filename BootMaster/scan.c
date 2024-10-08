@@ -2262,6 +2262,7 @@ CHAR16 * SetVolJoin (
 
     if (0);
     else if (MyStrStr  (InstanceName, L"Manual Stanza:" )) RetVal = L""      ;
+    else if (MyStrStr  (InstanceName, L"Stub Loader"    )) RetVal = L" - "   ;
     else if (MyStrStr  (InstanceName, L" via "          )) RetVal = L" on "  ;
     else if (MyStriCmp (InstanceName, L"Legacy Bootcode")) RetVal = L" for " ;
     else if (ForBoot                                     ) RetVal = L" from ";

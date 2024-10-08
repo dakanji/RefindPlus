@@ -544,22 +544,22 @@
 # this issue. The 'SyncTrust' feature is useful on computers running enhanced
 # boot security setups, particularly in conjunction with T2/TPM chipped units.
 #
-#   macos       - macOS loader
-#   linux       - Linux loaders
-#   windows     - Windows loader
-#   clover      - The Clover boot-loader
-#   opencore    - The OpenCore boot-loader
-#   similar     - Any other uEFI loader
-#   verify      - Always check first
-#   every       - All of the above
-#   none        - None of the above (default)
+#   macos       - macOS Loader
+#   windows     - Windows Loader
+#   linux       - Linux Stub Loader
+#   clover      - Clover Boot Loader
+#   opencore    - OpenCore Boot Loader
+#   similar     - Any Other uEFI Loader
+#   verify      - Always Check First
+#   every       - All of the Above
+#   none        - None of the Above (Default)
 #
 # NOTES:
 # 1. The 'every' option takes precedence over others apart from 'none'
 # 2. The 'none' option takes precedence over every other setting
 # 3. The 'DirectBoot' feature is disabled by this token
 #
-# Inactive when commented out or set to 'none' (Does not trigger native reboots)
+# Inactive when commented out or set to 'none' (Does not trigger reboots)
 #
 #sync_trust macos verify
 
@@ -751,6 +751,7 @@
 #                           See documentation for details
 #  memtest          - Memory Testing Utility.
 #                       NB: Requires external program
+#                           Only the first valid instance found is presented
 #  gptsync          - The (Dangerous) 'GPTsync' Utility.
 #                       NB: Requires external program
 #                           See documentation for details
@@ -826,7 +827,7 @@
 #   none        - No Loader
 #   osx         - macOS Loader
 #   windows     - Windows Loader
-#   linux       - Linux Stub loader
+#   linux       - Linux Stub Loader
 #   grub        - The GRUB Boot Loader
 #   elilo       - The ELILO Boot Loader
 #   clover      - The Clover Boot Loader

@@ -1906,7 +1906,7 @@ VOID ScanUserConfigured (
     CHAR16 *FileName
 ) {
     EFI_STATUS         Status;
-    REFIT_FILE         File;
+    REFIT_FILE        *File;
     CHAR16           **TokenList;
     UINTN              size;
     UINTN              TokenCount;
@@ -1927,17 +1927,26 @@ VOID ScanUserConfigured (
         TotalEntryCount = ValidEntryCount = 0;
     }
 
+    File = AllocateZeroPool (sizeof (REFIT_FILE));
+    if (File == NULL) {
+        BREAD_CRUMB(L"%a:  X - END:- VOID Out of Memory", __func__);
+        LOG_DECREMENT();
+        LOG_SEP(L"X");
+
+        return;
+    }
+
     if (FileExists (SelfDir, FileName)) {
-        Status = RefitReadFile (SelfDir, FileName, &File, &size);
+        Status = RefitReadFile (SelfDir, FileName, File, &size);
         if (!EFI_ERROR(Status)) {
-            while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
+            while ((TokenCount = ReadTokenLine (File, &TokenList)) > 0) {
                 if (TokenCount > 1 &&
                     MyStriCmp (TokenList[0], L"menuentry")
                 ) {
                     TotalEntryCount = TotalEntryCount + 1;
 
                     Entry = AddStanzaEntries (
-                        &File, SelfVolume, TokenList[1]
+                        File, SelfVolume, TokenList[1]
                     );
                     if (Entry == NULL) {
                         FreeTokenLine (&TokenList, &TokenCount);
@@ -2005,9 +2014,9 @@ VOID ScanUserConfigured (
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while
         }
-
-        MY_FREE_POOL(File.Buffer);
     } // if FileExists
+
+    MY_FREE_FILE(File);
 
     #if REFIT_DEBUG > 0
     CountStr = (ValidEntryCount > 0)
@@ -2213,7 +2222,7 @@ VOID ReadConfig (
     CHAR16 *FileName
 ) {
     EFI_STATUS        Status;
-    REFIT_FILE        File;
+    REFIT_FILE       *File;
     BOOLEAN           DoneTool;
     BOOLEAN           DoneManual;
     BOOLEAN           CheckManual;
@@ -2320,7 +2329,12 @@ VOID ReadConfig (
         return;
     }
 
-    Status = RefitReadFile (SelfDir, FileName, &File, &i);
+    File = AllocateZeroPool (sizeof (REFIT_FILE));
+    if (File == NULL) {
+        return;
+    }
+
+    Status = RefitReadFile (SelfDir, FileName, File, &i);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         if (NotRunBefore) MuteLogger = FALSE;
@@ -2376,7 +2390,7 @@ VOID ReadConfig (
     #endif
 
     MaxLogLevel = (ForensicLogging) ? LOGLEVELMAX + 1 : LOGLEVELMAX;
-    while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
+    while ((TokenCount = ReadTokenLine (File, &TokenList)) > 0) {
         if (MyStriCmp (TokenList[0], L"timeout")) {
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
@@ -2462,16 +2476,19 @@ VOID ReadConfig (
             !GotNoneGraphicsFor &&
             MyStriCmp (TokenList[0], L"use_graphics_for")
         ) {
-            if (!OuterLoop && !OutLoopGraphicsFor) {
-                #if REFIT_DEBUG > 0
-                UpdatedToken = LogUpdate (
-                    TokenList[0], NotRunBefore, TRUE
-                );
-                #endif
-
-                // DA-TAG: Allows reset/override in 'included' config files
-                OutLoopGraphicsFor       = TRUE;
+            if (!OutLoopGraphicsFor) {
+                // DA-TAG: Reset Current Setting
                 GlobalConfig.GraphicsFor = GRAPHICS_FOR_NONE;
+
+                if (!OuterLoop) {
+                    OutLoopGraphicsFor = TRUE;
+
+                    #if REFIT_DEBUG > 0
+                    UpdatedToken = LogUpdate (
+                        TokenList[0], NotRunBefore, TRUE
+                    );
+                    #endif
+                }
             }
 
             if (TokenCount == 2 ||
@@ -2494,13 +2511,14 @@ VOID ReadConfig (
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
                 if (MyStriCmp (Flag, L"none")) {
-                    // DA-TAG: Required despite earlier reset
-                    //         This will always be used if in token list
+                    // DA-TAG: Required despite earlier resets
+                    //         Takes precedence if in token list
                     GotNoneGraphicsFor        = TRUE;
                     GlobalConfig.GraphicsFor = GRAPHICS_FOR_NONE;
                     break;
                 }
-                else if (!GotGraphicsForAll) {
+
+                if (!GotGraphicsForAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
                     if (MyStriCmp (Flag, L"everything")) {
                         GotGraphicsForAll        = TRUE;
@@ -2547,7 +2565,8 @@ VOID ReadConfig (
                     GlobalConfig.SyncTrust = ENFORCE_TRUST_NONE;
                     break;
                 }
-                else if (!GotSyncTrustAll) {
+
+                if (!GotSyncTrustAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
                     if (MyStriCmp (Flag, L"every")) {
                         GotSyncTrustAll        = TRUE;
@@ -4116,7 +4135,7 @@ VOID ReadConfig (
         FreeTokenLine (&TokenList, &TokenCount);
     } // for ;;
 
-    MY_FREE_POOL(File.Buffer);
+    MY_FREE_FILE(File);
 
     if (OuterLoop) {
         ExitOuter (

@@ -74,7 +74,7 @@
 #include "lodepng.h"
 #include "libeg.h"
 
-#define MAX_FILE_SIZE (1024*1024*1024)
+#define MAX_FILE_SIZE (1024 * 1024 * 1024)
 
 // Multiplier for pseudo-floating-point operations in egScaleImage().
 // A value of 4096 should keep us within limits on 32-bit systems, but I've
@@ -104,6 +104,7 @@ EG_IMAGE * egCreateImage (
 ) {
     EG_IMAGE   *NewImage;
 
+
     NewImage = (EG_IMAGE *) AllocatePool (sizeof (EG_IMAGE));
     if (NewImage == NULL) {
         return NULL;
@@ -123,7 +124,7 @@ EG_IMAGE * egCreateImage (
     NewImage->HasAlpha = HasAlpha;
 
     return NewImage;
-}
+} // EG_IMAGE * egCreateImage()
 
 EG_IMAGE * egCreateFilledImage (
     IN UINTN      Width,
@@ -133,6 +134,7 @@ EG_IMAGE * egCreateFilledImage (
 ) {
     EG_IMAGE  *NewImage;
 
+
     NewImage = egCreateImage (Width, Height, HasAlpha);
     if (NewImage == NULL) {
         return NULL;
@@ -141,7 +143,7 @@ EG_IMAGE * egCreateFilledImage (
     egFillImage (NewImage, Color);
 
     return NewImage;
-}
+} // EG_IMAGE * egCreateFilledImage()
 
 EG_IMAGE * egCopyImage (
     IN EG_IMAGE *Image
@@ -166,7 +168,7 @@ EG_IMAGE * egCopyImage (
     );
 
     return NewImage;
-}
+} // EG_IMAGE * egCopyImage()
 
 // Returns a smaller image composed of the specified crop area from the larger area.
 // If the specified area is larger than is in the original, returns NULL.
@@ -179,6 +181,7 @@ EG_IMAGE * egCropImage (
 ) {
     UINTN     x, y;
     EG_IMAGE *NewImage;
+
 
     if ((StartX + Width)  > Image->Width ||
         (StartY + Height) > Image->Height
@@ -233,12 +236,30 @@ EG_IMAGE * egScaleImage (
     );
     #endif
 
-    if (Image          == NULL ||
-        Image->Height  ==    0 ||
-        Image->Width   ==    0 ||
-        NewHeight      ==    0 ||
-        NewWidth       ==    0
+    if (NewWidth  == 0 ||
+        NewHeight == 0
     ) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(
+            1, LOG_THREE_STAR_END,
+            L"In egScaleImage ... Invalid Target Image!!"
+        );
+        #endif
+
+        return NULL;
+    }
+
+    if (Image         == NULL ||
+        Image->Width  ==    0 ||
+        Image->Height ==    0
+    ) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(
+            1, LOG_THREE_STAR_END,
+            L"In egScaleImage ... Invalid Source Image!!"
+        );
+        #endif
+
         return NULL;
     }
 
@@ -251,7 +272,10 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_END, L"In egScaleImage ... Could *NOT* Create New Image!!");
+        ALT_LOG(
+            1, LOG_THREE_STAR_END,
+            L"In egScaleImage ... Could *NOT* Create Scaled Image!!"
+        );
         #endif
 
         return NULL;
@@ -319,14 +343,14 @@ VOID egFreeImage (
 
     MY_FREE_POOL(Image->PixelData);
     MY_FREE_POOL(Image);
-}
+} // VOID egFreeImage()
 */
 
 EFI_STATUS egLoadFile (
-    IN EFI_FILE_PROTOCOL  *BaseDir,
-    IN CHAR16             *FileName,
-    OUT UINT8            **FileData,
-    OUT UINTN             *FileDataLength
+    IN  EFI_FILE_PROTOCOL  *BaseDir,
+    IN  CHAR16             *FileName,
+    OUT UINT8             **FileData,
+    OUT UINTN              *FileDataLength
 ) {
     EFI_STATUS             Status;
     UINT64                 ReadSize;
@@ -444,6 +468,7 @@ EFI_STATUS egSaveFile (
     UINTN                  BufferSize;
     EFI_FILE_HANDLE        FileHandle;
 
+
     if (BaseDir == NULL) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
@@ -503,6 +528,7 @@ EG_IMAGE * egLoadImage (
     UINT8       *FileData;
     EG_IMAGE    *NewImage;
 
+
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadImage ... Requirements *NOT* Met");
@@ -547,6 +573,7 @@ EG_IMAGE * egLoadIcon (
     UINT8          *FileData;
     EG_IMAGE       *NewImage;
     EG_IMAGE       *Image;
+
 
     if (!AllowGraphicsMode ||
         BaseDir    == NULL ||
@@ -717,6 +744,7 @@ EG_IMAGE * egFindIcon (
 ) {
     EG_IMAGE *Image;
 
+
     if (GlobalConfig.IconsDir == NULL) {
         Image = NULL;
     }
@@ -759,6 +787,14 @@ EG_IMAGE * egPrepareEmbeddedImage (
     IN BOOLEAN            WantAlpha,
     IN EG_PIXEL          *ForegroundColor
 ) {
+    #if REFIT_DEBUG > 0
+    static BOOLEAN LogTextColour = TRUE;
+    #endif
+
+    #if REFIT_DEBUG > 1
+    UINT8  *CompStart;
+    #endif
+
     UINTN     CompLen;
     UINTN     PixelCount;
     UINT8     PixelValueR;
@@ -767,13 +803,6 @@ EG_IMAGE * egPrepareEmbeddedImage (
     UINT8    *CompData;
     EG_IMAGE *NewImage;
 
-    #if REFIT_DEBUG > 0
-    static BOOLEAN LogTextColour = TRUE;
-    #endif
-
-    #if REFIT_DEBUG > 1
-    UINT8  *CompStart;
-    #endif
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
@@ -975,11 +1004,11 @@ EG_IMAGE * egPrepareEmbeddedImage (
 } // EG_IMAGE * egPrepareEmbeddedImage()
 
 VOID egRestrictImageArea (
-    IN EG_IMAGE   *Image,
-    IN UINTN       AreaPosX,
-    IN UINTN       AreaPosY,
-    IN OUT UINTN  *AreaWidth,
-    IN OUT UINTN  *AreaHeight
+    IN     EG_IMAGE *Image,
+    IN     UINTN     AreaPosX,
+    IN     UINTN     AreaPosY,
+    IN OUT UINTN    *AreaWidth,
+    IN OUT UINTN    *AreaHeight
 ) {
     if (Image != NULL && AreaWidth && AreaHeight) {
         if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
@@ -995,12 +1024,13 @@ VOID egRestrictImageArea (
 } // VOID egRestrictImageArea()
 
 VOID egFillImage (
-    IN OUT EG_IMAGE  *CompImage,
-    IN EG_PIXEL      *Color
+    IN OUT EG_IMAGE *CompImage,
+    IN     EG_PIXEL *Color
 ) {
     UINTN       i;
     EG_PIXEL    FillColor;
     EG_PIXEL   *PixelPtr;
+
 
     if (CompImage != NULL && Color) {
         FillColor = *Color;
@@ -1017,11 +1047,11 @@ VOID egFillImage (
 
 VOID egFillImageArea (
     IN OUT EG_IMAGE *CompImage,
-    IN UINTN         AreaPosX,
-    IN UINTN         AreaPosY,
-    IN UINTN         AreaWidth,
-    IN UINTN         AreaHeight,
-    IN EG_PIXEL     *Color
+    IN     UINTN     AreaPosX,
+    IN     UINTN     AreaPosY,
+    IN     UINTN     AreaWidth,
+    IN     UINTN     AreaHeight,
+    IN     EG_PIXEL *Color
 ) {
     UINTN        x, y;
     EG_PIXEL     FillColor;
@@ -1058,14 +1088,16 @@ VOID egFillImageArea (
 
 VOID egRawCopy (
     IN OUT EG_PIXEL *CompBasePtr,
-    IN EG_PIXEL     *TopBasePtr,
-    IN UINTN         Width,
-    IN UINTN         Height,
-    IN UINTN         CompLineOffset,
-    IN UINTN         TopLineOffset
+    IN     EG_PIXEL *TopBasePtr,
+    IN     UINTN     Width,
+    IN     UINTN     Height,
+    IN     UINTN     CompLineOffset,
+    IN     UINTN     TopLineOffset
 ) {
     UINTN       x, y;
-    EG_PIXEL   *TopPtr, *CompPtr;
+    EG_PIXEL   *TopPtr;
+    EG_PIXEL   *CompPtr;
+
 
     if (CompBasePtr && TopBasePtr) {
         for (y = 0; y < Height; y++) {
@@ -1092,11 +1124,12 @@ VOID egRawCompose (
     IN UINTN         TopLineOffset
 ) {
     UINTN        x, y;
-    UINTN        Alpha;
     UINTN        RevAlpha;
+    UINTN        Alpha;
     UINTN        Temp;
     EG_PIXEL    *TopPtr;
     EG_PIXEL    *CompPtr;
+
 
     if (CompBasePtr && TopBasePtr) {
         for (y = 0; y < Height; y++) {
@@ -1125,12 +1158,13 @@ VOID egRawCompose (
 
 VOID egComposeImage (
     IN OUT EG_IMAGE *CompImage,
-    IN EG_IMAGE     *TopImage,
-    IN UINTN         PosX,
-    IN UINTN         PosY
+    IN     EG_IMAGE *TopImage,
+    IN     UINTN     PosX,
+    IN     UINTN     PosY
 ) {
     UINTN CompWidth;
     UINTN CompHeight;
+
 
     if (CompImage == NULL || TopImage == NULL) {
         return;
@@ -1175,6 +1209,7 @@ VOID egInsertPlane (
 ) {
     UINTN i;
 
+
     if (SrcDataPtr && DestPlanePtr) {
         for (i = 0; i < PixelCount; i++) {
             *DestPlanePtr  = *SrcDataPtr++;
@@ -1190,6 +1225,7 @@ VOID egSetPlane (
 ) {
     UINTN i;
 
+
     if (DestPlanePtr) {
         for (i = 0; i < PixelCount; i++) {
             *DestPlanePtr  = Value;
@@ -1204,6 +1240,7 @@ VOID egCopyPlane (
     IN UINTN  PixelCount
 ) {
     UINTN i;
+
 
     if (SrcPlanePtr && DestPlanePtr) {
         for (i = 0; i < PixelCount; i++) {
