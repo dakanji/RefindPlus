@@ -48,11 +48,10 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const issueNumber = context.payload.inputs.item_id;
-            const { data } = await github.issues.get({
+            const { data } = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issueNumber
+              issue_number: context.payload.inputs.item_id
             });
             if (data.locked) {
               console.log("::set-output name=islocked::true");

@@ -479,7 +479,10 @@ EFI_STATUS StartLegacyImageList (
         &LoadedImageProtocol, (VOID **) &ChildLoadedImage
     );
     if (EFI_ERROR(Status)) {
-        CheckError (Status, L"While Fetching LoadedImageProtocol Handle");
+        CheckError (
+            Status,
+            L"While Fetching 'Child' LoadedImageProtocol Handle"
+        );
         if (ErrorInStep != NULL) {
             *ErrorInStep = 2;
         }

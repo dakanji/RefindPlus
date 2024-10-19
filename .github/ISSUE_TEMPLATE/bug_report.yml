@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a problem with RefindPlus
+description: Report a Problem with RefindPlus
 body:
   - type: markdown
     attributes:
@@ -14,7 +14,7 @@ body:
       label: RefindPlus Version
       description: Which version of RefindPlus is affected?
       options:
-        - 'v0.14.1.AA Release'
+        - 'v0.14.2.AA Release'
         - 'Older Released Version'
         - 'Pre-Release Code Build'
     validations:

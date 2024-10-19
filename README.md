@@ -23,7 +23,7 @@ RefindPlus builds on _`rEFInd`_ to extend its functionality with enhancements an
 RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-typical options for running operating systems and uEFI utilities on Mac and PC.
 
 Some features:
-- Maintains feature and configuration parity with the base upstream version.
+- Maintains feature and configuration parity with `Upstream v0.14.2` base.
 - Provides protection against damage to vulnerable Mac nvRAM by UEFI Windows boot.
 - Provides mitigation against boot failures and related issues on T2/TPM chipped units.
 - Provides Pre-Boot Configuration Screen on units running GPUs without native EFI on Macs.
@@ -71,7 +71,7 @@ RefindPlus will function with the upstream configuration file, `refind.conf`, bu
 >
 > RefindPlus-specific options can also be simply added to upstream configuration files.
 
-When run without activating RefindPlus-specific configuration options, as will be the case with unmodified upstream configuration files, a RefindPlus run will be equivalent to running the upstream version it is based on, currently v0.14.2. That is, the additional options provided in RefindPlus must be actively enabled if they are required.
+When run without activating RefindPlus-specific configuration options, as will be the case with unmodified upstream configuration files, a RefindPlus run will be equivalent to running the upstream version it is based on. That is, the additional options provided in RefindPlus must be actively enabled if they are required.
 
 > [!NOTE]
 >

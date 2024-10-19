@@ -620,7 +620,11 @@ EFI_STATUS InitRefitLib (
         &LoadedImageProtocol, (VOID **) &SelfLoadedImage
     );
     if (EFI_ERROR(Status)) {
-        CheckFatalError (Status, L"While Getting a LoadedImageProtocol Handle");
+        CheckFatalError (
+            Status,
+            L"While Getting 'Self' LoadedImageProtocol Handle"
+        );
+
         return EFI_LOAD_ERROR;
     }
 

@@ -747,7 +747,8 @@ EFI_STATUS StartEFIImage (
             );
             if (EFI_ERROR(ReturnStatus)) {
                 CheckError (
-                    ReturnStatus, L"while Getting LoadedImageProtocol Handle"
+                    ReturnStatus,
+                    L"While Getting 'Child' LoadedImageProtocol Handle"
                 );
 
                 // Unload and Bail Out

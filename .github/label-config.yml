@@ -628,6 +628,13 @@ Cannot-Replicate:
     # Close thread
     close: true
 
+# The `Cannot-Replicate` label is removed from issues
+-Cannot-Replicate:
+  issues:
+    # Reopen issue and unlock thread
+    reopen: true
+    unlock: true
+
 # The `Prorogued` label is added to issues
 Prorogued:
   issues:

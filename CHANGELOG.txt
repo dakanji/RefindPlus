@@ -1,3 +1,8 @@
+0.14.2.AB (PRE-RELEASE):
+-----------------------
+- PENDING
+
+
 0.14.2.AA (08 OCT 2024):
 -----------------------
 - Synced with Upstream v0.14.2
@@ -7,7 +12,7 @@
   * This bug was inherited from upstream code
 - Fixes `ScanFirmwareDefined` Handling
   * Spurious items were added (Typically as firmware shell instances)
-    - Ref: https://github.com/dakanji/RefindPlus/issues/184
+    - Ref: Issue https://github.com/dakanji/RefindPlus/issues/184
   * This bug was introduced in v0.14.0.AC (Commit aad3298)
 - Fixes Jpeg Image Handling
   * Garbled images were output
@@ -16,15 +21,15 @@
       * `#define memset MyMemSet` to `#define memset(b, c, v) MyMemSet(b, v, c)` in `libeg/nanojpeg.c`
     - These parameters had already been reversed elsewhere in v0.13.2.AG (Commit 2d8ab59)
       * Ported from @joevt downstream: https://github.com/joevt/RefindPlus/commit/266fd8f
-    - The changes previously invalidated each other
+    - The cumulative changes invalidated each other
 - Fixes `UGA Graphics` Handling
-  * RefindPlus Crashed when run with UGA-based GPUs
+  * RefindPlus crashed when run with UGA-based GPUs
 - Improves `HelpIcon` Handling
   * The `os_uefi` icon is now cached on first use
   * Misc other icon caching related optimisations
 - Improves `.VolumeIcon` Handling
-  * These can now the located under the same folder as a loader
-  * Such are preferred over any in the volume root
+  * These can now be located under the same folder as a loader
+  * Such are preferred over any in the default (volume root) location
 - Improves `Misc` Handling
   * Some entry types were mislabelled as `Linux`
   * Now recognises `Linux Unified Key Setup (LUKS)` encrypted volumes
@@ -32,7 +37,7 @@
   * No longer attempts to clear the `opencore-version` variable when booting into Mac OS
     - This variable is actually only stored in a volatile state
   * Addressed misc static analysis flags
-    - These apply to some filesystem drivers; which are updated accordingly
+    - These affect some filesystem drivers; which are updated accordingly
 - Amends `HelpScan` Feature
   * The feature is now essentially included upstream
   * Now removed as a standalone feature in RefindPlus and active as a default core item
@@ -45,9 +50,9 @@
         - `memtest` and `memtestXYZ` folders are scanned
         - Memtest fallback loader files (`Boot{arch}.efi`) are handled
   * Adds `tools` option to `use_graphics_for` configuration token
-    - These can now be set to load in graphics screen mode
+    - These can now be set to load in `graphics screen mode`
     - Verbose screen output is disabled when set to use graphics
-    - NB: Some tools, such as some uEFI shell, may require text mode
+    - NB: Some tools, such as some uEFI shell, may require `text screen mode`
 - Amends `Ventoy` Handling
   * Instances are now automatically detected and processed
     - Hence, specific handling is no longer user configurable
