@@ -433,18 +433,18 @@ EFI_STATUS pdUpdateState (VOID) {
             if (!EFI_ERROR(PointerStatus)) {
 #ifndef EFI32
                 TargetX = State.X + SPointerState.RelativeMovementX *
-                    GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionX;
-                TargetY = State.Y + SPointerState.RelativeMovementY *
-                    GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionY;
+                (INTN)GlobalConfig.MouseSpeed / (INT64)ProtocolS[Index]->Mode->ResolutionX;
+                TargetY = (INTN)State.Y + SPointerState.RelativeMovementY *
+                (INTN)GlobalConfig.MouseSpeed / (INT64)ProtocolS[Index]->Mode->ResolutionY;
 #else
                 TargetX = State.X + (INTN) DivS64x64Remainder (
-                    SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
-                    ProtocolS[Index]->Mode->ResolutionX,
+                    SPointerState.RelativeMovementX * (INTN)GlobalConfig.MouseSpeed,
+                    (INT64)ProtocolS[Index]->Mode->ResolutionX,
                     NULL
                 );
                 TargetY = State.Y + (INTN) DivS64x64Remainder (
-                    SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
-                    ProtocolS[Index]->Mode->ResolutionY,
+                    SPointerState.RelativeMovementY * (INTN)GlobalConfig.MouseSpeed,
+                    (INT64)ProtocolS[Index]->Mode->ResolutionY,
                     NULL
                 );
 #endif
