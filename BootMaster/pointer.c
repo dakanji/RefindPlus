@@ -399,21 +399,16 @@ EFI_STATUS pdUpdateState (VOID) {
                 ProtocolA[Index]->GetState, ProtocolA[Index], &APointerState
             );
             if (!EFI_ERROR(PointerStatus)) {
-#ifndef EFI32
-                State.X = (APointerState.CurrentX * ScreenW) / ProtocolA[Index]->Mode->AbsoluteMaxX;
-                State.Y = (APointerState.CurrentY * ScreenH) / ProtocolA[Index]->Mode->AbsoluteMaxY;
-#else
                 State.X = (UINTN) DivU64x64Remainder (
-                    APointerState.CurrentX * ScreenW,
-                    ProtocolA[Index]->Mode->AbsoluteMaxX,
+                    (UINT64)APointerState.CurrentX * (UINT64)ScreenW,
+                    (UINT64)ProtocolA[Index]->Mode->AbsoluteMaxX,
                     NULL
                 );
                 State.Y = (UINTN) DivU64x64Remainder (
-                    APointerState.CurrentY * ScreenH,
-                    ProtocolA[Index]->Mode->AbsoluteMaxY,
+                    (UINT64)APointerState.CurrentY * (UINT64)ScreenH,
+                    (UINT64)ProtocolA[Index]->Mode->AbsoluteMaxY,
                     NULL
                 );
-#endif
 
                 State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
                 Status = EFI_SUCCESS;
@@ -427,27 +422,19 @@ EFI_STATUS pdUpdateState (VOID) {
         }
 
         for (Index = 0; Index < NumSPointerDevices; Index++) {
-            PointerStatus = REFIT_CALL_2_WRAPPER(
-                ProtocolS[Index]->GetState, ProtocolS[Index], &SPointerState
-            );
+            PointerStatus = REFIT_CALL_2_WRAPPER(ProtocolS[Index]->GetState, ProtocolS[Index], &SPointerState);
+
             if (!EFI_ERROR(PointerStatus)) {
-#ifndef EFI32
-                TargetX = State.X + SPointerState.RelativeMovementX *
-                (INTN)GlobalConfig.MouseSpeed / (INT64)ProtocolS[Index]->Mode->ResolutionX;
-                TargetY = State.Y + SPointerState.RelativeMovementY *
-                (INTN)GlobalConfig.MouseSpeed / (INT64)ProtocolS[Index]->Mode->ResolutionY;
-#else
-                TargetX = State.X + (INTN) DivS64x64Remainder (
-                    SPointerState.RelativeMovementX * (INTN)GlobalConfig.MouseSpeed,
+                TargetX = (INT32)((INT64)State.X + DivS64x64Remainder (
+                    (INT64)SPointerState.RelativeMovementX * (INT64)GlobalConfig.MouseSpeed,
                     (INT64)ProtocolS[Index]->Mode->ResolutionX,
                     NULL
-                );
-                TargetY = State.Y + (INTN) DivS64x64Remainder (
-                    SPointerState.RelativeMovementY * (INTN)GlobalConfig.MouseSpeed,
+                ));
+                TargetY = (INT32)((INT64)State.Y + DivS64x64Remainder (
+                    (INT64)SPointerState.RelativeMovementY * (INT64)GlobalConfig.MouseSpeed,
                     (INT64)ProtocolS[Index]->Mode->ResolutionY,
                     NULL
-                );
-#endif
+                ));
 
                 if (TargetX < 0) {
                     State.X = 0;
