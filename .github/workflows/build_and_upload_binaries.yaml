@@ -1,0 +1,94 @@
+name: Build and Upload Artifacts for RefindPlus
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  push:
+    branches:
+      - GOPFix
+  pull_request:
+    branches:
+      - GOPFix
+
+jobs:
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python 2.7
+        run: |
+          curl -O https://www.python.org/ftp/python/2.7.18/python-2.7.18-macosx10.9.pkg
+          sudo installer -pkg python-2.7.18-macosx10.9.pkg -target /
+
+      - name: Install Xcode Command Line Tools
+        run: |
+          xcode-select --install || true
+
+      - name: Set up build environment
+        run: |
+          if [[ "${PATH}" != *"/usr/local/bin"* ]] ; then export PATH="/usr/local/bin:${PATH}"; fi
+          brew install nasm
+          brew install acpica
+          brew install ocmtoc
+          brew install binutils
+
+      - name: Set up directory structure
+        run: |
+          mkdir -p ~/Documents/RefindPlus
+
+      - name: Clone RefindPlus repository
+        run: |
+          cd ~/Documents/RefindPlus
+          git clone https://github.com/${{ github.repository_owner }}/RefindPlus.git Working
+          cd Working
+          git checkout GOPFix
+          git remote add upstream https://github.com/dakanji/RefindPlus.git
+
+      - name: Clone RefindPlusUDK repository
+        run: |
+          cd ~/Documents/RefindPlus
+          git clone https://github.com/${{ github.repository_owner }}/RefindPlusUDK.git edk2
+          cd edk2
+          git checkout rudk
+          git remote add upstream https://github.com/dakanji/RefindPlusUDK.git
+          git pull upstream rudk
+
+      - name: Sync repositories
+        run: |
+          cd ~/Documents/RefindPlus/Working
+          git pull upstream GOPFix
+          cd ~/Documents/RefindPlus/edk2
+          git pull upstream rudk
+
+      - name: Run Build Script
+        env:
+          TERM: xterm
+        run: |
+          cd ~/Documents/RefindPlus/edk2/000-BuildScript
+          chmod +x RefindPlusBuilder.sh
+          sh RefindPlusBuilder.sh GOPFix
+
+      - name: Archive DEBUG build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refindplus-artifacts-debug
+          path: ~/Documents/RefindPlus/edk2/Build/RefindPlus/DEBUG_XCODE5
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
+
+      - name: Archive RELEASE build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refindplus-artifacts-release
+          path: ~/Documents/RefindPlus/edk2/Build/RefindPlus/RELEASE_XCODE5
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false
