@@ -184,16 +184,25 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     //
     // Get mRootDir from the device we are loaded from
     mRootDir = EfiLibOpenRoot (LoadedImage->DeviceHandle);
-
     LogProtocol = OpenLogFile();
-    Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
+    if (mRootDir == NULL) {
+        Status = EFI_NOT_READY;
+    }
+    else {
+        Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
+    }
     if (EFI_ERROR(Status)) {
         // Try on first EFI partition
         mRootDir = NULL;
         Status = egFindESP (&mRootDir);
         if (!EFI_ERROR(Status)) {
             LogProtocol = OpenLogFile();
-            Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
+            if (mRootDir == NULL) {
+                Status = EFI_NOT_READY;
+            }
+            else {
+                Status = REFIT_CALL_1_WRAPPER(mRootDir->Close, mRootDir);
+            }
         }
 
         if (EFI_ERROR(Status)) {
