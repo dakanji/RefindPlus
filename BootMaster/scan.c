@@ -2346,12 +2346,12 @@ LOADER_LIST * AddLoaderListEntry (
     else {
         PrevEntry   = NULL;
         LatestEntry = CurrentEntry = LoaderList;
-        LinuxRescue = (StriSubCmp (L"vmlinuz-0-rescue", NewEntry->FileName))
+        LinuxRescue = (IsStriStr (NewEntry->FileName, L"vmlinuz-0-rescue"))
             ? TRUE : FALSE;
 
         while (
             CurrentEntry != NULL &&
-            !StriSubCmp (L"vmlinuz-0-rescue", CurrentEntry->FileName) &&
+            !IsStriStr (CurrentEntry->FileName, L"vmlinuz-0-rescue") &&
             (
                 LinuxRescue ||
                 TimeComp (
@@ -2723,12 +2723,13 @@ BOOLEAN DuplicatesFallback (
 
 // Returns FALSE if two measures of file size are identical for a single file,
 // TRUE if not or if the file cannot be opened and the other measure is non-0.
-// Despite the function's name, this is not an actual direct test of symbolic
+//
+// NB: Despite the function name, it is not an actual direct test of symbolic
 // link status, since EFI does not officially support symlinks. It does seem
-// to be a reliable indicator, though. (OTOH, some disk errors might cause a
-// file to fail to open, which would return a false positive -- but as this
-// function is used to exclude symbolic links from the list of boot loaders,
-// that would be fine, as such boot loaders would not work anyway.)
+// to be a reliable indicator though. However, disk errors might cause a file
+// to fail to open, which would return a false positive -- but as this function
+// is used to exclude symbolic links from the list of boot loaders, that is fine
+// (given that such boot loader files would not work anyway).
 //
 // NB: *FullName MUST be properly cleaned up (using 'CleanUpPathNameSlashes')
 static
@@ -3450,7 +3451,7 @@ VOID ScanEfiFiles (
                 //BREAD_CRUMB(L"%a:  6a 4a 1a 4", __func__);
                 if (Volume->FSType != FS_TYPE_APFS) {
                     //BREAD_CRUMB(L"%a:  6a 4a 1a 4a 1", __func__);
-                    if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
+                    if (!IsStriStr (GlobalConfig.MacOSRecoveryFiles, FileName)) {
                         //BREAD_CRUMB(L"%a:  6a 4a 1a 4a 1a 1", __func__);
                         MergeUniqueStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
                     }

@@ -58,6 +58,7 @@
 #include "install.h"
 #include "screenmgt.h"
 #include "mystrings.h"
+#include "badram_fix.h"
 #include "launch_efi.h"
 #include "launch_legacy.h"
 #include "driver_support.h"
@@ -82,6 +83,7 @@ INT16 NowSecond = 0;
 REFIT_MENU_SCREEN *MainMenu = NULL;
 
 REFIT_CONFIG GlobalConfig = {
+    .BadRamFixWide             =                   FALSE,
     .DirectBoot                =                   FALSE,
     .CustomScreenBG            =                   FALSE,
     .TextOnly                  =                   FALSE,
@@ -156,12 +158,14 @@ REFIT_CONFIG GlobalConfig = {
     .LogLevel                  =                       0,
     .IconRowMove               =                       0,
     .IconRowTune               =                       0,
+    .BadRamFixType             =                       0,
     .ScreenR                   =                      -1,
     .ScreenG                   =                      -1,
     .ScreenB                   =                      -1,
     .DiscoveredRoot            =                    NULL,
     .SelfDevicePath            =                    NULL,
     .ScreenBackground          =                    NULL,
+    .BadRamFixList             =                    NULL,
     .ToolLocations             =                    NULL,
     .ToolLocationsExtra        =                    NULL,
     .ConfigFilename            =                    NULL,
@@ -198,7 +202,7 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware"
+#define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware,BadRamInfo"
 
 
 UINTN                  AppleFramebuffers    =                     0;
@@ -210,6 +214,7 @@ CHAR16                *ArchBits             =                  NULL;
 CHAR16                *VendorInfo           =                  NULL;
 CHAR16                *gHiddenTools         =                  NULL;
 CHAR16                *AllToolLocations     =                  NULL;
+CHAR16                *ErrorTagBadRAM       =                  NULL;
 BOOLEAN                gKernelStarted       =                 FALSE;
 BOOLEAN                KeepTrustChain       =                 FALSE;
 BOOLEAN                IsBoot               =                 FALSE;
@@ -226,9 +231,10 @@ BOOLEAN                ExtremeHiDPI         =                 FALSE;
 BOOLEAN                AppleFirmware        =                 FALSE;
 BOOLEAN                FlushFailedTag       =                 FALSE;
 BOOLEAN                FlushFailReset       =                 FALSE;
-BOOLEAN                WarnMissingQVInfo    =                 FALSE;
+BOOLEAN                WarnTagBadRAM        =                 FALSE;
 BOOLEAN                WarnVersionEFI       =                 FALSE;
 BOOLEAN                WarnRevisionUEFI     =                 FALSE;
+BOOLEAN                WarnMissingQVInfo    =                 FALSE;
 BOOLEAN                VarNoCheckCompat     =                 FALSE;
 BOOLEAN                VarNoCheckAMFI       =                 FALSE;
 BOOLEAN                VarDisablePanicLog   =                 FALSE;
@@ -339,9 +345,9 @@ VOID UnexpectedReturn (
     CHAR16 *MsgStr;
 
 
-    MsgStr = PoolPrint (L"WARN: Unexpected Return from %s", ItemType);
+    MsgStr = PoolPrint (L"Unexpected Return from %s", ItemType);
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("*** %s", MsgStr);
+    LOG_MSG("** WARN: %s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
 } // static VOID UnexpectedReturn()
@@ -3653,7 +3659,7 @@ VOID ResetCall (
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"%s Failed", TypeStr);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-    LOG_MSG("WARN: %s", MsgStr);
+    LOG_MSG("** WARN: %s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 } // static VOID ResetCall()
@@ -3893,18 +3899,40 @@ EFI_STATUS EFIAPI efi_main (
         ConfigWarn = TRUE;
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("** WARN: Could not find RefindPlus configuration file:- 'config.conf'\n");
-        LOG_MSG("         Trying the rEFInd configuration file instead:- 'refind.conf'\n");
-        LOG_MSG("         Please provide a 'config.conf' file to silence this warning \n");
-        LOG_MSG("         A 'refind.conf' file can be renamed as 'config.conf'        \n");
-        LOG_MSG("         NB: Will not contain all RefindPlus settings              \n\n");
+        LOG_MSG("** WARN: Could not find RefindPlus configuration file:- 'config.conf'  \n"            );
+        LOG_MSG("%s         Trying the rEFInd configuration file instead:- 'refind.conf'\n", OffsetNext);
+        LOG_MSG("%s         Please provide a 'config.conf' file to silence this warning \n", OffsetNext);
+        LOG_MSG("%s         A 'refind.conf' file can be renamed as 'config.conf'        \n", OffsetNext);
+        LOG_MSG("%s         NB: Will not contain all RefindPlus settings              \n\n", OffsetNext);
         #endif
 
         GlobalConfig.ConfigFilename = L"refind.conf";
+
+        if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
+            #if REFIT_DEBUG > 0
+            LOG_MSG("** WARN: Could not find rEFInd configuration file:- 'refind.conf'\n"            );
+            LOG_MSG("%s         NB: RefindPlus is being loaded with default settings\n\n", OffsetNext);
+            #endif
+        }
     }
 
     /* Load Config Tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
+
+    /* Handle BadRam */
+    Status = ManageBadRam (
+        GlobalConfig.BadRamFixList,
+        GlobalConfig.BadRamFixType,
+        GlobalConfig.BadRamFixWide
+    );
+    if (Status != EFI_SUCCESS &&
+        Status != EFI_NOT_STARTED &&
+        Status != EFI_ALREADY_STARTED
+    ) {
+        WarnTagBadRAM = TRUE;
+
+        ErrorTagBadRAM = PoolPrint (L"        Error Type:- '%r'", Status);
+    }
 
     /* Set some Convenience Variables */
     VarNoCheckAMFI     = GlobalConfig.DisableCheckAMFI    ;
@@ -3962,6 +3990,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      LogLevel:- '%d'",       TAG_ITEM_A(LogLevelConfig               ));
     LOG_MSG("%s      ScanDelay:- '%d'",      TAG_ITEM_A(GlobalConfig.ScanDelay       ));
     LOG_MSG("%s      SyncNVram:- '%d'",      TAG_ITEM_A(GlobalConfig.SyncNVram       ));
+    LOG_MSG("%s      TagBadRAM:- '%d'",      TAG_ITEM_A(GlobalConfig.BadRamFixType   ));
     LOG_MSG("%s      PreferUGA:- '%s'",      TAG_ITEM_B(GlobalConfig.PreferUGA       ));
     LOG_MSG("%s      ReloadGOP:- '%s'",      TAG_ITEM_B(GlobalConfig.ReloadGOP       ));
     LOG_MSG("%s      SyncTrust:- '%03d'",    TAG_ITEM_A(GlobalConfig.SyncTrust       ));
@@ -4296,6 +4325,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
+        LOG_MSG("\n");
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -4353,6 +4383,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Missing Config File");
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display '%s' Warning", MsgStr);
+        LOG_MSG("\n");
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -4413,6 +4444,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Chainloaded via OpenCore");
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display '%s' Warning", MsgStr);
+        LOG_MSG("\n");
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -4468,6 +4500,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
         MsgStr = StrDuplicate (L"Secure Boot Failure");
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
+        LOG_MSG("\n");
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
@@ -4491,6 +4524,66 @@ EFI_STATUS EFIAPI efi_main (
         #endif
         GlobalConfig.ContinueOnWarning = ForceContinue;
         ForceContinue = FALSE;
+
+        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("%s      %s ...", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        if (AllowGraphicsMode) {
+            LOG_MSG("Restore Graphics Mode");
+            LOG_MSG("\n\n");
+
+            GraphicsScreenDirty = TRUE;
+            SwitchToGraphicsAndClear (TRUE);
+        }
+        else {
+            LOG_MSG("Proceeding");
+            LOG_MSG("\n\n");
+
+            BltClearScreen (FALSE);
+        }
+
+        // Wait 1 second
+        // DA-TAG: 100 Loops == 1 Sec
+        RefitStall (100);
+    }
+
+    // Show TagBadRAM Error
+    if (WarnTagBadRAM) {
+        SwitchToText (FALSE);
+
+        LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
+        MsgStr = StrDuplicate (L"Tag Bad RAM Error");
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
+        LOG_MSG("\n");
+        LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
+        GlobalConfig.ContinueOnWarning = TRUE;
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_SET;
+        #endif
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"                    Tag Bad RAM Error                     ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"        Could Not Tag Some or All Target Addresses        ", NEXTLINE);
+        PrintUglyText (ErrorTagBadRAM,                                                NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PauseForKey();
+        #if REFIT_DEBUG > 0
+        MY_MUTELOGGER_OFF;
+        #endif
+        GlobalConfig.ContinueOnWarning = ForceContinue;
+        ForceContinue = FALSE;
+
+        MY_FREE_POOL(ErrorTagBadRAM);
 
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -4742,6 +4835,62 @@ EFI_STATUS EFIAPI efi_main (
                     }
                 }
                 else if (
+                    // DA_TAG: Handle OpenCore Early
+                    //         To manage validity issues
+                    OurLoaderEntry->OSType == 'O'                             ||
+                    (SubScreenBoot && IsStriStr (SelectionName, L"OpenCore")) ||
+                    IsStriStr (OurLoaderEntry->Title,           L"OpenCore")  ||
+                    IsStriStr (OurLoaderEntry->LoaderPath,      L"\\OC_"   )  ||
+                    IsStriStr (OurLoaderEntry->LoaderPath,      L"\\OC\\"  )  ||
+                    IsStriStr (OurLoaderEntry->LoaderPath,    L"\\OpenCore")
+                ) {
+                    #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'Received User Input'
+                    LOG_MSG(
+                        "Received %sUser Input:",
+                        (RunningOC) ? L"*INVALID* " : L""
+                    );
+                    MsgStr = PoolPrint (
+                        L"Load %sInstance: OpenCore",
+                        (RunningOC) ? L"*INVALID* " : L""
+                    );
+                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr, OurLoaderEntry->LoaderPath
+                    );
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+
+                    if (RunningOC) {
+                        #if REFIT_DEBUG > 0
+                        LOG_MSG("\n");
+                        LOG_MSG("Rejected *INVALID* User Input");
+                        LOG_MSG("\n\n");
+                        #endif
+
+                        egDisplayMessage (
+                            L"OpenCore Load Attempt is *INVALID* ... Already Started",
+                            &BGColorWarn, CENTER, 4, L"PauseSeconds"
+                        );
+                        break;
+                    }
+
+                    if (!OurLoaderEntry->UseGraphicsMode) {
+                        OurLoaderEntry->UseGraphicsMode = (
+                            GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
+                        );
+                    }
+
+                    // Sync nvRAM
+                    RunNVramSync (SelectionName, FALSE);
+
+                    SkipTrustChain = TRUE;
+                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_OPENCORE) {
+                        KeepTrustChain = TRUE;
+                    }
+                }
+                else if (
                     OurLoaderEntry->OSType == 'M' ||
                     (
                         SubScreenBoot &&
@@ -4943,62 +5092,6 @@ EFI_STATUS EFIAPI efi_main (
 
                     MY_FREE_POOL(MsgStr);
                     #endif
-                }
-                else if (
-                    OurLoaderEntry->OSType == 'O'                            ||
-                    (SubScreenBoot && MyStrStr (SelectionName, L"OpenCore")) ||
-                    MyStrStr (OurLoaderEntry->Title,           L"OpenCore")  ||
-                    MyStrStr (OurLoaderEntry->LoaderPath,      L"\\OC_"   )  ||
-                    MyStrStr (OurLoaderEntry->LoaderPath,      L"\\OC\\"  )  ||
-                    MyStrStr (OurLoaderEntry->LoaderPath,    L"\\OpenCore")
-                ) {
-                    #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'Received User Input'
-                    LOG_MSG(
-                        "Received %sUser Input:",
-                        (RunningOC) ? L"*INVALID* " : L""
-                    );
-                    MsgStr = PoolPrint (
-                        L"Load %sInstance: OpenCore",
-                        (RunningOC) ? L"*INVALID* " : L""
-                    );
-                    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-                    LOG_MSG(
-                        "%s  - %s:- '%s'",
-                        OffsetNext,
-                        MsgStr,
-                        OurLoaderEntry->LoaderPath
-                    );
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-
-                    if (RunningOC) {
-                        #if REFIT_DEBUG > 0
-                        LOG_MSG("\n");
-                        LOG_MSG("Rejected *INVALID* User Input");
-                        LOG_MSG("\n\n");
-                        #endif
-
-                        egDisplayMessage (
-                            L"OpenCore Load Attempt is *INVALID* ... Already Started",
-                            &BGColorWarn, CENTER, 4, L"PauseSeconds"
-                        );
-                        break;
-                    }
-
-                    if (!OurLoaderEntry->UseGraphicsMode) {
-                        OurLoaderEntry->UseGraphicsMode = (
-                            GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE
-                        );
-                    }
-
-                    // Sync nvRAM
-                    RunNVramSync (SelectionName, FALSE);
-
-                    SkipTrustChain = TRUE;
-                    if (GlobalConfig.SyncTrust & ENFORCE_TRUST_OPENCORE) {
-                        KeepTrustChain = TRUE;
-                    }
                 }
                 else if (
                     OurLoaderEntry->OSType == 'C'                          ||

@@ -3179,7 +3179,9 @@ VOID ScanVolumes (VOID) {
         }
         else if (ScannedOnce) {
             if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
-                if ((HandleIndex % 40) == 0 && (HandleCount - HandleIndex) > (20 + 2)) {
+                if ((HandleIndex % 24) == 0 &&
+                    (HandleCount - HandleIndex) > (12 + 2)
+                ) {
                     DoneHeadings = FALSE;
                     BRK_MOD("\n\n                   ");
                 }
@@ -3269,7 +3271,7 @@ VOID ScanVolumes (VOID) {
             );
             #endif
 
-            if (!EFI_ERROR(Status)) {
+            if (!EFI_ERROR(Status) || Volume->FSType == FS_TYPE_APFS) {
                 PartType        = L"APFS";
                 Volume->FSType  = FS_TYPE_APFS;
                 Volume->VolUuid = VolumeGuid;

@@ -4,11 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        type: choice
         description: 'Issue Action'
+        type: choice
         options:
         - 'Label - Add - Abandoned'
         - 'Label - Add - Cancelled'
+        - 'Label - Add - Config'
         - 'Label - Add - Cannot-Replicate'
         - 'Label - Add - Discussion'
         - 'Label - Add - Incomplete - Issues'
@@ -25,15 +26,20 @@ on:
         - 'Label - Add - Enhancement - Only'
         - 'Label - Add - Not-Planned_and_Enhancement'
         - 'Label - Add - Not-Planned - Only'
+        default: 'Label - Add - Invalid'
       item_id:
         description: 'Item ID'
+        type: string
         required: true
       discussion_reason:
-        type: choice
         description: 'Reason for Discussion Label'
+        type: choice
         options:
         - 'Question/Comment-Only'
         - 'Other'
+      comment_data:
+        description: 'Optional Extra Comment'
+        type: string
 
 permissions:
   issues: write
@@ -48,7 +54,7 @@ jobs:
     name: Label - Add - Abandoned
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Abandoned'
+    if: github.event.inputs.operation == 'Label - Add - Abandoned'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -67,7 +73,7 @@ jobs:
     name: Label - Add - Cancelled
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Cancelled'
+    if: github.event.inputs.operation == 'Label - Add - Cancelled'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -103,7 +109,7 @@ jobs:
     name: Label - Add - Discussion
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Discussion'
+    if: github.event.inputs.operation == 'Label - Add - Discussion'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -117,19 +123,20 @@ jobs:
 
       - name: Label - Add - Discussion - 1
         id: get-issue-details
+        env:
+          GET_TOKEN: ${{ steps.app-token.outputs.token }}
+          GET_REPO: ${{ github.repository }}
+          GET_ITEM_ID: ${{ github.event.inputs.item_id }}
         run: |
-            # Make a request to the GitHub API to get issue details
-            issue=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ steps.app-token.outputs.token }}" \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.inputs.item_id }})
-            echo "$issue" > issue.json
-            # Extract title and body using jq
-            title=$(jq -r '.title' issue.json)
-            body=$(jq -r '.body' issue.json)
-            # Set the title and body as environment variables
-            notice="# This Discussion Item is an Automated Converstion of Issue/Enhancement Item #${{ github.event.inputs.item_id }}\n\n$body"
-            echo "title=$title" >> "${GITHUB_ENV}"
-            printf "body=%s\n" "${notice}" >> "${GITHUB_ENV}"
+          issue=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${GET_TOKEN}" \
+            "https://api.github.com/repos/${GET_REPO}/issues/${GET_ITEM_ID}")
+          echo "$issue" > issue.json
+          title=$(jq -r '.title' issue.json)
+          body=$(jq -r '.body' issue.json)
+          notice="# This Discussion Item is an Automated Converstion of Issue/Enhancement Item #${GET_ITEM_ID}\n\n${body}"
+          echo "title=$title" >> "${GITHUB_ENV}"
+          printf "body=%s\n" "${notice}" >> "${GITHUB_ENV}"
 
         # The 'category_id' below was derived from https://docs.github.com/en/graphql/overview/explorer
         # query {
@@ -180,6 +187,8 @@ jobs:
 
             Please use the Discussions Option for similar items in future.
 
+            ${{ github.event.inputs.comment_data }}
+
             Thank you.
 
       - if: ${{ github.event.inputs.discussion_reason == 'Other' }}
@@ -192,6 +201,8 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
             This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
+
+            ${{ github.event.inputs.comment_data }}
 
       - name: Label - Add - Discussion - 4
         id: remove-labels
@@ -228,11 +239,116 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
 
+  label_add_noted:
+    name: Label - Add - Noted
+    runs-on: ubuntu-24.04
+
+    if: github.event.inputs.operation == 'Label - Add - Noted'
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+
+      - name: Label - Add - Noted - 0
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            Thank you for taking the time to report a problem with RefindPlus.
+            The problem is noted and will be considered as required.
+
+            ${{ github.event.inputs.comment_data }}
+
+
+      - name: Label - Add - Noted - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Noted'
+
+      - name: Label - Add - Noted - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage, Queries, Confirmed'
+
+      - name: Label - Add - Noted - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'completed'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+  label_add_config:
+    name: Label - Add - Config
+    runs-on: ubuntu-24.04
+
+    if: github.event.inputs.operation == 'Label - Add - Config'
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+
+      - name: Label - Add - Config - 0
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            Thank you for taking the time to report a problem with RefindPlus.
+            The problem has been assessed as being configuration/setup related.
+
+            Please consult available documentation and amend your setup as required.
+            Documentation is provided in the `ReadMe` on the front page of this repository
+            as well as in the sample `config.conf` file. Additionally, extensive documentation
+            provided upstream can be consulted as this is largely also applicable to RefindPlus.
+
+            ${{ github.event.inputs.comment_data }}
+
+
+      - name: Label - Add - Config - 1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Config'
+
+      - name: Label - Add - Config - 2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage, Queries, Confirmed'
+
+      - name: Label - Add - Config - 3
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'completed'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
   label_add_cannot-replicate:
     name: Label - Add - Cannot-Replicate
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
+    if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -255,7 +371,7 @@ jobs:
           actions: 'remove-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage'
+          labels: 'Triage, Queries, Confirmed'
 
       - name: Label - Add - Cannot-Replicate - 3
         uses: actions-cool/issues-helper@v3
@@ -269,7 +385,7 @@ jobs:
     name: Label - Add - Incomplete - Issues
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Incomplete - Issues'
+    if: github.event.inputs.operation == 'Label - Add - Incomplete - Issues'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -288,9 +404,11 @@ jobs:
             Thank you for taking the time to report a problem with RefindPlus.
 
             However, at least one required item is missing.
-            This is typically the debug log(s).
+            This is typically debug log(s) or suggested initial tests.
 
-            Please kindly amend your post accordingly.
+            ${{ github.event.inputs.comment_data }}
+
+            Please amend your post accordingly.
 
       - name: Label - Add - Incomplete - Issues - 2
         uses: actions-cool/issues-helper@v3
@@ -312,7 +430,7 @@ jobs:
     name: Label - Add - Incomplete - Enhancement
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Incomplete - Enhancement'
+    if: github.event.inputs.operation == 'Label - Add - Incomplete - Enhancement'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -333,7 +451,9 @@ jobs:
             However, at least one required item is missing.
             This is typically background information.
 
-            Please kindly amend your post accordingly.
+            ${{ github.event.inputs.comment_data }}
+
+            Please amend your post accordingly.
 
       - name: Label - Add - Incomplete - Enhancement - 2
         uses: actions-cool/issues-helper@v3
@@ -355,7 +475,7 @@ jobs:
     name: Label - Add - Invalid
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Invalid'
+    if: github.event.inputs.operation == 'Label - Add - Invalid'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -374,7 +494,7 @@ jobs:
     name: Label - Add - Triage
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Triage'
+    if: github.event.inputs.operation == 'Label - Add - Triage'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -393,7 +513,7 @@ jobs:
     name: Label - Add - Parked
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Parked'
+    if: github.event.inputs.operation == 'Label - Add - Parked'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -412,7 +532,7 @@ jobs:
     name: Label - Add - Prorogued
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Prorogued'
+    if: github.event.inputs.operation == 'Label - Add - Prorogued'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -431,7 +551,7 @@ jobs:
     name: Label - Add - Resolved
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Resolved'
+    if: github.event.inputs.operation == 'Label - Add - Resolved'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -446,11 +566,18 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Resolved'
 
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Unresolved'
+
   label_add_unresolved:
     name: Label - Add - Unresolved
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Unresolved'
+    if: github.event.inputs.operation == 'Label - Add - Unresolved'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -465,11 +592,18 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Unresolved'
 
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Resolved'
+
   label_add_tagged:
     name: Label - Add - Tagged
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Tagged'
+    if: github.event.inputs.operation == 'Label - Add - Tagged'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -488,7 +622,7 @@ jobs:
     name: Label - Add - Queries
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Queries'
+    if: github.event.inputs.operation == 'Label - Add - Queries'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -507,7 +641,7 @@ jobs:
     name: Label - Add - Upstream
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Upstream'
+    if: github.event.inputs.operation == 'Label - Add - Upstream'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -526,7 +660,7 @@ jobs:
     name: Label - Add - Enhancement - Only
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Enhancement - Only'
+    if: github.event.inputs.operation == 'Label - Add - Enhancement - Only'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -545,7 +679,7 @@ jobs:
     name: Label - Add - Not-Planned_and_Enhancement
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Not-Planned_and_Enhancement'
+    if: github.event.inputs.operation == 'Label - Add - Not-Planned_and_Enhancement'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -582,7 +716,7 @@ jobs:
     name: Label - Add - Not-Planned - Only
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Add - Not-Planned - Only'
+    if: github.event.inputs.operation == 'Label - Add - Not-Planned - Only'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1

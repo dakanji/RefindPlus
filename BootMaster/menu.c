@@ -593,7 +593,7 @@ INTN FindMenuShortcutEntry (
 
             if (!FoundMatch) {
                 for (i = 0; i < Screen->EntryCount; i++) {
-                    if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
+                    if (IsStriStr (Screen->Entries[i]->Title, Shortcut)) {
                         FoundMatch = TRUE;
                         break;
                     }

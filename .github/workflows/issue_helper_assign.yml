@@ -4,13 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        type: choice
         description: 'Issue Action'
+        type: choice
         options:
         - 'Assignment - Self - Add'
         - 'Assignment - Self - Remove'
+        default: 'Assignment - Self - Add'
       item_id:
         description: 'Item ID'
+        type: string
         required: true
 
 permissions:
@@ -26,7 +28,7 @@ jobs:
     name: Assignment - Self - Add
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Assignment - Self - Add'
+    if: github.event.inputs.operation == 'Assignment - Self - Add'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -45,7 +47,7 @@ jobs:
     name: Assignment - Self - Remove
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Assignment - Self - Remove'
+    if: github.event.inputs.operation == 'Assignment - Self - Remove'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1

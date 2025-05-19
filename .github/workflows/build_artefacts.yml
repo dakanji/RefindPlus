@@ -4,25 +4,30 @@ on:
   workflow_dispatch:
     inputs:
       build_type:
-        type: choice
         description: 'Required Build Type(s)'
+        type: choice
         options:
         - 'REL Only'
         - 'DBG Only'
         - 'NPT Only'
         - 'REL and DBG'
         - 'REL, DBG and NPT'
+        default: 'REL and DBG'
       commit_id:
         description: "Commit ID (Blank for GOPFix Latest)"
+        type: string
         required: false
 
 jobs:
-  create-binaries:
-    name: Create Binaries
+  make-binaries:
+    name: Make Binaries
     runs-on: macos-latest
 
     steps:
       - name: Get Repositories
+        env:
+          GET_REPO: ${{ github.repository }}
+          GET_COMMIT_ID: ${{ github.event.inputs.commit_id }}
         shell: bash
         run: |
           mkdir ~/Documents/RefindPlus || exit 1
@@ -32,11 +37,11 @@ jobs:
           git clone https://github.com/RefindPlusRepo/RefindPlusUDK.git edk2
 
           # Clone RefindPlus
-          git clone "https://github.com/${{ github.repository }}.git" Working
+          git clone "https://github.com/${GET_REPO}.git" Working
           cd Working || exit 1
 
           # Find Target Branch
-          if [ -z "${{ github.event.inputs.commit_id }}" ]; then
+          if [ -z "${GET_COMMIT_ID}" ]; then
             # Use Default Branch
             BRANCH=GOPFix
           else
@@ -53,7 +58,7 @@ jobs:
             done
 
             # Get Candidate Branches
-            BranchList=$(git branch -a --contains ${{ github.event.inputs.commit_id }} | grep -v '\->')
+            BranchList=$(git branch -a --contains ${GET_COMMIT_ID} | grep -v '\->')
             if [ -z "${BranchList}" ]; then
               echo "Error: Commit ID not located on any branch!"
               exit 1
@@ -62,9 +67,23 @@ jobs:
             # Use Target Branch Commit
             BRANCH=$(echo "${BranchList}" | head -n 1 | sed 's/origin\///' | sed 's/remotes\///')
             git checkout "${BRANCH}"
-            git reset --hard "${{ github.event.inputs.commit_id }}"
+            git reset --hard "${GET_COMMIT_ID}"
           fi
           echo "BRANCH=${BRANCH}" >> "${GITHUB_ENV}"
+
+      - name: Set Targets
+        env:
+          GET_BUILD_TYPE: ${{ github.event.inputs.build_type }}
+        shell: bash
+        run: |
+          case "${GET_BUILD_TYPE}" in
+            "REL and DBG") BUILD_TYPE="SOME" ;;
+            "REL Only")    BUILD_TYPE="REL" ;;
+            "DBG Only")    BUILD_TYPE="DBG" ;;
+            "NPT Only")    BUILD_TYPE="NPT" ;;
+            *)             BUILD_TYPE="ALL" ;;
+          esac
+          echo "BUILD_TYPE=${BUILD_TYPE}" >> "${GITHUB_ENV}"
 
       - name: Install Prerequisites
         shell: bash
@@ -77,18 +96,6 @@ jobs:
           # Install Final Python 2 Version
           curl -O https://www.python.org/ftp/python/2.7.18/python-2.7.18-macosx10.9.pkg
           sudo installer -pkg python-2.7.18-macosx10.9.pkg -target /
-
-      - name: Set Targets
-        shell: bash
-        run: |
-          case "${{ github.event.inputs.build_type }}" in
-            "REL and DBG") BUILD_TYPE="SOME" ;;
-            "REL Only")    BUILD_TYPE="REL" ;;
-            "DBG Only")    BUILD_TYPE="DBG" ;;
-            "NPT Only")    BUILD_TYPE="NPT" ;;
-            *)             BUILD_TYPE="ALL" ;;
-          esac
-          echo "BUILD_TYPE=${BUILD_TYPE}" >> "${GITHUB_ENV}"
 
       - name: Main Script
         env:

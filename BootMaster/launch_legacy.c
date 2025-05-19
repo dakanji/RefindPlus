@@ -189,7 +189,7 @@ EFI_STATUS ActivateMbrPartition (
     } // for
 
     if (!HaveBootCode) {
-        // No boot code found in the MBR, add the syslinux MBR code
+        // No boot code found in the MBR ... Add syslinux MBR code
         REFIT_CALL_3_WRAPPER(
             gBS->SetMem, SectorBuffer,
             MBR_BOOTCODE_SIZE, 0
@@ -200,7 +200,7 @@ EFI_STATUS ActivateMbrPartition (
         );
     }
 
-    // Set the partition active
+    // Set partition as active
     MbrTable = (MBR_PARTITION_INFO *) (SectorBuffer + 446);
     ExtBase = 0;
     for (i = 0; i < 4; i++) {
@@ -425,7 +425,7 @@ VOID ExtractLegacyLoaderPaths (
     }
 
     PathList[PathCount] = NULL;
-} // VOID ExtractLegacyLoaderPaths()
+} // static VOID ExtractLegacyLoaderPaths()
 
 // Launch a BIOS boot loader (Mac mode)
 static
@@ -1114,6 +1114,7 @@ VOID ScanLegacyUEFI (
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
         if (BdsOption == NULL) {
             Index++;
+
             continue;
         }
 
@@ -1361,30 +1362,31 @@ VOID ScanLegacyEx (
 
 
     FirstLegacyScan = TRUE;
-    if (
-        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI ||
         GlobalConfig.LegacyType == LEGACY_TYPE_MAC2
     ) {
         ScanLegacyUEFI (DiskType);
     }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1) {
-        DisplayLoader = FALSE;
-        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-            Volume = Volumes[VolumeIndex];
-            if ((
-                    DiskType == BBS_HARDDISK &&
-                    Volume->DiskKind == DISK_KIND_INTERNAL
-                ) || (
-                    DiskType == BBS_USB &&
-                    Volume->DiskKind == DISK_KIND_EXTERNAL
-                ) || (
-                    DiskType == BBS_CDROM &&
-                    Volume->DiskKind == DISK_KIND_OPTICAL
-                )
-            ) {
-                ScanLegacyVolume (Volume, VolumeIndex);
-            }
-         } // for
+    else {
+        if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC1) {
+            DisplayLoader = FALSE;
+            for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                Volume = Volumes[VolumeIndex];
+                if ((
+                        DiskType == BBS_HARDDISK &&
+                        Volume->DiskKind == DISK_KIND_INTERNAL
+                    ) || (
+                        DiskType == BBS_USB &&
+                        Volume->DiskKind == DISK_KIND_EXTERNAL
+                    ) || (
+                        DiskType == BBS_CDROM &&
+                        Volume->DiskKind == DISK_KIND_OPTICAL
+                    )
+                ) {
+                    ScanLegacyVolume (Volume, VolumeIndex);
+                }
+             } // for
+        }
     }
     FirstLegacyScan = FALSE;
 
@@ -1466,6 +1468,9 @@ VOID ScanLegacyExternal (VOID) {
 // Determine what/if legacy BIOS boot support is available
 VOID FindLegacyBootType (VOID) {
     EFI_STATUS                 Status;
+    BOOLEAN                    SyncTag;
+    UINTN                      ExSize;
+    VOID                      *ExBuf;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
 
@@ -1475,21 +1480,39 @@ VOID FindLegacyBootType (VOID) {
     );
     if (!EFI_ERROR(Status)) {
         // Assume UEFI Class 2 Unit - Enable
-        GlobalConfig.LegacyType = (AppleFirmware)
-            ? LEGACY_TYPE_MAC2 : LEGACY_TYPE_UEFI;
+        GlobalConfig.LegacyType = (
+            AppleFirmware
+        ) ? LEGACY_TYPE_MAC2 : LEGACY_TYPE_UEFI;
+
+        return;
     }
-    else if (
-        !AppleFirmware ||
+
+    SyncTag = GlobalConfig.LegacySync;
+    if (AppleFirmware) {
+        ExSize = 0;
+        ExBuf  = NULL;
+        Status = GetHardwareNvramVariable (
+            L"BootCampHD",
+            &AppleVariableVendorID,
+            &ExBuf, &ExSize
+        );
+        if (Status != EFI_NOT_FOUND) {
+            SyncTag = FALSE;
+        }
+    }
+
+    if (!AppleFirmware ||
         (
-            GlobalConfig.LegacySync        &&
+            SyncTag                        &&
             (gST->Hdr.Revision >> 16U) > 1 &&
             (gBS->Hdr.Revision >> 16U) > 1 &&
             (gRT->Hdr.Revision >> 16U) > 1
         )
     ) {
         // Assume UEFI Class 3 Unit - Disable
-        GlobalConfig.LegacyType = (AppleFirmware)
-            ? LEGACY_TYPE_MAC3 : LEGACY_TYPE_NONE;
+        GlobalConfig.LegacyType = (
+            AppleFirmware
+        ) ? LEGACY_TYPE_MAC3 : LEGACY_TYPE_NONE;
     }
     else {
         // 'LegacySync' is Off or Other uEFI Mac - Enable

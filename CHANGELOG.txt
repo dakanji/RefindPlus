@@ -1,8 +1,15 @@
 0.14.2.AC (PRE-RELEASE):
 -----------------------
+- Adds `TagBadRAM` Feature
+  * Faulty memory regions can be flagged as unusable by RefindPlus
+  * Such flagged regions will not be used by the firmware after
+  * Configurable via three new `badram_fix_XYZ` configuration tokens
 - Fixes `HelpIcon` Handling
   * New deduplication code disabled loader icon caching
   * This bug was introduced in v0.14.2.AB (Commit 09e0f29)
+- Fixes Manual Stanza `icon` Token Handling
+  * Optimisations in `v0.14.2.AB` for `volume` tokens resulted in no icon displayed
+  * Only affected stanzas with the `volume` token defined
 - Fixes Manually Configured `UseGraphicsMode` Handling
   * Setting `graphics on` token in manual stanzas had no effect if:
     - The token line was before the `loader` token line, and

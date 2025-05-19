@@ -11,10 +11,22 @@ body:
         ---
 
 
+        Try the item below on Apple Macs first if RefindPlus fails to display but responds to key inputs.
+        Especially if running 5k monitors on Pre-2020 units as the firmware restricts third-party loaders.
+        - Run RefindPlus with these config settings active:- `disable_set_consolegop` and `disable_set_applefb`.
+
+        Firmware enforced resolution limits on third-party loaders may prevent 5k resolution dsiplay.
+
+
+        ---
+
+
         Try the steps below first if RefindPlus hangs on UEFI-PC [Especially with Hewlett Parkard (HP) units]:
         1. Run RefindPlus with the `ransom_drives` config setting active and `disable_rescan_dxe` inactive.
         2. Run RefindPlus with `disable_rescan_dxe` active and `ransom_drives` inactive if that fails.
         3. Run RefindPlus with both `ransom_drives` and `disable_rescan_dxe` active if that fails.
+
+        NB: A hang is typically manifested by a failure to fully load the RefindPlus screen.
 
 
         ---

@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        type: choice
         description: 'Issue Action'
+        type: choice
         options:
         - 'Label - Remove - Abandoned'
         - 'Label - Remove - Cancelled'
@@ -22,8 +22,10 @@ on:
         - 'Label - Remove - Queries'
         - 'Label - Remove - Upstream'
         - 'Label - Remove - Not-Planned'
+        default: 'Label - Remove - Invalid'
       item_id:
         description: 'Item ID'
+        type: string
         required: true
 
 permissions:
@@ -39,7 +41,7 @@ jobs:
     name: Label - Remove - Abandoned
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Abandoned'
+    if: github.event.inputs.operation == 'Label - Remove - Abandoned'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -58,7 +60,7 @@ jobs:
     name: Label - Remove - Cancelled
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Cancelled'
+    if: github.event.inputs.operation == 'Label - Remove - Cancelled'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -77,7 +79,7 @@ jobs:
     name: Label - Remove - Cannot-Replicate
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
+    if: github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -96,7 +98,7 @@ jobs:
     name: Label - Remove - Declined
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Duplicate'
+    if: github.event.inputs.operation == 'Label - Remove - Duplicate'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -115,7 +117,7 @@ jobs:
     name: Label - Remove - Duplicate
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Duplicate'
+    if: github.event.inputs.operation == 'Label - Remove - Duplicate'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -134,7 +136,7 @@ jobs:
     name: Label - Remove - Incomplete
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Incomplete'
+    if: github.event.inputs.operation == 'Label - Remove - Incomplete'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -153,7 +155,7 @@ jobs:
     name: Label - Remove - Invalid
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Invalid'
+    if: github.event.inputs.operation == 'Label - Remove - Invalid'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -172,7 +174,7 @@ jobs:
     name: Label - Remove - Triage
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Triage'
+    if: github.event.inputs.operation == 'Label - Remove - Triage'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -191,7 +193,7 @@ jobs:
     name: Label - Remove - Parked
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Parked'
+    if: github.event.inputs.operation == 'Label - Remove - Parked'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -210,7 +212,7 @@ jobs:
     name: Label - Remove - Prorogued
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Prorogued'
+    if: github.event.inputs.operation == 'Label - Remove - Prorogued'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -229,7 +231,7 @@ jobs:
     name: Label - Remove - Resolved
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Resolved'
+    if: github.event.inputs.operation == 'Label - Remove - Resolved'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -248,7 +250,7 @@ jobs:
     name: Label - Remove - Tagged
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Tagged'
+    if: github.event.inputs.operation == 'Label - Remove - Tagged'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -267,7 +269,7 @@ jobs:
     name: Label - Remove - Queries
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Queries'
+    if: github.event.inputs.operation == 'Label - Remove - Queries'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -286,7 +288,7 @@ jobs:
     name: Label - Remove - Upstream
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Upstream'
+    if: github.event.inputs.operation == 'Label - Remove - Upstream'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -305,7 +307,7 @@ jobs:
     name: Label - Remove - Not-Planned
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Label - Remove - Not-Planned'
+    if: github.event.inputs.operation == 'Label - Remove - Not-Planned'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1

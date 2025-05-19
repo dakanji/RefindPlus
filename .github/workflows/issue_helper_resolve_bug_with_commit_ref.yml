@@ -1,31 +1,34 @@
-name: 'Issue Helper Resolve Bug'
+name: 'Issue Helper Resolve Bug (With Commit Ref)'
 
 on:
   workflow_dispatch:
     inputs:
       item_id:
         description: 'Item ID'
+        type: string
         required: true
       commit_ref:
         description: 'Commit Ref'
+        type: string
         required: true
       show_build_msg:
-        type: choice
         description: 'Version Comment'
+        type: choice
         options:
         - 'Yes'
         - 'No'
       more_info:
         description: 'More Info'
+        type: string
       show_more_info:
-        type: choice
         description: 'Show More Info Entry'
+        type: choice
         options:
         - 'No'
         - 'Yes'
       type_more_info:
-        type: choice
         description: 'More Info Type'
+        type: choice
         options:
         - 'Note'
         - 'Caution'
@@ -42,7 +45,6 @@ jobs:
     name: Issue - Resolve - Bug1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -83,8 +85,8 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |-
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!NOTE]
@@ -100,8 +102,8 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!CAUTION]
@@ -117,8 +119,8 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             Thank you for taking the time to report a problem with RefindPlus.
@@ -179,7 +181,7 @@ jobs:
           actions: 'remove-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
+          labels: 'Triage,Tagged,Stale,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Confirmed,Known-Issue,Invalid,Incomplete,Cannot-Replicate'
 
       - if: ${{ env.isclosed == 'false' }}
         id: part_4

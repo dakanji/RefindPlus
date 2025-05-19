@@ -938,15 +938,6 @@ EFI_STATUS StartEFIImage (
                 BootSelection = NULL;
             }
 
-            // DA-TAG: SyncAPFS items are typically no longer required if
-            //         not loading drivers.  "Typically" as users may put
-            //         uEFI Shell etc in the first row (loaders).
-            //         These may return to the RefindPlus screen
-            //         but any issues will be trivial.
-            if (!IsDriver) {
-                FreeSyncVolumes();
-            }
-
             // Close open file handles
             UninitRefitLib();
 

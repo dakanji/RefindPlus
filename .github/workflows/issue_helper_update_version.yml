@@ -1,0 +1,132 @@
+name: 'Issue Helper Outdated Version'
+
+on:
+  workflow_dispatch:
+    inputs:
+      item_id:
+        description: 'Item ID'
+        type: string
+        required: true
+      more_info:
+        description: 'More Info'
+        type: string
+      show_more_info:
+        description: 'Show More Info Entry'
+        type: choice
+        options:
+        - 'No'
+        - 'Yes'
+      type_more_info:
+        description: 'More Info Type'
+        type: choice
+        options:
+        - 'Note'
+        - 'Caution'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+  issue_outdated_version1:
+    name: Issue - Outdated - Version1
+    runs-on: ubuntu-24.04
+
+    steps:
+      # Generate App Token - https://github.com/actions/create-github-app-token
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - id: part_2_1a
+        uses: oprypin/find-latest-tag@v1
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ steps.app-token.outputs.token }}
+          releases-only: true
+
+      - if: ${{ github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
+        id: part_2_1b
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            You appear to be running an outdated and/or unsupported version of RefindPlus.
+            Run the current release version, or an unmodified build as appropriate, and update this thread accordingly.
+
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
+            You can get a copy of the current release version [HERE](https://github.com/RefindPlusRepo/RefindPlus/releases).
+
+            Refer to [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to build RefindPlus.
+            NB: Use the `Remote GitHub Build Option` to obtain a verifiably unmodified build
+
+            > [!NOTE]
+            > ${{ github.event.inputs.more_info }}
+
+            > [!IMPORTANT]
+            > Please add debug logging from the new run to the thread update if the issue remains.
+
+      - if: ${{ github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
+        id: part_2_1c
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            You appear to be running an outdated and/or unsupported version of RefindPlus.
+            Run the current release version, or an unmodified build as appropriate, and update this thread accordingly.
+
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
+            You can get a copy of the current release version [HERE](https://github.com/RefindPlusRepo/RefindPlus/releases).
+
+            Refer to [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to build RefindPlus.
+            NB: Use the `Remote GitHub Build Option` to obtain a verifiably unmodified build
+
+            > [!CAUTION]
+            > ${{ github.event.inputs.more_info }}
+
+            > [!IMPORTANT]
+            > Please add debug logging from the new run to the thread update if the issue remains.
+
+      - if: ${{ github.event.inputs.show_more_info == 'No' }}
+        id: part_2_1d
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            You appear to be running an outdated and/or unsupported version of RefindPlus.
+            Run the current release version, or an unmodified build as appropriate, and update this thread accordingly.
+
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
+            You can get a copy of the current release version [HERE](https://github.com/RefindPlusRepo/RefindPlus/releases).
+
+            Refer to [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to build RefindPlus.
+            NB: Use the `Remote GitHub Build Option` to obtain a verifiably unmodified build
+
+            > [!IMPORTANT]
+            > Please add debug logging from the new run to the thread update if the issue remains.
+
+      - id: part_3_1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Queries'
+
+      - id: part_3_2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,Incomplete,Tagged'

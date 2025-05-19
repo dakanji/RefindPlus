@@ -4,19 +4,25 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        type: choice
         description: 'Issue Action'
+        type: choice
         options:
         - 'Issue - Open'
         - 'Issue - Close'
         - 'Issue - Thread - Lock'
         - 'Issue - Thread - Unlock'
         - 'Issue - Comment - Delete'
+        - 'Issue - Comment - Add'
         - 'Issue - OpenUnlock'
         - 'Issue - CloseLock'
+        default: 'Issue - Open'
       item_id:
         description: 'Item ID'
+        type: string
         required: true
+      comment_data:
+        description: 'Input for Comment - Add'
+        type: string
 
 permissions:
   issues: write
@@ -31,7 +37,7 @@ jobs:
     name: Issue - OpenUnlock1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - OpenUnlock'
+    if: github.event.inputs.operation == 'Issue - OpenUnlock'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -89,7 +95,7 @@ jobs:
     name: Issue - CloseLock1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - CloseLock'
+    if: github.event.inputs.operation == 'Issue - CloseLock'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -171,7 +177,7 @@ jobs:
     name: Issue - Open
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - Open'
+    if: github.event.inputs.operation == 'Issue - Open'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -189,7 +195,7 @@ jobs:
     name: Issue - Close1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - Close'
+    if: github.event.inputs.operation == 'Issue - Close'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -228,7 +234,7 @@ jobs:
     name: Issue - Comment - Delete
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - Comment - Delete'
+    if: github.event.inputs.operation == 'Issue - Comment - Delete'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -242,11 +248,31 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           comment-id: ${{ github.event.inputs.item_id }}
 
+  issue_comment_add:
+    name: Issue - Comment - Add
+    runs-on: ubuntu-24.04
+
+    if: github.event.inputs.operation == 'Issue - Comment - Add'
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            ${{ github.event.inputs.comment_data }}
+
   issue_thread_lock1:
     name: Issue - Thread - Lock1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - Thread - Lock'
+    if: github.event.inputs.operation == 'Issue - Thread - Lock'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -307,7 +333,7 @@ jobs:
     name: Issue - Thread - Unlock
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && github.event.inputs.operation == 'Issue - Thread - Unlock'
+    if: github.event.inputs.operation == 'Issue - Thread - Unlock'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1

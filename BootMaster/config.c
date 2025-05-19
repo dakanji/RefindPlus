@@ -708,7 +708,7 @@ REFIT_VOLUME * GetStanzaVolume (
     BOOLEAN         IsDisabled;
     BOOLEAN         IsContinue;
     BOOLEAN         CheckedVolume;
-    REFIT_VOLUME   *CurrentVolume;
+    REFIT_VOLUME   *SubjectVolume;
     REFIT_VOLUME   *PreviousVolume;
 
 
@@ -716,7 +716,7 @@ REFIT_VOLUME * GetStanzaVolume (
     IsExitLoop    =  FALSE;
     IsDisabled    =  FALSE;
     CheckedVolume =  FALSE;
-    CurrentVolume = Volume;
+    SubjectVolume = Volume;
 
     // Store original TokenLine pointers
     FilePtr08 = File->Current8Ptr;
@@ -742,8 +742,10 @@ REFIT_VOLUME * GetStanzaVolume (
             SubMenus += 1;
             IsContinue = TRUE;
         }
-        else if (IsDisabled || SubMenus > 0) {
-            IsContinue = TRUE;
+        else {
+            if (IsDisabled || SubMenus > 0) {
+                IsContinue = TRUE;
+            }
         }
 
         if (!IsExitLoop &&
@@ -783,10 +785,10 @@ REFIT_VOLUME * GetStanzaVolume (
         #endif
 
         // Stash last known good volume object
-        PreviousVolume = CurrentVolume;
+        PreviousVolume = SubjectVolume;
 
         // Locate indicated volume object
-        CheckedVolume = FindVolume (&CurrentVolume, TokenList[1]);
+        CheckedVolume = FindVolume (&SubjectVolume, TokenList[1]);
         if (!CheckedVolume) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -796,18 +798,18 @@ REFIT_VOLUME * GetStanzaVolume (
             #endif
         }
         else {
-            if (CurrentVolume          == NULL ||
-                CurrentVolume->RootDir == NULL ||
-                !CurrentVolume->IsReadable
+            if (SubjectVolume          == NULL ||
+                SubjectVolume->RootDir == NULL ||
+                !SubjectVolume->IsReadable
             ) {
                 #if REFIT_DEBUG > 0
-                if (CurrentVolume == NULL) {
+                if (SubjectVolume == NULL) {
                     TmpStore = L"Empty";
                 }
-                else if (CurrentVolume->RootDir == NULL) {
+                else if (SubjectVolume->RootDir == NULL) {
                     TmpStore = L"Inaccessible";
                 }
-                else { // !CurrentVolume->IsReadable
+                else { // !SubjectVolume->IsReadable
                     TmpStore = L"Unreadable";
                 }
 
@@ -818,7 +820,7 @@ REFIT_VOLUME * GetStanzaVolume (
                 #endif
 
                 // Invalid ... Reset to previous working volume
-                CurrentVolume = PreviousVolume;
+                SubjectVolume = PreviousVolume;
                 CheckedVolume = FALSE;
             }
         } // if/else !CheckedVolume
@@ -837,7 +839,7 @@ REFIT_VOLUME * GetStanzaVolume (
     File->Current8Ptr  = FilePtr08;
     File->Current16Ptr = FilePtr16;
 
-    return CurrentVolume;
+    return SubjectVolume;
 } // static REFIT_VOLUME * GetStanzaVolume()
 
 static
@@ -854,16 +856,16 @@ BOOLEAN AddSubmenu (
     CHAR16              *TmpName;
     CHAR16             **TokenList;
     BOOLEAN              TitleVolume;
-    REFIT_VOLUME        *CurrentVolume;
+    REFIT_VOLUME        *TargetVolume;
 
 
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-    // Get 'CurrentVolume' and disabled status upfront
-    CurrentVolume = GetStanzaVolume (File, Volume);
-    if (CurrentVolume == NULL) {
+    // Get 'TargetVolume' and disabled status upfront
+    TargetVolume = GetStanzaVolume (File, Volume);
+    if (TargetVolume == NULL) {
         // NULL only returned if disabled
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_STAR_HEAD_SEP, L"SubMenu Entry is Disabled");
@@ -907,12 +909,12 @@ BOOLEAN AddSubmenu (
     TitleVolume       = TRUE;
     SubEntry->Enabled = TRUE;
 
-    SetVolumeBadgeIcon (CurrentVolume);
-    SubEntry->Volume = CurrentVolume;
+    SetVolumeBadgeIcon (TargetVolume);
+    SubEntry->Volume = TargetVolume;
 
     MY_FREE_IMAGE(SubEntry->me.BadgeImage);
     SubEntry->me.BadgeImage = egCopyImage (
-        CurrentVolume->VolBadgeImage
+        TargetVolume->VolBadgeImage
     );
 
     BREAD_CRUMB(L"%a:  6", __func__);
@@ -929,9 +931,7 @@ BOOLEAN AddSubmenu (
 
         LOG_SEP(L"X");
         BREAD_CRUMB(L"%a:  6a 1 - FOR LOOP:- START", __func__);
-        if (TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"loader")
-        ) {
+        if (MyStriCmp (TokenList[0], L"loader")) {
             BREAD_CRUMB(L"%a:  6a 1b", __func__);
 
             // Set the boot loader filename
@@ -939,26 +939,17 @@ BOOLEAN AddSubmenu (
             SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
             SubEntry->Volume     = Volume;
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"initrd")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"initrd")) {
             BREAD_CRUMB(L"%a:  6a 1d", __func__);
             MY_FREE_POOL(SubEntry->InitrdPath);
             SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"options")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"options")) {
             BREAD_CRUMB(L"%a:  6a 1e", __func__);
             MY_FREE_POOL(SubEntry->LoadOptions);
             SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"add_options")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"add_options")) {
             BREAD_CRUMB(L"%a:  6a 1f", __func__);
 
             MergeStrings (&SubEntry->LoadOptions, TokenList[1], L' ');
@@ -1155,20 +1146,14 @@ LOADER_ENTRY * InitializeStanza (
                 (TokenCount > 1) ? TokenList[1] : L"on"
             );
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"ostype")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"ostype")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'ostype'");
             #endif
 
             StanzaEntry->OSType = TokenList[1][0];
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"icon")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"icon")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'icon'");
             #endif
@@ -1176,24 +1161,43 @@ LOADER_ENTRY * InitializeStanza (
             if (AllowGraphicsMode) {
                 MY_FREE_IMAGE(StanzaEntry->me.Image);
                 StanzaEntry->me.Image = egLoadIcon (
-                    CurrentVolume->RootDir, TokenList[1],
+                    SelfVolume->RootDir, TokenList[1],
                     GlobalConfig.IconSizes[ICON_SIZE_BIG]
                 );
 
                 if (StanzaEntry->me.Image == NULL) {
-                    // Set dummy image if icon was not found
-                    StanzaEntry->me.Image = DummyImage (
-                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                    );
+                    if (SelfVolume->DeviceHandle != Volume->DeviceHandle) {
+                        // Check under 'Volume' if icon not found
+                        // NB: Only if 'Volume' is not 'SelfVolume' (Currently always is)
+                        StanzaEntry->me.Image = egLoadIcon (
+                            CurrentVolume->RootDir, TokenList[1],
+                            GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                        );
+                    }
+
+                    if (StanzaEntry->me.Image == NULL) {
+                        if (CurrentVolume->DeviceHandle != Volume->DeviceHandle) {
+                            // Check under 'CurrentVolume' if icon not found
+                            // NB: Only if 'CurrentVolume' is not 'Volume'
+                            StanzaEntry->me.Image = egLoadIcon (
+                                CurrentVolume->RootDir, TokenList[1],
+                                GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                            );
+                        }
+
+                        if (StanzaEntry->me.Image == NULL) {
+                            // Set dummy image if icon not found
+                            StanzaEntry->me.Image = DummyImage (
+                                GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                            );
+                        }
+                    }
                 }
             }
 
             DoneIcon = TRUE;
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"loader")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"loader")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'loader'");
             #endif
@@ -1235,10 +1239,7 @@ LOADER_ENTRY * InitializeStanza (
                 }
             }
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"initrd")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"initrd")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'initrd'");
             #endif
@@ -1246,10 +1247,7 @@ LOADER_ENTRY * InitializeStanza (
             MY_FREE_POOL(StanzaEntry->InitrdPath);
             StanzaEntry->InitrdPath = StrDuplicate (TokenList[1]);
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"options")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"options")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'options'");
             #endif
@@ -1257,10 +1255,7 @@ LOADER_ENTRY * InitializeStanza (
             MY_FREE_POOL(LoadOptions);
             LoadOptions = StrDuplicate (TokenList[1]);
         }
-        else if (
-            TokenCount > 1 &&
-            MyStriCmp (TokenList[0], L"firmware_bootnum")
-        ) {
+        else if (MyStriCmp (TokenList[0], L"firmware_bootnum")) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_THREE_STAR_MID,
                 L"Handle Token:- 'firmware_bootnum'"
@@ -3860,7 +3855,7 @@ VOID ReadConfig (
 
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                if (MyStrBegins (Flag, L"Off")) {
+                if (MyStrBegins (L"Off", Flag)) {
                     // DA-TAG: Required despite earlier reset
                     //         This will always be used if in token list
                     GotNoneNoBootLogo            = TRUE;
@@ -3870,14 +3865,14 @@ VOID ReadConfig (
 
                 if (!GotNoBootLogoAll) {
                     // DA-TAG: Arranged as so to prioritise 'Off' above
-                    if (MyStrBegins (Flag, L"All")) {
+                    if (MyStrBegins (L"All", Flag)) {
                         GotNoBootLogoAll             = TRUE;
                         GlobalConfig.DisableBootLogo = DISABLE_BOOTLOGO_ALL;
                     }
                     else {
                         if (0);
-                        else if (MyStrBegins (Flag, L"Lin")) GlobalConfig.DisableBootLogo |= DISABLE_BOOTLOGO_LIN;
-                        else if (MyStrBegins (Flag, L"Win")) GlobalConfig.DisableBootLogo |= DISABLE_BOOTLOGO_WIN;
+                        else if (MyStrBegins (L"Lin", Flag)) GlobalConfig.DisableBootLogo |= DISABLE_BOOTLOGO_LIN;
+                        else if (MyStrBegins (L"Win", Flag)) GlobalConfig.DisableBootLogo |= DISABLE_BOOTLOGO_WIN;
                         else BadFlag (Flag, TokenList[0], NotRunBefore);
                     }
                 }
@@ -3910,8 +3905,8 @@ VOID ReadConfig (
             );
         }
         else if (
-            StriSubCmp (L"esp_filter", TokenList[0]) ||
-            StriSubCmp (L"espfilter",  TokenList[0])
+            IsStriStr (TokenList[0], L"esp_filter") ||
+            IsStriStr (TokenList[0], L"espfilter")
         ) {
             #if REFIT_DEBUG > 0
             if (!OuterLoop) {
@@ -4271,6 +4266,50 @@ VOID ReadConfig (
             HandleStrings (
                 TokenList, TokenCount,
                 &(GlobalConfig.ExtraKernelVersionStrings)
+            );
+        }
+        else if (MyStriCmp (TokenList[0], L"badram_fix_list")) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            HandleStrings (
+                TokenList, TokenCount,
+                &(GlobalConfig.BadRamFixList)
+            );
+        }
+        else if (
+            TokenCount == 2 &&
+            MyStriCmp (TokenList[0], L"badram_fix_type")
+        ) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            HandleSignedInt (
+                TokenList, TokenCount,
+                &(GlobalConfig.BadRamFixType)
+            );
+        }
+        else if (MyStriCmp (TokenList[0], L"badram_fix_wide")) {
+            #if REFIT_DEBUG > 0
+            if (!OuterLoop) {
+                UpdatedToken = LogUpdate (
+                    TokenList[0], NotRunBefore, TRUE
+                );
+            }
+            #endif
+
+            GlobalConfig.BadRamFixWide = HandleBoolean (
+                TokenList, TokenCount
             );
         }
         else if (MyStriCmp (TokenList[0], L"max_tags")) {

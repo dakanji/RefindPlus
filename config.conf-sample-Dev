@@ -8,6 +8,72 @@
 ##--------------------------------------------------------------##
 #
 #
+# A list of one or more start and end addresses of predetermined
+# faulty memory regions to be flagged as unusable by RefindPlus.
+# Such flagged regions will not be used by the firmware after.
+# This will also extend to UEFI compliant operating systems.
+# Each Start/End address must be separated by a colon (:).
+# Addresses can be determined via tools such as MemTest.
+# MemTest can be run in RefindPlus tool via showtools.
+#
+# Inactive when commented out (No addresses flagged)
+#
+#badram_fix_list 0xKLM:0xQPR,0xSUV:0xTXY
+
+# Define whether, and how if so, memory regions are to be tagged.
+#
+# The applicable flags are:
+#   0   - Nothing Done About Defective RAM (Default)
+#
+#   1   - Tags User Defined RAM Regions as "UnusableMemory"
+#         Regardless of whether already in use or not
+#
+#   2   - Tags User Defined RAM Regions as "ReservedMemory"
+#         Regardless of whether already in use or not
+#
+#   3   - Tags User Defined RAM Regions as "UnusableMemory"
+#         Any already fully/partially used region is completely skipped
+#
+#   4   - Tags User Defined RAM Regions as "UnusableMemory"
+#         Any fully/partially used region is tagged as "ReservedMemory"
+#
+#   5   - Tags User Defined RAM Regions as "UnusableMemory"
+#         Produces a hybrid in partially-in-use regions:
+#         * Unused pages are tagged as "UnusableMemory"
+#         * Pages in use are skipped
+#
+#   6   - Tags User Defined RAM Regions as "UnusableMemory"
+#         Produces a hybrid in partially-in-use regions:
+#         * Unused pages are tagged as "UnusableMemory"
+#         * Pages in use are tagged as "ReservedMemory"
+#
+#   7   - Tags Auto Defined RAM Regions as "UnusableMemory"
+#         Works like '5' but regions are determined by RefindPlus
+#         * The 'badram_fix_list' token is ignored if defined
+#
+#   8   - Tags Auto Defined RAM Regions as "UnusableMemory"
+#         Works like '6' but regions are determined by RefindPlus
+#         * The 'badram_fix_list' token is ignored if defined
+#
+#
+# NOTES:
+# 1. The auto detection of faulty RAM regions via '7' and '8' is basic.
+#    Tools such as 'MemTest' should be used instead whenever possible.
+#
+# Defaults to '0' when commented out (Does not tag Bad RAM)
+#
+#badram_fix_type 2
+
+# When 'badram_fix_type' is set to values greater than 1, only memory regions of types
+# such as 'EfiConventionalMemory', 'EfiRuntimeServicesCode', 'EfiRuntimeServicesData'
+# 'EfiBootServicesCode', 'EfiBootServicesData', 'EfiLoaderCode', and 'EfiLoaderData'
+# are processed with reserved regions left as they are. This is to avoid impacting
+# upon critical memory. When this token is active, all memory types are processed.
+#
+# Inactive when commented out (Does not remove limits)
+#
+#badram_fix_wide
+
 # Proceed automatically when on-screen notices
 # are shown. When this option is active, RefindPlus
 # will pause for nine (9) seconds when on-screen notices
@@ -363,7 +429,7 @@
 # that are detected below a time interval after loading the screen to counteract
 # spontaneous booting apparently resulting from keystroke buffers that appear to
 # have been primed before RefindPlus is loaded. This appears to primarily affect
-# UEFI-PC when RefindPlus is loaded done after first accessing the BIOS via keys
+# UEFI-PC when RefindPlus is loaded after first running the BIOS screen via keys
 # such as "F12". The issue appears to be worse when external drives are present.
 # A level of intervention is always active but this is typically not noticeable.
 # The base threshold is increased on RefindPlus DBG build files as well as when
@@ -590,8 +656,8 @@
 # is loaded. This can however increase wear and tear on the nvRAM and disabling
 # the "use_nvram" token writes variables to the filesystem instead, limiting this.
 # On some setups however, such as when the "default_selection" token is set, such
-# writes are not required to start with. When the "transient_boot" setting is
-# active, RefindPlus will not store the "PreviousBoot" variable anywhere.
+# writes are not required to start with and when the "transient_boot" setting is
+# activated, RefindPlus will not store the "PreviousBoot" variable anywhere.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
@@ -1031,14 +1097,14 @@
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
 # For "EFI-mode" scans, volumes are typically specified by their labels,
-# which can be obtained from uEFI shell with "vol" from Linux by typing
+# which can be obtained from EFI shell with "vol", from Linux by typing
 # "blkid /dev/{devicename}", or, by examining the disk label in various
 # operating system file browsers. Partitions can also be identified by
 # the unique GUIDs ("PARTUUID" in Linux parlance). (Note that this is
 # not the partition TYPE CODE GUID). The identifier can be obtained
 # by using the "diskutil info {partition-id}" command in MacOS or
 # the "blkid" command in Linux. Any sub-string of the bootloader
-# description (displayed when the option is highlighted) can be
+# description displayed when the option is highlighted can be
 # used for legacy-mode scans.
 #
 # The default setting is "LRS_ESP"

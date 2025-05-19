@@ -5,6 +5,7 @@ on:
     inputs:
       job_id:
         description: 'Job ID'
+        type: string
         required: true
         default: 'all'
   schedule:
@@ -22,7 +23,6 @@ jobs:
     name: Lock Resolved Issues
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
 
       - if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
@@ -65,7 +65,7 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token }}
           issue-lock-reason: ''
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Invalid, Not-Planned, Duplicate, Cannot-Replicate, Cancelled'
+          include-any-issue-labels: 'Invalid, Not-Planned, Duplicate, Cannot-Replicate, Cancelled, Config'
           remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
@@ -104,7 +104,7 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token }}
           issue-lock-reason: ''
           issue-inactive-days: '7'
-          include-any-issue-labels: 'Unclear'
+          include-any-issue-labels: 'Unclear, Noted'
           remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
@@ -125,7 +125,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '3'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Triage, Unclear, Parked, Prorogued, Help-Wanted, Acknowledged, Known-Issue'
+          exclude-any-issue-labels: 'Triage, Unclear, Parked, Prorogued, Help-Wanted, Confirmed, Known-Issue'
           remove-issue-labels: 'Stale, Tagged, Queries, Unresolved, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.
@@ -145,7 +145,7 @@ jobs:
           issue-lock-reason: ''
           add-issue-labels: ''
           issue-inactive-days: '40'
-          include-any-issue-labels: 'Acknowledged, Known-Issue'
+          include-any-issue-labels: 'Confirmed, Known-Issue'
           remove-issue-labels: 'Stale, Tagged, Queries, Uncertain, Accepted'
           issue-comment: |-
             This thread is being locked.

@@ -349,10 +349,6 @@ VOID SetupScreen (VOID) {
         #endif
     }
 
-    // Get longest and shortest edge dimensions
-    ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
-    ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
-
     // Set user requested resolution
     if (UserDefinedRez) {
         // Set text mode
@@ -363,17 +359,6 @@ VOID SetupScreen (VOID) {
                 ScreenW = NewWidth;
                 ScreenH = NewHeight;
             }
-
-            // Get longest and shortest edge dimensions
-            ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
-            ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Record *NEW* Current Text Mode Resolution as '%d x %d'",
-                ScreenLongest, ScreenShortest
-            );
-            #endif
 
             if (ScreenW > GlobalConfig.RequestedScreenWidth ||
                 ScreenH > GlobalConfig.RequestedScreenHeight
@@ -405,6 +390,10 @@ VOID SetupScreen (VOID) {
             egGetScreenSize (&ScreenW, &ScreenH);
         }
     }
+
+    // Get longest and shortest edge dimensions
+    ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+    ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0

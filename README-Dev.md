@@ -86,6 +86,9 @@ These tokens are included in `Section 1` of the sample RefindPlus configuration 
 
 Token | Functionality
 ----- | -----
+badram_fix_list       |Allows providing a list of faulty memory regions to be marked as `unusable`
+badram_fix_type       |Controls whether and how faulty memory regions are managed by the program
+badram_fix_wide       |Allows lifting program limits on types of faulty memory regions managed
 continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
 csr_dynamic           |Actively sets or unsets Apple's `Configurable Security Restrictions (CSR)`
 csr_normalise         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
@@ -145,6 +148,8 @@ In addition to the new functionality listed above, the following upstream tokens
 - **"showtools":** Additional tool added:
   - `clean_nvram` : Allows resetting nvRAM directly from RefindPlus.
     - When run on Apple firmware, RefindPlus will additionally trigger nvRAM garbage collection
+- **menuentry:** Additional OSTypes added for manual stanzas:
+  - `RefitVariant`, `OpenCore`, and `Clover` can be additionally defined
 - **"csr_values":** A value of `0` can be set as the `Enabled` value to allow `Over The Air (OTA)` updates when running Mac OS 11.x (Big Sur) or newer with SIP enabled.
   - This is equivalent to activating the `csr_normalise` token.
 - **"log_level":** Controls the native log format and an implementation of the upstream format.

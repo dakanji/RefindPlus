@@ -5,6 +5,7 @@ on:
     inputs:
       job_id:
         description: 'Job ID'
+        type: string
         required: true
         default: 'all'
   schedule:
@@ -20,7 +21,7 @@ jobs:
     name: Flag or Close Issues
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale')
+    if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -46,7 +47,7 @@ jobs:
           days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
-          any-of-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned'
+          any-of-labels: 'Cancelled, Duplicate, Known-Issue, Invalid, Cannot-Replicate, Not-Planned, Noted, Config'
           remove-issue-stale-when-updated: false
           repo-token: ${{ steps.app-token.outputs.token }}
 
@@ -66,8 +67,6 @@ jobs:
             Trigger: Missing Requirement(s)
           close-issue-message: |-
             This item is being closed.
-
-            Trigger: Missing Requirement(s)
           days-before-stale: 0
           days-before-close: 3
           exempt-assignees: 'dakanji'
@@ -92,8 +91,6 @@ jobs:
             Trigger: Failure to Respond
           close-issue-message: |-
             This item is being closed.
-
-            Trigger: Failure to Respond
           days-before-stale: 2
           days-before-close: 3
           exempt-assignees: 'dakanji'
@@ -118,8 +115,6 @@ jobs:
             Trigger: Inactivity Threshold
           close-issue-message: |-
             This item is being closed.
-
-            Trigger: Inactivity Threshold
           days-before-stale: 30
           days-before-close: 30
           exempt-assignees: 'dakanji'

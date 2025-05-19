@@ -1,28 +1,30 @@
-name: 'Issue Helper Resolve Other Bug'
+name: 'Issue Helper Resolve Enhance (Without Commit Ref)'
 
 on:
   workflow_dispatch:
     inputs:
       item_id:
         description: 'Item ID'
+        type: string
         required: true
       show_build_msg:
-        type: choice
         description: 'Version Comment'
+        type: choice
         options:
         - 'Yes'
         - 'No'
       more_info:
         description: 'More Info'
+        type: string
       show_more_info:
-        type: choice
         description: 'Show More Info Entry'
+        type: choice
         options:
         - 'No'
         - 'Yes'
       type_more_info:
-        type: choice
         description: 'More Info Type'
+        type: choice
         options:
         - 'Note'
         - 'Caution'
@@ -34,12 +36,18 @@ concurrency:
   group: lock
 
 jobs:
-
-  issue_resolve_other_bug1:
-    name: Issue - Resolve - Other - Bug1
+  issue_resolve_enhance1:
+    name: Issue - Resolve - Enhance1
     runs-on: ubuntu-24.04
 
     steps:
+      # Generate App Token - https://github.com/actions/create-github-app-token
+      - id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - id: issue-get-state
         uses: actions/github-script@v7
         with:
@@ -72,12 +80,14 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            This item has been addressed for the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item has been addressed for the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!NOTE]
             > ${{ github.event.inputs.more_info }}
+
+            Thank you for taking the time to suggest improvements to RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
         id: part_2_1c
@@ -87,12 +97,14 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            This item has been addressed for the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item has been addressed for the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
 
             > [!CAUTION]
             > ${{ github.event.inputs.more_info }}
+
+            Thank you for taking the time to suggest improvements to RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
         id: part_2_1d
@@ -102,9 +114,11 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            This item has been addressed for the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_2a.outputs.tag }}**.\
+            This item has been addressed for the next RefindPlus release.
+            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.
             See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
+
+            Thank you for taking the time to suggest improvements to RefindPlus.
 
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
         id: part_2_2a
@@ -119,6 +133,8 @@ jobs:
             > [!NOTE]
             > ${{ github.event.inputs.more_info }}
 
+            Thank you for taking the time to suggest improvements to RefindPlus.
+
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
         id: part_2_2b
         uses: actions-cool/issues-helper@v3
@@ -132,6 +148,8 @@ jobs:
             > [!CAUTION]
             > ${{ github.event.inputs.more_info }}
 
+            Thank you for taking the time to suggest improvements to RefindPlus.
+
       - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'No' }}
         id: part_2_2c
         uses: actions-cool/issues-helper@v3
@@ -142,13 +160,15 @@ jobs:
           body: |
             This item has been addressed for the next RefindPlus release.
 
+            Thank you for taking the time to suggest improvements to RefindPlus.
+
       - id: part_3_1
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'add-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Bug,Resolved'
+          labels: 'Resolved'
 
       - id: part_3_2
         uses: actions-cool/issues-helper@v3
@@ -156,7 +176,7 @@ jobs:
           actions: 'remove-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,Queries,Parked,Prorogued,Unclear,Uncertain,Unresolved,Acknowledged,Known-Issue'
+          labels: 'Accepted,Unresolved'
 
       - if: ${{ env.isclosed == 'false' }}
         id: part_4

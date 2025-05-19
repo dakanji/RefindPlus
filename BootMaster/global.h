@@ -479,6 +479,7 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
+    BOOLEAN                     BadRamFixWide;
     BOOLEAN                     DirectBoot;
     BOOLEAN                     CustomScreenBG;
     BOOLEAN                     TextOnly;
@@ -553,12 +554,14 @@ typedef struct {
     INTN                        LogLevel;
     INTN                        IconRowMove;
     INTN                        IconRowTune;
+    INTN                        BadRamFixType;
     INTN                        ScreenR;
     INTN                        ScreenG;
     INTN                        ScreenB;
     REFIT_VOLUME               *DiscoveredRoot;
     EFI_DEVICE_PATH_PROTOCOL   *SelfDevicePath;
     EG_IMAGE                   *ScreenBackground;
+    CHAR16                     *BadRamFixList;
     CHAR16                     *ToolLocations;
     CHAR16                     *ToolLocationsExtra;
     CHAR16                     *ConfigFilename;

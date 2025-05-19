@@ -1,8 +1,78 @@
 
 # Configuration for Label Actions - https://github.com/dessant/label-actions
 
-# The `Acknowledged` label is added to issues
-Acknowledged:
+# The `Config` label is added to issues
+Config:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Not-Planned'
+      - 'Unresolved'
+      - 'Uncertain'
+      - 'Confirmed'
+      - 'Cancelled'
+      - 'Accepted'
+      - 'Triage'
+      - 'Parked'
+      - 'Stale'
+      - 'Bug'
+      - 'Noted'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
+    # Close thread
+    close: true
+    # Add Comment
+    comment: |
+      Thank you for taking the time to report a problem with RefindPlus.
+      The problem has been assessed as being configuration/setup related.
+
+      Please consult available documentation and amend your setup as required.
+      Documentation is provided in the `ReadMe` on the front page of this repository
+      as well as in the sample `config.conf` file. Additionally, extensive documentation
+      provided upstream can be consulted as this is largely also applicable to RefindPlus.
+
+# The `Noted` label is added to issues
+Noted:
+  issues:
+    # Add labels
+    label:
+      - 'Tagged'
+      - 'Unresolved'
+    # Remove labels
+    unlabel:
+      - 'Not-Planned'
+      - 'Uncertain'
+      - 'Confirmed'
+      - 'Cancelled'
+      - 'Accepted'
+      - 'Triage'
+      - 'Parked'
+      - 'Stale'
+      - 'Bug'
+      - 'Config'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Prorogued'
+      - 'Duplicate'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
+    # Close thread
+    close: true
+    # Add Comment
+    comment: |
+      Thank you for taking the time to report a problem with RefindPlus.
+      The problem is noted and will be considered as required.
+
+# The `Confirmed` label is added to issues
+Confirmed:
   issues:
     # Add labels
     label:
@@ -17,6 +87,8 @@ Acknowledged:
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -36,9 +108,9 @@ Accepted:
       - 'Unresolved'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Resolved'
       - 'Triage'
@@ -46,6 +118,8 @@ Accepted:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -63,9 +137,10 @@ Declined:
   prs:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -73,6 +148,8 @@ Declined:
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -98,8 +175,8 @@ Uncertain:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -108,6 +185,8 @@ Uncertain:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -125,9 +204,9 @@ Bug:
       - 'Unresolved'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -136,6 +215,8 @@ Bug:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -150,13 +231,17 @@ Cancelled:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Parked'
+      - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -175,9 +260,10 @@ Discussion:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -186,6 +272,8 @@ Discussion:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -201,9 +289,10 @@ Dismissed:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -212,6 +301,8 @@ Dismissed:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -232,6 +323,7 @@ Documentation:
     # Remove labels
     unlabel:
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
       - 'Cancelled'
       - 'Accepted'
@@ -241,6 +333,8 @@ Documentation:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -253,9 +347,10 @@ Duplicate:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -264,6 +359,8 @@ Duplicate:
       - 'Tagged'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -282,16 +379,18 @@ Enhancement:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Triage'
       - 'Parked'
       - 'Tagged'
-      - 'Bug'
       - 'Stale'
+      - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -306,16 +405,18 @@ Tagged:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
+      - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
       - 'Triage'
-      - 'Not-Planned'
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Prorogued'
@@ -328,9 +429,9 @@ Good-First-Issue:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -338,6 +439,8 @@ Good-First-Issue:
       - 'Parked'
       - 'Tagged'
       - 'Stale'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -359,6 +462,8 @@ Help-Wanted:
       - 'Parked'
       - 'Tagged'
       - 'Stale'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Invalid'
       - 'Prorogued'
@@ -372,9 +477,10 @@ Incomplete:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -382,6 +488,8 @@ Incomplete:
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -398,15 +506,18 @@ Invalid:
       - 'Tagged'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Triage'
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Upstream'
@@ -424,9 +535,9 @@ Known-Issue:
       - 'Unresolved'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -434,6 +545,8 @@ Known-Issue:
       - 'Parked'
       - 'Stale'
       - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -449,15 +562,17 @@ Parked:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Tagged'
       - 'Stale'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -472,11 +587,10 @@ Upstream:
   issues:
     # Add labels
     label:
-      - 'Acknowledged'
+      - 'Confirmed'
       - 'Unresolved'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
       - 'Cancelled'
@@ -498,9 +612,10 @@ Queries:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -527,11 +642,13 @@ Resolved:
       - 'Not-Planned'
       - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Triage'
       - 'Parked'
       - 'Stale'
+      - 'Config'
       - 'Unclear'
       - 'Invalid'
       - 'Prorogued'
@@ -557,7 +674,7 @@ Stale:
     # Remove labels
     unlabel:
       - 'Not-Planned'
-      - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -574,9 +691,10 @@ Unclear:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -584,6 +702,8 @@ Unclear:
       - 'Parked'
       - 'Tagged'
       - 'Stale'
+      - 'Noted'
+      - 'Config'
       - 'Invalid'
       - 'Prorogued'
       - 'Duplicate'
@@ -599,14 +719,18 @@ Not-Planned:
       - 'Tagged'
     # Remove labels
     unlabel:
-      - 'Acknowledged'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Parked'
       - 'Stale'
+      - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -631,15 +755,19 @@ Cannot-Replicate:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
+      - 'Unresolved'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
       - 'Triage'
       - 'Parked'
       - 'Stale'
+      - 'Bug'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -662,9 +790,9 @@ Prorogued:
   issues:
     # Remove labels
     unlabel:
-      - 'Acknowledged'
       - 'Not-Planned'
       - 'Uncertain'
+      - 'Confirmed'
       - 'Cancelled'
       - 'Accepted'
       - 'Resolved'
@@ -672,6 +800,8 @@ Prorogued:
       - 'Parked'
       - 'Tagged'
       - 'Stale'
+      - 'Noted'
+      - 'Config'
       - 'Queries'
       - 'Unclear'
       - 'Invalid'
@@ -685,6 +815,36 @@ Prorogued:
 # The `Prorogued` label is removed from issues
 -Prorogued:
   issues:
+    # Reopen issue and unlock thread
+    reopen: true
+    unlock: true
+
+# The `Triage` label is added to issues
+Triage:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Not-Planned'
+      - 'Unresolved'
+      - 'Uncertain'
+      - 'Confirmed'
+      - 'Cancelled'
+      - 'Accepted'
+      - 'Resolved'
+      - 'Parked'
+      - 'Tagged'
+      - 'Stale'
+      - 'Bug'
+      - 'Noted'
+      - 'Config'
+      - 'Queries'
+      - 'Unclear'
+      - 'Invalid'
+      - 'Dismissed'
+      - 'Prorogued'
+      - 'Incomplete'
+      - 'Known-Issue'
+      - 'Cannot-Replicate'
     # Reopen issue and unlock thread
     reopen: true
     unlock: true

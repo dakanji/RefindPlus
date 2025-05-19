@@ -5,9 +5,11 @@ on:
     inputs:
       item_id:
         description: 'This Item ID'
+        type: string
         required: true
       orig_id:
         description: 'Original Item ID'
+        type: string
         required: true
 
 permissions:
@@ -23,7 +25,6 @@ jobs:
     name: Issue - Duplicate1
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -52,7 +53,6 @@ jobs:
     needs: [issue_duplicate1]
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -72,7 +72,6 @@ jobs:
     needs: [issue_duplicate2]
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -96,7 +95,6 @@ jobs:
     needs: [issue_duplicate3]
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -117,7 +115,6 @@ jobs:
     needs: [issue_duplicate4]
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
@@ -138,7 +135,6 @@ jobs:
     needs: [issue_duplicate5]
     runs-on: ubuntu-24.04
 
-    if: github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v1
