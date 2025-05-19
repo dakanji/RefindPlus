@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2024 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -31,7 +31,7 @@
 #include "rp_funcs.h"
 #include "icns.h"
 #include "../include/refit_call_wrapper.h"
-
+BOOLEAN gSuppressPointerDraw = FALSE;
 UINTN                           NumSPointerDevices =                                  0;
 EFI_GUID                        SPointerGuid       =   EFI_SIMPLE_POINTER_PROTOCOL_GUID;
 EFI_HANDLE                     *HandleS            =                               NULL;
@@ -61,14 +61,14 @@ VOID pdInitialize (VOID) {
     EFI_STATUS  EnableStatusMouse;
     CHAR16     *MsgStr;
     #endif
-
+    
     EFI_STATUS Status;
     EFI_STATUS HandleStatus;
     UINTN      Index;
     UINTN      Counter;
     UINTN      NumPointerHandles;
 
-
+    
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"M A N A G E   P O I N T E R   D E V I C E S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
@@ -91,7 +91,7 @@ VOID pdInitialize (VOID) {
 
     if (!GlobalConfig.EnableMouse && !GlobalConfig.EnableTouch) {
         MouseTouchActive = FALSE;
-
+        
         #if REFIT_DEBUG > 0
         // DA-TAG: Use LOG_THREE_STAR_END for this instance
         MsgStr = StrDuplicate (L"Running in 'Keyboard Only' Mode");
@@ -152,7 +152,7 @@ VOID pdInitialize (VOID) {
                     );
                     if (!EFI_ERROR(Status)) {
                         NumAPointerDevices++;
-
+                        
                         #if REFIT_DEBUG > 0
                         EnableStatusTouch = EFI_SUCCESS;
                         #endif
@@ -170,7 +170,7 @@ VOID pdInitialize (VOID) {
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
-
+    // Get handles that support the simple pointer protocol (mice)
     EnableStatusMouse = EFI_NOT_STARTED;
     #endif
 
@@ -182,7 +182,7 @@ VOID pdInitialize (VOID) {
             &SPointerGuid, NULL,
             &NumPointerHandles, &HandleS
         );
-
+        
         if (EFI_ERROR(HandleStatus)) {
             #if REFIT_DEBUG > 0
             EnableStatusMouse = EFI_LOAD_ERROR;
@@ -209,14 +209,14 @@ VOID pdInitialize (VOID) {
                     );
                     if (!EFI_ERROR(Status)) {
                         Counter = 1;
-
+                        
                         #if REFIT_DEBUG > 0
                         EnableStatusMouse = EFI_SUCCESS;
                         #endif
                     }
                     else {
                         Counter = 0;
-
+                        
                         #if REFIT_DEBUG > 0
                         if (Status != EFI_NOT_FOUND &&
                             EFI_ERROR(EnableStatusMouse)
@@ -243,19 +243,13 @@ VOID pdInitialize (VOID) {
     #endif
 
     // Load mouse icon
-    if (NumAPointerDevices > 0 ||
-        NumSPointerDevices > 0
-    ) {
-        PointerAvailable = TRUE;
-    }
-    else {
-        PointerAvailable = FALSE;
-    }
-    if (GlobalConfig.EnableMouse && PointerAvailable) {
-        MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
-    }
-    else {
+    PointerAvailable = ((NumAPointerDevices + NumSPointerDevices) > 0) ?
+    TRUE : FALSE;
+    if (!PointerAvailable || !GlobalConfig.EnableMouse) {
         MouseTouchActive = FALSE;
+    }
+    else {
+        MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
     }
 
     #if REFIT_DEBUG > 0
@@ -283,13 +277,13 @@ VOID pdCleanup (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
     #endif
-
-    UINTN   Index;
-
+    
+    UINTN Index;
+    
     #if REFIT_DEBUG > 0
-    MsgStr = L"Pointer Scenarios";
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Dismantle %s", MsgStr);
-    LOG_MSG("Deconfigure %s:", MsgStr);
+    MsgStr = L"Deconfigure Pointer Scenarios";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s:", MsgStr);
     #endif
 
     PointerAvailable = FALSE;
@@ -323,7 +317,7 @@ VOID pdCleanup (VOID) {
     State.Y  = ScreenH / 2;
     State.Press    = FALSE;
     State.Holding  = FALSE;
-
+    
     #if REFIT_DEBUG > 0
     MsgStr = L"Disable Pointer Protocols ... Success";
     ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -358,9 +352,9 @@ EFI_EVENT pdWaitEvent (
     UINTN Index
 ) {
     EFI_EVENT TheEvent;
-
-
-    if (!PointerAvailable ||
+    
+    
+    if (!PointerAvailable                              ||
         Index >= (NumAPointerDevices + NumSPointerDevices)
     ) {
         TheEvent = NULL;
@@ -379,53 +373,12 @@ EFI_EVENT pdWaitEvent (
 // Gets the current state of pointer devices and
 // assigns this to the first available device
 ////////////////////////////////////////////////////////////////////////////////
-static
-INT32 Int64ToInt32 (
-    INT64 TempINT64
-) {
-    if (TempINT64 > INT32_MAX) return INT32_MAX;
-    if (TempINT64 < INT32_MIN) return INT32_MIN;
-
-    return (INT32) TempINT64;
-} // static INT32 Int64ToInt32()
-
-static
-UINTN Uint64ToUintn (
-    UINT64 TempUINT64
-) {
-    if (TempUINT64 > UINTN_MAX) return UINTN_MAX;
-    if (TempUINT64 < UINTN_MIN) return UINTN_MIN;
-
-    return (UINTN) TempUINT64;
-} // static UINTN Uint64ToUintn()
-
-static
-UINTN Int32ToUintn (
-    INT32 TempINT32
-) {
-    if (TempINT32 > UINTN_MAX) return UINTN_MAX;
-    if (TempINT32 < UINTN_MIN) return UINTN_MIN;
-
-    return (UINTN) TempINT32;
-} // static UINTN Int32ToUintn()
-
-static
-UINTN Int64ToUintn (
-    INT64 TempINT64
-) {
-    if (TempINT64 > UINTN_MAX) return UINTN_MAX;
-    if (TempINT64 < UINTN_MIN) return UINTN_MIN;
-
-    return (UINTN) TempINT64;
-} // static UINTN Int64ToUintn()
-
 EFI_STATUS pdUpdateState (VOID) {
     EFI_STATUS                 Status;
+    EFI_STATUS                 PointerStatus;
     UINTN                      Index;
     INT32                      TargetX;
     INT32                      TargetY;
-    INT64                      TempINT64;
-    UINT64                     TempUINT64;
     BOOLEAN                    LastHolding;
     EFI_SIMPLE_POINTER_STATE   SPointerState;
     EFI_ABSOLUTE_POINTER_STATE APointerState;
@@ -440,92 +393,162 @@ EFI_STATUS pdUpdateState (VOID) {
     }
 
     LastHolding = State.Holding;
-
+    Status = EFI_NOT_READY;
+    
     do {
         for (Index = 0; Index < NumAPointerDevices; Index++) {
-            Status = REFIT_CALL_2_WRAPPER(
-                ProtocolA[Index]->GetState,
-                ProtocolA[Index], &APointerState
+            PointerStatus = REFIT_CALL_2_WRAPPER(
+                ProtocolA[Index]->GetState, ProtocolA[Index], &APointerState
             );
-            if (EFI_ERROR(Status)) {
-                continue; // 'for' loop
-            }
+            if (!EFI_ERROR(PointerStatus)) {
+                // --- Added Debug Log ---
+                #if REFIT_DEBUG > 1 // Use loglevel2 for this detailed info
+                LOG_MSG("APointer Input: CurrentX=%d, CurrentY=%d, ActiveButtons=%x\n",
+                        APointerState.CurrentX, APointerState.CurrentY, APointerState.ActiveButtons);
+                #endif
+                // --- End Debug Log ---
 
-            TempUINT64 = DivU64x64Remainder (
-                (UINT64) APointerState.CurrentX *
-                (UINT64) ScreenW,
-                (UINT64) ProtocolA[Index]->Mode->AbsoluteMaxX,
-                NULL
-            );
-            State.X = Uint64ToUintn (TempUINT64);
+#ifndef EFI32
+                State.X = (APointerState.CurrentX * ScreenW) / ProtocolA[Index]->Mode->AbsoluteMaxX;
+                State.Y = (APointerState.CurrentY * ScreenH) / ProtocolA[Index]->Mode->AbsoluteMaxY;
+#else
+                State.X = (UINTN) DivU64x64Remainder (
+                    APointerState.CurrentX * ScreenW,
+                    ProtocolA[Index]->Mode->AbsoluteMaxX,
+                    NULL
+                );
+                State.Y = (UINTN) DivU64x64Remainder (
+                    APointerState.CurrentY * ScreenH,
+                    ProtocolA[Index]->Mode->AbsoluteMaxY,
+                    NULL
+                );
+#endif
+                // --- Added Debug Log ---
+                #if REFIT_DEBUG > 1 // Use loglevel2
+                LOG_MSG("APointer State Updated: X=%d, Y=%d\n", State.X, State.Y);
+                #endif
+                // --- End Debug Log ---
 
-            TempUINT64 = DivU64x64Remainder (
-                (UINT64) APointerState.CurrentY *
-                (UINT64) ScreenH,
-                (UINT64) ProtocolA[Index]->Mode->AbsoluteMaxY,
-                NULL
-            );
-            State.Y = Uint64ToUintn (TempUINT64);
+                State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
+                Status = EFI_SUCCESS;
 
-            State.Holding = (
-                APointerState.ActiveButtons & EFI_ABSP_TouchActive
-            );
-
-            break; // 'for' loop
+                break;
+            } // if !EFI_ERROR(PointerStatus)
         } // for
 
         if (!EFI_ERROR(Status)) {
-            break; // 'do' loop
+            break;
         }
 
         for (Index = 0; Index < NumSPointerDevices; Index++) {
-            Status = REFIT_CALL_2_WRAPPER(
-                ProtocolS[Index]->GetState,
-                ProtocolS[Index], &SPointerState
+            PointerStatus = REFIT_CALL_2_WRAPPER(
+                ProtocolS[Index]->GetState, ProtocolS[Index], &SPointerState
             );
-            if (EFI_ERROR(Status)) {
-                continue; // 'for' loop
-            }
+            if (!EFI_ERROR(PointerStatus)) {
+                // --- Added Debug Log ---
+                #if REFIT_DEBUG > 1 // Use loglevel2
+                LOG_MSG("SPointer Input: RelativeMovementX=%d, RelativeMovementY=%d, LeftButton=%d\n",
+                        SPointerState.RelativeMovementX, SPointerState.RelativeMovementY, SPointerState.LeftButton);
+                #endif
+                // --- End Debug Log ---
 
-            TempINT64 = (INT64) State.X + DivS64x64Remainder (
-                (INT64) SPointerState.RelativeMovementX *
-                (INT64) GlobalConfig.MouseSpeed,
-                (INT64) ProtocolS[Index]->Mode->ResolutionX,
-                NULL
-            );
-            TargetX = Int64ToInt32 (TempINT64);
+#ifndef EFI32
+                TargetX = State.X + SPointerState.RelativeMovementX *
+                    GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionX;
+                TargetY = State.Y + SPointerState.RelativeMovementY *
+                    GlobalConfig.MouseSpeed / ProtocolS[Index]->Mode->ResolutionY;
+#else
+                TargetX = State.X + (INTN) DivS64x64Remainder (
+                    SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
+                    ProtocolS[Index]->Mode->ResolutionX,
+                    NULL
+                );
+                TargetY = State.Y + (INTN) DivS64x64Remainder (
+                    SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
+                    ProtocolS[Index]->Mode->ResolutionY,
+                    NULL
+                );
+#endif
 
-            TempINT64 = (INT64) State.Y + DivS64x64Remainder (
-                (INT64) SPointerState.RelativeMovementY *
-                (INT64) GlobalConfig.MouseSpeed,
-                (INT64) ProtocolS[Index]->Mode->ResolutionY,
-                NULL
-            );
-            TargetY = Int64ToInt32 (TempINT64);
+                // --- Potential Adjustment 1: Sensitivity check ---
+                // Add a check to see if movement is significant enough before updating
+                // This can sometimes help with jitter or minor spurious input
+                /*
+                #define MIN_MOVEMENT_THRESHOLD 2 // Adjust this value as needed
+                if (ABS(SPointerState.RelativeMovementX) < MIN_MOVEMENT_THRESHOLD &&
+                    ABS(SPointerState.RelativeMovementY) < MIN_MOVEMENT_THRESHOLD) {
+                    // Movement is too small, ignore this update for position
+                } else {
+                    // Original boundary checks and State update
+                    if (TargetX < 0) {
+                        State.X = 0;
+                    }
+                    else if (TargetX >= ScreenW) {
+                        State.X = ScreenW - 1;
+                    }
+                    else {
+                        State.X = TargetX;
+                    }
 
-            TempINT64 = ScreenW - 1;
-            if (0);
-            else if (TargetX < 0)        State.X = 0;
-            else if (TargetX >= ScreenW) State.X = Int64ToUintn (TempINT64);
-            else                         State.X = Int32ToUintn (TargetX);
+                    if (TargetY < 0) {
+                        State.Y = 0;
+                    }
+                    else if (TargetY >= ScreenH) {
+                        State.Y = ScreenH - 1;
+                    }
+                    else {
+                        State.Y = TargetY;
+                    }
+                }
+                */
+                // --- End Potential Adjustment 1 ---
 
-            TempINT64 = ScreenH - 1;
-            if (0);
-            else if (TargetY < 0)        State.Y = 0;
-            else if (TargetY >= ScreenH) State.Y = Int64ToUintn (TempINT64);
-            else                         State.Y = Int32ToUintn (TargetY);
 
-            State.Holding = SPointerState.LeftButton;
+                // Original boundary checks and State update (if not using Adjustment 1)
+                if (TargetX < 0) {
+                    State.X = 0;
+                }
+                else if (TargetX >= ScreenW) {
+                    State.X = ScreenW - 1;
+                }
+                else {
+                    State.X = TargetX;
+                }
 
-            break; // 'for' loop
+                if (TargetY < 0) {
+                    State.Y = 0;
+                }
+                else if (TargetY >= ScreenH) {
+                    State.Y = ScreenH - 1;
+                }
+                else {
+                    State.Y = TargetY;
+                }
+
+                // --- Added Debug Log ---
+                #if REFIT_DEBUG > 1 // Use loglevel2
+                LOG_MSG("SPointer State Updated: X=%d, Y=%d\n", State.X, State.Y);
+                #endif
+                // --- End Debug Log ---
+
+
+                State.Holding = SPointerState.LeftButton;
+                Status = EFI_SUCCESS;
+
+                break;
+            } // if !EFI_ERROR(PointerStatus)
         } // for
     } while (0); // This 'loop' only runs once
 
     State.Press = (LastHolding && !State.Holding);
 
-    if (EFI_ERROR(Status)) {
-        Status = EFI_NOT_READY;
-    }
+    // --- Added Debug Log ---
+    #if REFIT_DEBUG > 1 // Use loglevel2
+    LOG_MSG("pdUpdateState End: State.X=%d, State.Y=%d, State.Press=%d, State.Holding=%d\n",
+            State.X, State.Y, State.Press, State.Holding);
+    #endif
+    // --- End Debug Log ---
+
 
     return Status;
 } // EFI_STATUS pdUpdateState()
@@ -548,7 +571,30 @@ VOID pdDraw (VOID) {
         return;
     }
 
-    MY_FREE_IMAGE(Background);
+    // --- Added Debug Log ---
+    #if REFIT_DEBUG > 1 // Use loglevel2
+    LOG_MSG("pdDraw: Drawing at X=%d, Y=%d\n", State.X, State.Y);
+    #endif
+    // --- End Debug Log ---
+    // Add this check at the beginning
+    if (gSuppressPointerDraw) {
+        return; // Exit without drawing the pointer if suppressed
+    }
+    if (!MouseTouchActive) {
+        return;
+    }
+/*    // --- Potential Adjustment 2: Redraw optimization check ---
+    // Only redraw if the position has actually changed
+
+      if (State.X == LastXPos && State.Y == LastYPos && Background != NULL) {
+         // Position hasn't changed and background is already cleared, no need to redraw
+             return;
+     }
+
+    // --- End Potential Adjustment 2 ---
+*/
+    pdClear(); // Clear the previous position
+
     if (MouseImage != NULL) {
         Width  = ((State.X + MouseImage->Width)  > ScreenW)
             ? ScreenW - State.X : MouseImage->Width;
@@ -576,9 +622,14 @@ VOID pdDraw (VOID) {
 VOID pdClear (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr;
-
     static BOOLEAN NotLogged = TRUE;
     #endif
+
+    // --- Added Debug Log ---
+    #if REFIT_DEBUG > 1 // Use loglevel2
+    LOG_MSG("pdClear: Clearing at LastXPos=%d, LastYPos=%d\n", LastXPos, LastYPos);
+    #endif
+    // --- End Debug Log ---
 
 
     if (!MouseTouchActive) {
