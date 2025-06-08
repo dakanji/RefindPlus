@@ -46,7 +46,7 @@
  *
  * Modifications distributed under the preceding terms.
  */
-
+#include "pointer.h"
 #include "global.h"
 #include "menu.h"
 #include "icns.h"
@@ -2356,7 +2356,9 @@ UINTN DrawMenuScreen (
                 State.PaintSelection = FALSE;
             }
         }
-        pdDraw();
+        if (!gSuppressPointerDraw){
+            pdDraw();
+        }
 
         // DA-TAG: Investigate This
         //         Toggle the selection once to work around failure to
@@ -2414,9 +2416,11 @@ UINTN DrawMenuScreen (
 
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (!EFI_ERROR(Status)) {
-            PointerActive      = FALSE;
-            DrawSelection      =  TRUE;
-            TimeSinceKeystroke =     0;
+            pdClear(); // hide the pointer when a key is pressed
+            gSuppressPointerDraw      =  TRUE;
+            PointerActive             = FALSE;
+            DrawSelection             =  TRUE;
+            TimeSinceKeystroke =            0;
         }
         else if (!EFI_ERROR(PointerStatus)) {
             PointerActive      = TRUE;

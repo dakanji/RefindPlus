@@ -1,0 +1,88 @@
+diff --git a/BootMaster/menu.c b/BootMaster/menu.c
+index aa5702b..5fcb517 100644
+--- a/BootMaster/menu.c
++++ b/BootMaster/menu.c
+@@ -46,7 +46,7 @@
+  *
+  * Modifications distributed under the preceding terms.
+  */
+-
++#include "pointer.h"
+ #include "global.h"
+ #include "menu.h"
+ #include "icns.h"
+@@ -2356,7 +2356,9 @@ UINTN DrawMenuScreen (
+                 State.PaintSelection = FALSE;
+             }
+         }
+-        pdDraw();
++        if (!gSuppressPointerDraw){
++            pdDraw();
++        }
+ 
+         // DA-TAG: Investigate This
+         //         Toggle the selection once to work around failure to
+@@ -2414,9 +2416,11 @@ UINTN DrawMenuScreen (
+ 
+         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+         if (!EFI_ERROR(Status)) {
+-            PointerActive      = FALSE;
+-            DrawSelection      =  TRUE;
+-            TimeSinceKeystroke =     0;
++            pdClear(); // hide the pointer when a key is pressed
++            gSuppressPointerDraw      =  TRUE;
++            PointerActive             = FALSE;
++            DrawSelection             =  TRUE;
++            TimeSinceKeystroke =            0;
+         }
+         else if (!EFI_ERROR(PointerStatus)) {
+             PointerActive      = TRUE;
+diff --git a/BootMaster/pointer.c b/BootMaster/pointer.c
+index 1b73a6e..1da05cf 100644
+--- a/BootMaster/pointer.c
++++ b/BootMaster/pointer.c
+@@ -52,7 +52,7 @@ BOOLEAN                         PointerAvailable   =
+ POINTER_STATE                   State;
+ 
+ extern BOOLEAN                  RunningOC;
+-
++BOOLEAN gSuppressPointerDraw = TRUE;
+ ////////////////////////////////////////////////////////////////////////////////
+ // Initialise Pointer Devices
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -548,7 +548,10 @@ EFI_STATUS pdUpdateState (VOID) {
+     } while (0); // This 'loop' only runs once
+ 
+     State.Press = (LastHolding && !State.Holding);
+-
++    if (State.X != LastXPos || State.Y != LastYPos) { // Mouse has moved
++        if (gSuppressPointerDraw) { // If pointer was suppressed (hidden)
++            gSuppressPointerDraw = FALSE; }// Show the pointer
++        }
+     if (EFI_ERROR(Status)) {
+         Status = EFI_NOT_READY;
+     }
+@@ -573,7 +576,9 @@ VOID pdDraw (VOID) {
+     if (!MouseTouchActive) {
+         return;
+     }
+-
++    if (gSuppressPointerDraw) {
++        return;
++    }
+     MY_FREE_IMAGE(Background);
+     if (MouseImage != NULL) {
+         Width = (
+diff --git a/BootMaster/pointer.h b/BootMaster/pointer.h
+index 05b5b22..800af64 100644
+--- a/BootMaster/pointer.h
++++ b/BootMaster/pointer.h
+@@ -38,7 +38,7 @@
+ #ifndef _EFI_POINT_H
+ #include "../EfiLib/AbsolutePointer.h"
+ #endif
+-
++extern BOOLEAN gSuppressPointerDraw;
+ typedef struct PointerStateStruct {
+     UINTN         X;
+     UINTN         Y;

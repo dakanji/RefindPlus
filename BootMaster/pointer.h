@@ -38,7 +38,7 @@
 #ifndef _EFI_POINT_H
 #include "../EfiLib/AbsolutePointer.h"
 #endif
-
+extern BOOLEAN gSuppressPointerDraw;
 typedef struct PointerStateStruct {
     UINTN         X;
     UINTN         Y;
