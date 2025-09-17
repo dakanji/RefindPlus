@@ -791,7 +791,7 @@ VOID GenerateSubScreen (
                     LOG_SEP(L"X");
                 } // while
                 BREAD_CRUMB(L"%a:  2a 8", __func__);
-                FreeTokenLine (&TokenList, &TokenCount);
+                //FreeTokenLine (&TokenList, &TokenCount);
 
                 BREAD_CRUMB(L"%a:  2a 9", __func__);
                 MY_FREE_POOL(KernelVersion);
