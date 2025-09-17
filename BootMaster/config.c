@@ -3189,7 +3189,7 @@ VOID ReadConfig (
             }
             #endif
 
-            Flag = TokenList[i];
+            Flag = TokenList[1];
             if (MyStriCmp (Flag, L"noscale")) {
                 GlobalConfig.BannerScale = BANNER_NOSCALE;
             }
