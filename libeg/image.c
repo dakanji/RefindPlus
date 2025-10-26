@@ -219,6 +219,8 @@ EG_IMAGE * egCropImage (
 // float values. Therefore, this function uses integer arithmetic but multiplies
 // all values by FP_MULTIPLIER to achieve something resembling the sort of precision
 // needed for good results.
+// NOTE: using integer arithmetic introduces noticeable glitches on large screens.
+// Therefor, 64 bit architecture use floating point arithmetic.
 EG_IMAGE * egScaleImage (
     IN EG_IMAGE  *Image,
     IN UINTN      NewWidth,
@@ -228,9 +230,8 @@ EG_IMAGE * egScaleImage (
     EG_PIXEL   a, b, c, d;
     UINTN      i, j;
     UINTN      Offset;
-    UINTN      x, y, Index;
-    UINTN      x_diff, y_diff;
-    UINTN      x_ratio, y_ratio;
+    UINTN      Index;
+
 
     if (!GlobalConfig.BootLogoScale && BootLogoFlag) {
         return egCopyImage (Image);
@@ -272,6 +273,14 @@ EG_IMAGE * egScaleImage (
         return NULL;
     }
 
+    if (Image->Width  < 2 ||
+        Image->Height < 2
+    ) {
+        // Avoid 'out of bounds' read
+        // Min input size/side is 2px
+        return egCopyImage (Image);
+    }
+
     if (Image->Width  == NewWidth &&
         Image->Height == NewHeight
     ) {
@@ -289,6 +298,59 @@ EG_IMAGE * egScaleImage (
 
         return NULL;
     }
+
+
+#if defined(EFIX64) || defined(EFIAARCH64)
+
+
+    // [New floating point implementation]
+    UINTN      yIndex;
+    float      x, y;
+    float      v0, v1, h0, h1;
+    float      x_ratio, y_ratio;
+
+
+    Offset = 0;
+    x_ratio = ((float)(Image->Width  - 1)) /  NewWidth;
+    y_ratio = ((float)(Image->Height - 1)) / NewHeight;
+
+     for (i = 0; i < NewHeight; i++) {
+        y  = i * y_ratio;
+        v1 = y - (UINTN) y;
+        v0 = 1.0f - v1;
+
+        yIndex = (UINTN) y * Image->Width;
+
+        for (j = 0; j < NewWidth; j++) {
+            x  = j * x_ratio;
+            h1 = x - (UINTN) x;
+            h0 = 1.0f - h1;
+
+            Index = yIndex + (UINTN) x;
+
+            a = Image->PixelData[Index];
+            b = Image->PixelData[Index + 1];
+            c = Image->PixelData[Index + Image->Width];
+            d = Image->PixelData[Index + Image->Width + 1];
+
+            NewImage->PixelData[Offset].r = (UINT8)(a.r * h0 * v0 + b.r * h1 * v0 + c.r * h0 * v1 + d.r * h1 * v1 + 0.5f);
+            NewImage->PixelData[Offset].g = (UINT8)(a.g * h0 * v0 + b.g * h1 * v0 + c.g * h0 * v1 + d.g * h1 * v1 + 0.5f);
+            NewImage->PixelData[Offset].b = (UINT8)(a.b * h0 * v0 + b.b * h1 * v0 + c.b * h0 * v1 + d.b * h1 * v1 + 0.5f);
+            NewImage->PixelData[Offset].a = (UINT8)(a.a * h0 * v0 + b.a * h1 * v0 + c.a * h0 * v1 + d.a * h1 * v1 + 0.5f);
+
+            Offset++;
+        } // for (j...)
+    } // for (i...)
+
+
+#else
+
+
+    // [Old fixed point implementation]
+    UINTN      x, y;
+    UINTN      x_diff, y_diff;
+    UINTN      x_ratio, y_ratio;
+
 
     Offset = 0;
     x_ratio = ((Image->Width  - 1) * FP_MULTIPLIER) /  NewWidth;
@@ -342,6 +404,9 @@ EG_IMAGE * egScaleImage (
             ) / (FP_MULTIPLIER * FP_MULTIPLIER);
         } // for (j...)
     } // for (i...)
+
+
+#endif
 
     return NewImage;
 } // EG_IMAGE * egScaleImage()
