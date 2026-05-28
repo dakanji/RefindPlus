@@ -1832,6 +1832,30 @@ VOID SetLoaderDefaults (
             GotFlag       = TRUE;
             Entry->OSType =  'R';
         }
+        else if (IsStriStr (LoaderPath, L"\\FreeBSD\\")) {
+            BREAD_CRUMB(L"%a:  5i_fbsd 1", __func__);
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"freebsd", L','
+                );
+            }
+
+            BREAD_CRUMB(L"%a:  5i_fbsd 2", __func__);
+            GotFlag       = TRUE;
+            Entry->OSType =  'B';
+        }
+        else if (IsStriStr (LoaderPath, L"\\DragonFly\\")) {
+            BREAD_CRUMB(L"%a:  5i_dfly 1", __func__);
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"dragonflybsd", L','
+                );
+            }
+
+            BREAD_CRUMB(L"%a:  5i_dfly 2", __func__);
+            GotFlag       = TRUE;
+            Entry->OSType =  'B';
+        }
         else if (MyStriCmp (NameClues, L"diags.efi")) {
             BREAD_CRUMB(L"%a:  5j 1", __func__);
             if (GetImage) {
