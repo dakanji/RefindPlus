@@ -246,6 +246,7 @@ EFI_STATUS NormaliseCSR (VOID);
 EFI_STATUS FlagNoCSR (VOID);
 
 VOID ClearRecoveryBootFlags (VOID);
+VOID HandleAppleGfxRestore (VOID);
 VOID RotateCsrValue (BOOLEAN UnsetDynamic);
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN ShowResult);
 #endif

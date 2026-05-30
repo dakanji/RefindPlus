@@ -3943,6 +3943,9 @@ EFI_STATUS EFIAPI efi_main (
         );
     }
 
+    /* Clear stale Apple display restore state. */
+    HandleAppleGfxRestore();
+
     /* Set Legacy Boot Type */
     FindLegacyBootType();
 

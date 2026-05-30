@@ -38,6 +38,12 @@ BOOLEAN    MuteLogger     =                    FALSE;
 BOOLEAN    NormaliseCall  =                    FALSE;
 EFI_GUID   AppleBootGuid  = APPLE_BOOT_VARIABLE_GUID;
 
+// Apple device-properties NVRAM namespace.
+EFI_GUID   ApplePathPropertiesGuid = {
+    0x4d1ede05, 0x38c7, 0x4a6a,
+    { 0x9c, 0xc6, 0x4b, 0xcc, 0xa8, 0xb3, 0x8c, 0x14 }
+};
+
 // Return details of Apple's Configurable Security Restrictions (CSR),
 // AKA the System Integrity Protection (SIP) or "rootless", status.
 // Claim this nvRAM setting is enabled if it is actually absent.
@@ -1050,3 +1056,223 @@ VOID ClearRecoveryBootFlags (VOID) {
     ZapBootFlag (L"internet-recovery-mode");
     ZapBootFlag (L"RecoveryBootInitiator");
 } // VOID ClearRecoveryBootFlags()
+
+// Scan raw UTF-16LE data for "saved-config".
+static
+BOOLEAN BufferHasSavedConfig (
+    IN UINT8 *Buffer,
+    IN UINTN  BufferSize
+) {
+    static CONST UINT8 Needle[] = {
+        's', 0, 'a', 0, 'v', 0, 'e', 0, 'd', 0, '-', 0,
+        'c', 0, 'o', 0, 'n', 0, 'f', 0, 'i', 0, 'g', 0
+    };
+    UINTN i;
+    UINTN j;
+    UINTN NeedleLen = sizeof (Needle);
+
+    if (Buffer == NULL || BufferSize < NeedleLen) {
+        return FALSE;
+    }
+
+    for (i = 0; i + NeedleLen <= BufferSize; i++) {
+        for (j = 0; j < NeedleLen; j++) {
+            if (Buffer[i + j] != Needle[j]) {
+                break;
+            }
+        }
+        if (j == NeedleLen) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+} // static BOOLEAN BufferHasSavedConfig()
+
+// Clear stale Apple display restore state and warm reset once.
+VOID HandleAppleGfxRestore (VOID) {
+    EFI_STATUS  DeleteStatus;
+    EFI_STATUS  GuardStatus;
+    EFI_STATUS  Status;
+    VOID       *PathProps;
+    UINTN       PathPropsSize;
+    UINTN       VarSize;
+    UINT8       GuardByte;
+    UINT32      HealCount;
+    BOOLEAN     GuardSet;
+    BOOLEAN     GuardSaved;
+    BOOLEAN     HasSavedConfig;
+    BOOLEAN     PoisonCleared;
+
+    #if REFIT_DEBUG > 0
+    CHAR16     *MsgStr;
+    #endif
+
+
+    if (!AppleFirmware) {
+        return;
+    }
+
+    // Read the path-properties variable restored before RefindPlus starts.
+    PathProps     = NULL;
+    PathPropsSize =    0;
+    Status = EfivarGetRaw (
+        &ApplePathPropertiesGuid, L"AAPL,PathProperties0000",
+        &PathProps, &PathPropsSize
+    );
+    HasSavedConfig = (!EFI_ERROR(Status))
+        ? BufferHasSavedConfig ((UINT8 *) PathProps, PathPropsSize)
+        : FALSE;
+    MY_FREE_POOL(PathProps);
+
+    // Raw NVRAM is required here; the emulated store is not available yet.
+    GuardByte = 0;
+    VarSize   = sizeof (GuardByte);
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, L"RP_GfxRestorePass",
+        &RefindPlusGuid, NULL, &VarSize, &GuardByte
+    );
+    GuardSet = (!EFI_ERROR(Status));
+
+    if (!HasSavedConfig) {
+        // Clear the one-shot guard after a clean boot.
+        if (GuardSet) {
+            HealCount = 0;
+            VarSize   = sizeof (HealCount);
+            REFIT_CALL_5_WRAPPER(
+                gRT->GetVariable, L"RP_GfxRestoreCount",
+                &RefindPlusGuid, NULL, &VarSize, &HealCount
+            );
+
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (
+                L"Apple GFX Restore Fix:- 'Self-Heal Complete (Count:- %d) ... Resumed Normal Boot'",
+                HealCount
+            );
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
+
+            REFIT_CALL_5_WRAPPER(
+                gRT->SetVariable, L"RP_GfxRestorePass",
+                &RefindPlusGuid, AccessFlagsFull, 0, NULL
+            );
+        }
+
+        // Nothing more to do
+        return;
+    }
+
+    if (GuardSet) {
+        // Already reset once. Clear the guard and avoid a loop.
+        #if REFIT_DEBUG > 0
+        MsgStr = L"Apple GFX Restore Fix:- 'Still Present After Reset ... Abort to Avoid Loop'";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        LOG_MSG("** WARN: %s", MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, L"RP_GfxRestorePass",
+            &RefindPlusGuid, AccessFlagsFull, 0, NULL
+        );
+
+        return;
+    }
+
+    // Persist the one-shot guard across the warm reset.
+    GuardByte = 1;
+    GuardStatus = REFIT_CALL_5_WRAPPER(
+        gRT->SetVariable, L"RP_GfxRestorePass",
+        &RefindPlusGuid, AccessFlagsFull, sizeof (GuardByte), &GuardByte
+    );
+    GuardSaved = (!EFI_ERROR(GuardStatus));
+
+    // Drop the poisoned variable; firmware recreates it on the next boot.
+    DeleteStatus = REFIT_CALL_5_WRAPPER(
+        gRT->SetVariable, L"AAPL,PathProperties0000",
+        &ApplePathPropertiesGuid, AccessFlagsFull, 0, NULL
+    );
+
+    // If the guard failed, require proof that the poison is gone before reset.
+    PoisonCleared = FALSE;
+    if (!EFI_ERROR(DeleteStatus) || !GuardSaved) {
+        PathProps     = NULL;
+        PathPropsSize =    0;
+        Status = REFIT_CALL_5_WRAPPER(
+            gRT->GetVariable, L"AAPL,PathProperties0000",
+            &ApplePathPropertiesGuid, NULL,
+            &PathPropsSize, PathProps
+        );
+        if (Status == EFI_NOT_FOUND) {
+            PoisonCleared = TRUE;
+        }
+        else if (!EFI_ERROR(Status)) {
+            PoisonCleared = TRUE;
+        }
+        else if (Status == EFI_BUFFER_TOO_SMALL && PathPropsSize > 0) {
+            PathProps = AllocateZeroPool (PathPropsSize);
+            if (PathProps == NULL) {
+                Status = EFI_OUT_OF_RESOURCES;
+            }
+            else {
+                Status = REFIT_CALL_5_WRAPPER(
+                    gRT->GetVariable, L"AAPL,PathProperties0000",
+                    &ApplePathPropertiesGuid, NULL,
+                    &PathPropsSize, PathProps
+                );
+                if (!EFI_ERROR(Status)) {
+                    PoisonCleared = !BufferHasSavedConfig (
+                        (UINT8 *) PathProps, PathPropsSize
+                    );
+                }
+            }
+        }
+        MY_FREE_POOL(PathProps);
+    }
+
+    if (!GuardSaved && !PoisonCleared) {
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"Apple GFX Restore Fix:- 'Guard/Removal Failed ... Abort Reset' (Guard:- %r, Delete:- %r, Verify:- %r)",
+            GuardStatus, DeleteStatus, Status
+        );
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        LOG_MSG("** WARN: %s", MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+        #endif
+
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = L"Apple GFX Restore Fix:- 'Mac OS saved-config Detected ... Clear and Warm Reset'";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
+    #endif
+
+    // Breadcrumb logged on the next clean boot.
+    HealCount = 0;
+    VarSize   = sizeof (HealCount);
+    REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable, L"RP_GfxRestoreCount",
+        &RefindPlusGuid, NULL, &VarSize, &HealCount
+    );
+    HealCount++;
+    REFIT_CALL_5_WRAPPER(
+        gRT->SetVariable, L"RP_GfxRestoreCount",
+        &RefindPlusGuid, AccessFlagsFull, sizeof (HealCount), &HealCount
+    );
+
+    // Warm reset so firmware re-initialises the display.
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, EfiResetWarm,
+        EFI_SUCCESS, 0, NULL
+    );
+
+    // Not reached
+} // VOID HandleAppleGfxRestore()
