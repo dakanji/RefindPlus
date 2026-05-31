@@ -1877,6 +1877,15 @@ VOID SetLoaderDefaults (
             GotFlag       = TRUE;
             Entry->OSType =  'H';
         }
+        else if (IsStriStr (LoaderPath, L"\\9front\\")) {
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"9front", L','
+                );
+            }
+            GotFlag       = TRUE;
+            Entry->OSType =  'P';
+        }
         else if (MyStriCmp (NameClues, L"diags.efi")) {
             BREAD_CRUMB(L"%a:  5j 1", __func__);
             if (GetImage) {
