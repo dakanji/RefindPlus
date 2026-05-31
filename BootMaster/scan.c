@@ -1857,14 +1857,20 @@ VOID SetLoaderDefaults (
             Entry->OSType =  'B';
         }
         else if (IsStriStr (LoaderPath, L"\\NetBSD\\")) {
-            BREAD_CRUMB(L"%a:  5i_nbsd 1", __func__);
             if (GetImage) {
                 MergeUniqueStrings (
                     &TmpIconName, L"netbsd", L','
                 );
             }
-
-            BREAD_CRUMB(L"%a:  5i_nbsd 2", __func__);
+            GotFlag       = TRUE;
+            Entry->OSType =  'B';
+        }
+        else if (IsStriStr (LoaderPath, L"\\OpenBSD\\")) {
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"openbsd", L','
+                );
+            }
             GotFlag       = TRUE;
             Entry->OSType =  'B';
         }
