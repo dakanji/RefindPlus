@@ -1868,6 +1868,15 @@ VOID SetLoaderDefaults (
             GotFlag       = TRUE;
             Entry->OSType =  'B';
         }
+        else if (IsStriStr (LoaderPath, L"\\HAIKU\\")) {
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"haiku", L','
+                );
+            }
+            GotFlag       = TRUE;
+            Entry->OSType =  'H';
+        }
         else if (MyStriCmp (NameClues, L"diags.efi")) {
             BREAD_CRUMB(L"%a:  5j 1", __func__);
             if (GetImage) {
