@@ -3,8 +3,8 @@ name: 'Manage Runs'
 
 on:
   workflow_dispatch:
-  # schedule = 01:01 on the 1st day of each month
   schedule:
+    # Every 1st Day of Month at 01:01
     - cron: '1 1 1 * *'
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: App Token Prune

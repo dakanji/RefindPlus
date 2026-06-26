@@ -37,13 +37,13 @@
  * Modified for rEFInd
  * Copyright (c) 2021 Roderick W Smith
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+** Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 
 #include "global.h"
@@ -112,6 +112,50 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
 
 
 static
+VOID VetAltImgTool (
+    IN UINTN Id,
+    IN UINTN TileSize
+) {
+    EG_IMAGE *TmpImage;
+
+
+    if (BuiltinIconTable[Id].Image != NULL) return;
+    switch (Id) {
+        case BUILTIN_ICON_TOOL_NVRAMCLEAN: {
+            TmpImage = egPrepareEmbeddedImage (
+                &egemb_tool_clean_nvram, TRUE, NULL
+            );
+        }
+
+        break;
+        default: { TmpImage = NULL; }
+    }
+    if (TmpImage == NULL) return;
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(
+        1, LOG_THREE_STAR_MID,
+        L"Fetch Embedded:- %dx%d px",
+        TmpImage->Width, TmpImage->Height
+    );
+    #endif
+
+    BuiltinIconTable[Id].Image = egScaleImage (
+        TmpImage, TileSize, TileSize
+    );
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(
+        1, LOG_THREE_STAR_MID,
+        L"Cache Embedded:- %dx%d px",
+        TileSize, TileSize
+    );
+    #endif
+
+    MY_FREE_IMAGE(TmpImage);
+} // static VOID VetAltImgTool()
+
+static
 EG_IMAGE * DummyImageEx (
     IN UINTN PixelSize
 ) {
@@ -128,21 +172,26 @@ EG_IMAGE * DummyImageEx (
         return Image;
     }
 
-    Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BasePixel);
+    Image = egCreateFilledImage (
+        PixelSize, PixelSize,
+        TRUE, &BasePixel
+    );
     if (Image == NULL) {
         return NULL;
     }
 
     LineOffset = PixelSize * 4;
-    YPtr = (CHAR8 *) Image->PixelData + (((PixelSize - 32) >> 1) * (LineOffset + 4));
+    YPtr = (CHAR8 *) Image->PixelData + (
+        ((PixelSize - 32) >> 1) * (LineOffset + 4)
+    );
 
     for (y = 0; y < 32; y++) {
         Ptr = YPtr;
         for (x = 0; x < 32; x++) {
             if (((x + y) % 12) < 6) {
-                *Ptr++ =   0;
-                *Ptr++ =   0;
-                *Ptr++ =   0;
+                *Ptr++ = 0;
+                *Ptr++ = 0;
+                *Ptr++ = 0;
             }
             else {
                 *Ptr++ =   0;
@@ -160,6 +209,9 @@ EG_IMAGE * DummyImageEx (
 EG_IMAGE * BuiltinIcon (
     IN UINTN Id
 ) {
+    UINTN             TileSize;
+
+
     if (!AllowGraphicsMode) {
         // Early Return
         return NULL;
@@ -183,27 +235,25 @@ EG_IMAGE * BuiltinIcon (
         #endif
     }
     else {
+        TileSize = GlobalConfig.IconSizes[
+            BuiltinIconTable[Id].IconSize
+        ];
         BuiltinIconTable[Id].Image = egFindIcon (
-            BuiltinIconTable[Id].FileName,
-            GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
+            BuiltinIconTable[Id].FileName, TileSize
         );
 
-        if (BuiltinIconTable[Id].Image == NULL) {
-            if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
-                BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (
-                    &egemb_tool_clean_nvram, FALSE, NULL
-                );
-            }
+        VetAltImgTool (Id, TileSize);
 
-            if (BuiltinIconTable[Id].Image == NULL) {
-                BuiltinIconTable[Id].Image = DummyImageEx (
-                    GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
-                );
-            }
+        if (BuiltinIconTable[Id].Image == NULL) {
+            BuiltinIconTable[Id].Image = DummyImageEx (
+                TileSize
+            );
         }
     }
 
-    return egCopyImage (BuiltinIconTable[Id].Image);
+    return egCopyImage (
+        BuiltinIconTable[Id].Image
+    );
 } // EG_IMAGE * BuiltinIcon()
 
 //
@@ -216,8 +266,10 @@ INTN UpdateBaseIcon (
     IN OUT EG_IMAGE **Image,
     IN     INTN       InID
 ) {
-    UINTN             Index;
     INTN              RetId;
+    UINTN             Index;
+    UINTN             TileSize;
+
 
     if (*Image != NULL) {
         return InID;
@@ -231,8 +283,10 @@ INTN UpdateBaseIcon (
     );
     #endif
 
+    TileSize = GlobalConfig.IconSizes[ICON_SIZE_BIG];
+
     *Image = egFindIcon (
-        BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]
+        BaseName, TileSize
     );
 
     RetId = -1;
@@ -256,13 +310,13 @@ EG_IMAGE * LoadIndexedIcon (
     IN  CHAR16 *BaseName OPTIONAL,
     IN  UINTN   Id
 ) {
-    if (TableBuiltinIconOS[Id].Image == NULL) {
-        return NULL;
-    }
-
     if (BaseName != NULL &&
         !MyStriCmp (BaseName, TableBuiltinIconOS[Id].FileName)
     ) {
+        return NULL;
+    }
+
+    if (TableBuiltinIconOS[Id].Image == NULL) {
         return NULL;
     }
 
@@ -281,8 +335,8 @@ INTN CheckTheCache (
     IN     CHAR16    *BaseName,
     IN OUT EG_IMAGE **Image
 ) {
-    UINTN             Index;
     INTN              RetId;
+    UINTN             Index;
 
 
     RetId = -1;
@@ -466,11 +520,9 @@ EG_IMAGE * LoadOSIcon (
         if (!MyStriCmp (FallbackIconName, L"unknown")) {
             BaseName = StrDuplicate (L"os_unknown");
 
-            if (GlobalConfig.HelpIcon) {
-                Image = LoadIndexedIcon (
-                    BaseName, BASE_OS_ICON_UNKNOWN
-                );
-            }
+            Image = LoadIndexedIcon (
+                BaseName, BASE_OS_ICON_UNKNOWN
+            );
 
             OurId = UpdateBaseIcon (
                 BaseName, &Image, OurId
@@ -489,11 +541,9 @@ EG_IMAGE * LoadOSIcon (
         ALT_LOG(1, LOG_LINE_NORMAL, L"Set Dummy Image");
         #endif
 
-        if (GlobalConfig.HelpIcon) {
-            Image = LoadIndexedIcon (
-                NULL, BASE_OS_ICON_DUMMY
-            );
-        }
+        Image = LoadIndexedIcon (
+            NULL, BASE_OS_ICON_DUMMY
+        );
 
         if (Image == NULL) {
             Image = egCopyImage (

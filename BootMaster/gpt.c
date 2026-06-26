@@ -326,8 +326,8 @@ VOID ForgetPartitionTables (VOID) {
     } // while
 } // VOID ForgetPartitionTables()
 
-// If Volume points to a whole disk with a GPT, add it to the gPartitions
-// linked list of GPTs.
+// If Volume points to a whole disk with a GPT,
+// add to the 'gPartitions' linked list of GPTs.
 VOID AddPartitionTable (
     REFIT_VOLUME *Volume
 ) {

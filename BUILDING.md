@@ -35,7 +35,9 @@ Click the Workflow Action run instance when done, and look for `'Artifacts'` nea
 <details>
 <summary><strong>Secure Boot Considerations</strong></summary>
 
-The action will create a one-off private key and associated certificate by default. The created certificate is bundled with the generated artefacts for enrolment but the private key is not, as there is no way to securely transfer this (artefacts are publicly available).
+The action will create a one-off private key and associated certificate by default. \
+The created certificate is bundled with the generated artefacts for enrolment but the private key is not. \
+This is because there is no way to securely transfer the private key (artefacts are publicly available).
 
 Certificates are public keys and can therefore be shared along with the artefacts. \
 Private keys cannot be disclosed however, and are therefore discarded after use. \
@@ -47,7 +49,7 @@ When these are unavailable, they will be generated on each run with the limitati
 <details>
 <summary><strong>Providing Certificate/Key</strong></summary>
 
-Save a private key as a `SIG_RP_KEY` repository secret in the repository fork as well as certificate data saved as a `SIG_RP_CRT` secret.
+Save a private key as a `SIG_RP_KEY` repository secret in your fork, as well as certificate data saved as a `SIG_RP_CRT` secret.
 
 These repository secrets will be used each time the Workflow Action is run on your fork with the option to sign selected. \
 Associated certificate files will always be bundled with artefacts generated but only need to be enrolled once.
@@ -93,7 +95,8 @@ Preserve these files as they are needed to sign binaries in future with details 
 
 ## Local Build (Docker)
 
-RefindPlus can be built on any operating system environment that supports Docker virtualisation. A Docker image has been created by a third party developer and is available on the DockerHub website (https://hub.docker.com/r/xaionaro2/edk2-builder).
+RefindPlus can be built on any operating system environment that supports Docker virtualisation. \
+A Docker image has been created by a third party developer and is available on the DockerHub website (https://hub.docker.com/r/xaionaro2/edk2-builder).
 
 Please refer to that project's repository (https://github.com/xaionaro/edk2-builder-docker) for details and support on this option.
 

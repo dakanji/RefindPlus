@@ -63,7 +63,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -82,7 +82,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Bug - 0
@@ -122,7 +122,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Cancelled - 1
@@ -158,7 +158,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Discussion - 0
@@ -306,7 +306,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Dropped - 1
@@ -323,7 +323,7 @@ jobs:
           actions: 'remove-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Not-Planned, Unresolved, Uncertain, Confirmed, Cancelled, Accepted, Resolved, Triage, No-Log, Parked, Tagged, Stale, Bug, Config, Queries, Unclear, Invalid, Prorogued, Incomplete, Known-Issue, Cannot-Replicate'
+          labels: 'Enhancement, Not-Planned, Unresolved, Uncertain, Confirmed, Cancelled, Accepted, Resolved, Triage, No-Log, Parked, Tagged, Stale, Bug, Config, Queries, Unclear, Invalid, Prorogued, Incomplete, Known-Issue, Cannot-Replicate'
 
       - name: Label - Add - Dropped - 3
         uses: actions-cool/issues-helper@v3
@@ -349,7 +349,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Noted - 0
@@ -397,7 +397,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
 
@@ -452,7 +452,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
 
@@ -489,7 +489,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Incomplete - Issues - 1
@@ -537,7 +537,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Incomplete - Enhancement - 1
@@ -581,7 +581,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -600,7 +600,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -619,7 +619,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -638,7 +638,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -657,7 +657,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -683,7 +683,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -709,7 +709,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -728,7 +728,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -747,7 +747,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -766,7 +766,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -785,7 +785,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -794,6 +794,13 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           labels: 'Enhancement'
+
+      - uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,No-Log,Queries'
 
   label_add_not-planned_enhancement:
     name: Label - Add - Not-Planned_and_Enhancement
@@ -804,7 +811,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
 
@@ -841,7 +848,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Label - Add - Not-Planned - Only - 1

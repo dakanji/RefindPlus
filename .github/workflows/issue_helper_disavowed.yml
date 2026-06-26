@@ -7,6 +7,7 @@ on:
         description: 'Issue Action'
         type: choice
         options:
+        - 'Drop - Apparent - Bot'
         - 'Drop - Upstream - File'
         - 'Drop - Custom - Build'
         default: 'Drop - Custom - Build'
@@ -22,6 +23,98 @@ concurrency:
   group: lock
 
 jobs:
+  drop_apparent_bot:
+    name: Drop - Apparent - Bot
+    runs-on: ubuntu-latest
+
+    if: github.event.inputs.operation == 'Drop - Apparent - Bot'
+    steps:
+      # Generate App Token - https://github.com/actions/create-github-app-token
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - id: part_02
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          body: |
+            This item appears to largely be LLM Bot data.
+            This item cannot be entertained at this time.
+
+            Thank you.
+
+      - id: part_03
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'ChatBot, Dropped'
+
+      - id: part_04
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'remove-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
+
+      - id: part_05
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'completed'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+      - id: part_06
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.inputs.item_id }}
+
+      - id: part_07
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const issueNumber = context.payload.inputs.item_id;
+            const { data } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+
+      # Set NodeJS Up - https://github.com/actions/setup-node
+      - id: part_08
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - id: part_09
+        env:
+          ENV_TOKEN: ${{ steps.app-token.outputs.token }}
+          ENV_REPO: ${{ github.repository }}
+          ENV_ISSUE_ID: ${{ github.event.inputs.item_id }}
+        shell: bash
+        run: |
+          # Set Title
+          NewTitle="Apparent LLM Output: DROPPED"
+          echo "Updating issue #${ENV_ISSUE_ID} with title: ${NewTitle}"
+          curl -f -X PATCH \
+            -H "Authorization: token ${ENV_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${ENV_REPO}/issues/${ENV_ISSUE_ID} \
+            -d "{\"title\": \"${NewTitle}\"}" || { echo "Title Update Failed"; exit 1; }
+
+
+
   drop_upstream_file:
     name: Drop - Upstream - File
     runs-on: ubuntu-latest
@@ -32,7 +125,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: part_02
@@ -56,7 +149,7 @@ jobs:
           actions: 'add-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Dropped'
+          labels: 'Dropped, Upstream'
 
       - id: part_04
         uses: actions-cool/issues-helper@v3
@@ -64,7 +157,7 @@ jobs:
           actions: 'remove-labels'
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries'
+          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
 
       - id: part_05
         uses: actions-cool/issues-helper@v3
@@ -97,7 +190,7 @@ jobs:
       - id: part_08
         uses: actions/setup-node@v6
         with:
-          node-version: '>=24 <=28'
+          node-version: 24
 
       - id: part_09
         env:
@@ -107,7 +200,7 @@ jobs:
         shell: bash
         run: |
           # Set Title
-          NewTitle="Upstream rEFInd Instance: Has Issues"
+          NewTitle="Upstream Issue: DROPPED"
           echo "Updating issue #${ENV_ISSUE_ID} with title: ${NewTitle}"
           curl -f -X PATCH \
             -H "Authorization: token ${ENV_TOKEN}" \
@@ -127,7 +220,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: part_02
@@ -138,12 +231,12 @@ jobs:
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
             You appear to be running a custom build.
-            This cannot be considered at this time.
+            This cannot be entertained at this time.
 
             > [!IMPORTANT]
             > Issues found on modified/customised builds must be tested on official files/code.
-            > Should they also appear on these sources, raise issues based on offical files/code.
-            > Additionally, debug logs and other similar outputs should be from offical files/code.
+            > Should they also appear on these sources, raise issues based on official files/code.
+            > Additionally, debug logs and other similar outputs should be from official files/code.
 
             Thank you.
 
@@ -194,7 +287,7 @@ jobs:
       - id: part_08
         uses: actions/setup-node@v6
         with:
-          node-version: '>=24 <=28'
+          node-version: 24
 
       - id: part_09
         env:
@@ -204,7 +297,7 @@ jobs:
         shell: bash
         run: |
           # Set Title
-          NewTitle="RefindPlus of Unknown Provenance: Has Issues"
+          NewTitle="RefindPlus of Unknown Provenance: DROPPED"
           echo "Updating issue #${ENV_ISSUE_ID} with title: ${NewTitle}"
           curl -f -X PATCH \
             -H "Authorization: token ${ENV_TOKEN}" \

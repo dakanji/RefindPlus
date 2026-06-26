@@ -22,18 +22,18 @@ RefindPlus is a fork of _`rEFInd`_ that provides extended functionality via enha
 
 RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-standard (hence typically unavailable) options for running operating systems and uEFI utilities on Mac and PC.
 
-> Project Name:- `'RefindPlus'` (case sensitive). \
-> This _SHALL NOT_ be hyphenated or otherwise mutated.
+> `'RefindPlus'` is a single case-sensitive word. \
+> It _SHALL NOT_ be split or otherwise mutilated.
 >
-> Presentation[Standard]:- **RefindPlus** \
-> Presentation[Lowercase]:- **refindplus** \
-> Presentation[Uppercase]:- **REFINDPLUS**
+> Form [Standard]:- **RefindPlus** \
+> Form [Lowercase]:- **refindplus** \
+> Form [Uppercase]:- **REFINDPLUS**
 >
-> Presentation _MAY_ be abbreviated to '**RP**' or '**rp**'.
+> Form _MAY_ be abbreviated to '**RP**' or '**rp**'.
 
 Some RefindPlus Features:
 - Maintains feature and configuration parity with `Upstream v0.14.2` base.
-- Provides options to [tag faulty RAM regions](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BADRAM.md) as unusable to extend useful life.
+- Provides options to [tag faulty RAM regions as unusable](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BADRAM.md) to extend useful life.
 - Provides protection against damage to vulnerable Mac nvRAM by UEFI Windows.
 - Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
 - Provides mitigation against boot failures and related issues on T2/TPM chipped units.

@@ -46,9 +46,15 @@
 
 #include "libeg.h"
 
+
+// DA-TAG: Modify PLPTR Macro
+//#define  PLPTR(imagevar, colorname) ((UINT8 *) &((imagevar)->PixelData->colorname))
+#define PLPTR(imagevar, colorname) ( ((UINT8 *)((imagevar)->PixelData)) + MY_OFFSET_OF(EG_PIXEL, colorname) )
+
+
 /* types */
 
-typedef EG_IMAGE * (*EG_DECODE_FUNC)(
+typedef EG_IMAGE * (*EG_DECODE_FUNC) (
     IN UINT8   *FileData,
     IN UINTN   FileDataLength,
     IN UINTN   IconSize,
@@ -57,20 +63,19 @@ typedef EG_IMAGE * (*EG_DECODE_FUNC)(
 
 /* functions */
 
-BOOLEAN egSetScreenSize(
+BOOLEAN egSetScreenSize (
     IN OUT UINTN *ScreenWidth,
     IN OUT UINTN *ScreenHeight
 );
 
-VOID egRestrictImageArea(
+VOID egRestrictImageArea (
     IN     EG_IMAGE *Image,
     IN     UINTN    AreaPosX,
     IN     UINTN    AreaPosY,
     IN OUT UINTN    *AreaWidth,
     IN OUT UINTN    *AreaHeight
 );
-
-VOID egRawCopy(
+VOID egRawCopy (
     IN OUT EG_PIXEL *CompBasePtr,
     IN     EG_PIXEL *TopBasePtr,
     IN     UINTN    Width,
@@ -78,8 +83,7 @@ VOID egRawCopy(
     IN     UINTN    CompLineOffset,
     IN     UINTN    TopLineOffset
 );
-
-VOID egRawCompose(
+VOID egRawCompose (
     IN OUT EG_PIXEL *CompBasePtr,
     IN     EG_PIXEL *TopBasePtr,
     IN     UINTN    Width,
@@ -87,56 +91,44 @@ VOID egRawCompose(
     IN     UINTN    CompLineOffset,
     IN     UINTN    TopLineOffset
 );
-
-// DA-TAG: Modify PLPTR Macro
-//#define  PLPTR(imagevar, colorname) ((UINT8 *) &((imagevar)->PixelData->colorname))
-#define PLPTR(imagevar, colorname) ( ((UINT8 *)((imagevar)->PixelData)) + MY_OFFSET_OF(EG_PIXEL, colorname) )
-
-VOID egDecompressIcnsRLE(
+VOID egDecompressIcnsRLE (
     IN OUT UINT8 **CompData,
     IN OUT UINTN *CompLen,
     IN     UINT8 *DestPlanePtr,
     IN     UINTN PixelCount
 );
-
-VOID egInsertPlane(
+VOID egInsertPlane (
     IN UINT8 *SrcDataPtr,
     IN UINT8 *DestPlanePtr,
     IN UINTN PixelCount
 );
-
-VOID egSetPlane(
+VOID egSetPlane (
     IN UINT8 *DestPlanePtr,
     IN UINT8 Value,
     IN UINTN PixelCount
 );
-
-VOID egCopyPlane(
+VOID egCopyPlane (
     IN UINT8 *SrcPlanePtr,
     IN UINT8 *DestPlanePtr,
     IN UINTN PixelCount
 );
-
-EG_IMAGE * egDecodeBMP(
-    IN UINT8   *FileData,
-    IN UINTN   FileDataLength,
-    IN UINTN   IconSize,
-    IN BOOLEAN WantAlpha
-);
-
-EG_IMAGE * egDecodeICNS(
-    IN UINT8   *FileData,
-    IN UINTN   FileDataLength,
-    IN UINTN   IconSize,
-    IN BOOLEAN WantAlpha
-);
-
-VOID egEncodeBMP(
+VOID egEncodeBMP (
     IN  EG_IMAGE *Image,
     OUT UINT8    **FileData,
     OUT UINTN    *FileDataLength
 );
 
-#endif /* __LIBEG_LIBEGINT_H__ */
+EG_IMAGE * egDecodeBMP (
+    IN UINT8   *FileData,
+    IN UINTN   FileDataLength,
+    IN UINTN   IconSize,
+    IN BOOLEAN WantAlpha
+);
+EG_IMAGE * egDecodeICNS (
+    IN UINT8   *FileData,
+    IN UINTN   FileDataLength,
+    IN UINTN   IconSize,
+    IN BOOLEAN WantAlpha
+);
 
-/* EOF */
+#endif /* __LIBEG_LIBEGINT_H__ */

@@ -1,9 +1,9 @@
 /**
- * egemb_refindplus_banner_hidpi.h
- * An encoded RefindPlus banner at high resolution
- *
- * Copyright (c) 2025 Dayo Akanji
- * Released under the MIT License
+** egemb_refindplus_banner_hidpi.h
+** An encoded RefindPlus banner at high resolution
+**
+** Copyright (c) 2025 Dayo Akanji
+** Released under the MIT License
 **/
 static const UINT8 egemb_refindplus_banner_hidpi_data[39834] = {
  0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,

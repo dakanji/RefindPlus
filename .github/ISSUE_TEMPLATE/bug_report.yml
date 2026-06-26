@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.\
-        Please use the [DISCUSSIONS FEATURE](https://github.com/RefindPlusRepo/RefindPlus/discussions/categories/general) instead if you wish to ask a question, make a comment or similar.
+        Please use the [DISCUSSIONS FEATURE](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) instead if you wish to ask a question, make a comment or similar.
 
 
         ---
@@ -13,9 +13,9 @@ body:
 
         **Try the item below first if RefindPlus fails to display/boot Linux.**
         Especially if running Linux Kernel v6.17.4 or newer.
-        - Run RefindPlus with Linux filesystem drivers from version:- `0.14.2.AE or Newer`.
+        - Use filesystem drivers from RefindPlus:- `v0.14.2.AE or Newer`.
 
-        **NB:** Previous FS drivers failed on voids in binaries.
+        **NB:** Previous FS driver versions failed on finding voids in binaries.
 
 
         ---
@@ -23,7 +23,7 @@ body:
 
         **Try the item below first if RefindPlus fails to display but responds to key inputs on Apple Macs.**
         Especially if running 5k monitors on Pre-2020 units as the firmware restricts third-party loaders.
-        - Run RefindPlus with these config settings active:- `disable_set_consolegop` and `disable_set_applefb`.
+        - Run RefindPlus with these config settings active:- `disable_set_consolegop` and/or `disable_set_applefb`.
 
         **NB:** Firmware enforced resolution limits on third-party loaders may prevent 5k resolution display.
 
@@ -31,7 +31,7 @@ body:
         ---
 
 
-        **Try the steps below first if RefindPlus hangs on UEFI-PC [Especially with Hewlett Parkard (HP) units]:**
+        **Try the steps below first if RefindPlus hangs on UEFI-PC [especially with Hewlett Parkard (HP) firmware]:**
         1. Run RefindPlus with the `ransom_drives` config setting active and `disable_rescan_dxe` inactive.
         2. Run RefindPlus with `disable_rescan_dxe` active and `ransom_drives` inactive if that fails.
         3. Run RefindPlus with both `ransom_drives` and `disable_rescan_dxe` active if that fails.

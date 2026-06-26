@@ -548,9 +548,8 @@ EFI_STATUS CopyDirectory (
     Status = EFI_SUCCESS;
     while (!EFI_ERROR(Status)) {
         CheckIter = DirIterNext (
-            &DirIter,
-            2, NULL,
-            &DirEntry
+            &DirIter, FILTER_FILE,
+            NULL, &DirEntry
         );
         if (!CheckIter) break;
 

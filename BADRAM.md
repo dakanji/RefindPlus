@@ -52,6 +52,13 @@ When active, the default, RefindPlus will essentially first try the `Mode 1` pro
 When inactive, RefindPlus will directly run the slower `Modes 2to9` protocols from `badram_tag_mode`.<br/>
 Attempting the faster `Mode 1` protocols first allows skipping the `Modes 2to9` ones if successful.
 
+> [!CAUTION]
+>
+> The default `badram_tag_wide` setting is currently `0 (OFF)`. \
+> The setting _MUST_ be therefore explicitly activated if wanted. \
+> The setting _IS NOT_ active by default as intended/documented. \
+> The default has been changed for the next `RefindPlus` release.
+
 <br><br>
 
 ---

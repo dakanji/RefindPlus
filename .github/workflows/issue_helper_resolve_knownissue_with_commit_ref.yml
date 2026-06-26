@@ -50,7 +50,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: issue-get-state
@@ -77,7 +77,10 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           releases-only: true
 
-      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'Yes' &&
+         github.event.inputs.show_more_info == 'Yes' &&
+         github.event.inputs.type_more_info == 'Note'
         id: part_2_1b
         uses: actions-cool/issues-helper@v3
         with:
@@ -94,7 +97,10 @@ jobs:
 
             Thank you for taking the time to report a problem with RefindPlus.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'Yes' &&
+         github.event.inputs.show_more_info == 'Yes' &&
+         github.event.inputs.type_more_info == 'Caution'
         id: part_2_1c
         uses: actions-cool/issues-helper@v3
         with:
@@ -111,7 +117,9 @@ jobs:
 
             Thank you for taking the time to report a problem with RefindPlus.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'Yes' && github.event.inputs.show_more_info == 'No' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'Yes' &&
+         github.event.inputs.show_more_info == 'No'
         id: part_2_1d
         uses: actions-cool/issues-helper@v3
         with:
@@ -125,7 +133,10 @@ jobs:
 
             Thank you for taking the time to report a problem with RefindPlus.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Note' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'No' &&
+         github.event.inputs.show_more_info == 'Yes' &&
+         github.event.inputs.type_more_info == 'Note'
         id: part_2_2a
         uses: actions-cool/issues-helper@v3
         with:
@@ -140,7 +151,10 @@ jobs:
 
             Thank you for taking the time to report a problem with RefindPlus.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'Yes' && github.event.inputs.type_more_info == 'Caution' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'No' &&
+         github.event.inputs.show_more_info == 'Yes' &&
+         github.event.inputs.type_more_info == 'Caution'
         id: part_2_2b
         uses: actions-cool/issues-helper@v3
         with:
@@ -155,7 +169,9 @@ jobs:
 
             Thank you for taking the time to report a problem with RefindPlus.
 
-      - if: ${{ github.event.inputs.show_build_msg == 'No' && github.event.inputs.show_more_info == 'No' }}
+      - if: |
+         github.event.inputs.show_build_msg == 'No' &&
+         github.event.inputs.show_more_info == 'No'
         id: part_2_2c
         uses: actions-cool/issues-helper@v3
         with:

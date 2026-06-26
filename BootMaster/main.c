@@ -101,7 +101,6 @@ INT16 NowSecond = 0;
 REFIT_MENU_SCREEN *MainMenu = NULL;
 
 REFIT_CONFIG GlobalConfig = {
-    .BadRamTagWide             =                   FALSE,
     .DirectBoot                =                   FALSE,
     .CustomScreenBG            =                   FALSE,
     .TextOnly                  =                   FALSE,
@@ -148,6 +147,7 @@ REFIT_CONFIG GlobalConfig = {
     .FoldLinuxKernels          =                    TRUE,
     .BootLogoScale             =                    TRUE,
     .BootLogoClear             =                    TRUE,
+    .BadRamTagWide             =                    TRUE,
     .RescanDXE                 =                    TRUE,
     .HiddenTags                =                    TRUE,
     .LegacySync                =                    TRUE,
@@ -223,14 +223,12 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware,BadRamTag"
-
-
 UINTN                  AppleFramebuffers    =                     0;
 UINTN                  EfiMajorVersion      =                     0;
 UINT32                 AccessFlagsBoot      =     ACCESS_FLAGS_BOOT;
 UINT32                 AccessFlagsFull      =     ACCESS_FLAGS_FULL;
 CHAR16                *ArchType             =                  NULL;
+CHAR16                *ThisDevKit           =                  NULL;
 CHAR16                *OurToolTag           =                  NULL;
 CHAR16                *OurFlagTag           =                  NULL;
 CHAR16                *OurTypeTag           =                  NULL;
@@ -273,33 +271,34 @@ EFI_GUID               MicrosoftVendorGuid  = MICROSOFT_VENDOR_GUID;
 EFI_SET_VARIABLE       OrigSetVariableRT    =                  NULL;
 EFI_OPEN_PROTOCOL      OrigOpenProtocolBS   =                  NULL;
 
+UINTN                  RecoveryMacEntryItemsCount            =    0;
+UINTN                  RecoveryWinEntryItemsCount            =    0;
+UINTN                  MemTestEntryItemsCount                =    0;
+UINTN                  NetBootEntryItemsCount                =    0;
+UINTN                  ShellEntryItemsCount                  =    0;
+UINTN                  MOKEntryItemsCount                    =    0;
+UINTN                  GDiskEntryItemsCount                  =    0;
+UINTN                  GPTSyncEntryItemsCount                =    0;
+UINTN                  FwUpdateEntryItemsCount               =    0;
 
-UINTN                  RecoveryMacEntryItemsCount =    0;
-UINTN                  RecoveryWinEntryItemsCount =    0;
-UINTN                  MemTestEntryItemsCount     =    0;
-UINTN                  NetBootEntryItemsCount     =    0;
-UINTN                  ShellEntryItemsCount       =    0;
-UINTN                  MOKEntryItemsCount         =    0;
-UINTN                  GDiskEntryItemsCount       =    0;
-UINTN                  GPTSyncEntryItemsCount     =    0;
-UINTN                  FwUpdateEntryItemsCount    =    0;
+LOADER_ENTRY         **RecoveryMacEntryItems                 = NULL;
+LOADER_ENTRY         **RecoveryWinEntryItems                 = NULL;
+LOADER_ENTRY         **MemTestEntryItems                     = NULL;
+LOADER_ENTRY         **NetBootEntryItems                     = NULL;
+LOADER_ENTRY         **ShellEntryItems                       = NULL;
+LOADER_ENTRY         **MOKEntryItems                         = NULL;
+LOADER_ENTRY         **GDiskEntryItems                       = NULL;
+LOADER_ENTRY         **GPTSyncEntryItems                     = NULL;
+LOADER_ENTRY         **FwUpdateEntryItems                    = NULL;
 
-LOADER_ENTRY         **RecoveryMacEntryItems      = NULL;
-LOADER_ENTRY         **RecoveryWinEntryItems      = NULL;
-LOADER_ENTRY         **MemTestEntryItems          = NULL;
-LOADER_ENTRY         **NetBootEntryItems          = NULL;
-LOADER_ENTRY         **ShellEntryItems            = NULL;
-LOADER_ENTRY         **MOKEntryItems              = NULL;
-LOADER_ENTRY         **GDiskEntryItems            = NULL;
-LOADER_ENTRY         **GPTSyncEntryItems          = NULL;
-LOADER_ENTRY         **FwUpdateEntryItems         = NULL;
+#define NVRAM_SIZE_THRESHOLD                                  (1023)
+#define MAX_LEN_FILENAME                                       (512)
 
+#define RP_NVRAM_VARIABLES L"PreviousBoot,HiddenTags,HiddenTools,HiddenLegacy,HiddenFirmware,BadRamTag"
 
-#define NVRAM_SIZE_THRESHOLD       (1023)
-
-#define BOOT_FIX_STR_01            L"Disable AMFI Check"
-#define BOOT_FIX_STR_02            L"Disable Compatibility Check"
-#define BOOT_FIX_STR_03            L"Disable nvRAM Panic Logging"
+#define BOOT_FIX_STR_01    L"Disable AMFI Check"
+#define BOOT_FIX_STR_02    L"Disable Compatibility Check"
+#define BOOT_FIX_STR_03    L"Disable nvRAM Panic Logging"
 
 extern VOID              InitBooterLog (VOID);
 
@@ -1217,7 +1216,9 @@ VOID SetBootArgs (VOID) {
         }
         else {
             // Convert Unicode String 'BootArg' to Ascii String 'DataNVram'
-            UnicodeStrToAsciiStr (BootArg, DataNVram);
+            UnicodeStrToAsciiStr (
+                BootArg, DataNVram
+            );
             Status = StoreBootArgsNvram (DataNVram);
         }
     }
@@ -1270,7 +1271,9 @@ EFI_STATUS NoCheckAMFI (VOID) {
         }
     }
     else {
-        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
+        CurArgs = MyAsciiStrCopyToUnicode (
+            (CHAR8 *) VarData, 0
+        );
         if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
@@ -1350,7 +1353,9 @@ EFI_STATUS NoCheckCompat (VOID) {
         }
     }
     else {
-        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
+        CurArgs = MyAsciiStrCopyToUnicode (
+            (CHAR8 *) VarData, 0
+        );
         if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
@@ -1430,7 +1435,9 @@ EFI_STATUS NoNvramPanicLog (VOID) {
         }
     }
     else {
-        CurArgs = MyAsciiStrCopyToUnicode ((CHAR8 *) VarData, 0);
+        CurArgs = MyAsciiStrCopyToUnicode (
+            (CHAR8 *) VarData, 0
+        );
         if (FindSubStr (CurArgs, ArgData)) {
             Status = EFI_ALREADY_STARTED;
         }
@@ -1499,7 +1506,8 @@ EFI_STATUS TrimCoerce (VOID) {
     Status = SetHardwareNvramVariable (
         L"EnableTRIM",
         &AppleBootGuid,
-        AccessFlagsFull, AsciiStrSize (DataNVram), DataNVram
+        AccessFlagsFull,
+        AsciiStrSize (DataNVram), DataNVram
     );
 
     #if REFIT_DEBUG > 0
@@ -1541,11 +1549,13 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                 NULL, Interface
             );
         }
-        else if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateProtocol, &gEfiUgaDrawProtocolGuid,
-                NULL, Interface
-            );
+        else {
+            if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
+                Status = REFIT_CALL_3_WRAPPER(
+                    gBS->LocateProtocol, &gEfiUgaDrawProtocolGuid,
+                    NULL, Interface
+                );
+            }
         }
     }
 
@@ -1625,7 +1635,10 @@ UINTN RunTrustSync (
 
     MY_MUTELOGGER_SET;
     #endif
-    LoaderValid = IsValidLoader (Entry->Volume->RootDir, Entry->LoaderPath);
+    LoaderValid = IsValidLoader (
+        Entry->Volume->RootDir,
+        Entry->LoaderPath
+    );
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
     #endif
@@ -1683,7 +1696,9 @@ UINTN RunTrustSync (
 
     AlreadyExists = FALSE;
     BootNum = FindBootNum (
-        DevicePath, EntrySize, &AlreadyExists
+        DevicePath,
+        EntrySize,
+        &AlreadyExists
     );
     VarName = PoolPrint (L"Boot%04x", BootNum);
 
@@ -1831,12 +1846,13 @@ VOID RunNVramSync (
                 // Matched Previous
                 Proceed = FALSE;
             }
-            else if (
-                IsMacOS &&
-                MyStrBegins (L"Load Instance: Mac OS", PreviousBoot)
-            ) {
-                // Sucessive Mac OS Boots
-                Proceed = FALSE;
+            else {
+                if (IsMacOS &&
+                    MyStrBegins (L"Load Instance: Mac OS", PreviousBoot)
+                ) {
+                    // Sucessive Mac OS Boots
+                    Proceed = FALSE;
+                }
             }
         }
     }
@@ -1924,11 +1940,12 @@ CHAR16 * GetMacVersion (
     CHAR16  *Line;
     CHAR16  *TypeMacOS;
     BOOLEAN  CheckNext;
-    BOOLEAN  ExitLoop;
+    BOOLEAN  BreakLoop;
+
 
     TypeMacOS = LABEL_UNKNOWN;
     CheckNext =         FALSE;
-    ExitLoop  =         FALSE;
+    BreakLoop =         FALSE;
 
     for (i = 0; i < 100; i++) {
         Line = ReadLine (File);
@@ -1961,15 +1978,13 @@ CHAR16 * GetMacVersion (
             else if (MyStrStr (Line, L"<string>")) CheckNext = TRUE                  ;
 
             if (!CheckNext) {
-                ExitLoop = TRUE;
+                BreakLoop = TRUE;
             }
         }
 
         MY_FREE_POOL(Line);
 
-        if (ExitLoop) {
-            break;
-        }
+        if (BreakLoop) break;
     } // for
 
     return TypeMacOS;
@@ -2065,7 +2080,9 @@ BOOLEAN HandleToolSelection (
     }
 
     DefaultEntry = 9999; // Use the Max Index
-    Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    Style = (
+        AllowGraphicsMode
+    ) ? GraphicsMenuStyle : TextMenuStyle;
     MenuExit = DrawMenuScreen (
         MenuScreen, Style,
         &DefaultEntry, &ChosenOption
@@ -2284,7 +2301,11 @@ BOOLEAN ShowInfoRecoveryWin (
                 );
                 if (FileName == NULL) break;
 
-                SplitVolumeAndFilename (&FileName, &RecoverVol);
+                SplitVolumeAndFilename (
+                    &FileName,
+                    &RecoverVol
+                );
+
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     if (Volumes[VolumeIndex]->RootDir != NULL        &&
                         IsValidTool (Volumes[VolumeIndex], FileName) &&
@@ -2296,7 +2317,9 @@ BOOLEAN ShowInfoRecoveryWin (
                             )
                         )
                     ) {
-                        MenuEntryItem = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        MenuEntryItem = AllocateZeroPool (
+                            sizeof (LOADER_ENTRY)
+                        );
                         if (MenuEntryItem != NULL) {
                             MenuEntryItem->me.Title = PoolPrint (
                                 L"Windows Recovery from %s via %s",
@@ -2398,6 +2421,176 @@ BOOLEAN ShowInfoMemTest (
     );
 } // static BOOLEAN ShowInfoMemTest()
 
+/**
+** Dynamically scans all available file systems for UEFI shell binaries matching
+** a specific naming convention within a given directory path.
+*
+** This function filters out directories and only aggregates files that strictly
+** begin with "EFI_Shell-" and end with the ".efi" extension. The resulting
+** matches are compiled into a single, comma-delimited string pool.
+**
+** @param[in] Path       The sub-directory path to search across all volumes
+**                       (e.g., L"\\EFI\\Tools").
+**
+** @retval CHAR16*       A dynamically allocated, comma-separated string of
+**                       found filenames. The caller is responsible for freeing
+**                       the allocated memory.
+** @retval NULL          Returned if Path is invalid, no file systems are found,
+**                       or an internal memory allocation fails.
+**/
+static
+CHAR16 * DynamicShellList (
+    IN CHAR16 *Path
+) {
+    EFI_STATUS                       Status;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SimpleFS;
+    EFI_FILE_PROTOCOL               *Root;
+    EFI_FILE_PROTOCOL               *Dir;
+    EFI_FILE_INFO                   *FileInfo;
+    EFI_HANDLE                      *HandleBuffer;
+    UINTN                            HandleCount;
+    UINTN                            HandleIndex;
+    UINTN                            BufferSize;
+    UINTN                            ShellMin;
+    UINTN                            TmpSize;
+    CHAR16                          *TmpList;
+    CHAR16                          *FileList;
+    BOOLEAN                          BreakLoop;
+    BOOLEAN                          MatchFile;
+
+    const CHAR16                    *ShellStrEnd   = L".efi";
+    const CHAR16                    *ShellStrStart = L"EFI_Shell-";
+
+
+    if (Path == NULL) {
+        return NULL;
+    }
+
+    // Locate Simple File System Handles
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gEfiSimpleFileSystemProtocolGuid, NULL,
+        &HandleCount, &HandleBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        return NULL;
+    }
+
+    ShellMin = StrLen (
+        ShellStrStart
+    ) + StrLen (
+        ShellStrEnd
+    ) + 1;
+
+    FileList = NULL;
+    BreakLoop = FALSE;
+
+    for (
+        HandleIndex = 0;
+        HandleIndex < HandleCount && !BreakLoop;
+        HandleIndex++
+    ) {
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->HandleProtocol, HandleBuffer[HandleIndex],
+            &gEfiSimpleFileSystemProtocolGuid, (VOID **) &SimpleFS
+        );
+        if (EFI_ERROR(Status)) continue;
+
+        Status = REFIT_CALL_2_WRAPPER(
+            SimpleFS->OpenVolume,
+            SimpleFS, &Root
+        );
+        if (EFI_ERROR(Status)) continue;
+
+        Status = Root->Open (
+            Root, &Dir, Path,
+            EFI_FILE_MODE_READ, 0
+        );
+        if (EFI_ERROR(Status)) {
+            Root->Close (Root);
+
+            continue;
+        }
+
+        BufferSize = sizeof (CHAR16) * (
+            SIZE_OF_EFI_FILE_INFO + MAX_LEN_FILENAME
+        );
+
+        FileInfo = AllocateZeroPool (
+            BufferSize
+        );
+        if (FileInfo == NULL) {
+            BreakLoop = TRUE;
+        }
+
+        while (!BreakLoop) {
+            // EFI_ERROR(Status):- Actual Error
+            // EFI_SUCCESS with TmpSize == 0:- Dir End
+            TmpSize = BufferSize;
+            Status = Dir->Read (
+                Dir, &TmpSize,
+                FileInfo
+            );
+            if (
+                EFI_ERROR(Status) || TmpSize == 0
+            ) break;
+
+            if (
+                (FileInfo->Attribute & EFI_FILE_DIRECTORY) != 0
+            ) continue; // Must be a file
+
+            if (
+                StrLen (FileInfo->FileName) < ShellMin
+            ) continue; // File name too short to match
+
+            MatchFile = MyStrBegins (
+                (CHAR16 *) ShellStrStart,
+                FileInfo->FileName
+            );
+            if (!MatchFile) continue; // Not a match
+
+            MatchFile = MyStrEnds (
+                (CHAR16 *) ShellStrEnd,
+                FileInfo->FileName
+            );
+            if (!MatchFile) continue; // Must be efi file
+
+            if (FileList == NULL) {
+                FileList = StrDuplicate (
+                    FileInfo->FileName
+                );
+                if (FileList == NULL) {
+                    BreakLoop = TRUE;
+                }
+            }
+            else {
+                TmpList = FileList;         // Original FileList - Stash
+                FileList = PoolPrint (
+                    L"%s,%s",
+                    TmpList,
+                    FileInfo->FileName
+                );
+                if (FileList != NULL) {
+                    MY_FREE_POOL(TmpList);  // Original FileList - Free
+                }
+                else {
+                    FileList = TmpList;     // Original FileList - Use
+                    BreakLoop = TRUE;
+                }
+            }
+        } // while
+
+        MY_FREE_POOL(FileInfo);
+
+        Dir->Close (Dir);
+        Root->Close (Root);
+    } // for
+
+    MY_FREE_POOL(HandleBuffer);
+
+    return FileList;
+} // static CHAR16 * DynamicShellList()
+
 static
 BOOLEAN ShowInfoShell (
     CHAR16        *ToolPurpose,
@@ -2406,6 +2599,13 @@ BOOLEAN ShowInfoShell (
     #if REFIT_DEBUG > 0
     BOOLEAN CheckMute = FALSE;
     #endif
+
+    UINTN                     i;
+    CHAR16                   *TmpList;
+    CHAR16                   *FileList;
+    CHAR16                   *ShellPath;
+    CHAR16                   *ShellFiles;
+    BOOLEAN                   BreakLoop;
 
     static BOOLEAN             RunOnce = FALSE;
     static REFIT_MENU_SCREEN  *ToolInfoMenu = NULL;
@@ -2421,11 +2621,75 @@ BOOLEAN ShowInfoShell (
         );
         if (ToolInfoMenu == NULL) break;
 
-        FindTool (
-            AllToolLocations, SHELL_FILES,
-            ToolPurpose, BUILTIN_ICON_TOOL_SHELL,
-            TRUE, TRUE, TAG_SHELL
-        );
+        FileList  =  NULL;
+        BreakLoop = FALSE;
+
+        i = 0;
+        while (1) {
+            ShellPath = FindCommaDelimited (
+                AllToolLocations, i++
+            );
+            if (ShellPath == NULL) break;
+
+            TmpList = DynamicShellList (
+                ShellPath
+            );
+            if (TmpList != NULL) {
+                if (FileList == NULL) {
+                    FileList = StrDuplicate (
+                        TmpList
+                    );
+                }
+                else {
+                    // Repurpose ShellPath
+                    MY_FREE_POOL(ShellPath);
+                    ShellPath = FileList;      // Original FileList - Stash
+
+                    FileList = PoolPrint (
+                        L"%s,%s",
+                        ShellPath,
+                        TmpList
+                    );
+                    if (FileList == NULL) {
+                        FileList = ShellPath;  // Original FileList - Use
+                        BreakLoop = TRUE;
+                    }
+                }
+
+                MY_FREE_POOL(TmpList);
+
+                // Before 'ShellPath' free!!
+                if (BreakLoop) break;
+            }
+
+            MY_FREE_POOL(ShellPath);
+        } // while {Infinite}
+
+        ShellFiles = (
+            FileList != NULL
+        ) ? PoolPrint (
+            L"%s,%s",
+            SHELL_FILES,
+            FileList
+        ) : NULL;
+
+        MY_FREE_POOL(FileList);
+
+        if (ShellFiles == NULL) {
+            ShellFiles = StrDuplicate (
+                SHELL_FILES
+            );
+        }
+
+        if (ShellFiles != NULL) {
+            FindTool (
+                AllToolLocations, ShellFiles,
+                ToolPurpose, BUILTIN_ICON_TOOL_SHELL,
+                TRUE, TRUE, TAG_SHELL
+            );
+
+            MY_FREE_POOL(ShellFiles);
+        }
 
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2675,10 +2939,10 @@ BOOLEAN ShowInfoCleanNvram (
     do {
         if (RunOnce) break;
 
-        ToolInfoMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-        if (ToolInfoMenu == NULL) {
-            break;
-        }
+        ToolInfoMenu = AllocateZeroPool (
+            sizeof (REFIT_MENU_SCREEN)
+        );
+        if (ToolInfoMenu == NULL) break;
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Prepare Menu Screen");
@@ -2741,10 +3005,15 @@ BOOLEAN ShowInfoCleanNvram (
         RetVal = HandleExitShowInfo();
     }
     else {
-        DefaultEntry = 9999; // Use the Max Index
-        Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
         ChosenOption = NULL;
-        MenuExit = DrawMenuScreen (ToolInfoMenu, Style, &DefaultEntry, &ChosenOption);
+        DefaultEntry = 9999; // Use the Max Index
+        Style = (
+            AllowGraphicsMode
+        ) ? GraphicsMenuStyle : TextMenuStyle;
+        MenuExit = DrawMenuScreen (
+            ToolInfoMenu, Style,
+            &DefaultEntry, &ChosenOption
+        );
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -2756,12 +3025,10 @@ BOOLEAN ShowInfoCleanNvram (
         LOG_MSG("\n\n");
         #endif
 
-        if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_BASE) {
-            RetVal = FALSE;
-        }
-        else {
-            RetVal = TRUE;
-        }
+        RetVal = (
+            MenuExit == MENU_EXIT_ENTER &&
+            ChosenOption->Tag == TAG_BASE
+        ) ? TRUE : FALSE;
     }
 
     RunOnce = TRUE;
@@ -2819,12 +3086,9 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-#if defined(__MAKEWITH_TIANO)
-            L"Built with TianoCore EDK II on %s/%s%s",
-#else
-            L"Built with GNU-EFI on %s/%s%s",
-#endif
-            OurTypeTag, OurToolTag, OurFlagTag
+            L"Built with %s on %s/%s%s",
+            ThisDevKit, OurTypeTag,
+            OurToolTag, OurFlagTag
         ),
         TRUE
     );
@@ -2843,27 +3107,28 @@ VOID AboutRefindPlus (VOID) {
         LimitStringLength (TmpStr, BufferLen);
     }
 
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"Firmware           : %s", TmpStr),   TRUE);
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"Platform           : %s", ArchType), TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Firmware           : %s", TmpStr),   TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Platform           : %s", ArchType), TRUE);
     MY_FREE_POOL(TmpStr);
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"EFI Version        : %s %d.%02d%s",
+            L"System EFI Version        : %s %d.%02d%s",
             (EfiMajorVersion > 1) ? L"UEFI" : L"EFI",
             EfiMajorVersion,
             gST->Hdr.Revision & ((1 << 16) - 1),
             (WarnVersionEFI)
                 ? L" (Spoof by Others)"
-                : (SetSysTab)
-                    ? L" (Self Spoof)" : L""
+                : (
+                    SetSysTab
+                ) ? L" (Self Spoof)" : L""
         ),
         TRUE
     );
 
-    // Always show CSR status on Apple Mac
-    //   even if Mac OS is not detected.
-    // Only show on UEFI-PC if Mac OS is detected
+    // Always show CSR status on  Mac.
+    // Even if Mac OS is not detected.
+    // Only if Mac OS is active on PC.
     if (AppleFirmware || HasMacOS) {
         #if REFIT_DEBUG > 0
         MY_MUTELOGGER_SET;
@@ -2899,7 +3164,7 @@ VOID AboutRefindPlus (VOID) {
         AddMenuInfoLine (
             AboutMenu,
             PoolPrint (
-                L"CSR Setting        : %s",
+                L"System CSR Setting        : %s",
                 TmpStr
             ),
             TRUE
@@ -2910,7 +3175,7 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"Secure Boot %s : %s",
+            L"System Secure Boot %s : %s",
             (AppleFirmware)   ? L"(UEFI)"                    : L"      ",
             (SecureFlag)
                 ? (ShimFound) ? L"Active and Shim Present"   : L"Active but Shim Absent"
@@ -2924,7 +3189,7 @@ VOID AboutRefindPlus (VOID) {
     if (ScreenSize < 801) {
         LimitStringLength (TmpStr, BufferLen);
     }
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Mode/Output : %s", TmpStr), TRUE);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Screen Mode/Output : %s", TmpStr), TRUE);
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                           FALSE);
@@ -3330,11 +3595,11 @@ BOOLEAN SecureBootSetup (VOID) {
 
     if (SecureFlag && ShimFound) {
         Status = security_policy_install();
-        if (!EFI_ERROR(Status)) {
-            Retval = TRUE;
+        if (EFI_ERROR(Status)) {
+            SecureBootFailure = TRUE;
         }
         else {
-            SecureBootFailure = TRUE;
+            Retval = TRUE;
         }
     }
 
@@ -3396,6 +3661,13 @@ BOOLEAN SecureBootUninstall (VOID) {
     return Success;
 } // static BOOLEAN SecureBootUninstall()
 
+static
+VOID ConfigFilenameSync (VOID) {
+    if (GlobalConfig.ConfigFilename == NULL) {
+        GlobalConfig.ConfigFilename  = L"config.conf";
+    }
+} // static VOID ConfigFilenameSync()
+
 // Sets the global configuration filename. Will be "config.conf" unless
 // the "-c" command-line option, which takes precedence, is set.
 // Retains the default name if an error is encountered.
@@ -3419,73 +3691,77 @@ VOID SetConfigFilename (
         gBS->HandleProtocol, ImageHandle,
         &LoadedImageProtocol, (VOID **) &Info
     );
-    if (!EFI_ERROR(Status) && Info->LoadOptionsSize > 0) {
+    if (EFI_ERROR(Status) || Info->LoadOptionsSize < 1) {
+        SubString = NULL;
+    }
+    else {
         Options   = (CHAR16 *) Info->LoadOptions;
         SubString = MyStrStr (Options, L" -c ");
-        if (SubString) {
-            #if REFIT_DEBUG > 0
-            LOG_MSG("Set Config Filename from Command Line Option:");
-            LOG_MSG("\n");
-            #endif
-
-            FileName = StrDuplicate (&SubString[4]);
-            LimitStringLength (FileName, 256);
-
-            if (FileName != NULL && FileExists (SelfDir, FileName)) {
-                GlobalConfig.ConfigFilename = FileName;
-
-                #if REFIT_DEBUG > 0
-                LOG_MSG("  - Config File:- '%s'", FileName);
-                LOG_MSG("\n\n");
-                #endif
-            }
-            else {
-                MY_FREE_POOL(FileName);
-
-                MsgStr = L"** WARN: Specified Config File *NOT* Found";
-                #if REFIT_DEBUG > 0
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n");
-                #endif
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                REFIT_CALL_2_WRAPPER(
-                    gST->ConOut->SetAttribute,
-                    gST->ConOut, ATTR_ERROR
-                );
-                PrintUglyText (MsgStr, NEXTLINE);
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
-
-                MsgStr = L"         Try Default:- 'config.conf / refind.conf'";
-                #if REFIT_DEBUG > 0
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n\n");
-                #endif
-
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_SET;
-                #endif
-                PrintUglyText (MsgStr, NEXTLINE);
-                REFIT_CALL_2_WRAPPER(
-                    gST->ConOut->SetAttribute,
-                    gST->ConOut, ATTR_BASIC
-                );
-                #if REFIT_DEBUG > 0
-                MY_MUTELOGGER_OFF;
-                #endif
-
-                PauseSeconds (9);
-            } // if/else FileExists (SelfDir, FileName
-        } // if SubString
-    } // if !EFI_ERROR(Status) && Info->LoadOptionsSize
-
-    if (GlobalConfig.ConfigFilename == NULL) {
-        GlobalConfig.ConfigFilename  = L"config.conf";
     }
+
+    if (SubString == NULL) {
+        ConfigFilenameSync();
+
+        return;
+    }
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("Set Config Filename from Command Line Option:");
+    LOG_MSG("\n");
+    #endif
+
+    FileName = StrDuplicate (&SubString[4]);
+    LimitStringLength (FileName, 256);
+
+    if (FileName != NULL && FileExists (SelfDir, FileName)) {
+        GlobalConfig.ConfigFilename = FileName;
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG("  - Config File:- '%s'", FileName);
+        LOG_MSG("\n\n");
+        #endif
+
+        // Do Not Free FileName
+        return;
+    }
+
+    MY_FREE_POOL(FileName);
+
+    MsgStr = L"** WARN: Specified Config File *NOT* Found";
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    REFIT_CALL_2_WRAPPER(
+        gST->ConOut->SetAttribute,
+        gST->ConOut, ATTR_ERROR
+    );
+    PrintUglyText (MsgStr, NEXTLINE);
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    #endif
+
+    MsgStr = L"         Try Default:- 'config.conf / refind.conf'";
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_SET;
+    #endif
+    PrintUglyText (MsgStr, NEXTLINE);
+    REFIT_CALL_2_WRAPPER(
+        gST->ConOut->SetAttribute,
+        gST->ConOut, ATTR_BASIC
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n\n");
+    #endif
+
+    PauseSeconds (9);
+
+    ConfigFilenameSync();
 } // static VOID SetConfigFilename()
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
@@ -3521,8 +3797,8 @@ VOID AdjustDefaultSelection (VOID) {
 
         Ignore = FALSE;
         if (MyStriCmp (Element, L"+")) {
-            if (GlobalConfig.TransientBoot             &&
-                GlobalConfig.DefaultSelection != NULL  &&
+            if (GlobalConfig.TransientBoot            &&
+                GlobalConfig.DefaultSelection != NULL &&
                 StrLen (GlobalConfig.DefaultSelection) > 1
             ) {
                 Ignore    =  TRUE;
@@ -4003,8 +4279,14 @@ EFI_STATUS EFIAPI efi_main (
         OurTypeTag = L"Linux";
     #elif defined(__FreeBSD__)
         OurTypeTag = L"FreeBSD";
-    #elif defined(__unix__) || defined(__MACH__)
-        OurTypeTag = L"SomeBSD";
+    #elif defined(__OpenBSD__)
+        OurTypeTag = L"OpenBSD";
+    #elif defined(__NetBSD__)
+        OurTypeTag = L"NetBSD";
+    #elif defined(__unix__)
+        OurTypeTag = L"Unix";
+    #elif defined(_WIN32) || defined(_WIN64)
+        OurTypeTag = L"Windows";
     #else
         OurTypeTag = L"Other";
     #endif
@@ -4020,7 +4302,7 @@ EFI_STATUS EFIAPI efi_main (
     #elif defined(__GNUC__)
         OurToolTag = L"GCC";
     #else
-        OurToolTag = L"UNKNOWN";
+        OurToolTag = L"OTHER";
     #endif
 
     #if REFIT_DEBUG > 0
@@ -4032,13 +4314,20 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Build Engine */
     LOG_MSG("Made With:- ");
-    #if defined(__MAKEWITH_TIANO)
-        LOG_MSG("'TianoCore EDK II'");
-    #elif defined(__MAKEWITH_GNUEFI)
-        LOG_MSG("'GNU-EFI'");
-    #else
-        LOG_MSG("Unknown DevKit");
     #endif
+
+
+    #if defined(__MAKEWITH_TIANO)
+        ThisDevKit = L"TianoCore EDK II";
+    #elif defined(__MAKEWITH_GNUEFI)
+        ThisDevKit = L"GNU-EFI";
+    #else
+        ThisDevKit = L"Not-Known";
+    #endif
+
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("%s", ThisDevKit);
     LOG_MSG("\n");
 
     /* TimeStamp */
@@ -4095,8 +4384,8 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
     }
     else {
-        StrSelfGUID = GuidAsString (&SelfVolume->PartGuid);
         StrSelfUUID = GuidAsString (&SelfVolume->VolUuid);
+        StrSelfGUID = GuidAsString (&SelfVolume->PartGuid);
         LOG_MSG("INFO: Self-Volume Data:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, StrSelfGUID, StrSelfUUID);
         LOG_MSG("%s      Program Filename:- '%s'", OffsetNext, (SelfBaseName != NULL) ? SelfBaseName : L"Not Set");
         LOG_MSG("%s      Install Location:- '%s'", OffsetNext, (SelfDirPath  != NULL) ? SelfDirPath  : L"Not Set");
@@ -4109,23 +4398,29 @@ EFI_STATUS EFIAPI efi_main (
     /* Get/Set Config File */
     SetConfigFilename (ImageHandle);
     if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
-        ConfigWarn = TRUE;
-
-        #if REFIT_DEBUG > 0
-        LOG_MSG("** WARN: Could not find RefindPlus configuration file:- 'config.conf'\n"            );
-        LOG_MSG("%s       Trying the rEFInd configuration file instead:- 'refind.conf'\n", OffsetNext);
-        LOG_MSG("%s       Please provide a 'config.conf' file to silence this warning \n", OffsetNext);
-        LOG_MSG("%s       A 'refind.conf' file can be renamed as 'config.conf'        \n", OffsetNext);
-        LOG_MSG("%s       NB: Will not contain all RefindPlus settings              \n\n", OffsetNext);
-        #endif
-
-        GlobalConfig.ConfigFilename = L"refind.conf";
+        // Try alternate file
+        GlobalConfig.ConfigFilename = L"refindplus.conf";
 
         if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
+            ConfigWarn = TRUE;
+
             #if REFIT_DEBUG > 0
-            LOG_MSG("** WARN: Could not find rEFInd configuration file:- 'refind.conf'\n"            );
-            LOG_MSG("%s       NB: RefindPlus is being loaded with default settings  \n\n", OffsetNext);
+            LOG_MSG("** WARN: Could not find RefindPlus configuration file:- 'config.conf'\n"            );
+            LOG_MSG("%s       Trying the rEFInd configuration file instead:- 'refind.conf'\n", OffsetNext);
+            LOG_MSG("%s       Please provide a 'config.conf' file to silence this warning \n", OffsetNext);
+            LOG_MSG("%s       A 'refind.conf' file can be renamed as 'config.conf'        \n", OffsetNext);
+            LOG_MSG("%s       NB: Will not contain all RefindPlus settings              \n\n", OffsetNext);
             #endif
+
+            // Try upstream config file
+            GlobalConfig.ConfigFilename = L"refind.conf";
+
+            if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
+                #if REFIT_DEBUG > 0
+                LOG_MSG("** WARN: Could not find rEFInd configuration file:- 'refind.conf'\n"            );
+                LOG_MSG("%s       RefindPlus will now be loaded with its default settings  \n\n", OffsetNext);
+                #endif
+            }
         }
     }
 
@@ -4340,24 +4635,33 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      Supply Support:- 'NVME  :  %r'", OffsetNext, Status);
     LOG_MSG("\n\n");
 
-    /* Record Compat Support Module Type */
+    /* Record CSM Type */
     switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Mac-Style"        ); break;
-        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac"); break;
-        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent: Cat3 Mac" ); break;
-        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"       ); break;
-        default:               MsgStr = StrDuplicate (L"Absent"           );
+        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Apple-Style on Mac"); break;
+        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac" ); break;
+        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent: Cat3 Mac"  ); break;
+        case LEGACY_TYPE_MAC8: MsgStr = StrDuplicate (L"Assumed on Mac"    ); break;
+        case LEGACY_TYPE_MAC9: MsgStr = StrDuplicate (L"Broken on Mac"     ); break;
+        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"        ); break;
+        default:               MsgStr = StrDuplicate (L"Absent"            ); break;
     }
     LOG_MSG("INFO: Legacy BIOS Boot Support:- '%s'", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
+
+    /* Regularise CSM Flag */
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC8: GlobalConfig.LegacyType = LEGACY_TYPE_MAC1; break;
+        case LEGACY_TYPE_MAC9: GlobalConfig.LegacyType = LEGACY_TYPE_NONE; break;
+        default:                                                           break;
+    }
 
     // Load Drivers
     LoadDrivers();
 
     #if REFIT_DEBUG > 0
     // DA-TAG: Prime Status for SupplyAPFS
-    //         Here to accomodate GNU-EFI
+    //         Here to accomodate GNU-EFI/Others
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -4412,16 +4716,16 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         if (SecureBootFailure || WarnMissingQVInfo) {
-            // Override DirectBoot if a warning needs to be shown
-            //   for ALL build targets
+            // Override DirectBoot if warning
+            // is needed for ALL build targets
             OverrideSB                     = TRUE;
             GlobalConfig.ContinueOnWarning = TRUE;
         }
 
         #if REFIT_DEBUG > 0
-        if (WarnMissingQVInfo || ConfigWarn) {
-            // Override DirectBoot if a warning needs to be shown
-            //   for DBG and NPT build targets
+        if (ConfigWarn) {
+            // Override DirectBoot if warning
+            // is needed for DBG or NPT builds
             OverrideSB                     = TRUE;
             GlobalConfig.ContinueOnWarning = TRUE;
         }
@@ -4580,7 +4884,9 @@ EFI_STATUS EFIAPI efi_main (
         SwitchToText (FALSE);
 
         LOG_MSG("D I S P L A Y   U S E R   N O T I C E");
-        MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
+        MsgStr = StrDuplicate (
+            L"Inconsistent UEFI 2.x Implementation"
+        );
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"Display %s Warning", MsgStr);
         LOG_MSG("\n");
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
@@ -4934,8 +5240,11 @@ EFI_STATUS EFIAPI efi_main (
     // Init Pointers
     pdInitialize();
 
-    SelectionName = (GlobalConfig.DefaultSelection != NULL)
-        ? StrDuplicate (GlobalConfig.DefaultSelection) : NULL;
+    SelectionName = (
+        GlobalConfig.DefaultSelection == NULL
+    ) ? GlobalConfig.DefaultSelection : StrDuplicate (
+        GlobalConfig.DefaultSelection
+    );
 
     MainLoopRunning =  TRUE;
     while (MainLoopRunning) {
@@ -4954,7 +5263,11 @@ EFI_STATUS EFIAPI efi_main (
 
         MY_FREE_POOL(FilePath);
 
-        MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenOption);
+        MenuExit = RunMainMenu (
+            MainMenu,
+            &SelectionName,
+            &ChosenOption
+        );
 
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE  ||
@@ -4966,11 +5279,12 @@ EFI_STATUS EFIAPI efi_main (
             #if REFIT_DEBUG > 0
             LOG_MSG("Received User Input:");
             if (MenuExit == MENU_EXIT_ESCAPE) {
-                LOG_MSG("%s  - Rescan All ... Escape Key Pressed", OffsetNext);
+                TypeStr = L"Escape Key Pressed";
             }
             else {
-                LOG_MSG("%s  - Rescan All ... Key Press Detected", OffsetNext);
+                TypeStr = L"Key Press Detected";
             }
+            LOG_MSG("%s  - Rescan All ... %s", OffsetNext, TypeStr);
             LOG_MSG("\n\n");
             #endif
 
@@ -4990,13 +5304,10 @@ EFI_STATUS EFIAPI efi_main (
             OneMainLoop = TRUE;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (
-                L"FlushFailedTag is Set ... Ignore MenuExit"
-            );
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
+            TypeStr = L"FlushFailedTag is Set ... Ignore MenuExit";
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TypeStr);
+            LOG_MSG("INFO: %s", TypeStr);
             LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
             FlushFailedTag = FALSE;
@@ -5015,13 +5326,10 @@ EFI_STATUS EFIAPI efi_main (
             LOG_MSG(
                 "INFO: Invalid Post-Load Reboot Call ... Ignore Reboot Call"
             );
-            MsgStr = StrDuplicate (
-                L"Mitigated Potential Persistent Primed Keystroke Buffer"
-            );
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("%s      %s", OffsetNext, MsgStr);
+            TypeStr = L"Mitigated Potential Persistent Primed Keystroke Buffer";
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", TypeStr);
+            LOG_MSG("%s      %s", OffsetNext, TypeStr);
             LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
             #endif
 
             TypeStr = L"Aborted Invalid System Reset Call ... Please Try Again";
@@ -5069,8 +5377,9 @@ EFI_STATUS EFIAPI efi_main (
                     IsStriStr (EntryPath, L"System\\Library\\CoreServices")
                 ) {
                     // Fix undetected 'Mac OS'
-                    EntryTitle = (IsStriStr (EntryVol->VolName, L"PreBoot"))
-                        ? L"Mac OS" : L"RefindPlus";
+                    EntryTitle = (
+                        IsStriStr (EntryVol->VolName, L"PreBoot")
+                    ) ? L"Mac OS" : L"RefindPlus";
                 }
 
                 if (IsStriStr (EntryPath, L"EFI\\Microsoft\\Boot")) {
@@ -5903,10 +6212,11 @@ EFI_STATUS EFIAPI efi_main (
                 MY_MUTELOGGER_SET;
                 #endif
 
-                i = 0;
                 Status = (
                     gVarsDir != NULL
                 ) ? EFI_SUCCESS : FindVarsDir();
+
+                i = 0;
                 while (1) {
                     VarNVram = FindCommaDelimited (
                         RP_NVRAM_VARIABLES, i++

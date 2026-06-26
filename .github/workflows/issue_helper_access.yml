@@ -42,7 +42,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -62,7 +62,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -81,7 +81,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -100,7 +100,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -120,7 +120,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -140,7 +140,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -151,7 +151,7 @@ jobs:
           body: |
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions/categories/general) for follow-on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
 
   issue_close_lock4:
     name: Issue - CloseLock4
@@ -163,7 +163,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -182,7 +182,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -200,7 +200,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -220,7 +220,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -239,7 +239,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -257,7 +257,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -277,7 +277,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -297,7 +297,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -308,7 +308,7 @@ jobs:
           body: |
             This thread is being locked.
 
-            Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions/categories/general) for follow-on discussion or raise a new issue if appropriate.
+            Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
 
   issue_thread_lock3:
     name: Issue - Thread - Lock3
@@ -320,7 +320,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -338,7 +338,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3

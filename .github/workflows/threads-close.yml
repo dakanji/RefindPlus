@@ -1,4 +1,4 @@
-name: 'Issues Close'
+name: 'Threads Close'
 
 on:
   workflow_dispatch:
@@ -21,12 +21,17 @@ jobs:
     name: Flag or Close Issues
     runs-on: ubuntu-latest
 
-    if: github.repository == 'RefindPlusRepo/RefindPlus' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale')
+    if: |
+      github.repository == 'RefindPlusRepo/RefindPlus' && (
+        github.event_name == 'schedule' ||
+        github.event.inputs.job_id == 'all' ||
+        github.event.inputs.job_id == 'stale'
+      )
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Repository Checkout
@@ -64,7 +69,7 @@ jobs:
           stale-issue-message: |-
             This item has been flagged for closure.
 
-            Trigger: Missing Requirement(s)
+            Trigger: Missing Requirement.
           close-issue-message: |-
             This item is being closed.
           days-before-stale: 0
@@ -87,7 +92,7 @@ jobs:
           stale-issue-message: |-
             This item has been flagged for closure.
 
-            Trigger: Failure to Respond
+            Trigger: Failure to Respond.
           close-issue-message: |-
             This item is being closed.
           days-before-stale: 1
@@ -111,7 +116,7 @@ jobs:
           stale-issue-message: |-
             This item has been flagged for closure.
 
-            Trigger: Inactivity Threshold
+            Trigger: Inactivity Threshold.
           close-issue-message: |-
             This item is being closed.
           days-before-stale: 21

@@ -1120,6 +1120,7 @@ LOADER_ENTRY * InitializeStanza (
     #endif
 
     UINTN           TokenCount;
+    CHAR8           FlagTypeOS;
     CHAR16         *GraphicsTag;
     CHAR16         *LoadOptions;
     CHAR16         *LoaderToken;
@@ -1223,7 +1224,13 @@ LOADER_ENTRY * InitializeStanza (
             ALT_LOG(1, LOG_THREE_STAR_MID, L"Handle Token:- 'ostype'");
             #endif
 
-            StanzaEntry->OSType = TokenList[1][0];
+            FlagTypeOS = TokenList[1][0];
+            if (FlagTypeOS >= 'a' && FlagTypeOS <= 'z') {
+                StanzaEntry->OSType = FlagTypeOS - 32;
+            }
+            else {
+                StanzaEntry->OSType = FlagTypeOS;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"icon")) {
             #if REFIT_DEBUG > 0
@@ -1836,9 +1843,6 @@ VOID ExitOuter (
 
 
     // Set a few defaults if required
-    if (AppleFirmware && !GlobalConfig.LegacySync) {
-        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
-    }
     if (GlobalConfig.DontScanVolumes == NULL) {
         GlobalConfig.DontScanVolumes = StrDuplicate (
             DONT_SCAN_VOLUMES

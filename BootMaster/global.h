@@ -103,6 +103,12 @@
 #define LEGACY_TYPE_MAC2          (2)
 #define LEGACY_TYPE_MAC3          (3)
 #define LEGACY_TYPE_UEFI          (4)
+#define LEGACY_TYPE_MAC8          (8)
+#define LEGACY_TYPE_MAC9          (9)
+
+// DirIter Filer Mode Flags
+#define FILTER_DIRS               (1)
+#define FILTER_FILE               (2)
 
 // Flags how a loader entry was added to a menu
 #define DISCOVERY_TYPE_UNKNOWN    (0)
@@ -349,8 +355,10 @@ L"Data,Daten,Datos,Donnees,Dados,Dati,Tiedot,Gegevens,Podaci"
 
 
 #define NULL_GUID_VALUE              {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
+#define BOOT_GUID_VALUE              {0xBC13C2FF, 0x59E6, 0x4262, {0xA3, 0x52, 0xB2, 0x75, 0xFD, 0x6F, 0x71, 0x72}};
 #define SWAP_GUID_VALUE              {0x0657FD6D, 0xA4AB, 0x43C4, {0x84, 0xE5, 0x09, 0x33, 0xC8, 0x4B, 0x4F, 0x4F}};
 #define HOME_GUID_VALUE              {0x933AC7E1, 0x2EB4, 0x4F13, {0xB8, 0x44, 0x0E, 0x14, 0xE2, 0xAE, 0xF9, 0x15}};
+#define RAID_GUID_VALUE              {0xA19D880F, 0x05FC, 0x4D3B, {0xA0, 0x06, 0x74, 0x3F, 0x0F, 0x84, 0x91, 0x1E}};
 #define LUKS_GUID_VALUE              {0xCA7D7CCB, 0x63ED, 0x4C53, {0x86, 0x1C, 0x17, 0x42, 0x53, 0x60, 0x59, 0xCC}};
 #define MBR_GUID_VALUE               {0x92A6C61F, 0x7130, 0x49B9, {0xB0, 0x5C, 0x8D, 0x7E, 0x7B, 0x03, 0x91, 0x27}};
 #define REFINDPLUS_GUID              {0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40}};
@@ -492,7 +500,6 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
-    BOOLEAN                     BadRamTagWide;
     BOOLEAN                     DirectBoot;
     BOOLEAN                     CustomScreenBG;
     BOOLEAN                     TextOnly;
@@ -539,6 +546,7 @@ typedef struct {
     BOOLEAN                     FoldLinuxKernels;
     BOOLEAN                     BootLogoScale;
     BOOLEAN                     BootLogoClear;
+    BOOLEAN                     BadRamTagWide;
     BOOLEAN                     RescanDXE;
     BOOLEAN                     HiddenTags;
     BOOLEAN                     LegacySync;

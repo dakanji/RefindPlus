@@ -56,7 +56,7 @@
  */
 /**
 ** Modified for RefindPlus
-** Copyright (c) 2024 Dayo Akanji (sf.net/u/dakanji/profile)
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
 **
 ** Modifications distributed under the preceding terms.
 **/
@@ -80,6 +80,12 @@ VOID GuessLinuxDistribution (
     REFIT_VOLUME  *Volume,
     CHAR16        *LoaderPath,
     BOOLEAN        FirstOnly
+);
+VOID HandleParseCall (
+    CHAR16       **OSIconName,
+    REFIT_VOLUME  *Volume,
+    BOOLEAN        FirstOnly,
+    BOOLEAN        VolumeTags
 );
 
 #endif

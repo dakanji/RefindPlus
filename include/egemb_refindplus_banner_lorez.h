@@ -1,9 +1,9 @@
 /**
- * egemb_refindplus_banner_lorez.h
- * An encoded RefindPlus banner at low resolution
- *
- * Copyright (c) 2021 Dayo Akanji
- * Released under the MIT License
+** egemb_refindplus_banner_lorez.h
+** An encoded RefindPlus banner at low resolution
+**
+** Copyright (c) 2021 Dayo Akanji
+** Released under the MIT License
 **/
 static const UINT8 egemb_refindplus_banner_lorez_data[3778] = {
  0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,

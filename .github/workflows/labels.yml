@@ -21,7 +21,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: dessant/label-actions@v5
@@ -36,14 +36,18 @@ jobs:
     needs: [auto_labels]
     runs-on: ubuntu-latest
 
-    if: ${{ github.actor == 'dakanji' && (github.event.label.name == 'Invalid' || github.event.label.name == 'Not-Planned') }}
+    if: |
+      github.actor == 'dakanji' && (
+        github.event.label.name == 'Invalid' ||
+        github.event.label.name == 'Not-Planned'
+      )
     outputs:
       status: ${{ steps.handle_enhance_check_main.outputs.status }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: handle_enhance_check_main
@@ -67,7 +71,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
 
@@ -99,7 +103,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: handle_resolved_check_1_main
@@ -125,7 +129,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: handle_resolved_check_2_main
@@ -149,7 +153,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
 

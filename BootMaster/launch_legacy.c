@@ -40,12 +40,12 @@
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
  *
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 #include "global.h"
 #include "icns.h"
@@ -55,11 +55,12 @@
 #include "mystrings.h"
 #include "screenmgt.h"
 #include "launch_legacy.h"
+#include "../include/Handle.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/syslinux_mbr.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
-#include "../include/Handle.h"
+
 
 extern BOOLEAN            IsBoot;
 extern BOOLEAN            DisplayLoader;
@@ -1486,8 +1487,8 @@ VOID FindLegacyBootType (VOID) {
 
 
     if (AppleFirmware && !GlobalConfig.LegacySync) {
-        // 'LegacySync' Inactive on Mac - Enable BIOS Boot Option
-        GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
+        // 'LegacySync' Inactive on Mac - Assume BIOS Boot Support
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC8;
 
         return;
     }
@@ -1496,7 +1497,6 @@ VOID FindLegacyBootType (VOID) {
     //
     // 'LegacySync' Active or Not a Mac
     //
-
     /* Locate UEFI Compatability Support Module (CSM) */
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
@@ -1515,9 +1515,10 @@ VOID FindLegacyBootType (VOID) {
     //
     // UEFI CSM Not Available
     //
-
     if (!AppleFirmware) {
-        // UEFI Class 3 PC - Use Default 'Disabled' Setting
+        // UEFI Class 3 PC - Use 'Disabled' Setting
+        GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
+
         return;
     }
 
@@ -1525,22 +1526,21 @@ VOID FindLegacyBootType (VOID) {
     //
     // Running on Mac with 'LegacySync' Active
     //
-
-    if ((gST->Hdr.Revision >> 16U) == 1 ||
-        (gBS->Hdr.Revision >> 16U) == 1 ||
-        (gRT->Hdr.Revision >> 16U) == 1
-    ) {
-        // EFI 1.x or Unknown Mac - Enable BIOS Boot Option
+    /* Locate 'AppleLegacyLoader' Firmware App */
+    Status = FindBootCampFirmwareApp (
+        BootCampAppList, MAX_UNIQUE_PATHS
+    );
+    if (!EFI_ERROR(Status)) {
+        // 'Apple Style' Class 2 Mac - Enable BIOS Boot Option
         GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
     }
     else {
-        /* Locate 'AppleLegacyLoader' Firmware App */
-        Status = FindBootCampFirmwareApp (
-            BootCampAppList, MAX_UNIQUE_PATHS
-        );
-        if (!EFI_ERROR(Status)) {
-            // 'Apple Style' UEFI Class 2 Mac - Enable BIOS Boot Option
-            GlobalConfig.LegacyType = LEGACY_TYPE_MAC1;
+        if ((gST->Hdr.Revision >> 16U) == 1 ||
+            (gBS->Hdr.Revision >> 16U) == 1 ||
+            (gRT->Hdr.Revision >> 16U) == 1
+        ) {
+            // Tag as 'Broken' on EFI 1.x
+            GlobalConfig.LegacyType = LEGACY_TYPE_MAC9;
         }
         else {
             // UEFI Class 3 Mac - Disable BIOS Boot Option

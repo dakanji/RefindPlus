@@ -43,7 +43,7 @@
  */
 /**
 ** Modified for RefindPlus
-** Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
 **
 ** Modifications distributed under the preceding terms.
 **/
@@ -105,7 +105,7 @@ EG_IMAGE * BuiltinIcon (IN UINTN Id);
 #define BASE_OS_ICON_UEFI                  (10)
 #define BASE_OS_ICON_COUNT                 (11)
 
-#define EXIT_SPLASH                L"outlogo"
+#define EXIT_SPLASH                  L"outlogo"
 
 #endif
 

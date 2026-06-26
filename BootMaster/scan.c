@@ -107,6 +107,22 @@ LOADER_LIST {
 };
 
 
+/**
+Entry->OSType List:
+- 'B' : BSD
+- 'C' : Clover
+- 'E' : ELILO
+- 'G' : GRUB
+- 'H' : Haiku
+- 'L' : Linux Stub
+- 'M' : Mac OS
+- 'O' : OpenCore
+- 'R' : RefitVariant
+- 'S' : SDBoot
+- 'W' : Windows
+- 'X' : XOM
+**/
+
 #if REFIT_DEBUG > 0
 static
 BOOLEAN IsToolSet (
@@ -383,11 +399,10 @@ LOADER_ENTRY * InitializeLoaderEntry (
         return NULL;
     }
 
-    NewEntry->OSType          =              0;
-    NewEntry->Enabled         =           TRUE;
-    NewEntry->EfiLoaderPath   =           NULL;
-    NewEntry->me.Title        =           NULL;
-    NewEntry->me.Tag          =     TAG_LOADER;
+    NewEntry->Enabled       =       TRUE;
+    NewEntry->EfiLoaderPath =       NULL;
+    NewEntry->me.Title      =       NULL;
+    NewEntry->me.Tag        = TAG_LOADER;
 
     if (Entry != NULL) {
         NewEntry->Volume      =  Entry->Volume;
@@ -496,7 +511,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             Entry->me.Image
         );
 
-        // Default entry
+        // Default Entry
         SubEntry = CopyLoaderEntry (Entry);
         if (SubEntry == NULL) {
             break;
@@ -723,6 +738,7 @@ VOID GenerateSubScreen (
                 SubEntry->me.Title        = StrDuplicate (L"Load Instance: Mac OS in Verbose Mode (32-bit)");
                 SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
                 SubEntry->UseGraphicsMode = FALSE;
+
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
             }
             #endif
@@ -1792,7 +1808,7 @@ VOID SetLoaderDefaults (
                 );
             }
         }
-        else if (IsStriStr (LoaderPath, L"/refindplus")) {
+        else if (IsStriStr (LoaderPath, L"\\refindplus\\")) {
             BREAD_CRUMB(L"%a:  5g 1", __func__);
             if (GetImage) {
                 MergeUniqueItems (
@@ -1806,7 +1822,7 @@ VOID SetLoaderDefaults (
             GotFlag       = TRUE;
             Entry->OSType =  'R';
         }
-        else if (IsStriStr (LoaderPath, L"/refind")) {
+        else if (IsStriStr (LoaderPath, L"\\refind\\")) {
             BREAD_CRUMB(L"%a:  5h 1 - A", __func__);
             if (GetImage) {
                 MergeUniqueItems (
@@ -1820,17 +1836,31 @@ VOID SetLoaderDefaults (
             GotFlag       = TRUE;
             Entry->OSType =  'R';
         }
-        else if (IsStriStr (LoaderPath, L"/refit")) {
+        else if (IsStriStr (LoaderPath, L"\\refit\\")) {
             BREAD_CRUMB(L"%a:  5i 1 - B", __func__);
             if (GetImage) {
                 MergeUniqueStrings (
-                    &TmpIconName, L"refit", L','
+                    &TmpIconName,
+                    L"refit,refind,refindplus",
+                    L','
                 );
             }
 
             BREAD_CRUMB(L"%a:  5i 2 - B", __func__);
             GotFlag       = TRUE;
             Entry->OSType =  'R';
+        }
+        else if (IsStriStr (LoaderPath, L"\\OpenBSD\\")) {
+            BREAD_CRUMB(L"%a:  5i_obsd 1", __func__);
+            if (GetImage) {
+                MergeUniqueStrings (
+                    &TmpIconName, L"openbsd", L','
+                );
+            }
+
+            BREAD_CRUMB(L"%a:  5i_obsd 2", __func__);
+            GotFlag       = TRUE;
+            Entry->OSType =  'B';
         }
         else if (IsStriStr (LoaderPath, L"\\FreeBSD\\")) {
             BREAD_CRUMB(L"%a:  5i_fbsd 1", __func__);
@@ -1857,29 +1887,26 @@ VOID SetLoaderDefaults (
             Entry->OSType =  'B';
         }
         else if (IsStriStr (LoaderPath, L"\\NetBSD\\")) {
+            BREAD_CRUMB(L"%a:  5i_nbsd 1", __func__);
             if (GetImage) {
                 MergeUniqueStrings (
                     &TmpIconName, L"netbsd", L','
                 );
             }
+
+            BREAD_CRUMB(L"%a:  5i_nbsd 2", __func__);
             GotFlag       = TRUE;
             Entry->OSType =  'B';
         }
-        else if (IsStriStr (LoaderPath, L"\\OpenBSD\\")) {
-            if (GetImage) {
-                MergeUniqueStrings (
-                    &TmpIconName, L"openbsd", L','
-                );
-            }
-            GotFlag       = TRUE;
-            Entry->OSType =  'B';
-        }
-        else if (IsStriStr (LoaderPath, L"\\HAIKU\\")) {
+        else if (IsStriStr (LoaderPath, L"\\Haiku\\")) {
+            BREAD_CRUMB(L"%a:  5i_haik 1", __func__);
             if (GetImage) {
                 MergeUniqueStrings (
                     &TmpIconName, L"haiku", L','
                 );
             }
+
+            BREAD_CRUMB(L"%a:  5i_haik 2", __func__);
             GotFlag       = TRUE;
             Entry->OSType =  'H';
         }
@@ -2954,7 +2981,8 @@ CHAR16 * SetVolType (
         IsStriStr (OurItem, L"vmLinuz-") ||
         IsStriStr (OurItem, L"bzImage-") ||
         IsStriStr (OurItem, L"Kernel-" ) ||
-        IsStriStr (OurItem, L"Image-"  )
+        IsStriStr (OurItem, L"Image-"  ) ||
+        IsStriStr (VolName, L"XBOOTLDR")
     ) {
         RetVal = (
             IsStriStr (VolName, L"Linux")
@@ -2962,7 +2990,6 @@ CHAR16 * SetVolType (
     }
     else if (MyStriCmp (OurItem, L"Legacy Boot")) RetVal = L" Partition";
     else if (MyStriCmp (VolName, L"BOOTCAMP"   )) RetVal = L" Partition";
-    else if (IsStriStr (VolName, L"XBOOTLDR"   )) RetVal = L" Partition";
     else if (VolFSType == FS_TYPE_FAT32         ) RetVal = L" Partition";
     else if (VolFSType == FS_TYPE_FAT16         ) RetVal = L" Partition";
     else if (VolFSType == FS_TYPE_FAT12         ) RetVal = L" Partition";
@@ -3245,6 +3272,25 @@ BOOLEAN IsSymbolicLink (
     return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
 
+static
+BOOLEAN VetExtension (
+    CHAR16        *FullName
+) {
+    CHAR16        *Extension;
+    BOOLEAN        VettedExt;
+
+    Extension = FindExtension (FullName);
+    VettedExt = (
+        Extension != NULL && (
+            MyStriCmp (Extension, L".efi") ||
+            MyStriCmp (Extension, L".signed")
+        )
+    );
+    MY_FREE_POOL(Extension);
+
+    return VettedExt;
+} // BOOLEAN VetExtension()
+
 // Scan an individual directory for EFI boot loader files and, if found,
 // add them to the list. Exception: Ignores FALLBACK_FULLNAME, which is picked
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
@@ -3331,9 +3377,8 @@ BOOLEAN ScanLoaderDir (
     while (1) {
         BREAD_CRUMB(L"%a:  4a 0 - Run DirIterNext", __func__);
         CheckIter = DirIterNext (
-            &DirIter,
-            2, Pattern,
-            &DirEntry
+            &DirIter, FILTER_FILE,
+            Pattern, &DirEntry
         );
         if (!CheckIter) break;
 
@@ -3691,7 +3736,6 @@ VOID ScanNetboot (VOID) {
     }
 } // VOID ScanNetboot()
 
-
 // Adds *FullFileName as a Mac OS loader, if it exists.
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
@@ -3789,7 +3833,6 @@ VOID ScanEfiFiles (
     CHAR16                 *FileName;
     CHAR16                 *SelfPath;
     CHAR16                 *Directory;
-    CHAR16                 *Extension;
     CHAR16                 *VentoyName;
     BOOLEAN                 ScanFallbackLoader;
     BOOLEAN                 FoundBRBackup;
@@ -3798,7 +3841,7 @@ VOID ScanEfiFiles (
     EFI_FILE_INFO          *EfiDirEntry;
     REFIT_DIR_ITER          EfiDirIter;
 
-    static CHAR16          *MatchPatterns = NULL;
+    static CHAR16          *LoaderMatchPatterns = NULL;
 
 
     //LOG_SEP(L"X");
@@ -3934,9 +3977,9 @@ VOID ScanEfiFiles (
     #endif
 
     //BREAD_CRUMB(L"%a:  5", __func__);
-    if (MatchPatterns == NULL) {
+    if (LoaderMatchPatterns == NULL) {
         //BREAD_CRUMB(L"%a:  5a 1", __func__);
-        MatchPatterns = StrDuplicate (
+        LoaderMatchPatterns = StrDuplicate (
             LOADER_MATCH_PATTERNS
         );
         if (GlobalConfig.ScanAllLinux &&
@@ -3944,7 +3987,7 @@ VOID ScanEfiFiles (
         ) {
             //BREAD_CRUMB(L"%a:  5a 1a 1", __func__);
             MergeUniqueStrings (
-                &MatchPatterns,
+                &LoaderMatchPatterns,
                 GlobalConfig.LinuxMatchPatterns, L','
             );
             //BREAD_CRUMB(L"%a:  5a 1a 2", __func__);
@@ -3973,9 +4016,8 @@ VOID ScanEfiFiles (
         while (1) {
             //BREAD_CRUMB(L"%a:  6a 4a 0 - Run DirIterNext", __func__);
             CheckIter = DirIterNext (
-                &EfiDirIter,
-                1, NULL,
-                &EfiDirEntry
+                &EfiDirIter, FILTER_DIRS,
+                NULL, &EfiDirEntry
             );
             if (!CheckIter) break;
 
@@ -4124,7 +4166,7 @@ VOID ScanEfiFiles (
 
     //BREAD_CRUMB(L"%a:  8", __func__);
     // Scan the root directory for EFI executables
-    if (ScanLoaderDir (Volume, L"\\", MatchPatterns)) {
+    if (ScanLoaderDir (Volume, L"\\", LoaderMatchPatterns)) {
         //BREAD_CRUMB(L"%a:  8a 1", __func__);
         ScanFallbackLoader = FALSE;
     }
@@ -4137,9 +4179,8 @@ VOID ScanEfiFiles (
     while (1) {
         //BREAD_CRUMB(L"%a:  10a 0 - Run DirIterNext", __func__);
         CheckIter = DirIterNext (
-            &EfiDirIter,
-            1, NULL,
-            &EfiDirEntry
+            &EfiDirIter, FILTER_DIRS,
+            NULL, &EfiDirEntry
         );
         if (!CheckIter) break;
 
@@ -4158,14 +4199,9 @@ VOID ScanEfiFiles (
             }
 
             //BREAD_CRUMB(L"%a:  10a 1a 2", __func__);
-            Extension = FindExtension (
-                EfiDirEntry->FileName
-            );
-            if (Extension != NULL &&
-                !MyStriCmp (Extension, L".efi")
-            ) {
+            if (!VetExtension (EfiDirEntry->FileName)) {
                 //BREAD_CRUMB(L"%a:  10a 1a 2a 1", __func__);
-                // Skip ... Not boot loader or scanned later
+                // Skip ... Not EFI File
                 break;
             }
 
@@ -4176,7 +4212,7 @@ VOID ScanEfiFiles (
             );
 
             //BREAD_CRUMB(L"%a:  10a 1a 4", __func__);
-            if (ScanLoaderDir (Volume, FileName, MatchPatterns)) {
+            if (ScanLoaderDir (Volume, FileName, LoaderMatchPatterns)) {
                 //BREAD_CRUMB(L"%a:  10a 1a 4a 1", __func__);
                 ScanFallbackLoader = FALSE;
             }
@@ -4185,7 +4221,6 @@ VOID ScanEfiFiles (
         } while (0); // This 'loop' only runs once
 
         //BREAD_CRUMB(L"%a:  10a 2", __func__);
-        MY_FREE_POOL(Extension);
         MY_FREE_POOL(EfiDirEntry);
 
         //BREAD_CRUMB(L"%a:  10a 3 - WHILE LOOP:- END", __func__);
@@ -4266,7 +4301,7 @@ VOID ScanEfiFiles (
                 ScanLoaderDir (
                     Volume,
                     Directory,
-                    MatchPatterns
+                    LoaderMatchPatterns
                 )
             ) {
                 //BREAD_CRUMB(L"%a:  14a 1a 4a 1", __func__);
@@ -5581,7 +5616,7 @@ VOID ScanForBootloaders (VOID) {
 
                 if (GotTool) {
                     MsgStr = StrDuplicate (
-                        L"Set Key 'A'          'Reserved'"
+                        L"Set Key 'A'          'Not Used'"
                     );
                 }
             }
@@ -5625,7 +5660,7 @@ VOID ScanForBootloaders (VOID) {
                         #if REFIT_DEBUG > 0
                         if (KeyTxt == 'J' || KeyTxt == 'P') {
                             MsgStr = PoolPrint (
-                                L"Set Key '%s'          'Reserved'",
+                                L"Set Key '%s'          'Not Used'",
                                 (KeyTxt == 'J') ? L"I" : L"O"
                             );
                             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -5660,8 +5695,8 @@ VOID ScanForBootloaders (VOID) {
             MsgStr = PoolPrint (
                 L"Assigned Shortcut Key%s to %d of %d Applicable Item%s",
                 ((i + Specials) == 1) ? L"" : L"s",
-                (i + Specials),
-                (MainMenu->EntryCount  + Specials),
+                ( i + Specials),
+                ( MainMenu->EntryCount + Specials),
                 ((MainMenu->EntryCount + Specials) == 1) ? L"" : L"s"
             );
             LOG_MSG("\n\n");

@@ -17,14 +17,17 @@ jobs:
     name: Close Issue Label - Check
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     outputs:
       status: ${{ steps.add_label_user_close_check_main.outputs.status }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: add_label_user_close_check_main
@@ -40,15 +43,18 @@ jobs:
   # Add  Labels  - https://github.com/actions-cool/issues-helper
   add_label_user_close_act:
     name: Close Issue Label - Cancel
-    needs: add_label_user_close_check
+    needs: [add_label_user_close_check]
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && needs.add_label_user_close_check.outputs.status == 'success'
+    if: |
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      needs.add_label_user_close_check.outputs.status == 'success'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -62,12 +68,18 @@ jobs:
     name: Enhancement Request Label
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Suggested Feature') && contains(github.event.issue.body, 'Background Information') && contains(github.event.issue.body, 'Additional Context')
+    if: |
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'Suggested Feature') &&
+      contains(github.event.issue.body, 'Additional Context') &&
+      contains(github.event.issue.body, 'Background Information')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -83,18 +95,23 @@ jobs:
     needs: [add_label_user_open_enhance]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'Unofficially Modified Code Build') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'Unofficially Modified Code Build')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Set NodeJS Up - https://github.com/actions/setup-node
       - uses: actions/setup-node@v6
         with:
-          node-version: '>=24 <=28'
+          node-version: 24
 
       # Add Comment
       - uses: actions-cool/issues-helper@v3
@@ -142,8 +159,8 @@ jobs:
           ENV_ISSUE_ID: ${{ github.event.issue.number }}
         shell: bash
         run: |
-          # Tag as 'Unknown Provenance'
-          NewTitle="RefindPlus of Unknown Provenance: Has Issues"
+          # Tag as 'Unclear Provenance'
+          NewTitle="RefindPlus of Unclear Provenance: DROPPED"
           curl -f -X PATCH \
             -H "Authorization: token ${ENV_TOKEN}" \
             -H "Accept: application/vnd.github.v3+json" \
@@ -156,12 +173,17 @@ jobs:
     needs: [add_label_user_open_drop1]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
@@ -204,12 +226,17 @@ jobs:
     needs: [add_label_user_open_drop2]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
@@ -252,12 +279,18 @@ jobs:
     needs: [add_label_user_open_drop3]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') && contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
+      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
@@ -299,12 +332,19 @@ jobs:
     needs: [add_label_user_open_drop4]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') && !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') && contains(github.event.issue.body, 'Official Older Released Version') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      contains(github.event.issue.body, 'Official Older Released Version') &&
+      !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
+      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: outdated_2_1a
@@ -319,7 +359,7 @@ jobs:
         with:
           actions: 'create-comment'
           token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+          issue-number: ${{ github.event.issue.number }}
           body: |
             You appear to be running an outdated version of RefindPlus.
             Run the current release version and update this thread accordingly.
@@ -339,21 +379,118 @@ jobs:
         with:
           actions: 'add-labels'
           token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+          issue-number: ${{ github.event.issue.number }}
           labels: 'Queries'
+
+  chk_bot_user_open:
+    name: Handle ChatBot
+    needs: [add_label_user_outdated]
+    runs-on: ubuntu-latest
+    outputs:
+      state: ${{ steps.chatbot.outputs.result }}
+
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' && ((
+        !contains(github.event.issue.body, 'Issue Screened') &&
+        !contains(github.event.issue.body, 'Suggested Feature')
+      ) || (
+        !contains(github.event.issue.body, 'Problem Point') &&
+        !contains(github.event.issue.body, 'Background Information')
+      ) || (
+        !contains(github.event.issue.body, 'Log Requirement') &&
+        !contains(github.event.issue.body, 'Additional Context')
+      ))
+    steps:
+      - id: chatbot
+        run: echo "result=true" >> "$GITHUB_OUTPUT"
+
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - id: chatbot_2_1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'create-comment'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            This item appears to be LLM ChatBot generated.
+            Such items cannot be entertained at this time.
+
+      # Set NodeJS Up - https://github.com/actions/setup-node
+      - id: chatbot_3_1
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - id: chatbot_3_2
+        env:
+          ENV_TOKEN: ${{ steps.app-token.outputs.token }}
+          ENV_REPO: ${{ github.repository }}
+          ENV_ISSUE_ID: ${{ github.event.issue.number }}
+        shell: bash
+        run: |
+          # Set Title
+          NewTitle="Apparent LLM Exploit: DROPPED"
+          echo "Updating issue #${ENV_ISSUE_ID} with title: ${NewTitle}"
+          curl -f -X PATCH \
+            -H "Authorization: token ${ENV_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${ENV_REPO}/issues/${ENV_ISSUE_ID} \
+            -d "{\"title\": \"${NewTitle}\"}" || { echo "Title Update Failed"; exit 1; }
+
+      # Add 'ChatBot' Label
+      - id: chatbot_4_1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'add-labels'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.issue.number }}
+          labels: 'ChatBot, Dropped'
+
+      - id: chatbot_5_1
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'close-issue'
+          close-reason: 'completed'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.issue.number }}
+
+      - id: chatbot_5_2
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: 'lock-issue'
+          token: ${{ steps.app-token.outputs.token }}
+          issue-number: ${{ github.event.issue.number }}
 
   # Add Labels - https://github.com/actions-cool/issues-helper
   add_label_user_open1:
     name: Default Issue Label
-    needs: [add_label_user_outdated]
+    needs: [chk_bot_user_open]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && !contains(github.event.issue.body, 'Unofficially Modified Code Build') && !contains(github.event.issue.body, 'Official Older Released Version') && !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') && !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') && !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      needs.chk_bot_user_open.result == 'skipped' &&
+      !contains(github.event.issue.body, 'Official Older Released Version') &&
+      !contains(github.event.issue.body, 'Unofficially Modified Code Build') &&
+      !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
+      !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') &&
+      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add 'Triage' Label
@@ -367,15 +504,28 @@ jobs:
   # Add Labels - https://github.com/actions-cool/issues-helper
   add_label_user_open2:
     name: Log Absent Label
-    needs: [add_label_user_open1]
+    needs: [add_label_user_open1, chk_bot_user_open]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && !contains(github.event.issue.body, 'Unofficially Modified Code Build') && !contains(github.event.issue.body, 'Official Older Released Version') && !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') && !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') && !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') && !contains(github.event.issue.body, 'Suggested Feature') && !contains(github.event.issue.body, 'Background Information') && !contains(github.event.issue.body, 'Additional Context') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      needs.chk_bot_user_open.result == 'skipped' &&
+      !contains(github.event.issue.body, 'Suggested Feature') &&
+      !contains(github.event.issue.body, 'Additional Context') &&
+      !contains(github.event.issue.body, 'Background Information') &&
+      !contains(github.event.issue.body, 'Official Older Released Version') &&
+      !contains(github.event.issue.body, 'Unofficially Modified Code Build') &&
+      !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
+      !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') &&
+      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions/github-script@v8
@@ -406,15 +556,25 @@ jobs:
   # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
   similarity_analysis:
     name: Check Similarity
-    needs: [add_label_user_open2]
+    needs: [add_label_user_open2, chk_bot_user_open]
     runs-on: ubuntu-latest
 
-    if: ${{ !failure() && github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'opened' && !contains(github.event.issue.body, 'Unofficially Modified Code Build') && !contains(github.event.issue.body, 'Official Older Released Version') && !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') && !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given') && !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') }}
+    if: |
+      !failure() &&
+      github.event.action == 'opened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]' &&
+      needs.chk_bot_user_open.result == 'skipped' &&
+      !contains(github.event.issue.body, 'Official Older Released Version') &&
+      !contains(github.event.issue.body, 'Unofficially Modified Code Build') &&
+      !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
+      !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') &&
+      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-similarity-analysis@v1
@@ -430,12 +590,14 @@ jobs:
     name: Reopen Issue Label - Base
     runs-on: ubuntu-latest
 
-    if: github.actor == 'dakanji' && github.event.action == 'reopened'
+    if: |
+      github.event.action == 'reopened' &&
+      github.actor == 'dakanji'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -449,12 +611,15 @@ jobs:
     name: Reopen Issue Label - User
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'reopened'
+    if: |
+      github.event.action == 'reopened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -469,12 +634,15 @@ jobs:
     name: Remove Cancelled Label
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'reopened'
+    if: |
+      github.event.action == 'reopened' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -488,12 +656,15 @@ jobs:
     name: Remove Misc Labels
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -508,14 +679,17 @@ jobs:
     name: Bounce Bug - Check1
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     outputs:
       status: ${{ steps.bounce_bug_check1_main.outputs.status }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: bounce_bug_check1_main
@@ -539,7 +713,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -554,12 +728,15 @@ jobs:
     needs: [bounce_bug_act1]
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -576,14 +753,17 @@ jobs:
     name: Bounce Enhance - Check1
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     outputs:
       status: ${{ steps.bounce_enhance_check1_main.outputs.status }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: bounce_enhance_check1_main
@@ -607,7 +787,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: mheap/github-action-required-labels@v5
@@ -624,12 +804,15 @@ jobs:
     needs: [bounce_enhance_check2]
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3
@@ -644,12 +827,15 @@ jobs:
     needs: [bounce_enhance_act1]
     runs-on: ubuntu-latest
 
-    if: github.actor != 'refindplusrepo[bot]' && github.actor != 'dakanji' && github.event.action == 'closed'
+    if: |
+      github.event.action == 'closed' &&
+      github.actor != 'dakanji' &&
+      github.actor != 'refindplusrepo[bot]'
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: actions-cool/issues-helper@v3

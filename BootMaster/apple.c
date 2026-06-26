@@ -18,12 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 #include "global.h"
 #include "config.h"
@@ -460,6 +460,7 @@ typedef struct EfiAppleSetOsInterface {
 // when third-party OSes are launched in EFI mode.
 EFI_STATUS SetAppleOSInfo (VOID) {
     EFI_STATUS               Status;
+    EFI_STATUS               Xattax;
     EFI_GUID                 apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     CHAR16                  *AppleVersionOS;
     CHAR8                   *MacVersionStr;
@@ -467,18 +468,23 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 
 
     if (!AppleFirmware) {
-        // Early Return
+        return EFI_NOT_STARTED;
+    }
+
+    if (GlobalConfig.SpoofOSXVersion    == NULL ||
+        GlobalConfig.SpoofOSXVersion[0] == L'\0'
+    ) {
         return EFI_NOT_STARTED;
     }
 
     SetOurOS = NULL;
 
-    Status = REFIT_CALL_3_WRAPPER(
+    Xattax = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol, &apple_set_os_guid,
         NULL, (VOID **) &SetOurOS
     );
     if (
-        EFI_ERROR(Status) ||
+        EFI_ERROR(Xattax) ||
         SetOurOS == NULL  ||
         SetOurOS->Version == 0
     ) {
@@ -492,7 +498,10 @@ EFI_STATUS SetAppleOSInfo (VOID) {
         return EFI_OUT_OF_RESOURCES;
     }
 
-    MergeStrings (&AppleVersionOS, GlobalConfig.SpoofOSXVersion, ' ');
+    MergeStrings (
+        &AppleVersionOS,
+        GlobalConfig.SpoofOSXVersion, ' '
+    );
 
     MacVersionStr = AllocateZeroPool (
         (StrLen (AppleVersionOS) + 1) * sizeof (CHAR8)
@@ -511,11 +520,22 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     );
     #endif
 
-    UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
+    UnicodeStrToAsciiStr (
+        AppleVersionOS, MacVersionStr
+    );
 
-    Status = REFIT_CALL_1_WRAPPER(SetOurOS->SetOsVersion, MacVersionStr);
-    if (!EFI_ERROR(Status) && SetOurOS->Version >= 2) {
-        REFIT_CALL_1_WRAPPER(SetOurOS->SetOsVendor, (CHAR8 *) "Apple Inc.");
+    Status = EFI_NOT_READY;
+    Xattax = REFIT_CALL_1_WRAPPER(
+        SetOurOS->SetOsVersion, MacVersionStr
+    );
+    if (!EFI_ERROR(Xattax) && SetOurOS->Version >= 2) {
+        Status = EFI_SUCCESS;
+        Xattax = REFIT_CALL_1_WRAPPER(
+            SetOurOS->SetOsVendor, (CHAR8 *) "Apple Inc."
+        );
+        if (EFI_ERROR(Xattax)) {
+            Status = EFI_NOT_FOUND;
+        }
     }
 
     MY_FREE_POOL(MacVersionStr);

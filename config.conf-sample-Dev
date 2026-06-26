@@ -133,14 +133,14 @@
 #
 #csr_dynamic 1
 
-# As of MacOS v11.x (Big Sur), the previous default SIP/SSV settings, which had all included
+# As of macOS v11.x (Big Sur), the previous default SIP/SSV settings, which had all included
 # the CSR_ALLOW_APPLE_INTERNAL bit, may leave Macs not able to receive "Over The Air" (OTA)
-# updates from Apple. MacOS v11.x (and later) remove this bit on boot if detected but the
-# attempted removal may fail when booting into MacOS via non-standard approaches such as
+# updates from Apple. macOS v11.x (and later) remove this bit on boot if detected but the
+# attempted removal may fail when booting into macOS via non-standard approaches such as
 # RefindPlus. It is also possible that Apple will remove this remediation feature once
-# Mac models supporting MacOS v10.15 (Catalina) are deemed to be obsolete by Apple.
+# Mac models supporting macOS v10.15 (Catalina) are deemed to be obsolete by Apple.
 # When this token is set, RefindPlus will remove this bit from the saved CSR bits
-# when booting into MacOS, similar to the process done by MacOS v11.x and later.
+# when booting into macOS, similar to the process done by macOS v11.x and later.
 #
 # Inactive When Commented Out (Takes No Action on SIP/SSV Settings)
 #
@@ -199,11 +199,11 @@
 #decouple_key_f10
 
 # Offer APFS filesystem capability. By default, RefindPlus is set up to jump start
-# MacOS APFS filesystem drivers, apfs.efi, which are available in system folders of
-# MacOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# MacOS version which ensures that any changes made to APFS drivers for each specific
-# MacOS version are accommodated, compared to using one driver no matter what specific
-# MacOS version is being loaded. This default is deactivated whenever this token is set.
+# macOS APFS filesystem drivers, apfs.efi, which are available in system folders of
+# macOS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# macOS version which ensures that any changes made to APFS drivers for each specific
+# macOS version are accommodated, compared to using one driver no matter what specific
+# macOS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore builds.
 #
 # APFS Filesystem Capability Is Provided (If Required) via "SupplyAPFS" When Commented Out
@@ -211,17 +211,17 @@
 #disable_apfs_load
 
 # Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partition
-# of APFS volumes by requiring this to run the Mac Boot Loader, starting with MacOS v11.0, when
-# SIP is enabled. Attempts to run such MacOS Boot Loaders directly when SIP is enabled result
+# of APFS volumes by requiring this to run the Mac Boot Loader, starting with macOS v11.0, when
+# SIP is enabled. Attempts to run such macOS Boot Loaders directly when SIP is enabled result
 # in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
-# respective "PreBoot" partitions, which will be used to boot such MacOS instances and the
+# respective "PreBoot" partitions, which will be used to boot such macOS instances and the
 # associated "PreBoot" partitions will be hidden from view. This arrangement also permits
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled however, the RefindPlus "SyncAPFS" feature is disabled.
 #
 # NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
 # to improve the reliability of "SyncAPFS" distinguishing between APFS volumes.
-# Also, avoid the use of special characters in MacOS volume names and limit
+# Also, avoid the use of special characters in macOS volume names and limit
 # names to alphanumeric characters. Dashes, underscores and/or spaces can
 # be used in combination with alphanumeric characters without issue.
 #
@@ -229,11 +229,11 @@
 #
 #disable_apfs_sync
 
-# Disable Apple Mobile File Integrity (AMFI) checks on booting MacOS. Whenever
+# Disable Apple Mobile File Integrity (AMFI) checks on booting macOS. Whenever
 # this token is active, RefindPlus will add a "amfi_get_out_of_my_way=1" boot
 # argument which, along with System Integrity Protection (SIP), restricts
 # application access to OS entitlements. Note that this setting will
-# create a MacOS boot argument the first time it is triggered when
+# create a macOS boot argument the first time it is triggered when
 # "persist_boot_args" is also set, and that this boot argument
 # will remain active until it is explicitly cleared, even
 # if this setting is subsequently deactivated.
@@ -242,16 +242,16 @@
 #
 #disable_check_amfi
 
-# Disable version compatibility checks when booting MacOS. Macs check whether
-# the current MacOS version is supported on the machine when booting, and halt
+# Disable version compatibility checks when booting macOS. Macs check whether
+# the current macOS version is supported on the machine when booting, and halt
 # if not. When this option is active, RefindPlus will add "-no_compat_check" to
-# the boot arguments to disable this check, which allows MacOS boot on otherwise
+# the boot arguments to disable this check, which allows macOS boot on otherwise
 # unsupported Macs. Note that when "persist_boot_args" is also set, this setting
-# will create a MacOS boot argument the first time it is triggered and that the
+# will create a macOS boot argument the first time it is triggered and that the
 # boot argument will remain active until it is explicitly cleared, even if
 # this setting is subsequently deactivated.
 #
-# Inactive When Commented Out (Does Not Stop Mac OS Compatibility Checks)
+# Inactive When Commented Out (Does Not Stop macOS Compatibility Checks)
 #
 #disable_check_compat
 
@@ -310,16 +310,16 @@
 #
 #disable_legacy_sync
 
-# Disable kernel panic logging to the nvRAM. MacOS may save kernel panic logs in
+# Disable kernel panic logging to the nvRAM. macOS may save kernel panic logs in
 # the nvRAM under certain conditions which can increase wear and tear on legacy
 # Mac nvRAM. When this token is active, RefindPlus adds "nvram_paniclog=0" to
 # the boot arguments which disables panic log writes to the nvRAM for writes
 # to the filesystem instead. Note that when "persist_boot_args" is also
-# set, this token will create a MacOS boot argument the first time it
+# set, this token will create a macOS boot argument the first time it
 # is triggered which will remain active until explicitly cleared,
 # even if this setting is subsequently deactivated.
 #
-# Inactive When Commented Out (Does Not Stop Mac OS Panic Log Writes to nvRAM)
+# Inactive When Commented Out (Does Not Stop macOS Panic Log Writes to nvRAM)
 #
 #disable_nvram_paniclog
 
@@ -406,11 +406,11 @@
 #enable_esp_filter
 
 # Force "TRIM" on non-Apple SSDs. TRIM, which may improve SSD health,
-# is inactive by default for non-Apple SSDs in MacOS. When this option
-# is active however, RefindPlus will enforce MacOS "TRIM" for all types
-# of SSDs, including non-Apple SSDs. This setting only applies to MacOS.
+# is inactive by default for non-Apple SSDs in macOS. When this option
+# is active however, RefindPlus will enforce macOS "TRIM" for all types
+# of SSDs, including non-Apple SSDs. This setting only applies to macOS.
 #
-# Note that the setting will create a MacOS nvRAM entry the first time it
+# Note that the setting will create a macOS nvRAM entry the first time it
 # is triggered and that it will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also, note that forcing TRIM
 # on may significantly increase boot times and that enabling TRIM on
@@ -499,7 +499,7 @@
 #mitigate_primed_buffer
 
 # When this option is activate, the RefindPlus "NvramProtect" feature will be
-# extended, if set, to cover booting into MacOS and "unknown" UEFI files.
+# extended, if set, to cover booting into macOS and "unknown" UEFI files.
 # NB: This feature is disabled when RefindPlus is loaded from OpenCore.
 #     This setting is only active, if set, on Apple firmware.
 #
@@ -515,7 +515,7 @@
 # this setting should not be set by most users. Note that this setting is
 # only active on Apple firmware, requires the "NvramProtect" feature and
 # that it is disabled when it is set to a value lower than 1024 bytes.
-# Additionally, this option is only activated on direct MacOS boots.
+# Additionally, this option is only activated on direct macOS boots.
 #
 # Inactive When Commented Out (Does Not Filter nvRAM Writes by Size)
 #
@@ -523,7 +523,7 @@
 
 # Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
 # display when using modern GPUs on units with only EFIBoot capability
-# or with "EFIBoot-Only" operating systems like MacOS v10.4 (Tiger).
+# or with "EFIBoot-Only" operating systems like macOS v10.4 (Tiger).
 # NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive When Commented Out (Does Not Add UGA to GOP)
@@ -531,7 +531,7 @@
 #pass_uga_through
 
 # To minimise nvRAM wear and tear, RefindPlus
-# defaults to saving the outputs of these MacOS
+# defaults to saving the outputs of these macOS
 # boot argument related settings to vRAM instead:
 #   - disable_check_amfi
 #   - disable_check_compat
@@ -539,7 +539,7 @@
 #   - set_boot_args
 # This token can be activated in cases where writing
 # such to the nvRAM flash chip is preferred instead.
-# NB: This is only relevant for booting into MacOS.
+# NB: This is only relevant for booting into macOS.
 #
 # Inactive When Commented Out (Boot Args Are Not Persisted)
 #
@@ -623,11 +623,11 @@
 #
 #screen_rgb 250 150 50
 
-# Set arbitrary boot arguments on MacOS boot. When this option is active,
-# RefindPlus will change the MacOS boot arguments to the specified string.
-# This setting only applies to MacOS and it accounts for arguments injected
+# Set arbitrary boot arguments on macOS boot. When this option is active,
+# RefindPlus will change the macOS boot arguments to the specified string.
+# This setting only applies to macOS and it accounts for arguments injected
 # by the "disable_check_amfi" and "disable_check_compat" settings. Note that
-# when "persist_boot_args" is also set, this setting will create a MacOS
+# when "persist_boot_args" is also set, this setting will create a macOS
 # boot argument the first time it is triggered and that the argument
 # will remain active until it is explicitly cleared, even if this
 # setting is subsequently deactivated.
@@ -657,9 +657,9 @@
 #
 #supply_uefi
 
-# Booting into different generations of MacOS may result in BlueTooth related
+# Booting into different generations of macOS may result in BlueTooth related
 # nvRAM settings being out of sync. When this token is used, RefindPlus unsets
-# nvRAM settings as defined below on boots into MacOS, OpenCore or Clover since
+# nvRAM settings as defined below on boots into macOS, OpenCore or Clover since
 # booting into these indicate a potential generation change on various settings:
 #   - bluetoothInternalControllerinfo
 #   - bluetoothActiveControllerInfo
@@ -676,7 +676,7 @@
 # 1. Some options require user confirmation before action
 # 2. Option '1' is as '4' when 'transient_boot' is active
 # 3. Option '2' is as '3' when 'transient_boot' is active
-# 4. Qualifying boots are MacOS, OpenCore or Clover boots
+# 4. Qualifying boots are macOS, OpenCore or Clover boots
 #
 # Inactive When Commented Out (Does Not Sync nvRAM)
 #
@@ -687,7 +687,7 @@
 # this issue. The 'SyncTrust' feature is useful on computers running enhanced
 # boot security setups, particularly in conjunction with T2/TPM chipped units.
 #
-#   macos       - MacOS Loader
+#   macos       - macOS Loader
 #   windows     - Windows Loader
 #   linux       - Linux Stub Loader
 #   clover      - Clover Boot Loader
@@ -739,22 +739,22 @@
 #
 #
 # Set the CSR values for Apple's System Integrity Protection (SIP) and
-# Sealed System Volume (SSV) features that define access levels on MacOS.
+# Sealed System Volume (SSV) features that define access levels on macOS.
 # Values are hexadecimal numbers that define which specific security features
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
 # to set new values. Apple's "csrutil enable" and "csrutil disable" commands usually
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default OFF
 # setting and that users can go beyond this, to values such as 87F, 97F - up to FFF.
 # The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
-# commands, added in MacOS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
+# commands, added in macOS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
 # respectively, when run along with the "csrutil enable / disable" commands.
 #
-# As of MacOS v11.x (Big Sur), the previous default setting of "10" (ON)
+# As of macOS v11.x (Big Sur), the previous default setting of "10" (ON)
 # may leave Macs not able to receive "Over The Air" (OTA) updates from
 # Apple with the reliable setting being enabling SIP/SSV by clearing
 # the stored CSR value in the nvRAM. RefindPlus will clear the CSR
 # setting when "0" is used in place of "10" for the "OFF" value.
-# This setting is also valid on earlier versions of MacOS. It
+# This setting is also valid on earlier versions of macOS. It
 # is recommended however, to keep the default "OFF" setting
 # of "10" in place, and to use the "csr_normalise" token
 # instead to better achieve the same end (both values).
@@ -826,9 +826,9 @@
 # Hide user interface elements for personal preference or for security:
 #  banner      - RefindPlus title banner (built-in or loaded via "banner")
 #  label       - Boot option text label in the menu
-#  singleuser  - Remove the submenu options to boot MacOS in single-user
-#                  or verbose modes (MacOS only)
-#  safemode    - Remove the submenu option to boot MacOS in "safe mode"
+#  singleuser  - Remove the submenu options to boot macOS in single-user
+#                  or verbose modes (macOS only)
+#  safemode    - Remove the submenu option to boot macOS in "safe mode"
 #  hwtest      - Submenu option to run Apple's hardware test
 #  arrows      - Sroll arrows on the OS selection tag line
 #  hints       - Brief command summary in the menu
@@ -977,7 +977,7 @@
 
 # Launch specified loader in graphics mode. RefindPlus defaults to
 # text mode and displays basic pre-launch information when launching
-# operating systems (apart from MacOS). Using graphics mode can provide
+# operating systems (apart from macOS). Using graphics mode can provide
 # a more seamless transition, but may not display any information, which
 # can make it difficult to debug problems. However, using graphics mode
 # may prevent crashes in some instances. Note that specifying an empty
@@ -986,7 +986,7 @@
 #
 # Valid options:
 #   none        - No Loader
-#   osx         - MacOS Loader
+#   osx         - macOS Loader
 #   windows     - Windows Loader
 #   linux       - Linux Stub Loader
 #   grub        - The GRUB Boot Loader
@@ -1031,7 +1031,7 @@
 #
 #
 # When scanning volumes for EFI bootloaders, RefindPlus always looks for
-# the MacOS and Microsoft Windows bootloaders in their normal locations
+# the macOS and Microsoft Windows bootloaders in their normal locations
 # and scans the root directory as well as sub folders under the "EFI"
 # folder for more bootloaders (Does not recurse into sub folders).
 #
@@ -1103,7 +1103,7 @@
 #default_selection Microsoft
 #default_selection "bzImage,vmlinuz"
 #default_selection Maintenance 23:30 2:00
-#default_selection "Maintenance,MacOS" 1:00 2:30
+#default_selection "Maintenance,macOS" 1:00 2:30
 
 # Directories that should *NOT* be scanned for boot loaders. This token can be
 # used to keep EFI/boot/bootx64.efi out of the menu if that is a duplicate of
@@ -1178,7 +1178,7 @@
 # operating system file browsers. Partitions can also be identified by
 # the unique GUIDs ("PARTUUID" in Linux parlance). (Note that this is
 # not the partition TYPE CODE GUID). The identifier can be obtained
-# by using the "diskutil info {partition-id}" command in MacOS or
+# by using the "diskutil info {partition-id}" command in macOS or
 # the "blkid" command in Linux. Any sub-string of the bootloader
 # description displayed when the option is highlighted can be
 # used for legacy-mode scans.
@@ -1394,7 +1394,7 @@
 #small_icon_size 96
 #big_icon_size 256
 
-# Tell a Mac's EFI that MacOS is about to be launched, even when it is not.
+# Tell a Mac's EFI that macOS is about to be launched, even when it is not.
 # This option causes some Macs to initialise their hardware in a different
 # way to how it is normally initialised when a third-party OS is launched.
 # In some cases, particularly on Macs running multiple video cards, this
@@ -1406,7 +1406,7 @@
 # needed, a value of "10.9" usually works, but other values may
 # also work. This option has no effect on non-Apple computers.
 #
-# Inactive When Commented Out (No Mac OS Version Spoofing)
+# Inactive When Commented Out (No macOS Version Spoofing)
 #
 #spoof_osx_version 10.9
 
@@ -1473,10 +1473,10 @@
 #                  This is best on the first line within the stanza
 #  ostype      - OS type code to determine boot options available via
 #                  the 'Insert' key. Accepted options (case sensitive):
-#                  "MacOS", "Linux", "Windows", "XOM", "Grub", "Elilo",
+#                  "macOS", "Linux", "Windows", "XOM", "Grub", "Elilo",
 #                  "RefitVariant", "SystemD", "OpenCore", and "Clover".
 #  graphics    - Set to "on" to enable graphics-mode boot (mainly useful
-#                  for MacOS) or "off" for text-mode boot. The default
+#                  for macOS) or "off" for text-mode boot. The default
 #                  setting is auto-detected from the loader filename.
 #  volume      - Identifies the filesystem from which subsequent files
 #                  are loaded. The volume can be specified by filesystem
@@ -1593,16 +1593,16 @@ menuentry "Windows via shell script" {
     options "fs0:\EFI\tools\launch_windows.nsh"
 }
 
-# MacOS is normally detected and run automatically. However,
+# macOS is normally detected and run automatically. However,
 # a manual boot stanza may permit customisation. This example
 # does nothing very unusual but may serve as a start point.
 # Note that the "volume" line in the example will almost
 # certainly need modification for it to actually work.
 #
-menuentry "My MacOS" {
+menuentry "My macOS" {
     disabled
     ostype MacOS
-    volume "MacOS Boot"
+    volume "macOS Boot"
     icon \EFI\refindplus\icons\os_mac.png
     loader \System\Library\CoreServices\boot.efi
 }
@@ -1617,7 +1617,7 @@ menuentry "My MacOS" {
 # this option may output a higher resolution in such cases. Note that the
 # "loader" manual stanza option is not used with this type of configuration.
 #
-menuentry "MacOS via BootNext" {
+menuentry "macOS via BootNext" {
     disabled
     icon /EFI/refindplus/icons/os_mac.png
     firmware_bootnum 80

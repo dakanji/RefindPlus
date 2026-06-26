@@ -175,9 +175,8 @@ CHAR16 * FindInitrd (
     InitrdNames = FinalInitrdName = CurrentInitrdName = NULL;
     while (1) {
         CheckIter = DirIterNext (
-            &DirIter,
-            2, L"init*,booster*",
-            &DirEntry
+            &DirIter, FILTER_FILE,
+            L"init*,booster*", &DirEntry
         );
         if (!CheckIter) break;
 
@@ -525,14 +524,12 @@ CHAR16 * GetMainLinuxOptions (
     return FullOptions;
 } // CHAR16 * GetMainLinuxOptions()
 
-// Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID"
-// tokens to the "OSIconName" list. Intended for adding Linux distribution
-// clues gleaned from the "/etc/lsb-release" and "/etc/os-release" files.
 static
-VOID ParseReleaseFile (
-    CHAR16       **OSIconName,
+VOID ParseHelper (
+    CHAR16       **ReturnTag,
     REFIT_VOLUME  *Volume,
     CHAR16        *FileName,
+    CHAR16        *TargetType,
     BOOLEAN        FirstOnly
 ) {
     EFI_STATUS    Status;
@@ -572,33 +569,21 @@ VOID ParseReleaseFile (
                 File, &TokenList
             );
             if (TokenCount == 0) {
-                // Flag to exit loop
+                // Flag to Exit Loop
                 Depart = TRUE;
             }
             else {
                 if (TokenCount > 1 &&
-                    (
-                        MyStriCmp (TokenList[0], L"ID") ||
-                        MyStriCmp (TokenList[0], L"NAME") ||
-                        MyStriCmp (TokenList[0], L"DISTRIB_ID")
-                    )
+                    MyStriCmp (TokenList[0], TargetType)
                 ) {
-                    if (FirstOnly &&
-                        (
-                            MyStriCmp (TokenList[0], L"ID") ||
-                            MyStriCmp (TokenList[0], L"DISTRIB_ID")
-                        )
-                    ) {
-                        // Exit on 'ID' or 'DISTRIB_ID' if 'FirstOnly' is true
-                        Depart = TRUE;
-                    }
+                    Depart = TRUE;
 
                     MY_FREE_POOL(TempName);
                     TempName = StrDuplicate (
                         TokenList[1]
                     );
                     MergeUniqueWords (
-                        OSIconName,
+                        ReturnTag,
                         TempName, L','
                     );
                 }
@@ -616,10 +601,8 @@ VOID ParseReleaseFile (
     MY_FREE_FILE(File);
 
     if (!FirstOnly) {
-        ToLower (*OSIconName);
+        ToLower (*ReturnTag);
         MY_FREE_POOL(TempName);
-
-        return;
     }
 
     if (TempName == NULL) {
@@ -633,13 +616,120 @@ VOID ParseReleaseFile (
         TempName[0] = TempName[0] - L'a' + L'A';
     }
 
-    MY_FREE_POOL(*OSIconName);
-    *OSIconName = TempName;
-} // VOID ParseReleaseFile()
+    MY_FREE_POOL(*ReturnTag);
+    *ReturnTag = TempName;
+} // static VOID ParseHelper()
 
-// Try to guess Linux distribution name and add to OSIconName list
+// Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID"
+// tokens to the "ReturnTag" list. Intended for adding Linux distribution
+// clues gleaned from the "/etc/os-release" and "/etc/lsb-release" files.
+static
+VOID ParseReleaseFile (
+    CHAR16       **ReturnTag,
+    REFIT_VOLUME  *Volume,
+    CHAR16        *FileName,
+    BOOLEAN        FirstOnly
+) {
+    if (Volume   == NULL ||
+        FileName == NULL ||
+        !FileExists (Volume->RootDir, FileName)
+    ) {
+        return;
+    }
+
+    ParseHelper (
+        ReturnTag, Volume,
+        FileName, L"ID",
+        FirstOnly
+    );
+
+    if (!FirstOnly  ||
+        *ReturnTag == NULL
+    ) {
+        ParseHelper (
+            ReturnTag, Volume,
+            FileName, L"DISTRIB_ID",
+            FirstOnly
+        );
+    }
+
+    if (!FirstOnly  ||
+        *ReturnTag == NULL
+    ) {
+        ParseHelper (
+            ReturnTag, Volume,
+            FileName, L"NAME",
+            FirstOnly
+        );
+    }
+
+    if (!FirstOnly  ||
+        *ReturnTag == NULL
+    ) {
+        ParseHelper (
+            ReturnTag, Volume,
+            FileName, L"ID_LIKE",
+            FirstOnly
+        );
+    }
+} // static VOID ParseReleaseFile()
+
+VOID HandleParseCall (
+    CHAR16       **ReturnTag,
+    REFIT_VOLUME  *Volume,
+    BOOLEAN        FirstOnly,
+    BOOLEAN        VolumeTags
+) {
+    CHAR16        *VolTempName;
+    CHAR16        *RelFileType;
+
+
+    if (Volume == NULL) {
+        return;
+    }
+
+    if (FileExists (Volume->RootDir, L"etc\\os-release")) {
+        RelFileType = L"etc\\os-release";
+    }
+    else {
+        RelFileType = L"usr\\lib\\os-release";
+    }
+    ParseReleaseFile (
+        ReturnTag, Volume,
+        RelFileType, FirstOnly
+    );
+
+    if (!FirstOnly || *ReturnTag == NULL) {
+        ParseReleaseFile (
+            ReturnTag, Volume,
+            L"etc\\lsb-release", FirstOnly
+        );
+    }
+
+    // DA-TAG: Strip Misc Unwanted Out
+    DeleteItemFromCsvList (L"os",    ReturnTag);
+    DeleteItemFromCsvList (L"gnu",   ReturnTag);
+    DeleteItemFromCsvList (L"linux", ReturnTag);
+
+    if (VolumeTags) {
+        VolTempName = *ReturnTag;
+        if (IsStriStr (VolTempName, L"Opensuse")) {
+            *ReturnTag = StrDuplicate (
+                L"OpenSUSE Volume"
+            );
+        }
+        else {
+            *ReturnTag = PoolPrint (
+                L"%s Volume", VolTempName
+            );
+        }
+        MY_FREE_POOL(VolTempName);
+    }
+} // VOID HandleParseCall()
+
+// Try to guess Linux distribution name and add to ReturnTag list
 VOID GuessLinuxDistribution (
-    CHAR16       **OSIconName,
+    CHAR16       **ReturnTag,
     REFIT_VOLUME  *Volume,
     CHAR16        *LoaderPath,
     BOOLEAN        FirstOnly
@@ -653,38 +743,20 @@ VOID GuessLinuxDistribution (
     LOG_SEP(L"X");
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
-    BREAD_CRUMB(L"%a:  2 - Input OSIconNameList = '%s'", __func__,
-        (*OSIconName != NULL) ? *OSIconName : L"NULL"
+    BREAD_CRUMB(L"%a:  2 - Input List = '%s'", __func__,
+        (*ReturnTag != NULL) ? *ReturnTag : L"NULL"
     );
 
     // /etc/os-release or /etc/lsb-release on Linux root fs may have clues
     BREAD_CRUMB(L"%a:  3", __func__);
-    ParseReleaseFile (
-        OSIconName, Volume,
-        L"etc\\os-release",
-        FirstOnly
+    HandleParseCall (
+        ReturnTag, Volume,
+        FirstOnly, FALSE
     );
 
     BREAD_CRUMB(L"%a:  4", __func__);
-    if (!FirstOnly || *OSIconName == NULL) {
-        BREAD_CRUMB(L"%a:  4a 1", __func__);
-        ParseReleaseFile (
-            OSIconName, Volume,
-            L"etc\\lsb-release",
-            FirstOnly
-        );
-        BREAD_CRUMB(L"%a:  4a 2", __func__);
-    }
-
-    // DA-TAG: Strip out misc unwanted
-    BREAD_CRUMB(L"%a:  5", __func__);
-    DeleteItemFromCsvList (L"os",    OSIconName);
-    DeleteItemFromCsvList (L"gnu",   OSIconName);
-    DeleteItemFromCsvList (L"linux", OSIconName);
-
-    BREAD_CRUMB(L"%a:  6", __func__);
-    if (FirstOnly && *OSIconName != NULL) {
-        BREAD_CRUMB(L"%a:  6a 1 - END:- OSIconNameList = %s", __func__, *OSIconName);
+    if (FirstOnly && *ReturnTag != NULL) {
+        BREAD_CRUMB(L"%a:  6a 1 - END:- ReturnTagList = %s", __func__, *ReturnTag);
         LOG_DECREMENT();
         LOG_SEP(L"X");
 
@@ -692,45 +764,45 @@ VOID GuessLinuxDistribution (
     }
 
     // Search for clues in kernel filename
-    BREAD_CRUMB(L"%a:  7", __func__);
+    BREAD_CRUMB(L"%a:  5", __func__);
     if (FindSubStr (LoaderPath, L".fc")) {
-        BREAD_CRUMB(L"%a:  7a 1 - Fedora Loader", __func__);
+        BREAD_CRUMB(L"%a:  5a 1 - Fedora Loader", __func__);
         if (FirstOnly) {
-            BREAD_CRUMB(L"%a:  7a 1a 1", __func__);
-            *OSIconName = StrDuplicate (
+            BREAD_CRUMB(L"%a:  5a 1a 1", __func__);
+            *ReturnTag = StrDuplicate (
                 L"Fedora"
             );
         }
         else {
-            BREAD_CRUMB(L"%a:  7a 1b 1", __func__);
+            BREAD_CRUMB(L"%a:  5a 1b 1", __func__);
             MergeUniqueStrings (
-                OSIconName,
+                ReturnTag,
                 L"fedora", L','
             );
-            BREAD_CRUMB(L"%a:  7a 1b 2", __func__);
+            BREAD_CRUMB(L"%a:  5a 1b 2", __func__);
         }
-        BREAD_CRUMB(L"%a:  7a 2", __func__);
+        BREAD_CRUMB(L"%a:  5a 2", __func__);
     }
     else if (FindSubStr (LoaderPath, L".el")) {
-        BREAD_CRUMB(L"%a:  7b 1 - RedHat Loader", __func__);
+        BREAD_CRUMB(L"%a:  5b 1 - RedHat Loader", __func__);
         if (FirstOnly) {
-            BREAD_CRUMB(L"%a:  7b 1a 1", __func__);
-            *OSIconName = StrDuplicate (
+            BREAD_CRUMB(L"%a:  5b 1a 1", __func__);
+            *ReturnTag = StrDuplicate (
                 L"RedHat"
             );
         }
         else {
-            BREAD_CRUMB(L"%a:  7b 1b 1", __func__);
+            BREAD_CRUMB(L"%a:  5b 1b 1", __func__);
             MergeUniqueStrings (
-                OSIconName,
+                ReturnTag,
                 L"redhat", L','
             );
-            BREAD_CRUMB(L"%a:  7b 1b 2", __func__);
+            BREAD_CRUMB(L"%a:  5b 1b 2", __func__);
         }
-        BREAD_CRUMB(L"%a:  7b 2", __func__);
+        BREAD_CRUMB(L"%a:  5b 2", __func__);
     }
     else {
-        BREAD_CRUMB(L"%a:  7c 1 - General Check", __func__);
+        BREAD_CRUMB(L"%a:  5c 1 - General Check", __func__);
         Found = FALSE;
 
         i = 0;
@@ -747,13 +819,13 @@ VOID GuessLinuxDistribution (
                 Found = TRUE;
 
                 if (FirstOnly) {
-                    *OSIconName = StrDuplicate (
+                    *ReturnTag = StrDuplicate (
                         ShowName
                     );
                 }
                 else {
                     MergeUniqueStrings (
-                        OSIconName,
+                        ReturnTag,
                         ShowName, L','
                     );
                 }
@@ -763,13 +835,13 @@ VOID GuessLinuxDistribution (
                 Found = TRUE;
 
                 if (FirstOnly) {
-                    *OSIconName = StrDuplicate (
+                    *ReturnTag = StrDuplicate (
                         LinuxName
                     );
                 }
                 else {
                     MergeUniqueStrings (
-                        OSIconName,
+                        ReturnTag,
                         LinuxName, L','
                     );
                 }
@@ -777,11 +849,11 @@ VOID GuessLinuxDistribution (
 
             MY_FREE_POOL(LinuxName);
         } // while
-        BREAD_CRUMB(L"%a:  7c 2", __func__);
+        BREAD_CRUMB(L"%a:  5c 2", __func__);
     }
 
-    BREAD_CRUMB(L"%a:  8 - END:- OSIconNameList = %s", __func__,
-        (*OSIconName) ? *OSIconName : L"NULL"
+    BREAD_CRUMB(L"%a:  6 - END:- ReturnTagList = %s", __func__,
+        (*ReturnTag) ? *ReturnTag : L"NULL"
     );
     LOG_DECREMENT();
     LOG_SEP(L"X");

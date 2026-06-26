@@ -95,7 +95,7 @@ jobs:
               echo "> Failed To Build RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
               echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
               echo "> Failed Step:- 'Make Binaries ... Determine Target Branch'" >> "${GITHUB_STEP_SUMMARY}"
-              echo "" >> "${GITHUB_STEP_SUMMARY}"
+              echo '' >> "${GITHUB_STEP_SUMMARY}"
 
               echo "Error: Invalid Commit ID Format: '${ENV_COMMIT_ID}'"
               echo "       Must be Valid Git SHA (7-40 Hex Chars)"
@@ -113,7 +113,7 @@ jobs:
               echo "> Failed To Build RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
               echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
               echo "> Failed Step:- 'Make Binaries ... Determine Target Branch'" >> "${GITHUB_STEP_SUMMARY}"
-              echo "" >> "${GITHUB_STEP_SUMMARY}"
+              echo '' >> "${GITHUB_STEP_SUMMARY}"
 
               echo "Error: Not Located on Any Branch: '${ENV_COMMIT_ID}'"
               echo "       Exiting Now"
@@ -127,7 +127,7 @@ jobs:
               echo "> Failed To Build RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
               echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
               echo "> Failed Step:- 'Make Binaries ... Determine Target Branch'" >> "${GITHUB_STEP_SUMMARY}"
-              echo "" >> "${GITHUB_STEP_SUMMARY}"
+              echo '' >> "${GITHUB_STEP_SUMMARY}"
 
               echo "Error: Remote Branch Not Found: '${BRANCH}'"
               echo "       Paranoia Check Failed!"
@@ -224,7 +224,7 @@ jobs:
               echo "> Failed To Build RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
               echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
               echo "> Failed Step:- 'Make Binaries ... Apply Misc Prep'" >> "${GITHUB_STEP_SUMMARY}"
-              echo "" >> "${GITHUB_STEP_SUMMARY}"
+              echo '' >> "${GITHUB_STEP_SUMMARY}"
 
               printf "\nERROR: Python %s Download Failed\n" "${PYTHON_VER}"
               exit 1
@@ -237,7 +237,7 @@ jobs:
               echo "> Failed To Build RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
               echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
               echo "> Failed Step:- 'Make Binaries ... Apply Misc Prep'" >> "${GITHUB_STEP_SUMMARY}"
-              echo "" >> "${GITHUB_STEP_SUMMARY}"
+              echo '' >> "${GITHUB_STEP_SUMMARY}"
 
               echo "ERROR: Python Download Checksum Check Failure"
               echo "       Expected: ${EXPECTED_HASH}"
@@ -306,28 +306,29 @@ jobs:
         run: |
           # Wrap Up Notice
           echo "# RefindPlus ... A Boot Manager for Mac and PC" > "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "Copyright 2020-2026 Dayo Akanji" >> "${GITHUB_STEP_SUMMARY}"
           echo "sf.net/u/dakanji/profile" >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright 2012-2024 Roderick W. Smith" >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright 2006-2010 Christoph Pfisterer" >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright The Intel Corporation & Others" >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "RefindPlus is free software. You can modify it and/or redistribute it" >> "${GITHUB_STEP_SUMMARY}"
           echo "under the terms of the GNU General Public License as published by the" >> "${GITHUB_STEP_SUMMARY}"
           echo "Free Software Foundation. Either version 3 of the License (GNU GPLv3)" >> "${GITHUB_STEP_SUMMARY}"
           echo "or at your option, any later version of the License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "RefindPlus is distributed in the hope that it will be useful," >> "${GITHUB_STEP_SUMMARY}"
           echo "but WITHOUT ANY WARRANTY; without even the implied warranty" >> "${GITHUB_STEP_SUMMARY}"
           echo "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." >> "${GITHUB_STEP_SUMMARY}"
           echo "See the GNU General Public License for more details." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "A copy of GNU GPLv3 is supplied with this build." >> "${GITHUB_STEP_SUMMARY}"
           echo "If missing, you can access copies at the links below:" >> "${GITHUB_STEP_SUMMARY}"
-          echo "<https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt>" >> "${GITHUB_STEP_SUMMARY}"
-          echo "<https://www.gnu.org/licenses/gpl-3.0.en.html>" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
 
           echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
           echo "---" >> "${GITHUB_STEP_SUMMARY}"
@@ -336,7 +337,7 @@ jobs:
           echo "> [!NOTE]" >> "${GITHUB_STEP_SUMMARY}"
           echo "> Output files have the form: \`[METADATA]---[FILENAME].efi\`." >> "${GITHUB_STEP_SUMMARY}"
           echo "> It is anticipated the metadata will be discarded before use." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
 
           echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
           echo "---" >> "${GITHUB_STEP_SUMMARY}"
@@ -347,14 +348,14 @@ jobs:
           echo "> These are binaries bundled with RefindPlusUDK and are provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs WERE NOT built on RefindPlus code and were developed by others." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs are separately licensed by their actual respective developers." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
 
-          echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
+          echo "<br>" >> "${GITHUB_STEP_SUMMARY}"
           echo ". . ." >> "${GITHUB_STEP_SUMMARY}"
 
 
@@ -369,28 +370,29 @@ jobs:
         run: |
           # Prepare Summmary
           echo "# RefindPlus ... A Boot Manager for Mac and PC" > "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "Copyright 2020-2026 Dayo Akanji" >> "${GITHUB_STEP_SUMMARY}"
           echo "sf.net/u/dakanji/profile" >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright 2012-2024 Roderick W. Smith" >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright 2006-2010 Christoph Pfisterer" >> "${GITHUB_STEP_SUMMARY}"
           echo "Portions Copyright The Intel Corporation & Others" >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "RefindPlus is free software. You can modify it and/or redistribute it" >> "${GITHUB_STEP_SUMMARY}"
           echo "under the terms of the GNU General Public License as published by the" >> "${GITHUB_STEP_SUMMARY}"
           echo "Free Software Foundation. Either version 3 of the License (GNU GPLv3)" >> "${GITHUB_STEP_SUMMARY}"
           echo "or at your option, any later version of the License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "RefindPlus is distributed in the hope that it will be useful," >> "${GITHUB_STEP_SUMMARY}"
           echo "but WITHOUT ANY WARRANTY; without even the implied warranty" >> "${GITHUB_STEP_SUMMARY}"
           echo "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE." >> "${GITHUB_STEP_SUMMARY}"
           echo "See the GNU General Public License for more details." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "A copy of GNU GPLv3 is supplied with this build." >> "${GITHUB_STEP_SUMMARY}"
           echo "If missing, you can access copies at the links below:" >> "${GITHUB_STEP_SUMMARY}"
-          echo "<https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt>" >> "${GITHUB_STEP_SUMMARY}"
-          echo "<https://www.gnu.org/licenses/gpl-3.0.en.html>" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Validate Repository Secrets
         shell: bash
@@ -413,7 +415,7 @@ jobs:
             echo "> The Artefacts HAVE NOT been Signed." >> "${GITHUB_STEP_SUMMARY}"
             echo "> See log on failed step for details." >> "${GITHUB_STEP_SUMMARY}"
             echo "> Failed Step:- 'Sign Binaries ... Validate Repository Secrets'" >> "${GITHUB_STEP_SUMMARY}"
-            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo '' >> "${GITHUB_STEP_SUMMARY}"
 
             echo "ERROR: Invalid Repository Secrets Setup for Secure Boot Signing"
 
@@ -493,7 +495,7 @@ jobs:
             echo "> A one-off private key was used to sign the artefacts.  " >> "${GITHUB_STEP_SUMMARY}"
             echo "> This key was discarded as cannot be securely transferred.  " >> "${GITHUB_STEP_SUMMARY}"
             echo "> Hence, the certificate can only be used for this specific build.  " >> "${GITHUB_STEP_SUMMARY}"
-            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo '' >> "${GITHUB_STEP_SUMMARY}"
             echo "See [RefindPlus Documentation](https://github.com/RefindPlusRepos/RefindPlus/blob/GOPFix/BUILDING.md) for how to supply reusable credentials." >> "${GITHUB_STEP_SUMMARY}"
           fi
 
@@ -530,7 +532,7 @@ jobs:
             echo "> The Artefacts HAVE NOT been Signed." >> "${GITHUB_STEP_SUMMARY}"
             echo "> See the failed step log for details." >> "${GITHUB_STEP_SUMMARY}"
             echo "> Failed Step:- 'Sign Binaries ... Sign Requested Binaries'" >> "${GITHUB_STEP_SUMMARY}"
-            echo "" >> "${GITHUB_STEP_SUMMARY}"
+            echo '' >> "${GITHUB_STEP_SUMMARY}"
           }
 
           ###
@@ -794,7 +796,7 @@ jobs:
           echo "> [!NOTE]" >> "${GITHUB_STEP_SUMMARY}"
           echo "> Output files have the form: \`[METADATA]---[FILENAME].efi\`." >> "${GITHUB_STEP_SUMMARY}"
           echo "> It is anticipated the metadata will be discarded before use." >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
 
           echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
           echo "---" >> "${GITHUB_STEP_SUMMARY}"
@@ -805,12 +807,12 @@ jobs:
           echo "> These are binaries bundled with RefindPlusUDK and are provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs WERE NOT built on RefindPlus code and were developed by others." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs are separately licensed by their actual respective developers." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
 
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
-          echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
+          echo '' >> "${GITHUB_STEP_SUMMARY}"
+          echo "<br>" >> "${GITHUB_STEP_SUMMARY}"
           echo ". . ." >> "${GITHUB_STEP_SUMMARY}"

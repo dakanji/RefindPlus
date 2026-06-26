@@ -1,6 +1,23 @@
 0.14.2.AF (PRE-RELEASE):
 -----------------------
-PENDING
+- Fixes `BadRamTag` Feature
+  * The `badram_tag_wide` setting was not `'ON' by Default` as intended
+    - This has now been rectified
+  * This bug was introduced in v0.14.2.AE (Commit 973479b)
+    - Default was not changed when repurposing the setting
+- Improves `EFI Shell` Handling
+  * Now dynamically scans and filters for shell files
+  * Provides flexibility in naming subject to `EFI_Shell-` prefix
+  * Provides flexibility in placement
+- Improves Misc `BSD OStype` Handling (Thx @seuros)
+  * Better detects and loads available icons
+- Improves `Volume Type` Identification
+  * Prefers distro name over generic `Linux Volume` when possible
+  * Linux `RAID` and `Boot` volume types now separately logged
+- Improves `Embeddded Image` Handling
+  * Enhanced embedded CleanNvram image
+    - Transparent background fix
+    - Proper scaling applied
 
 
 0.14.2.AE (14 APR 2026):

@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to suggest improvements to RefindPlus.
-        Please use the [DISCUSSIONS FEATURE](https://github.com/RefindPlusRepo/RefindPlus/discussions/categories/general) instead if you wish to ask a question, make a comment or similar.
+        Please use the [DISCUSSIONS FEATURE](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) instead if you wish to ask a question, make a comment or similar.
         <br><br>
         <h1 align="center">FEATURE REQUEST DETAILS</h1>
 

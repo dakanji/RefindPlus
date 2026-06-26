@@ -1583,8 +1583,8 @@ VOID BltClearScreen (
         if (!IsBoot) LogClearScreen (LineSpace);
         #endif
 
-        // Not showing banner
-        // Clear to background colour
+        /* Not Showing Banner */
+        // Clear to Background Colour
         egClearScreen (
             (GlobalConfig.DirectBoot)
                 ? &BlackPixel : &MenuBackgroundPixel
@@ -1592,7 +1592,7 @@ VOID BltClearScreen (
     }
     else {
         BREAD_CRUMB(L"%a:  2b 1", __func__);
-        // Load banner on first call
+        // Load Banner on First Call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
             LOG_MSG("%s  - Fetch Banner", LineSpace);
@@ -1627,6 +1627,9 @@ VOID BltClearScreen (
                 #endif
             }
             else {
+                // Always 'No Scale' for Default Banner
+                GlobalConfig.BannerScale = BANNER_NOSCALE;
+
                 if (GlobalConfig.DirectBoot) {
                     MenuBackgroundPixel = BlackPixel;
                 }
@@ -1674,10 +1677,10 @@ VOID BltClearScreen (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                // Get complementary font colour if needed
+                // Get Complementary Font Colour (if needed)
                 BannerFont = FontComplement();
 
-                // Get default banner type
+                // Get Default Banner Type
                 BannerType = 0;
                 if (0);
                 else if (GlobalConfig.ScaleUI == 99) BannerType = 0;
@@ -1698,7 +1701,7 @@ VOID BltClearScreen (
                     BannerType = 2;
                 }
 
-                // Get default banner
+                // Get Default Banner
                 if (BannerType == 2) {
                     Banner = egPrepareEmbeddedImage (
                         &egemb_refindplus_banner_lorez,
@@ -1720,7 +1723,7 @@ VOID BltClearScreen (
             } // if/else Banner
 
             if (Banner != NULL) {
-                // Compose on background
+                // Compose on Background
                 CompImage = egCreateFilledImage (
                     Banner->Width,
                     Banner->Height,
@@ -1765,14 +1768,14 @@ VOID BltClearScreen (
             }
 
             if (NewBanner != NULL) {
-                // DA-TAG: See notes in 'egFreeImageQEMU'
+                // DA-TAG: See Notes in 'egFreeImageQEMU'
                 MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
             }
         }
 
         BREAD_CRUMB(L"%a:  2b 2", __func__);
-        // Clear and draw banner
+        // Clear and Draw Banner
         #if REFIT_DEBUG > 0
         LogClearScreen (LineSpace);
         BRK_MAX("\n");
@@ -1821,7 +1824,7 @@ VOID BltClearScreen (
 
     GraphicsScreenDirty = FALSE;
 
-    // DA-TAG: See notes in 'egFreeImageQEMU'
+    // DA-TAG: See Notes in 'egFreeImageQEMU'
     MY_FREE_IMAGE(GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
 
@@ -1849,7 +1852,7 @@ VOID BltImageAlpha (
     EG_IMAGE    *CompImage;
 
 
-    // Compose on background
+    // Compose on Background
     CompImage = egCreateFilledImage (
         Image->Width,
         Image->Height,
@@ -1859,14 +1862,14 @@ VOID BltImageAlpha (
 
     egComposeImage (CompImage, Image, 0, 0);
 
-    // Blt to screen and clean up
+    // Blt to Screen and Tidy
     egDrawImage (CompImage, XPos, YPos);
     MY_FREE_IMAGE(CompImage);
 
     GraphicsScreenDirty = TRUE;
 } // VOID BltImageAlpha()
 
-// DA_TAG: Combines original 'BltImageComposite' and 'BltImageCompositeBadge'
+// DA_TAG: Combines Original 'BltImageComposite' and 'BltImageCompositeBadge'
 VOID BltImageCompositeAny (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
@@ -1883,14 +1886,14 @@ VOID BltImageCompositeAny (
     EG_IMAGE *CompImage   = NULL;
 
 
-    // Initialize buffer with base image
+    // Initialise Buffer with Base Image
     if (BaseImage != NULL) {
         CompImage   = egCopyImage (BaseImage);
         TotalWidth  = BaseImage->Width;
         TotalHeight = BaseImage->Height;
     }
 
-    // Place the top image
+    // Place the Top Image
     if (TopImage != NULL && CompImage != NULL) {
         CompWidth = TopImage->Width;
 
@@ -1912,7 +1915,7 @@ VOID BltImageCompositeAny (
         );
     }
 
-    // Place the badge image
+    // Place the Badge Image
     if (BadgeImage != NULL && CompImage != NULL &&
         (BadgeImage->Width  + 8) < CompWidth &&
         (BadgeImage->Height + 8) < CompHeight
@@ -1925,7 +1928,7 @@ VOID BltImageCompositeAny (
         );
     }
 
-    // Blt to screen and clean up
+    // Blt to Screen and Tidy
     if (CompImage != NULL) {
         if (CompImage->HasAlpha) {
             egDrawImageWithTransparency (

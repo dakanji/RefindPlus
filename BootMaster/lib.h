@@ -41,13 +41,13 @@
  * with this source code or binaries made from it.
  *
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+** Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 
 #ifndef __LIB_H_
@@ -215,4 +215,10 @@ BOOLEAN DirIterNext (
 );
 
 REFIT_VOLUME * CopyVolume (IN REFIT_VOLUME *VolumeToCopy);
+
+#   if defined(__MAKEWITH_TIANO)
+EFI_UNICODE_COLLATION_PROTOCOL * OcUnicodeCollationEngInstallProtocol (
+    IN BOOLEAN  Reinstall
+);
+#   endif
 #endif

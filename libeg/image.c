@@ -54,13 +54,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2021-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2021-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+** Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 #include "../BootMaster/lib.h"
 #include "../BootMaster/global.h"
@@ -151,7 +151,7 @@ EG_IMAGE * egCopyImage (
     IN EG_IMAGE *Image
 ) {
     EG_IMAGE  *NewImage;
-    UINTN      ImgSize;
+    UINTN       ImgSize;
 
 
     if (Image == NULL) {
@@ -185,7 +185,7 @@ EG_IMAGE * egCropImage (
     IN UINTN      Width,
     IN UINTN      Height
 ) {
-    UINTN     x, y;
+    UINTN         x, y;
     EG_IMAGE *NewImage;
 
 
@@ -231,7 +231,8 @@ EG_IMAGE * egScaleImage (
     IN UINTN      NewHeight
 ) {
     EG_IMAGE  *NewImage;
-    EG_PIXEL   a, b, c, d;
+    EG_PIXEL   a, b;
+    EG_PIXEL   c, d;
     UINTN      i, j;
     UINTN      Index;
     UINTN      Offset;
@@ -241,15 +242,6 @@ EG_IMAGE * egScaleImage (
     if (!GlobalConfig.BootLogoScale && ExitLogoFlag) {
         return egCopyImage (Image);
     }
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(
-        1, LOG_THREE_STAR_MID,
-        L"Scale Image from %dpx x %dpx to %dpx x %dpx",
-        Image->Width, Image->Height,
-        NewWidth, NewHeight
-    );
-    #endif
 
     if (NewWidth  == 0 ||
         NewHeight == 0
@@ -306,6 +298,16 @@ EG_IMAGE * egScaleImage (
 
         return NULL;
     }
+
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(
+        1, LOG_THREE_STAR_MID,
+        L"Scale Image from %dx%d px to %dx%d px",
+        Image->Width, Image->Height,
+        NewWidth, NewHeight
+    );
+    #endif
 
 
 #if !defined (EFI32)
@@ -744,7 +746,7 @@ EG_IMAGE * egLoadIcon (
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIcon ... Load Icon:- '%r ... %s'",
+            L"In egLoadIcon ... Load File:- '%r ... %s'",
             Status, Path
         );
         #endif
@@ -918,6 +920,7 @@ VOID egInvertPlane (
     IN UINTN  PixelCount
 ) {
     UINTN i;
+
 
     if (DestPlanePtr) {
         for (i = 0; i < PixelCount; i++) {
@@ -1289,11 +1292,11 @@ VOID egRawCompose (
     IN UINTN         TopLineOffset
 ) {
     UINTN        x, y;
-    UINTN        RevAlpha;
-    UINTN        Alpha;
     UINTN        Temp;
-    EG_PIXEL    *TopPtr;
+    UINTN        Alpha;
+    UINTN        RevAlpha;
     EG_PIXEL    *CompPtr;
+    EG_PIXEL    *TopPtr;
 
 
     if (CompBasePtr && TopBasePtr) {
@@ -1312,7 +1315,8 @@ VOID egRawCompose (
                 Temp       = ((UINTN) CompPtr->r * RevAlpha) + ((UINTN) TopPtr->r * Alpha) + 0x80;
                 CompPtr->r = (Temp + (Temp >> 8)) >> 8;
 
-                TopPtr++, CompPtr++;
+                TopPtr++;
+                CompPtr++;
             }
 
             TopBasePtr  += TopLineOffset;

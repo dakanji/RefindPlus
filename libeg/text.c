@@ -75,7 +75,7 @@ VOID egPrepareFont (VOID) {
 
     egGetScreenSize (&ScreenW, &ScreenH);
 
-    // Get longest and shortest edge dimensions
+    // Get Longest and Shortest Edge Dimensions
     ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
     ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
@@ -176,7 +176,7 @@ VOID egRenderText (
 
     egPrepareFont();
 
-    // Clip the text
+    // Clip the Text
     TextLength = StrLen (Text);
     if ((TextLength * FontCellWidth) + PosX > CompImage->Width) {
         TextLength = (CompImage->Width - PosX) / FontCellWidth;
@@ -223,7 +223,7 @@ VOID egRenderText (
         FontImage = LightFontImage;
     } // if/else BGBrightness >= 128
 
-    // Render it
+    // Render Font
     BufferLineOffset  = CompImage->Width;
     BufferPtr         = CompImage->PixelData;
     BufferPtr        += PosX + (PosY * BufferLineOffset);

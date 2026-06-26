@@ -40,7 +40,7 @@ jobs:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Get/Save Issue Data - GitHub API
@@ -73,7 +73,7 @@ jobs:
       - id: changetitle_02
         uses: actions/setup-node@v6
         with:
-          node-version: '>=24 <=28'
+          node-version: 24
 
       - if: github.event.inputs.provenance_known == 'NO'
         id: changetitle_03
@@ -83,13 +83,13 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           issue-number: ${{ github.event.inputs.item_id }}
           body: |
-            The issue appears to have arsen from a modified/customised instance.
+            The issue appears to have come from a modified/customised instance.
             This item is therefore considered invalid and cannot be looked into.
 
             > [!IMPORTANT]
             > Issues found on modified/customised builds must be tested on official files/code.
             > Should they also appear on these sources, raise your issue based on such sources.
-            > Additionally, debug logging and such should be obtained from the offical sources.
+            > Additionally, debug logging and such should be obtained from the official sources.
 
             Thank you.
 

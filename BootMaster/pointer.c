@@ -503,9 +503,7 @@ EFI_STATUS pdUpdateState (VOID) {
                 ProtocolA[Index]->GetState,
                 ProtocolA[Index], &APointerState
             );
-            if (EFI_ERROR(Status)) {
-                continue; // 'for' loop
-            }
+            if (EFI_ERROR(Status)) continue; // 'for' loop
 
             TempUINT64 = DivU64x64Remainder (
                 (UINT64) APointerState.CurrentX *
@@ -529,19 +527,14 @@ EFI_STATUS pdUpdateState (VOID) {
 
             break; // 'for' loop
         } // for
-
-        if (!EFI_ERROR(Status)) {
-            break; // 'do' loop
-        }
+        if (!EFI_ERROR(Status)) break; // 'do' loop
 
         for (Index = 0; Index < NumSPointerDevices; Index++) {
             Status = REFIT_CALL_2_WRAPPER(
                 ProtocolS[Index]->GetState,
                 ProtocolS[Index], &SPointerState
             );
-            if (EFI_ERROR(Status)) {
-                continue; // 'for' loop
-            }
+            if (EFI_ERROR(Status)) continue; // 'for' loop
 
             TempINT64 = (INT64) State.X + DivS64x64Remainder (
                 (INT64) SPointerState.RelativeMovementX *

@@ -52,12 +52,12 @@
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
  *
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 #include "driver_support.h"
 #include "mystrings.h"
@@ -588,9 +588,8 @@ UINTN ScanDriverDir (
     ArrayCount = ProtocolIndex = DriversArrNum = NumFound = 0;
     while (1) {
         CheckIter = DirIterNext (
-            &DirIter,
-            2, LOADER_MATCH_PATTERNS,
-            &DirEntry
+            &DirIter, FILTER_FILE,
+            LOADER_MATCH_PATTERNS, &DirEntry
         );
         if (!CheckIter) break;
 

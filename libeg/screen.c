@@ -3085,7 +3085,7 @@ CHAR16 * egScreenDescription (VOID) {
         if (!AllowGraphicsMode) {
             // Graphics Capable Hardware in Text Mode
             TextInfo = PoolPrint (
-                L"(Text Mode: %d x %d [Graphics Capable])",
+                L"in Text Mode @ %d x %d",
                 ConWidth, ConHeight
             );
             MergeStrings (
@@ -3361,7 +3361,7 @@ VOID egDrawImageWithTransparency (
         );
         MY_FREE_IMAGE(Background);
     }
-} // VOID DrawImageWithTransparency()
+} // VOID egDrawImageWithTransparency()
 
 VOID egDrawImageArea (
     IN EG_IMAGE *Image,
@@ -3603,7 +3603,7 @@ EG_IMAGE * egCopyScreenArea (
        return NULL;
    }
 
-   // Allocate a buffer for the screen area
+   // Allocate Buffer for Screen Area
    Image = egCreateImage (
        Width, Height, FALSE
    );
@@ -3611,7 +3611,7 @@ EG_IMAGE * egCopyScreenArea (
       return NULL;
    }
 
-   // Get full screen image
+   // Get Full Screen Image
    if (GOPDraw != NULL) {
        REFIT_CALL_10_WRAPPER(
            GOPDraw->Blt, GOPDraw,
@@ -3655,7 +3655,7 @@ VOID egScreenShot (VOID) {
 
     MY_MUTELOGGER_SET;
     #endif
-    // Clear the Keystroke Buffer (Silently)
+    // Clear Keystroke Buffer (Silently)
     ReadAllKeyStrokes();
     #if REFIT_DEBUG > 0
     MY_MUTELOGGER_OFF;
@@ -3665,7 +3665,7 @@ VOID egScreenShot (VOID) {
     #endif
 
     Image = egCopyScreen();
-    if (!Image) {
+    if (Image == NULL) {
         MsgStr = L"Unable to Take Screenshot ... Image is NULL";
 
         egDisplayMessage (
@@ -3682,7 +3682,7 @@ VOID egScreenShot (VOID) {
         return;
     }
 
-    // Fix pixels
+    // Fix Pixels
     FilePixelSize = Image->Width * Image->Height;
     for (i = 0; i < FilePixelSize; i++) {
         Temp                  = Image->PixelData[i].b;
@@ -3736,7 +3736,7 @@ VOID egScreenShot (VOID) {
         return;
     }
 
-    Status = EFI_NOT_STARTED;
+    Status = EFI_NOT_FOUND;
     if (SelfVolume->FSType == FS_TYPE_FAT32 ||
         SelfVolume->FSType == FS_TYPE_FAT16 ||
         SelfVolume->FSType == FS_TYPE_FAT12
@@ -3751,7 +3751,7 @@ VOID egScreenShot (VOID) {
     }
 
     if (EFI_ERROR(Status)) {
-        // Try to set to use first available ESP
+        // Try First Available ESP
         Status = egFindESP (&BaseDir);
     }
 
@@ -3772,7 +3772,7 @@ VOID egScreenShot (VOID) {
         return;
     }
 
-    // Search for existing screenshot files
+    // Search for Existing Screenshot Files
     i = 0;
     FileName = NULL;
     do {
@@ -3799,7 +3799,7 @@ VOID egScreenShot (VOID) {
         #endif
     }
     else {
-        // Save to file on the ESP
+        // Save to File on ESP
         Status = egSaveFile (
             BaseDir, FileName,
             (UINT8 *) FileData, FileDataSize
