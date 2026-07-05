@@ -511,18 +511,20 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     CHAR16         *LogStatus;
     CHAR16         *LogNameTmp;   // Do *NOT* Free
     CHAR16         *LogNameFull;
-    BOOLEAN         ForceNative = FALSE;
+    BOOLEAN         ForceNative;
     static BOOLEAN  FirstTimeLog = TRUE;
     #endif
 
     EFI_STATUS      Status;
     BOOLEAN         CurPolicyOEM;
     BOOLEAN         IsVendorMS;
+    BOOLEAN         RevokeVar;
+    BOOLEAN         HardNVram;
+    BOOLEAN         FlagBlock;
     BOOLEAN         BlockCert;
     BOOLEAN         BlockUEFI;
     BOOLEAN         BlockSize;
-    BOOLEAN         RevokeVar;
-    BOOLEAN         HardNVram;
+    BOOLEAN         BlockNext;
 
 
     if (Attributes   ==   0  ||
@@ -545,65 +547,75 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             MyStriCmp (VariableName, L"CurrentActivePolicy")
         )
     );
-
-    if (RevokeVar) {
-        BlockUEFI = FALSE;
-    }
-    else {
-        // DA-TAG: Always block UEFI Win stuff on Apple firmware
-        //         That is, without considering storage volatility
-        BlockUEFI = (
-            AppleFirmware && (
-                IsVendorMS || MyStrStr (VariableName, L"UnlockID")
-            )
-        );
-    }
-
     HardNVram = (
         (Attributes & EFI_VARIABLE_NON_VOLATILE) == EFI_VARIABLE_NON_VOLATILE
     );
-    if (BlockUEFI || RevokeVar) {
-        BlockCert = FALSE;
-    }
-    else {
-        BlockCert = (
-            AppleFirmware && HardNVram &&
-            (
+
+    #if REFIT_DEBUG > 0
+    ForceNative = FALSE;
+    #endif
+
+    BlockCert = FALSE;
+    BlockUEFI = FALSE;
+    BlockSize = FALSE;
+    BlockNext = FALSE;
+
+    if (GlobalConfig.NvramProtect) {
+        if (!RevokeVar) {
+            // DA-TAG: Always block UEFI Win stuff on Apple firmware
+            //         That is, without considering storage volatility
+            BlockUEFI = (
+                AppleFirmware && (
+                    IsVendorMS || MyStrStr (VariableName, L"UnlockID")
+                )
+            );
+        }
+
+        if (!RevokeVar && !BlockUEFI) {
+            BlockCert = (
+                AppleFirmware && HardNVram &&
                 (
-                    GuidsAreEqual (VendorGuid, &gEfiGlobalVariableGuid) &&
                     (
-                        MyStriCmp (VariableName, L"PK" ) || /* EFI_PLATFORM_KEY_NAME     */
-                        MyStriCmp (VariableName, L"KEK")    /* EFI_KEY_EXCHANGE_KEY_NAME */
-                    )
-                ) || (
-                    GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid) &&
-                    (
-                        MyStriCmp (VariableName, L"db" ) || /* EFI_IMAGE_SECURITY_DATABASE0 */
-                        MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
-                        MyStriCmp (VariableName, L"dbt") || /* EFI_IMAGE_SECURITY_DATABASE2 */
-                        MyStriCmp (VariableName, L"dbr")    /* EFI_IMAGE_SECURITY_DATABASE3 */
+                        GuidsAreEqual (VendorGuid, &gEfiGlobalVariableGuid) &&
+                        (
+                            MyStriCmp (VariableName, L"PK" ) || /* EFI_PLATFORM_KEY_NAME     */
+                            MyStriCmp (VariableName, L"KEK")    /* EFI_KEY_EXCHANGE_KEY_NAME */
+                        )
+                    ) || (
+                        GuidsAreEqual (VendorGuid, &gEfiImageSecurityDatabaseGuid) &&
+                        (
+                            MyStriCmp (VariableName, L"db" ) || /* EFI_IMAGE_SECURITY_DATABASE0 */
+                            MyStriCmp (VariableName, L"dbx") || /* EFI_IMAGE_SECURITY_DATABASE1 */
+                            MyStriCmp (VariableName, L"dbt") || /* EFI_IMAGE_SECURITY_DATABASE2 */
+                            MyStriCmp (VariableName, L"dbr")    /* EFI_IMAGE_SECURITY_DATABASE3 */
+                        )
                     )
                 )
-            )
-        );
+            );
+        }
+
+        if (!RevokeVar && !BlockUEFI && !BlockCert) {
+            BlockSize = (
+                AppleFirmware && HardNVram &&
+                VariableSize > GlobalConfig.NvramVariableLimit &&
+                GlobalConfig.NvramVariableLimit > NVRAM_SIZE_THRESHOLD
+            );
+        }
+
+        if (!RevokeVar && !BlockUEFI && !BlockCert && !BlockSize) {
+            BlockNext = MyStriCmp (
+                VariableName, L"BootNext"
+            );
+        }
     }
 
-    if (BlockUEFI || BlockCert || RevokeVar) {
-        BlockSize = FALSE;
-    }
-    else {
-        BlockSize = (
-            AppleFirmware && HardNVram &&
-            VariableSize > GlobalConfig.NvramVariableLimit &&
-            GlobalConfig.NvramVariableLimit > NVRAM_SIZE_THRESHOLD
-        );
-    }
+    FlagBlock = (
+        BlockUEFI || BlockCert || BlockSize || BlockNext
+    );
 
-    Status = (
-        BlockUEFI || BlockCert || BlockSize
-    ) ? EFI_SUCCESS : SetHardwareNvramVariable (
-        VariableName,
-        VendorGuid,
+    Status = (FlagBlock)
+        ? EFI_SUCCESS : SetHardwareNvramVariable (
+        VariableName, VendorGuid,
         Attributes, VariableSize, VariableData
     );
 
@@ -613,9 +625,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         // Log Outcome
         LogStatus = PoolPrint (
             L"%r",
-            (
-                BlockUEFI || BlockCert || BlockSize
-            ) ? EFI_ACCESS_DENIED : Status
+            (FlagBlock) ? EFI_ACCESS_DENIED : Status
         );
         LimitStringLength (LogStatus, 18);
     }
@@ -653,16 +663,20 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
                         ? L"OversizeItem"
                         : (CurPolicyOEM)
                             ? L"MyPolicyOEM"
-                            : (HardNVram)
-                                ? L"RegularItem" : L"NotFiltered",
+                            : (BlockNext)
+                                ? L"RestartNext"
+                                : (HardNVram)
+                                    ? L"RegularItem" : L"NotFiltered",
             LogNameFull,
             VariableSize,
-            (VariableSize == 1)
-                ? L" "
-                : (RevokeVar)
-                    ? L"s  ---  Invalidated" : L"s",
-            (HardNVram)
-                ? L"  ***  NonVolatile" : L""
+            (
+                VariableSize == 1
+            ) ? L" " : (
+                RevokeVar
+            ) ? L"s  ---  Invalidated" : L"s",
+            (
+                HardNVram
+            ) ? L"  ***  NonVolatile" : L""
         );
 
         if (!FirstTimeLog) {
@@ -732,7 +746,7 @@ VOID EFIAPI HandleVirtualAddressChangeEvent (
 } // static VOID EFIAPI HandleVirtualAddressChangeEvent()
 
 static
-VOID SetProtectNvram (
+VOID SetNvramGuard (
     IN EFI_SYSTEM_TABLE *SystemTable,
     IN BOOLEAN           Activate
 ) {
@@ -822,7 +836,7 @@ VOID SetProtectNvram (
             }
         }
     }
-} // static VOID SetProtectNvram()
+} // static VOID SetNvramGuard()
 
 static
 EFI_STATUS FilterCSR (VOID) {
@@ -4162,6 +4176,7 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN            FoundVentoy;
     BOOLEAN            ForceContinue;
     BOOLEAN            SkipTrustChain;
+    BOOLEAN            NvramGuardFlag;
     BOOLEAN            MainLoopRunning;
     BOOLEAN            FoundInstallerMac;
     LOADER_ENTRY      *OurLoaderEntry;
@@ -5260,6 +5275,7 @@ EFI_STATUS EFIAPI efi_main (
         SubScreenBoot   = FALSE;
         KeepTrustChain  = FALSE;
         SkipTrustChain  = FALSE;
+        NvramGuardFlag  = FALSE;
 
         MY_FREE_POOL(FilePath);
 
@@ -5347,10 +5363,8 @@ EFI_STATUS EFIAPI efi_main (
             ChosenOption->Tag = TAG_SHUTDOWN;
         }
 
-        if (GlobalConfig.NvramProtect) {
-            // Stop NvramProtect
-            SetProtectNvram (SystemTable, FALSE);
-        }
+        // Stop Nvram Filter
+        SetNvramGuard (SystemTable, FALSE);
 
         switch (ChosenOption->Tag) {
             case TAG_MOK:
@@ -5551,11 +5565,9 @@ EFI_STATUS EFIAPI efi_main (
                         KeepTrustChain = TRUE;
                     }
 
-                    if (GlobalConfig.NvramProtect &&
-                        GlobalConfig.NvramProtectEx
-                    ) {
-                        // Start NvramProtect
-                        SetProtectNvram (SystemTable, TRUE);
+                    if (GlobalConfig.NvramProtectEx) {
+                        // Flag Nvram Guard
+                        NvramGuardFlag = TRUE;
                     }
 
                     if (!OurLoaderEntry->UseGraphicsMode) {
@@ -5598,10 +5610,8 @@ EFI_STATUS EFIAPI efi_main (
                         }
                     }
 
-                    if (GlobalConfig.NvramProtect) {
-                        // Start NvramProtect
-                        SetProtectNvram (SystemTable, TRUE);
-                    }
+                    // Flag Nvram Guard
+                    NvramGuardFlag = TRUE;
 
                     if (!OurLoaderEntry->UseGraphicsMode) {
                         OurLoaderEntry->UseGraphicsMode = (
@@ -5860,11 +5870,9 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
 
                     if (!FoundVentoy && GlobalConfig.NvramProtectEx) {
-                        if (GlobalConfig.NvramProtect) {
-                            // Some UEFI Windows installers/updaters may not be in the standard path
-                            // So, activate NvramProtect (if set and allowed) on unidentified loaders
-                            SetProtectNvram (SystemTable, TRUE);
-                        }
+                        // Some UEFI Windows installers/updaters may not be in the standard path
+                        // So, activate NvramProtect (if set and allowed) on unidentified loaders
+                        NvramGuardFlag = TRUE;
                     }
                 }
 
@@ -5887,6 +5895,11 @@ EFI_STATUS EFIAPI efi_main (
 
                 if (Trigger != SYNC_TRUST_EXIT) {
                     if (Trigger == SYNC_TRUST_SKIP) {
+                        if (NvramGuardFlag) {
+                            // Start Nvram Filter
+                            SetNvramGuard (SystemTable, TRUE);
+                        }
+
                         // No end dash line ... Added in 'StartLoader'
                         StartLoader (
                             OurLoaderEntry,

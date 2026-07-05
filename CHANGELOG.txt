@@ -18,6 +18,8 @@
   * Enhanced embedded CleanNvram image
     - Transparent background fix
     - Proper scaling applied
+- Extends `ProtectNVRAM` Feature
+  * The `BootNext` nvRAM variable is now also filtered
 
 
 0.14.2.AE (14 APR 2026):
