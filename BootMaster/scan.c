@@ -2337,8 +2337,10 @@ LOADER_ENTRY * AddLoaderEntry (
     CHAR16                 *LinuxName;
     CHAR16                 *ShowName;      // Do *NOT* Free
     CHAR16                 *TmpName;       // Do *NOT* Free
+    CHAR16                 *TagBLS;
     BOOLEAN                 Found;
     BOOLEAN                 IsStub;
+    BOOLEAN                 GotUKI;
     BOOLEAN                 GotSysD;
     BOOLEAN                 GotGrub;
     BOOLEAN                 GotElilo;
@@ -2373,21 +2375,40 @@ LOADER_ENTRY * AddLoaderEntry (
     else {
         Found = FALSE;
         if (CheckLinux) {
-            GotGrub = (
-                IsStriStr (LoaderPath, L"Grub")
-            ) ? TRUE : FALSE;
+            GotElilo = FALSE;
+            GotSysD  = FALSE;
+            GotGrub  = FALSE;
+            TagBLS = PoolPrint (L"%s\\", BLS2_PATH);
+            GotUKI = IsStriStr (LoaderPath, TagBLS);
+            MY_FREE_POOL(TagBLS);
 
-            GotSysD = (
-                IsStriStr (LoaderPath, L"SystemD") ||
-                IsStriStr (LoaderPath, L"GummiBoot")
-            ) ? TRUE : FALSE;
-
-            GotElilo = (
-                IsStriStr (LoaderPath, L"Elilo")
-            ) ? TRUE : FALSE;
+            if (GotUKI) {
+                LoaderEntry->OSType = 'L';
+            }
+            else {
+                GotGrub = IsStriStr (LoaderPath, L"\\Grub");
+                if (GotGrub) {
+                    LoaderEntry->OSType = 'G';
+                }
+                else {
+                    GotSysD = (
+                        IsStriStr (LoaderPath, L"\\SystemD") ||
+                        IsStriStr (LoaderPath, L"\\GummiBoot")
+                    );
+                    if (GotSysD) {
+                        LoaderEntry->OSType = 'S';
+                    }
+                    else {
+                        GotElilo = IsStriStr (LoaderPath, L"\\Elilo");
+                        if (GotElilo) {
+                            LoaderEntry->OSType = 'E';
+                        }
+                    }
+                }
+            }
 
             IsStub = FALSE;
-            if (!GotGrub && !GotSysD && !GotElilo) {
+            if (!GotGrub && !GotSysD && !GotElilo && !GotUKI) {
                 i = 0;
                 while (!IsStub) {
                     SearchName = FindCommaDelimited (
@@ -2395,11 +2416,7 @@ LOADER_ENTRY * AddLoaderEntry (
                     );
                     if (SearchName == NULL) break;
 
-                    if (FindSubStr (
-                            LoaderPath,
-                            SearchName
-                        )
-                    ) {
+                    if (FindSubStr (LoaderPath, SearchName)) {
                         IsStub = TRUE;
                         LoaderEntry->OSType  = 'L';
                     }
@@ -2424,19 +2441,25 @@ LOADER_ENTRY * AddLoaderEntry (
                             LinuxName
                         );
 
-                        LoaderEntry->Title = (!GotGrub && !GotSysD && !GotElilo)
+                        LoaderEntry->Title = (
+                            !GotGrub && !GotSysD && !GotElilo && !GotUKI
+                        ) ? PoolPrint (
+                            L"Instance: Linux - %s",
+                            ShowName
+                        )
+                        : (GotGrub)
                             ? PoolPrint (
-                                L"Instance: Linux - %s",
+                                L"Instance: Linux via Grub - %s",
                                 ShowName
                             )
-                            : (GotGrub)
+                            : (GotSysD)
                                 ? PoolPrint (
-                                    L"Instance: Linux via Grub - %s",
+                                    L"Instance: Linux via SDBoot - %s",
                                     ShowName
                                 )
-                                : (GotSysD)
+                                : (GotUKI)
                                     ? PoolPrint (
-                                        L"Instance: Linux via SDBoot - %s",
+                                        L"Instance: Linux via UKI - %s",
                                         ShowName
                                     )
                                     : PoolPrint (
@@ -2543,7 +2566,7 @@ LOADER_ENTRY * AddLoaderEntry (
                                     L"Instance: Linux via Stub - %s ::: %s",
                                     ShowName, TmpName
                                 )
-                            : (!GotGrub && !GotSysD && !GotElilo)
+                            : (!GotGrub && !GotSysD && !GotElilo && !GotUKI)
                                 ? PoolPrint (
                                     L"Instance: Linux - %s",
                                     ShowName
@@ -2558,10 +2581,15 @@ LOADER_ENTRY * AddLoaderEntry (
                                             L"Instance: Linux via SDBoot - %s",
                                             ShowName
                                         )
-                                        : PoolPrint (
-                                            L"Instance: Linux via Elilo - %s",
-                                            ShowName
-                                        );
+                                        : (GotUKI)
+                                            ? PoolPrint (
+                                                L"Instance: Linux via UKI - %s",
+                                                ShowName
+                                            )
+                                            : PoolPrint (
+                                                L"Instance: Linux via Elilo - %s",
+                                                ShowName
+                                            );
                     } // if LinuxName != NULL
                 } // if !Found
 
@@ -3838,6 +3866,7 @@ VOID ScanEfiFiles (
     BOOLEAN                 FoundBRBackup;
     BOOLEAN                 FoundVentoy;
     BOOLEAN                 CheckIter;
+    BOOLEAN                 ShowEntry;
     EFI_FILE_INFO          *EfiDirEntry;
     REFIT_DIR_ITER          EfiDirIter;
 
@@ -4171,15 +4200,15 @@ VOID ScanEfiFiles (
         ScanFallbackLoader = FALSE;
     }
 
-    // Scan subdirectories of the EFI directory (as per the standard)
+    // Scan for Unified Kernel Images as per 'Type 2' BLS Setups
     //BREAD_CRUMB(L"%a:  9", __func__);
-    DirIterOpen (Volume->RootDir, L"EFI", &EfiDirIter);
+    DirIterOpen (Volume->RootDir, BLS2_PATH, &EfiDirIter);
 
     //BREAD_CRUMB(L"%a:  10", __func__);
     while (1) {
         //BREAD_CRUMB(L"%a:  10a 0 - Run DirIterNext", __func__);
         CheckIter = DirIterNext (
-            &EfiDirIter, FILTER_DIRS,
+            &EfiDirIter, FILTER_FILE,
             NULL, &EfiDirEntry
         );
         if (!CheckIter) break;
@@ -4188,36 +4217,45 @@ VOID ScanEfiFiles (
         //BREAD_CRUMB(L"%a:  10a 1 - WHILE LOOP:- START", __func__);
         do {
             //BREAD_CRUMB(L"%a:  10a 1a 1", __func__);
-            if (EfiDirEntry->FileName[0] == '.' ||
-                MyStriCmp  (
-                    EfiDirEntry->FileName, L"tools"
-                )
-            ) {
-                //BREAD_CRUMB(L"%a:  10a 1a 1a 1", __func__);
-                // Skip ... Not boot loader or scanned later
-                break;
-            }
-
-            //BREAD_CRUMB(L"%a:  10a 1a 2", __func__);
-            if (!VetExtension (EfiDirEntry->FileName)) {
-                //BREAD_CRUMB(L"%a:  10a 1a 2a 1", __func__);
-                // Skip ... Not EFI File
-                break;
-            }
-
-            //BREAD_CRUMB(L"%a:  10a 1a 3", __func__);
             FileName = PoolPrint (
-                L"EFI\\%s",
+                L"%s\\%s", BLS2_PATH,
                 EfiDirEntry->FileName
             );
 
-            //BREAD_CRUMB(L"%a:  10a 1a 4", __func__);
-            if (ScanLoaderDir (Volume, FileName, LoaderMatchPatterns)) {
-                //BREAD_CRUMB(L"%a:  10a 1a 4a 1", __func__);
+            //BREAD_CRUMB(L"%a:  10a 1a 2", __func__);
+            ShowEntry = TRUE;
+            if (!MyStrEnds (L".efi", EfiDirEntry->FileName)) {
+                //BREAD_CRUMB(L"%a:  10a 1a 2a 1", __func__);
+                if (!MyStrEnds (L".efi.signed", EfiDirEntry->FileName)) {
+                    //BREAD_CRUMB(L"%a:  10a 1a 2a 1a 1", __func__);
+                    // Skip ... Not Valid EFI File
+                    ShowEntry = FALSE;
+                }
+                //BREAD_CRUMB(L"%a:  10a 1a 2a 2", __func__);
+            }
+            else {
+                //BREAD_CRUMB(L"%a:  10a 1a 2b 1", __func__);
+                if (HasSignedCounterpart (Volume, FileName)) {
+                    //BREAD_CRUMB(L"%a:  10a 1a 2b 1a 1", __func__);
+                    // TRUE == "SameName" + ".efi.signed" file present
+                    ShowEntry = FALSE;
+                }
+                //BREAD_CRUMB(L"%a:  10a 1a 2b 2", __func__);
+            }
+
+            //BREAD_CRUMB(L"%a:  10a 1a 3", __func__);
+            if (ShowEntry) {
+                //BREAD_CRUMB(L"%a:  10a 1a 3a 1", __func__);
                 ScanFallbackLoader = FALSE;
+                DisplayLoader = TRUE;
+                AddLoaderEntry (
+                    FileName, NULL,
+                    Volume, TRUE, TRUE
+                );
+                //BREAD_CRUMB(L"%a:  10a 1a 3a 2", __func__);
             }
             MY_FREE_POOL(FileName);
-            //BREAD_CRUMB(L"%a:  10a 1a 5", __func__);
+            //BREAD_CRUMB(L"%a:  10a 1a 4", __func__);
         } while (0); // This 'loop' only runs once
 
         //BREAD_CRUMB(L"%a:  10a 2", __func__);
@@ -4227,51 +4265,107 @@ VOID ScanEfiFiles (
         //LOG_SEP(L"X");
     } // while {Infinite}
 
+    // Scan Subdirectories of the 'EFI' Directory
+    // Exclude Already Scanned 'BLS2_PATH' Folder
     //BREAD_CRUMB(L"%a:  11", __func__);
+    DirIterOpen (Volume->RootDir, L"EFI", &EfiDirIter);
+
+    //BREAD_CRUMB(L"%a:  12", __func__);
+    while (1) {
+        //BREAD_CRUMB(L"%a:  12a 0 - Run DirIterNext", __func__);
+        CheckIter = DirIterNext (
+            &EfiDirIter, FILTER_DIRS,
+            NULL, &EfiDirEntry
+        );
+        if (!CheckIter) break;
+
+        //LOG_SEP(L"X");
+        //BREAD_CRUMB(L"%a:  12a 1 - WHILE LOOP:- START", __func__);
+        do {
+            //BREAD_CRUMB(L"%a:  12a 1a 1", __func__);
+            if (EfiDirEntry->FileName[0] == '.'              ||
+                MyStriCmp  (EfiDirEntry->FileName, L"tools") ||
+                MyStriCmp  (EfiDirEntry->FileName, L"Linux")
+            ) {
+                //BREAD_CRUMB(L"%a:  12a 1a 1a 1", __func__);
+                // Skip ... Not boot loader or scanned later
+                break;
+            }
+
+            //BREAD_CRUMB(L"%a:  12a 1a 2", __func__);
+            if (!VetExtension (EfiDirEntry->FileName)) {
+                //BREAD_CRUMB(L"%a:  12a 1a 2a 1", __func__);
+                // Skip ... Not boot loader or scanned later
+                break;
+            }
+
+            //BREAD_CRUMB(L"%a:  12a 1a 3", __func__);
+            FileName = PoolPrint (
+                L"EFI\\%s",
+                EfiDirEntry->FileName
+            );
+
+            //BREAD_CRUMB(L"%a:  12a 1a 4", __func__);
+            if (ScanLoaderDir (Volume, FileName, LoaderMatchPatterns)) {
+                //BREAD_CRUMB(L"%a:  12a 1a 4a 1", __func__);
+                ScanFallbackLoader = FALSE;
+            }
+            MY_FREE_POOL(FileName);
+            //BREAD_CRUMB(L"%a:  12a 1a 5", __func__);
+        } while (0); // This 'loop' only runs once
+
+        //BREAD_CRUMB(L"%a:  12a 2", __func__);
+        MY_FREE_POOL(EfiDirEntry);
+
+        //BREAD_CRUMB(L"%a:  12a 3 - WHILE LOOP:- END", __func__);
+        //LOG_SEP(L"X");
+    } // while {Infinite}
+
+    //BREAD_CRUMB(L"%a:  13", __func__);
     Status = DirIterClose (
         &EfiDirIter
     );
 
-    //BREAD_CRUMB(L"%a:  12", __func__);
+    //BREAD_CRUMB(L"%a:  14", __func__);
     if (EFI_ERROR(Status)       &&
         Status != EFI_NOT_FOUND &&
         Status != EFI_INVALID_PARAMETER
     ) {
-        //BREAD_CRUMB(L"%a:  12a 1", __func__);
+        //BREAD_CRUMB(L"%a:  14a 1", __func__);
         Temp = PoolPrint (
             L"While Scanning the EFI System Partition on '%s'",
             VolName
         );
-        //BREAD_CRUMB(L"%a:  12a 2", __func__);
+        //BREAD_CRUMB(L"%a:  14a 2", __func__);
         CheckError (Status, Temp);
         MY_FREE_POOL(Temp);
-        //BREAD_CRUMB(L"%a:  12a 3", __func__);
+        //BREAD_CRUMB(L"%a:  14a 3", __func__);
     }
 
-    //BREAD_CRUMB(L"%a:  13", __func__);
+    //BREAD_CRUMB(L"%a:  15", __func__);
     // Do not scan fallback loader if on the same volume and a duplicate of RefindPlus.
     if (ScanFallbackLoader) {
-        //BREAD_CRUMB(L"%a:  13a 1", __func__);
+        //BREAD_CRUMB(L"%a:  15a 1", __func__);
         SelfPath = DevicePathToStr (
             SelfLoadedImage->FilePath
         );
 
-        //BREAD_CRUMB(L"%a:  13a 2", __func__);
+        //BREAD_CRUMB(L"%a:  15a 2", __func__);
         CleanUpPathNameSlashes (SelfPath);
 
-        //BREAD_CRUMB(L"%a:  13a 3", __func__);
+        //BREAD_CRUMB(L"%a:  15a 3", __func__);
         if (DuplicatesFallback (Volume, SelfPath) &&
             Volume->DeviceHandle == SelfLoadedImage->DeviceHandle
 
         ) {
-            //BREAD_CRUMB(L"%a:  13a 3a 1", __func__);
+            //BREAD_CRUMB(L"%a:  15a 3a 1", __func__);
             ScanFallbackLoader = FALSE;
         }
         MY_FREE_POOL(SelfPath);
-        //BREAD_CRUMB(L"%a:  13a 4", __func__);
+        //BREAD_CRUMB(L"%a:  15a 4", __func__);
     }
 
-    //BREAD_CRUMB(L"%a:  14", __func__);
+    //BREAD_CRUMB(L"%a:  16", __func__);
     // Scan user-specified (or additional default) directories.
     i = 0;
     VolName = NULL;
@@ -4282,21 +4376,21 @@ VOID ScanEfiFiles (
         if (Directory == NULL) break;
 
         //LOG_SEP(L"X");
-        //BREAD_CRUMB(L"%a:  14a 1 - WHILE LOOP:- START", __func__);
+        //BREAD_CRUMB(L"%a:  16a 1 - WHILE LOOP:- START", __func__);
         if (ShouldScan (Volume, Directory)) {
-            //BREAD_CRUMB(L"%a:  14a 1a 1", __func__);
+            //BREAD_CRUMB(L"%a:  16a 1a 1", __func__);
             SplitVolumeAndFilename (
                 &Directory,
                 &VolName
             );
 
-            //BREAD_CRUMB(L"%a:  14a 1a 2", __func__);
+            //BREAD_CRUMB(L"%a:  16a 1a 2", __func__);
             CleanUpPathNameSlashes (Directory);
 
-            //BREAD_CRUMB(L"%a:  14a 1a 3", __func__);
+            //BREAD_CRUMB(L"%a:  16a 1a 3", __func__);
             Length = StrLen (Directory);
 
-            //BREAD_CRUMB(L"%a:  14a 1a 4", __func__);
+            //BREAD_CRUMB(L"%a:  16a 1a 4", __func__);
             if (Length > 0 &&
                 ScanLoaderDir (
                     Volume,
@@ -4304,37 +4398,37 @@ VOID ScanEfiFiles (
                     LoaderMatchPatterns
                 )
             ) {
-                //BREAD_CRUMB(L"%a:  14a 1a 4a 1", __func__);
+                //BREAD_CRUMB(L"%a:  16a 1a 4a 1", __func__);
                 ScanFallbackLoader = FALSE;
             }
-            //BREAD_CRUMB(L"%a:  14a 1a 5", __func__);
+            //BREAD_CRUMB(L"%a:  16a 1a 5", __func__);
             MY_FREE_POOL(VolName);
         }
         MY_FREE_POOL(Directory);
 
-        //BREAD_CRUMB(L"%a:  14a 2 - WHILE LOOP:- END", __func__);
+        //BREAD_CRUMB(L"%a:  16a 2 - WHILE LOOP:- END", __func__);
         //LOG_SEP(L"X");
     } // while
 
 VentoyJump:
-    //BREAD_CRUMB(L"%a:  15", __func__);
+    //BREAD_CRUMB(L"%a:  17", __func__);
     // Create an entry for fallback loaders
     if (ScanFallbackLoader                                    &&
         ShouldScan  (Volume, L"EFI\\BOOT")                    &&
         FileExists  (Volume->RootDir,      FALLBACK_FULLNAME) &&
         !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
     ) {
-        //BREAD_CRUMB(L"%a:  15a 1", __func__);
+        //BREAD_CRUMB(L"%a:  17a 1", __func__);
         if (FoundVentoy) {
-            //BREAD_CRUMB(L"%a:  15a 1a 1", __func__);
+            //BREAD_CRUMB(L"%a:  17a 1a 1", __func__);
             TmpMsg = L"Instance: Ventoy";
         }
         else {
-            //BREAD_CRUMB(L"%a:  15a 1b 1", __func__);
+            //BREAD_CRUMB(L"%a:  17a 1b 1", __func__);
             TmpMsg = FALLBACK_BASENAME;
         }
 
-        //BREAD_CRUMB(L"%a:  15a 2", __func__);
+        //BREAD_CRUMB(L"%a:  17a 2", __func__);
         DisplayLoader = TRUE;
         Temp = StrDuplicate (
             FALLBACK_FULLNAME
@@ -4344,10 +4438,10 @@ VentoyJump:
             Volume, TRUE, FALSE
         );
         MY_FREE_POOL(Temp);
-        //BREAD_CRUMB(L"%a:  15a 2", __func__);
+        //BREAD_CRUMB(L"%a:  17a 2", __func__);
     }
 
-    //BREAD_CRUMB(L"%a:  16 - END:- VOID", __func__);
+    //BREAD_CRUMB(L"%a:  18 - END:- VOID", __func__);
     //LOG_DECREMENT();
     //LOG_SEP(L"X");
 } // static VOID ScanEfiFiles()

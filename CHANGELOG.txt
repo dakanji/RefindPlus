@@ -5,6 +5,11 @@
     - This has now been rectified
   * This bug was introduced in v0.14.2.AE (Commit 973479b)
     - Default was not changed when repurposing the setting
+- Improves `Boot Loader Specification (BLS)` Handling
+  * `Type 1 BLS` setups are still not supported
+  * `Type 2 BLS` setups are now explicitly presented as Linux Entries
+    - These setups were previously presented as generic UEFI Entries
+    - These setups deploy `Unified Kernel Image (UKI)` efi files
 - Improves `EFI Shell` Handling
   * Now dynamically scans and filters for shell files
   * Provides flexibility in naming subject to `EFI_Shell-` prefix

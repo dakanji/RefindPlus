@@ -155,6 +155,9 @@ LinuxMint,Manjaro,OpenSUSE,Redhat,Slackware,SUSE,Ubuntu,Zorin"
 #define RECOVERY_NAME_HFS       L"HFS+ Instance"
 #define RECOVERY_NAME_APFS      L"APFS Instance"
 
+#define BLS1_PATH               L"loader\\entries"
+#define BLS2_PATH               L"EFI\\Linux"
+
 
 EG_IMAGE * GetDiskBadge (IN UINT8 DiskType);
 
