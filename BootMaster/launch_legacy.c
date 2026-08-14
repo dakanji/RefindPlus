@@ -445,7 +445,7 @@ EFI_STATUS LoadLegacyImageMac (
     ChildLoadedImage->LoadOptions     = (VOID *) LoadOptions;
     ChildLoadedImage->LoadOptionsSize = (
         LoadOptions != NULL
-    ) ? ((UINT32) StrLen (LoadOptions) + 1) * sizeof (CHAR16) : 0;
+    ) ? (UINT32) StrSize (LoadOptions) : 0;
 
     // Turn control over to child image
     // DA-TAG: (optionally) re-enable the EFI watchdog timer!
@@ -643,16 +643,8 @@ VOID LegacyBootMac (
             MsgStrA = (ErrorInStep == 0)
                 ? L"Ensure Legacy BIOS Boot Support is Available"
                 : L"Ensure Latest Firmware Updates Are Installed";
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_ERROR
-            );
 
-            PrintUglyText (MsgStrA, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_BASIC
-            );
+            ShowErrorUglyText (MsgStrA, NEXTLINE);
             BREAD_CRUMB(L"%a:  7a 1a 3", __func__);
 
             #if REFIT_DEBUG > 0
@@ -673,15 +665,7 @@ VOID LegacyBootMac (
 
                 BREAD_CRUMB(L"%a:  7a 1b 1a 2", __func__);
                 MsgStrA = L"Firmware Refused to Boot from Selected Volume";
-                REFIT_CALL_2_WRAPPER(
-                    gST->ConOut->SetAttribute,
-                    gST->ConOut, ATTR_ERROR
-                );
-                PrintUglyText (MsgStrA, NEXTLINE);
-                REFIT_CALL_2_WRAPPER(
-                    gST->ConOut->SetAttribute,
-                    gST->ConOut, ATTR_BASIC
-                );
+                ShowErrorUglyText (MsgStrA, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("** WARN: %s", MsgStrA);
@@ -691,9 +675,11 @@ VOID LegacyBootMac (
                     #if REFIT_DEBUG > 0
                     LOG_MSG("\n");
                     #endif
+
                     BREAD_CRUMB(L"%a:  7a 1b 1a 2a 1", __func__);
                     MsgStrA = L"Legacy Boot from External Drive *IS NOT* Well Supported by Apple Firmware";
-                    PrintUglyText (MsgStrA, NEXTLINE);
+                    ShowErrorUglyText (MsgStrA, NEXTLINE);
+
                     #if REFIT_DEBUG > 0
                     LOG_MSG("         %s", MsgStrA);
                     #endif
@@ -776,10 +762,11 @@ VOID AddLegacyEntry (
         ) ? Volume->OSName : L"Legacy Bootcode";
     }
 
-    VolDesc = (Volume->VolName != NULL)
-        ? Volume->VolName
-        : (Volume->DiskKind == DISK_KIND_OPTICAL)
-            ? L"CD" : L"HD";
+    VolDesc = (
+        Volume->VolName != NULL
+    ) ? Volume->VolName : (
+        Volume->DiskKind == DISK_KIND_OPTICAL
+    ) ? L"CD" : L"HD";
 
     LegacyTitle = PoolPrint (
         L"Load %s%s%s%s%s",
@@ -803,7 +790,9 @@ VOID AddLegacyEntry (
     FirstLegacyScan = FALSE;
 
     // Prepare the menu entry
-    Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    Entry = AllocateZeroPool (
+        sizeof (LEGACY_ENTRY)
+    );
     if (Entry == NULL) {
         MY_FREE_POOL(LegacyTitle);
 
@@ -840,15 +829,21 @@ VOID AddLegacyEntry (
     #endif
 
     // Create the submenu
-    SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    SubScreen = AllocateZeroPool (
+        sizeof (REFIT_MENU_SCREEN)
+    );
     if (SubScreen == NULL) {
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+        FreeMenuEntry (
+            (REFIT_MENU_ENTRY **) Entry
+        );
 
         // Early Return
         return;
     }
 
-    SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+    SubScreen->TitleImage = egCopyImage (
+        Entry->me.Image
+    );
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s%s%s%s%s",
         LoaderTitle,
@@ -866,8 +861,12 @@ VOID AddLegacyEntry (
     // Default entry
     SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
     if (SubEntry == NULL) {
-        FreeMenuScreen (&SubScreen);
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+        FreeMenuScreen (
+            &SubScreen
+        );
+        FreeMenuEntry (
+            (REFIT_MENU_ENTRY **) Entry
+        );
 
         // Early Return
         return;
@@ -878,7 +877,10 @@ VOID AddLegacyEntry (
     SubEntry->Volume      = CopyVolume (Entry->Volume);
     SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
 
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+    AddMenuEntry (
+        SubScreen,
+        (REFIT_MENU_ENTRY *) SubEntry
+    );
 
     TempBool = GetMenuEntryReturn (&SubScreen);
     if (TempBool) {
@@ -888,7 +890,10 @@ VOID AddLegacyEntry (
         FreeMenuScreen (&SubScreen);
     }
 
-    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (
+        MainMenu,
+        (REFIT_MENU_ENTRY *) Entry
+    );
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_END,
@@ -924,10 +929,14 @@ VOID AddLegacyEntryUEFI (
     // Remove stray spaces, since many EFIs produce descriptions with lots of
     //   extra spaces, especially at the end; this throws off centering of the
     //   description on the screen.
-    LimitStringLength (BdsOption->Description, 100);
+    LimitStringLength (
+        BdsOption->Description, 100
+    );
 
     // Prepare the menu entry
-    Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    Entry = AllocateZeroPool (
+        sizeof (LEGACY_ENTRY)
+    );
     if (Entry == NULL) {
         // Early Return
         return;
@@ -974,13 +983,17 @@ VOID AddLegacyEntryUEFI (
     // Create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (SubScreen == NULL) {
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+        FreeMenuEntry (
+            (REFIT_MENU_ENTRY **) Entry
+        );
 
         // Early Return
         return;
     }
 
-    SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+    SubScreen->TitleImage = egCopyImage (
+        Entry->me.Image
+    );
     SubScreen->Title = PoolPrint (
         L"Boot Options for Legacy Bootcode%s%s%s%s",
         SetVolJoin (L"Legacy Bootcode", TRUE                     ),
@@ -994,27 +1007,42 @@ VOID AddLegacyEntryUEFI (
         : StrDuplicate (SUBSCREEN_HINT2);
 
     // Default entry
-    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    SubEntry = AllocateZeroPool (
+        sizeof (LEGACY_ENTRY)
+    );
     if (SubEntry == NULL) {
-        FreeMenuScreen (&SubScreen);
-        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+        FreeMenuScreen (
+            &SubScreen
+        );
+        FreeMenuEntry (
+            (REFIT_MENU_ENTRY **) Entry
+        );
 
         // Early Return
         return;
     }
 
-    SubEntry->me.Title  = PoolPrint (L"Load %s", BdsOption->Description);
+    SubEntry->me.Title  = PoolPrint (
+        L"Load %s",
+        BdsOption->Description
+    );
     SubEntry->me.Tag    = TAG_LEGACY_UEFI;
     SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+    AddMenuEntry (
+        SubScreen,
+        (REFIT_MENU_ENTRY *) SubEntry
+    );
 
     if (!GetMenuEntryReturn (&SubScreen)) {
         FreeMenuScreen (&SubScreen);
     }
     Entry->me.SubScreen = SubScreen;
 
-    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (
+        MainMenu,
+        (REFIT_MENU_ENTRY *) Entry
+    );
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_END,
@@ -1063,7 +1091,10 @@ VOID ScanLegacyUEFI (
 
     FirstLegacyScan = FALSE;
 
-    ZeroMem (Buffer, sizeof (Buffer));
+    ZeroMem (
+        Buffer,
+        sizeof (Buffer)
+    );
 
     // If LegacyBIOS protocol is not implemented on this platform,
     //   we do not support this type of legacy boot on this machine.
@@ -1113,8 +1144,13 @@ VOID ScanLegacyUEFI (
         );
 
         // Not building a list of boot options so init the head each time
-        InitializeListHead (&TempList);
-        BdsOption = BdsLibVariableToOption (&TempList, BootOption);
+        InitializeListHead (
+            &TempList
+        );
+        BdsOption = BdsLibVariableToOption (
+            &TempList,
+            BootOption
+        );
         if (BdsOption == NULL) {
             Index++;
 
@@ -1168,7 +1204,9 @@ VOID ScanLegacyUEFI (
             }
         } // if BbsDevicePath->DeviceType
 
-        FreeBdsOption (&BdsOption);
+        FreeBdsOption (
+            &BdsOption
+        );
 
         Index++;
     } // while
@@ -1399,7 +1437,10 @@ VOID ScanLegacyEx (
                         Volume->DiskKind == DISK_KIND_OPTICAL
                     )
                 ) {
-                    ScanLegacyVolume (Volume, VolumeIndex);
+                    ScanLegacyVolume (
+                        Volume,
+                        VolumeIndex
+                    );
                 }
              } // for
         }
@@ -1558,7 +1599,7 @@ VOID WarnIfLegacyProblems (VOID) {
     #endif
 
     UINTN     i;
-    BOOLEAN   found;
+    BOOLEAN   Found;
     CHAR16   *MsgStr;
     CHAR16   *TxtMsg;
     CHAR16   *ExtMsg;
@@ -1581,18 +1622,19 @@ VOID WarnIfLegacyProblems (VOID) {
     }
 
     i = 0;
-    found = FALSE;
+    Found = FALSE;
     do {
         if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
             GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
             GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'b'
         ) {
-            found = TRUE;
+            Found = TRUE;
         }
-        i++;
-    } while ((i < NUM_SCAN_OPTIONS) && (!found));
 
-    if (!found) {
+        i += 1;
+    } while (!Found && i < NUM_SCAN_OPTIONS);
+
+    if (!Found) {
         BREAD_CRUMB(L"%a:  A2 - END:- VOID ... Early Return", __func__);
         LOG_DECREMENT();
         LOG_SEP(L"X");
@@ -1603,28 +1645,26 @@ VOID WarnIfLegacyProblems (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = L"Legacy BIOS Boot Scan Enabled but *NOT* Available in Firmware";
-    TmpLevel = (GlobalConfig.LogLevel == 0) ? TRUE : FALSE;
+    TmpLevel = (
+        GlobalConfig.LogLevel == 0
+    ) ? TRUE : FALSE;
     if (TmpLevel) {
         GlobalConfig.LogLevel = 1;
     }
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    if (TmpLevel) {
-        GlobalConfig.LogLevel = 0;
-    }
     #endif
 
-    TxtMsg = L"WARN: Legacy BIOS Boot Issues                                  ";
-    Spacer = L"                                                               ";
-    MsgStr = L"Your 'scanfor' config line specifies scanning for one or more  \n"
-             L"legacy (BIOS) boot options but this *IS NOT* possible as your  \n"
-             L"computer lacks the required Compatibility Support Module (CSM) \n"
-             L"or because Legacy BIOS Boot has been disabled in your firmware.";
-    ExtMsg = L"Remove the legacy (BIOS) boot settings from the 'scanfor' list.\n"
-             L"  - Items to remove from list: hdbios, biosexternal and cdbios.";
+    TxtMsg = L" WARN: Legacy BIOS Boot Issues                                   ";
+    Spacer = L"                                                                 ";
+    MsgStr = L" Your 'scanfor' config line specifies scanning for one or more   \n"
+             L" legacy (BIOS) boot options but this *IS NOT* possible as your   \n"
+             L" computer lacks the required Compatibility Support Module (CSM)  \n"
+             L" or because Legacy BIOS Boot has been disabled in your firmware. ";
+    ExtMsg = L" Remove the legacy (BIOS) boot settings from the 'scanfor' list. \n"
+             L"   - Items to remove from list: hdbios, biosexternal and cdbios. ";
 
     #if REFIT_DEBUG > 0
     if (TmpLevel) {
-        GlobalConfig.LogLevel = 1;
         LOG_SEP(L"X");
     }
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s\n%s", TxtMsg, MsgStr);

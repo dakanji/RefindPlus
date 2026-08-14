@@ -33,12 +33,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2025 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * Modifications distributed under the preceding terms.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2026 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** Modifications distributed under the preceding terms.
+**/
 
 #ifndef __SCREEN_H_
 #define __SCREEN_H_
@@ -78,11 +78,10 @@
 #define TOP      (2)
 #define NEXTLINE (3)
 
-extern UINTN     ConWidth;
-extern UINTN     ConHeight;
 extern UINTN     ScreenW;
 extern UINTN     ScreenH;
-extern CHAR16   *BlankLine;
+extern UINTN     ConWidth;
+extern UINTN     ConHeight;
 extern BOOLEAN   AllowGraphicsMode;
 
 EFI_STATUS SwitchToGraphics (VOID);
@@ -111,7 +110,7 @@ VOID PauseForKey (VOID);
 VOID FixIconScale (VOID);
 VOID RefitDeadLoop (VOID);
 VOID TerminateScreen (VOID);
-VOID PrepareBlankLine (VOID);
+VOID BlankScreenLine (VOID);
 VOID FinishExternalScreen (VOID);
 VOID HaltSeconds (UINTN Seconds);
 VOID PauseSeconds (UINTN Seconds);
@@ -144,6 +143,10 @@ VOID BeginExternalScreen (
     IN CHAR16  *Title
 );
 VOID PrintUglyText (
+    IN CHAR16 *Text,
+    IN UINTN   PositionCode
+);
+VOID ShowErrorUglyText (
     IN CHAR16 *Text,
     IN UINTN   PositionCode
 );

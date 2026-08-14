@@ -8,10 +8,10 @@
 
 **/
 /**
- * Modified for RefindPlus
- * Copyright (c) 2021-2023 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * Modifications distributed under the preceding terms.
+** Modified for RefindPlus
+** Copyright (c) 2021-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** Modifications distributed under the preceding terms.
 **/
 
 #ifndef _EFI_NVM_EXPRESS_H_

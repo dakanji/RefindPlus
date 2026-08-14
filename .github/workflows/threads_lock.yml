@@ -3,16 +3,22 @@ name: 'Threads Lock'
 on:
   workflow_dispatch:
     inputs:
-      job_id:
-        description: 'Job ID'
-        type: string
+      job_type:
+        description: 'Type to Lock'
+        type: choice
         required: true
-        default: 'all'
+        default: 'lock-any'
+        options:
+          - 'lock-any'
+          - 'lock-issues'
+          - 'lock-discussions'
+          - 'lock-pull-requests'
   schedule:
     - cron: '15 15 */3 * *'
 
 permissions:
   issues: write
+  discussions: write
   pull-requests: write
 
 concurrency:
@@ -21,14 +27,14 @@ concurrency:
 # Lock Threads - https://github.com/dessant/lock-threads
 jobs:
   lock-threads-01:
-    name: Lock Misc Issues
+    name: Lock Issue Threads
     runs-on: ubuntu-latest
 
     if: |
       github.repository == 'RefindPlusRepo/RefindPlus' && (
-        github.event_name == 'schedule' ||
-        github.event.inputs.job_id == 'all' ||
-        github.event.inputs.job_id == 'lock'
+        github.event_name == 'schedule'            ||
+        github.event.inputs.job_type == 'lock-any' ||
+        github.event.inputs.job_type == 'lock-issues'
       )
     steps:
       - id: app-token
@@ -40,12 +46,12 @@ jobs:
       - name: Repository Checkout
         uses: actions/checkout@v6
 
-      - name: Handle Rate Limits_01
+      - name: Handle Issue Rate Limits_01
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_01
+      - name: Handle Issue Thread Lock_01
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -60,12 +66,12 @@ jobs:
             Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Handle Rate Limits_02
+      - name: Handle Issue Rate Limits_02
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_02
+      - name: Handle Issue Thread Lock_02
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -80,12 +86,12 @@ jobs:
             Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Handle Rate Limits_03
+      - name: Handle Issue Rate Limits_03
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_03
+      - name: Handle Issue Thread Lock_03
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -100,12 +106,12 @@ jobs:
             Trigger: Apparent Abandonment.
           process-only: 'issues'
 
-      - name: Handle Rate Limits_04
+      - name: Handle Issue Rate Limits_04
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_04
+      - name: Handle Issue Thread Lock_04
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -120,12 +126,12 @@ jobs:
             Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Handle Rate Limits_05
+      - name: Handle Issue Rate Limits_05
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_05
+      - name: Handle Issue Thread Lock_05
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -141,29 +147,12 @@ jobs:
             Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
 
-      - name: Handle Rate Limits_06
+      - name: Handle Issue Rate Limits_06
         uses: ./.github/actions/handle-rate-limits
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Handle Thread Lock_06
-        uses: dessant/lock-threads@v6
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          pr-lock-reason: 'resolved'
-          add-pr-labels: ''
-          pr-inactive-days: '2'
-          include-any-pr-labels: 'Accepted, Declined'
-          remove-pr-labels: ''
-          pr-comment: ''
-          process-only: 'prs'
-
-      - name: Handle Rate Limits_07
-        uses: ./.github/actions/handle-rate-limits
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Handle Thread Lock_07
+      - name: Handle Issue Thread Lock_06
         uses: dessant/lock-threads@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
@@ -177,3 +166,77 @@ jobs:
 
             Please use the [Discussions Feature](https://github.com/RefindPlusRepo/RefindPlus/discussions?discussions_q=sort%3Adate_created) for follow-on discussion or raise a new issue if appropriate.
           process-only: 'issues'
+
+
+  lock-threads-02:
+    name: Lock PR Threads
+    runs-on: ubuntu-latest
+
+    if: |
+      github.repository == 'RefindPlusRepo/RefindPlus' && (
+        github.event_name == 'schedule'            ||
+        github.event.inputs.job_type == 'lock-any' ||
+        github.event.inputs.job_type == 'lock-pull-requests'
+      )
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Repository Checkout
+        uses: actions/checkout@v6
+
+      - name: Handle PR Rate Limits_01
+        uses: ./.github/actions/handle-rate-limits
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Handle PR Thread Lock_01
+        uses: dessant/lock-threads@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          pr-lock-reason: 'resolved'
+          add-pr-labels: ''
+          pr-inactive-days: '2'
+          include-any-pr-labels: 'Accepted, Declined'
+          remove-pr-labels: ''
+          pr-comment: ''
+          process-only: 'prs'
+
+
+  lock-threads-03:
+    name: Lock Discussion Threads
+    runs-on: ubuntu-latest
+
+    if: |
+      github.repository == 'RefindPlusRepo/RefindPlus' && (
+        github.event_name == 'schedule' ||
+        github.event.inputs.job_type == 'lock-any' ||
+        github.event.inputs.job_type == 'lock-discussions'
+      )
+    steps:
+      - id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Repository Checkout
+        uses: actions/checkout@v6
+
+      - name: Handle Discussion Rate Limits_01
+        uses: ./.github/actions/handle-rate-limits
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Handle Discussion Thread Lock_01
+        uses: dessant/lock-threads@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          discussion-inactive-days: '120'
+          exclude-discussion-created-before: '2026-07-01T00:00:00Z'
+          include-any-discussion-labels: ''
+          exclude-any-discussion-labels: ''
+          process-only: 'discussions'

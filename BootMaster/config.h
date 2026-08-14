@@ -74,6 +74,29 @@ typedef struct {
 
 // Note: Combined with misc 'XYZ_FILES' items to create default
 #if defined (EFIX64)
+#   define SP_FILES \
+L"refind_x64_REL.efi,refind_x64_DBG.efi,refind_x64_NPT.efi,\
+x64_RefindPlus_REL.efi,x64_RefindPlus_DBG.efi,x64_RefindPlus_NPT.efi, \
+REL-OpenCore.efi,DBG-OpenCore.efi,BOOTx64-REL.efi,BOOTx64-DBG.efi,BOOTx64-NPT.efi"
+#elif defined(EFI32)
+#   define SP_FILES \
+L"refind_ia32_REL.efi,refind_ia32_DBG.efi,refind_ia32_NPT.efi,\
+ia32_RefindPlus_REL.efi,ia32_RefindPlus_DBG.efi,ia32_RefindPlus_NPT.efi, \
+REL-OpenCore.efi,DBG-OpenCore.efi,BOOTx64-REL.efi,BOOTx64-DBG.efi,BOOTx64-NPT.efi"
+#elif defined(EFIAARCH64)
+#   define SP_FILES \
+L"refind_aa64_REL.efi,refind_aa64_DBG.efi,refind_aa64_NPT.efi,\
+aa64_RefindPlus_REL.efi,aa64_RefindPlus_DBG.efi,aa64_RefindPlus_NPT.efi, \
+REL-OpenCore.efi,DBG-OpenCore.efi,BOOTx64-REL.efi,BOOTx64-DBG.efi,BOOTx64-NPT.efi"
+#else
+#   define SP_FILES \
+L"refind_REL.efi,refind_DBG.efi,refind_NPT.efi,\
+RefindPlus_REL.efi,RefindPlus_DBG.efi,RefindPlus_NPT.efi, \
+REL-OpenCore.efi,DBG-OpenCore.efi,BOOTx64-REL.efi,BOOTx64-DBG.efi,BOOTx64-NPT.efi"
+#endif
+
+// Note: Combined with misc 'XYZ_FILES' items to create default
+#if defined (EFIX64)
 #define DONT_SCAN_FILES \
 L"shim.efi,shimx64.efi,shim-fedora.efi,shim-centos.efi,PreLoader.efi,fb.efi,fbx64.efi"
 #elif defined(EFI32)

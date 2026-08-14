@@ -28,6 +28,9 @@ jobs:
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Drop - Apparent - Bot'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -37,67 +40,44 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: part_02
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item appears to largely be LLM Bot data.
-            This item cannot be entertained at this time.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          This item appears to largely be LLM Bot data.
+          This item cannot be entertained at this time.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       - id: part_03
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'ChatBot, Dropped'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'ChatBot,Dropped'
 
       - id: part_04
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
 
       - id: part_05
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
       - id: part_06
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
-      - id: part_07
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const issueNumber = context.payload.inputs.item_id;
-            const { data } = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
       # Set NodeJS Up - https://github.com/actions/setup-node
-      - id: part_08
+      - id: part_07
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - id: part_09
+      - id: part_08
         env:
           ENV_TOKEN: ${{ steps.app-token.outputs.token }}
           ENV_REPO: ${{ github.repository }}
@@ -120,6 +100,9 @@ jobs:
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Drop - Upstream - File'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -129,70 +112,47 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: part_02
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            You appear to be running an upstream based instance.
-            `RefindPlus` was forked from upstream but is not `rEFind`.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          You appear to be running an upstream based instance.
+          `RefindPlus` was forked from upstream but is not `rEFind`.
 
-            > [!IMPORTANT]
-            > Only items related to RefindPlus can be considered here.
+          > [!IMPORTANT]
+          > Only items related to RefindPlus can be considered here.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       - id: part_03
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Dropped, Upstream'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped,Upstream'
 
       - id: part_04
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Incomplete,Tagged,Stale,Queries,Enhancement'
 
       - id: part_05
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
       - id: part_06
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
-      - id: part_07
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const issueNumber = context.payload.inputs.item_id;
-            const { data } = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
       # Set NodeJS Up - https://github.com/actions/setup-node
-      - id: part_08
+      - id: part_07
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - id: part_09
+      - id: part_08
         env:
           ENV_TOKEN: ${{ steps.app-token.outputs.token }}
           ENV_REPO: ${{ github.repository }}
@@ -215,6 +175,9 @@ jobs:
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Drop - Custom - Build'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -224,72 +187,49 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: part_02
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            You appear to be running a custom build.
-            This cannot be entertained at this time.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          You appear to be running a custom build.
+          This cannot be entertained at this time.
 
-            > [!IMPORTANT]
-            > Issues found on modified/customised builds must be tested on official files/code.
-            > Should they also appear on these sources, raise issues based on official files/code.
-            > Additionally, debug logs and other similar outputs should be from official files/code.
+          > [!IMPORTANT]
+          > Issues found on modified/customised builds must be tested on official files/code.
+          > Should they also appear on these sources, raise issues based on official files/code.
+          > Additionally, debug logs and other similar outputs should be from official files/code.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       - id: part_03
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Dropped'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
       - id: part_04
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Incomplete,Tagged,Stale,Queries'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Incomplete,Tagged,Stale,Queries'
 
       - id: part_05
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
       - id: part_06
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
-      - id: part_07
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          script: |
-            const issueNumber = context.payload.inputs.item_id;
-            const { data } = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
       # Set NodeJS Up - https://github.com/actions/setup-node
-      - id: part_08
+      - id: part_07
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - id: part_09
+      - id: part_08
         env:
           ENV_TOKEN: ${{ steps.app-token.outputs.token }}
           ENV_REPO: ${{ github.repository }}

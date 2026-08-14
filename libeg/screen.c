@@ -68,9 +68,13 @@
 #include <efilib.h>
 #endif
 
+#define DEFAULT_W   (800)
+#define DEFAULT_H   (600)
+
+
 extern UINTN    AppleFramebuffers;
 extern BOOLEAN  ObtainHandleGOP;
-extern EG_PIXEL MenuBackgroundPixel;
+extern EG_PIXEL PixelMenuBG;
 
 
 // Console defines and variables
@@ -87,10 +91,10 @@ BOOLEAN egHasGraphics     = FALSE;
 BOOLEAN SetPreferUGA      = FALSE;
 BOOLEAN GotGoodGOP        = FALSE;
 
-UINTN   MinPixelsLine  =   0;
-UINTN   SelectedGOP    =   0;
-UINTN   egScreenWidth  = 800;
-UINTN   egScreenHeight = 600;
+UINTN   MinPixelsLine     =         0;
+UINTN   SelectedGOP       =         0;
+UINTN   egScreenWidth     = DEFAULT_W;
+UINTN   egScreenHeight    = DEFAULT_H;
 
 
 /**
@@ -1903,7 +1907,7 @@ VOID egInitScreen (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Determine Graphics Control Method:");
+    LOG_MSG("Determine Graphics Display Methods:");
     #endif
 
     // Get ConsoleControl Protocol
@@ -2241,7 +2245,7 @@ VOID egInitScreen (VOID) {
             } // if/else OldGop
         } // if/else Status == EFI_NOT_FOUND
 
-        if (XFlag == EFI_SUCCESS && GlobalConfig.UseDirectGop) {
+        if (XFlag == EFI_SUCCESS && GlobalConfig.DirectGOP) {
             if (GOPDraw == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (
@@ -2297,7 +2301,7 @@ VOID egInitScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
             } // if/else GOPDraw == NULL
-        } // if XFlag == (EFI_SUCCESS && GlobalConfig.UseDirectGop)
+        } // if XFlag == (EFI_SUCCESS && GlobalConfig.DirectGOP)
     } // if/else FoundHandleUGA && (SetPreferUGA || !ObtainHandleGOP)
 
     if (thisValidGOP && GOPDraw) {
@@ -3574,7 +3578,7 @@ VOID egDisplayMessage (
 
         // Erase the message
         egDisplayMessageEx (
-            Text, &MenuBackgroundPixel,
+            Text, &PixelMenuBG,
             PositionCode, TRUE, FALSE
         );
     }

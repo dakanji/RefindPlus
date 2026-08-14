@@ -2,13 +2,13 @@
 -----------------------
 - Fixes `BadRamTag` Feature
   * The `badram_tag_wide` setting was not `'ON' by Default` as intended
-    - This has now been rectified
   * This bug was introduced in v0.14.2.AE (Commit 973479b)
     - Default was not changed when repurposing the setting
 - Improves `Boot Loader Specification (BLS)` Handling
-  * `Type 1 BLS` setups are still not supported
-  * `Type 2 BLS` setups are now explicitly presented as Linux Entries
-    - These setups were previously presented as generic UEFI Entries
+  * `Type 1 BLS` setups are not yet supported
+  * `Type 2 BLS` setups were already supported
+    - These setups are now specifically presented as `Linux` entries
+    - These setups were previously presented as generic UEFI entries
     - These setups deploy `Unified Kernel Image (UKI)` efi files
 - Improves `EFI Shell` Handling
   * Now dynamically scans and filters for shell files
@@ -16,9 +16,13 @@
   * Provides flexibility in placement
 - Improves Misc `BSD OStype` Handling (Thx @seuros)
   * Better detects and loads available icons
+  * Some previously missing icons supplied or updated
 - Improves `Volume Type` Identification
   * Prefers distro name over generic `Linux Volume` when possible
   * Linux `RAID` and `Boot` volume types now separately logged
+- Improves `Default Title Banner` Handling
+  * This banner cannot be rationally scaled
+  * Therefore now always forced to `NoScale`
 - Improves `Embeddded Image` Handling
   * Enhanced embedded CleanNvram image
     - Transparent background fix

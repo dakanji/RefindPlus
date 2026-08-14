@@ -22,18 +22,18 @@ RefindPlus is a fork of _`rEFInd`_ that provides extended functionality via enha
 
 RefindPlus is particularly useful for those with additional configuration needs or that require advanced or otherwise non-standard (hence typically unavailable) options for running operating systems and uEFI utilities on Mac and PC.
 
-> `'RefindPlus'` is a single case-sensitive word. \
-> It _SHALL NOT_ be split or otherwise mutilated.
+> `RefindPlus` is a case-sensitive single word.
 >
-> Form [Standard]:- **RefindPlus** \
-> Form [Lowercase]:- **refindplus** \
-> Form [Uppercase]:- **REFINDPLUS**
+> > Standard: **RefindPlus** \
+> > Lowercase: **refindplus** \
+> > Uppercase: **REFINDPLUS**
 >
-> Form _MAY_ be abbreviated to '**RP**' or '**rp**'.
+> It _MUST NOT_ be split or mutated. \
+> It _MAY_ be abbreviated as '**RP**' or '**rp**'.
 
 Some RefindPlus Features:
 - Maintains feature and configuration parity with `Upstream v0.14.2` base.
-- Provides options to [tag faulty RAM regions as unusable](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BADRAM.md) to extend useful life.
+- Provides options to [tag faulty RAM regions](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BADRAM.md) as `unusable` to extend device life.
 - Provides protection against damage to vulnerable Mac nvRAM by UEFI Windows.
 - Emulates UEFI 2.x on EFI 1.x units to permit running UEFI 2.x utilities on such units.
 - Provides mitigation against boot failures and related issues on T2/TPM chipped units.
@@ -104,62 +104,62 @@ These tokens are included in `Section 1` of the sample RefindPlus configuration 
 
 Token | Functionality
 ----- | -----
-badram_tag_list       |Allows providing a list of faulty memory regions to be marked as `unusable`
-badram_tag_mode       |Controls whether and how faulty memory regions are managed by the program
-badram_tag_wide       |Allows first trying a simpler, and faster, process for some tag modes
-continue_on_warning   |Proceed as if a key was pressed after screen warnings (for unattended boot)
-csr_dynamic           |Actively sets or unsets Apple's `Configurable Security Restrictions (CSR)`
-csr_normalise         |Removes the `APPLE_INTERNAL` CSR bit, when present, to permit OTA updates
-decline_help_icon     |Disables feature that may improve loading speed by preferring generic icons
-decline_help_size     |Disables feature that sets additional UI scaling for very high DPI screens
-decline_help_text     |Disables feature that sets screen text to complementary colours
-decouple_key_f10      |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
-disable_apfs_load     |Disables inbuilt provision of APFS filesystem capability
-disable_apfs_sync     |Disables feature allowing direct APFS/FileVault boot (without "PreBoot")
-disable_check_amfi    |Disables AMFI checks on Mac OS
-disable_check_compat  |Disables Mac OS version compatibility checks
-disable_exitlogo_clear|Disables clearing displayed exit logo images on exit screens
-disable_exitlogo_image|Disables display of exit logo images on exit screens
-disable_exitlogo_scale|Disables scaling displayed exit logo images on exit screens
-disable_pass_gop_thru |Disables feature that provides GOP instance on UGA for some loading screens
-disable_legacy_sync   |Disables detailed indentification of Mac legacy BIOS boot capability
-disable_nvram_paniclog|Disables logging Mac OS kernel panics to nvRAM
-disable_nvram_protect |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
-disable_reload_gop    |Disables UEFI 2.x GOP OptionROM activation fix for EFI 1.x units
-disable_rescan_dxe    |Disables scanning for newly revealed DXE drivers when connecting handles
-disable_set_applefb   |Disables conditional provision of missing Apple framebuffers on Macs
-disable_set_consolegop|Disables feature that fixes some issues with GOP graphics on legacy units
-enable_esp_filter     |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
-force_trim            |Allows forcing `TRIM` on Third-Party SSDs on Macs
-hidden_icons_external |Allows scanning for `.VolumeIcon` icons on external volumes
-hidden_icons_ignore   |Disables scanning for `.VolumeIcon` image icons if not required
-hidden_icons_prefer   |Prioritises `.VolumeIcon` and `.VolumeBadge` image icons when available
-icon_row_move         |Repositions the main screen icon rows (vertically)
-icon_row_tune         |Fine tunes the resulting `icon_row_move` outcome
-mitigate_primed_buffer|Allows enhanced intervention to handle apparent primed keystroke buffers
-nvram_protect_ex      |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
-nvram_variable_limit  |Limits nvRAM write attempts to the specified variable size
-pass_uga_through      |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
-persist_boot_args     |Overrides using vRAM (instead of nvRAM) for Mac OS boot argument items
-prefer_uga            |Prefers UGA use (when available) regardless of GOP availability
-ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
-renderer_direct_gop   |Provides a potentially improved GOP instance for certain GPUs
-renderer_text         |Provides a text renderer for text output when otherwise unavailable
-scale_ui              |Provides control of UI element scaling
-screen_rgb            |Allows setting arbitrary screen background colours
-set_boot_args         |Allows setting arbitrary Mac OS boot arguments
-supply_nvme           |Enables an inbuilt NvmExpress driver
-supply_uefi           |Enables feature that emulates UEFI 2.x support on EFI 1.x units
-sync_nvram            |Resets nvRAM settings, such as BlueTooth, on some boot types if required
-sync_trust            |Works around some `Boot Chain of Trust` issues with T2/TPM chipped units
-transient_boot        |Disables feature that selects the last booted loader by default
-unicode_collation     |Provides fine tuned support for languages that require unicode text
+badram_tag_list        |Allows providing a list of faulty memory regions to be marked as `unusable`
+badram_tag_mode        |Controls whether and how faulty memory regions are managed by the program
+badram_tag_wide        |Allows first trying a simpler, and faster, process for some tag modes
+continue_on_warning    |Proceed as if a key was pressed after screen warnings (for unattended boot)
+csr_dynamic            |Actively sets or unsets Apple's `Configurable Security Restrictions (CSR)`
+csr_normalise          |Removes the `APPLE_INTERNAL` CSR bit, when present, to permit OTA updates
+decline_help_icon      |Disables feature that may improve loading speed by preferring generic icons
+decline_help_size      |Disables feature that sets additional UI scaling for very high DPI screens
+decline_help_text      |Disables feature that sets screen text to complementary colours
+decouple_key_f10       |Unmaps the `F10` key from native screenshots (the `\` key remains mapped)
+disable_apfs_load      |Disables inbuilt provision of APFS filesystem capability
+disable_apfs_sync      |Disables feature allowing direct APFS/FileVault boot (without "PreBoot")
+disable_check_amfi     |Disables AMFI checks on Mac OS
+disable_check_compat   |Disables Mac OS version compatibility checks
+disable_exitlogo_clear |Disables clearing displayed exit logo images on exit screens
+disable_exitlogo_image |Disables display of exit logo images on exit screens
+disable_exitlogo_scale |Disables scaling displayed exit logo images on exit screens
+disable_pass_gop_thru  |Disables feature that provides GOP instance on UGA for some loading screens
+disable_legacy_sync    |Disables detailed indentification of Mac legacy BIOS boot capability
+disable_nvram_paniclog |Disables logging Mac OS kernel panics to nvRAM
+disable_nvram_protect  |Disables blocking of potentially harmful write attempts to Legacy Mac nvRAM
+disable_reload_gop     |Disables UEFI 2.x GOP OptionROM activation fix for EFI 1.x units
+disable_rescan_dxe     |Disables scanning for newly revealed DXE drivers when connecting handles
+disable_set_applefb    |Disables conditional provision of missing Apple framebuffers on Macs
+disable_set_consolegop |Disables feature that fixes some issues with GOP graphics on legacy units
+enable_esp_filter      |Prevents other ESPs other than the RefindPlus ESP being scanned for loaders
+force_trim             |Allows forcing `TRIM` on Third-Party SSDs on Macs
+hidden_icons_external  |Allows scanning for `.VolumeIcon` icons on external volumes
+hidden_icons_ignore    |Disables scanning for `.VolumeIcon` image icons if not required
+hidden_icons_prefer    |Prioritises `.VolumeIcon` and `.VolumeBadge` image icons when available
+icon_row_move          |Repositions the main screen icon rows (vertically)
+icon_row_tune          |Fine tunes the resulting `icon_row_move` outcome
+mitigate_primed_buffer |Allows enhanced intervention to handle apparent primed keystroke buffers
+nvram_protect_ex       |Extends `NvramProtect`, if set, to Mac OS and `unknown` UEFI boots
+nvram_variable_limit   |Limits nvRAM write attempts to the specified variable size
+pass_uga_through       |Provides UGA instance on GOP to permit EFI Boot with modern GPUs
+persist_boot_args      |Overrides using vRAM (instead of nvRAM) for Mac OS boot argument items
+prefer_uga             |Prefers UGA use (when available) regardless of GOP availability
+ransom_drives          |Frees partitions locked by how certain firmware load inbuilt drivers
+renderer_direct_gop    |Provides a potentially improved GOP instance for certain GPUs
+renderer_text          |Provides a text renderer for text output when otherwise unavailable
+scale_ui               |Provides control of UI element scaling
+screen_rgb             |Allows setting arbitrary screen background colours
+set_boot_args          |Allows setting arbitrary Mac OS boot arguments
+supply_nvme            |Enables an inbuilt NvmExpress driver
+supply_uefi            |Enables feature that emulates UEFI 2.x support on EFI 1.x units
+sync_nvram             |Resets nvRAM settings, such as BlueTooth, on some boot types if required
+sync_trust             |Works around some `Boot Chain of Trust` issues with T2/TPM chipped units
+transient_boot         |Disables feature that selects the last booted loader by default
+unicode_collation      |Provides fine tuned support for languages that require unicode text
 
 ## Modified Functionality
 
-In addition to the new functionality listed above, the following upstream config tokens have been modified:
-- **"timeout":** The RefindPlus default is no timeout unless explicitly set via this config token.
-- **"use_nvram":** Variable storage is on the filesystem, not the nvRAM chip, unless explicitly set to do so via this config token.
+In addition to the new functionality listed above, the following upstream tokens have been modified:
+- **"timeout":** The RefindPlus default is no timeout unless explicitly set.
+- **"use_nvram":** Variable storage is on the filesystem, not the nvRAM chip, unless explicitly set.
 - **"use_graphics_for":** Additional options added:
   - `tools` option to _enable_ graphics mode loading for such.
   - `none` option to _disable_ graphics mode loading for everything.
@@ -207,10 +207,10 @@ Significant visible implementation differences vis-a-vis the upstream base are:
   - > This stub support is only used for debug logging in RefindPlus and can be activated using the same `support_gzipped_loaders` setting as upstream.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size.
   - > Additionally, the file naming is different and files are always saved to the same ESP as RefindPlus.
-- **UI Flags:** RefindPlus requires that any desired previously set `hideui` setting options are explicitly defined in supplementary/theme configuration files; as whenever the token is found in such files, the token setting is reset by RefindPlus to the specified option(s). The upstream implementation effectively adds new settings to any previously existing ones for this config token instead.
-  - > RefindPlus maintains consistency with how other config tokens are handled.
+- **UI Flags:** RefindPlus requires that any desired previously set `hideui` setting options are explicitly defined in supplementary/theme configuration files; as whenever the token is found in such files, the token setting is reset by RefindPlus to the specified option(s). The upstream implementation effectively adds new settings to any previously existing ones for this token instead.
+  - > RefindPlus maintains consistency with how other tokens are handled.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-specific `scale_ui` setting is set to automatically detect the screen resolution. RefindPlus also scales UI elements down when low resolution screens (less than 1025px on the longest edge) are detected.
-  - > Additionally, UI elements on extremely high resultion screens (greater than 5999px on the longest edge) receive a `4X scaling` as opposed to the `2X scaling` applied for standard HiDPI screens.
+  - > Additionally, UI elements on extremely high resolution screens (greater than 5999px on the longest edge) receive a `4X scaling` as opposed to the `2X scaling` applied for standard HiDPI screens.
 - **Loader Icons:** RefindPlus prefers `os_windows`/`boot_windows` icon files, if present, over `os_win`/`boot_win` files (and `win8` variants). Separately, RefindPlus prefers generic OS icons over custom icons by default (improves load speed). The upstream icon search implementation involves loading generic OS icons only if a search for custom icons has returned empty.
   - > Activate the RefindPlus-specific `decline_help_icon` setting to keep the upstream implementation.
 - **GOP OptionROM Provision:** RefindPlus attempts to ensure that GOP is available, to permit using modern GPUs on on EFI 1.x units, by amending the `UEFI System Table` and reloading the GOP OptionROM from the GPU. This is via an inbuilt `ReloadGOP` feature.

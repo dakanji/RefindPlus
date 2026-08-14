@@ -44,6 +44,12 @@ jobs:
     name: Issue - Resolve - Enhance
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
+      COMMIT_REF: ${{ github.event.inputs.commit_ref }}
+      MORE_INFO: ${{ github.event.inputs.more_info }}
+
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -52,8 +58,9 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+      # Check if the issue is already closed
       - id: issue-get-state
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -68,6 +75,7 @@ jobs:
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_ENV, `isclosed=${isClosed}\n`);
 
+      # Get latest release tag (only if show_build_msg is Yes)
       - if: ${{ github.event.inputs.show_build_msg == 'Yes' }}
         id: part_2_1a
         uses: oprypin/find-latest-tag@v1
@@ -76,133 +84,130 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           releases-only: true
 
-      - if: |
-         github.event.inputs.show_build_msg == 'Yes' &&
-         github.event.inputs.show_more_info == 'Yes' &&
-         github.event.inputs.type_more_info == 'Note'
-        id: part_2_1b
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.\
-            See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
+      # ── Comment Variants ──────────────────────────────────────────
+      - name: Create comment (build_msg=Yes, note)
+        if: |
+          github.event.inputs.show_build_msg == 'Yes' &&
+          github.event.inputs.show_more_info == 'Yes' &&
+          github.event.inputs.type_more_info == 'Note'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ steps.part_2_1a.outputs.tag }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo "The current release version is **${TAG}**."
+            echo "See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases."
+            echo ""
+            echo "> [!NOTE]"
+            echo "> ${MORE_INFO}"
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-            > [!NOTE]
-            > ${{ github.event.inputs.more_info }}
+      - name: Create comment (build_msg=Yes, caution)
+        if: |
+          github.event.inputs.show_build_msg == 'Yes' &&
+          github.event.inputs.show_more_info == 'Yes' &&
+          github.event.inputs.type_more_info == 'Caution'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ steps.part_2_1a.outputs.tag }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo "The current release version is **${TAG}**."
+            echo "See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases."
+            echo ""
+            echo "> [!CAUTION]"
+            echo "> ${MORE_INFO}"
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-            Thank you for taking the time to suggest improvements to RefindPlus.
+      - name: Create comment (build_msg=Yes, no more_info)
+        if: |
+          github.event.inputs.show_build_msg == 'Yes' &&
+          github.event.inputs.show_more_info == 'No'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ steps.part_2_1a.outputs.tag }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo "The current release version is **${TAG}**."
+            echo "See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases."
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-      - if: |
-         github.event.inputs.show_build_msg == 'Yes' &&
-         github.event.inputs.show_more_info == 'Yes' &&
-         github.event.inputs.type_more_info == 'Caution'
-        id: part_2_1c
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.\
-            See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
+      - name: Create comment (build_msg=No, note)
+        if: |
+          github.event.inputs.show_build_msg == 'No' &&
+          github.event.inputs.show_more_info == 'Yes' &&
+          github.event.inputs.type_more_info == 'Note'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo ""
+            echo "> [!NOTE]"
+            echo "> ${MORE_INFO}"
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-            > [!CAUTION]
-            > ${{ github.event.inputs.more_info }}
+      - name: Create comment (build_msg=No, caution)
+        if: |
+          github.event.inputs.show_build_msg == 'No' &&
+          github.event.inputs.show_more_info == 'Yes' &&
+          github.event.inputs.type_more_info == 'Caution'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo ""
+            echo "> [!CAUTION]"
+            echo "> ${MORE_INFO}"
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-            Thank you for taking the time to suggest improvements to RefindPlus.
+      - name: Create comment (build_msg=No, no more_info)
+        if: |
+          github.event.inputs.show_build_msg == 'No' &&
+          github.event.inputs.show_more_info == 'No'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          {
+            echo "This item was addressed by Commit ${COMMIT_REF} towards the next RefindPlus release."
+            echo ""
+            echo "Thank you for taking the time to suggest improvements to RefindPlus."
+          } > /tmp/comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file /tmp/comment-body.md
 
-      - if: |
-         github.event.inputs.show_build_msg == 'Yes' &&
-         github.event.inputs.show_more_info == 'No'
-        id: part_2_1d
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.\
-            The current release version is **${{ steps.part_2_1a.outputs.tag }}**.\
-            See [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to access functionality ahead of releases.
+      # ── Label Management ──────────────────────────────────────────
+      - name: Add Resolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Resolved'
 
-            Thank you for taking the time to suggest improvements to RefindPlus.
+      - name: Remove unwanted labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Accepted,Unresolved,Not-Planned,Invalid,Triage,Queries,Noted,No-Log'
 
-      - if: |
-         github.event.inputs.show_build_msg == 'No' &&
-         github.event.inputs.show_more_info == 'Yes' &&
-         github.event.inputs.type_more_info == 'Note'
-        id: part_2_2a
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
-
-            > [!NOTE]
-            > ${{ github.event.inputs.more_info }}
-
-            Thank you for taking the time to suggest improvements to RefindPlus.
-
-      - if: |
-         github.event.inputs.show_build_msg == 'No' &&
-         github.event.inputs.show_more_info == 'Yes' &&
-         github.event.inputs.type_more_info == 'Caution'
-        id: part_2_2b
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
-
-            > [!CAUTION]
-            > ${{ github.event.inputs.more_info }}
-
-            Thank you for taking the time to suggest improvements to RefindPlus.
-
-      - if: |
-         github.event.inputs.show_build_msg == 'No' &&
-         github.event.inputs.show_more_info == 'No'
-        id: part_2_2c
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item was addressed by Commit ${{ github.event.inputs.commit_ref }} towards the next RefindPlus release.
-
-            Thank you for taking the time to suggest improvements to RefindPlus.
-
-      - id: part_3_1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Resolved'
-
-      - id: part_3_2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Accepted,Unresolved,Not-Planned,Invalid,Triage,Queries,Noted,No-Log'
-
-      - if: ${{ env.isclosed == 'false' }}
-        id: part_4
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      # ── Close Issue (if open) ─────────────────────────────────────
+      - name: Close issue (if not already closed)
+        if: env.isclosed == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"

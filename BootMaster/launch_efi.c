@@ -722,21 +722,7 @@ EFI_STATUS StartEFIImage (
     #endif
 
     if (Verbose) {
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_SET;
-        #endif
-        REFIT_CALL_2_WRAPPER(
-            gST->ConOut->SetAttribute,
-            gST->ConOut, ATTR_ERROR
-        );
-        PrintUglyText (MsgStr, NEXTLINE);
-        REFIT_CALL_2_WRAPPER(
-            gST->ConOut->SetAttribute,
-            gST->ConOut, ATTR_BASIC
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
-        #endif
+        ShowErrorUglyText (MsgStr, NEXTLINE);
     }
 
     MY_FREE_POOL(MsgStr);
@@ -1249,16 +1235,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     LOG_MSG("\n\n");
     #endif
 
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut, ATTR_ERROR
-    );
-    PrintUglyText (MsgStr, NEXTLINE);
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut, ATTR_BASIC
-    );
-
+    ShowErrorUglyText (MsgStr, NEXTLINE);
     PauseForKey();
 
     MY_FREE_POOL(MsgStr);
@@ -1270,10 +1247,6 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 VOID RebootIntoLoader (
     LOADER_ENTRY *Entry
 ) {
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    #endif
-
     EFI_STATUS  Status;
     CHAR16     *TmpStr;
     CHAR16     *MsgStr;
@@ -1308,22 +1281,9 @@ VOID RebootIntoLoader (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG_MSG("\n\n");
-
-        MY_MUTELOGGER_SET;
-        #endif
-        REFIT_CALL_2_WRAPPER(
-            gST->ConOut->SetAttribute,
-            gST->ConOut, ATTR_ERROR
-        );
-        PrintUglyText (MsgStr, NEXTLINE);
-        REFIT_CALL_2_WRAPPER(
-            gST->ConOut->SetAttribute,
-            gST->ConOut, ATTR_BASIC
-        );
-        #if REFIT_DEBUG > 0
-        MY_MUTELOGGER_OFF;
         #endif
 
+        ShowErrorUglyText (MsgStr, NEXTLINE);
         PauseForKey();
         MY_FREE_POOL(MsgStr);
 
@@ -1353,22 +1313,9 @@ VOID RebootIntoLoader (
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
     RET_TAG();
-
-    MY_MUTELOGGER_SET;
-    #endif
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut, ATTR_ERROR
-    );
-    PrintUglyText (MsgStr, NEXTLINE);
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut, ATTR_BASIC
-    );
-    #if REFIT_DEBUG > 0
-    MY_MUTELOGGER_OFF;
     #endif
 
+    ShowErrorUglyText (MsgStr, NEXTLINE);
     PauseForKey();
 
     MY_FREE_POOL(MsgStr);
@@ -1422,10 +1369,6 @@ VOID StartLoader (
 VOID StartTool (
     IN LOADER_ENTRY *Entry
 ) {
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    #endif
-
     EFI_STATUS  Status;
     BOOLEAN     IsVerbose;
     BOOLEAN     IsRecovAPFS;
@@ -1497,22 +1440,9 @@ VOID StartTool (
             LOG_MSG("\n");
             LOG_MSG("** WARN: %s", MsgStr);
             LOG_MSG("\n\n");
-
-            MY_MUTELOGGER_SET;
-            #endif
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_ERROR
-            );
-            PrintUglyText (MsgStr, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_BASIC
-            );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
             #endif
 
+            ShowErrorUglyText (MsgStr, NEXTLINE);
             PauseForKey();
         } // if EFI_ERROR(Status)
     } // if/else !IsRecovAPFS

@@ -619,8 +619,16 @@ UINTN ScanDriverDir (
                 &ProtocolGuidArray, &ArrayCount
             );
             if (!EFI_ERROR(XStatus)) {
-                for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
-                    if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
+                for (
+                    ProtocolIndex = 0;
+                    ProtocolIndex < ArrayCount;
+                    ProtocolIndex++
+                ) {
+                    if (CompareGuid (
+                            ProtocolGuidArray[ProtocolIndex],
+                            &gEfiDriverBindingProtocolGuid
+                        )
+                    ) {
                         DriverBindingFlag = TRUE;
                         break;
                     }
@@ -657,9 +665,9 @@ UINTN ScanDriverDir (
         #if REFIT_DEBUG > 0
         LOG_MSG(
             "%s  - %r ... uEFI Driver:- '%s'",
-            (GlobalConfig.LogLevel <= LOGLEVELMAX)
-                ? OffsetNext
-                : L"",
+            (
+                GlobalConfig.LogLevel <= LOGLEVELMAX
+            ) ? OffsetNext : L"",
             Status, FileName
         );
         BRK_MAX("\n");
@@ -670,7 +678,9 @@ UINTN ScanDriverDir (
 
     Status = DirIterClose (&DirIter);
     if (EFI_ERROR(Status) && Status != EFI_NOT_FOUND) {
-        ErrMsg = PoolPrint (L"While Scanning the '%s' Directory for uEFI Drivers", Path);
+        ErrMsg = PoolPrint (
+            L"While Scanning the '%s' Directory for uEFI Drivers", Path
+        );
         CheckError (Status, ErrMsg);
         MY_FREE_POOL(ErrMsg);
     }
@@ -714,7 +724,11 @@ UINTN LoadDriversHelper (
         MergeStrings (&BaseDirectory, Directory, L'\\');
     }
 
-    CurFound = ScanDriverDir (BaseDirectory, DriversListUser);
+    CurFound = ScanDriverDir (
+        BaseDirectory,
+        DriversListUser
+    );
+
     #if REFIT_DEBUG > 0
     if (CurFound == 0) {
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -725,10 +739,11 @@ UINTN LoadDriversHelper (
         );
         LOG_MSG(
             "%s  - %s",
-            (GlobalConfig.LogLevel <= LOGLEVELMAX)
-                ? OffsetNext : L"",
-                MsgNotFound
-            );
+            (
+                GlobalConfig.LogLevel <= LOGLEVELMAX
+            ) ? OffsetNext : L"",
+            MsgNotFound
+        );
     }
     #endif
 
@@ -777,9 +792,13 @@ BOOLEAN LoadDrivers (VOID) {
     #if REFIT_DEBUG > 0
     // Load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
-    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Load Provided Drivers in Program Default Folder");
+    ALT_LOG(1, LOG_THREE_STAR_SEP,
+        L"Load Provided Drivers in Program Default Folder"
+    );
     LOG_MSG("\n\n");
-    LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
+    LOG_MSG(
+        "L O A D   P R O V I D E D   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R"
+    );
     BRK_MAX("\n");
     #endif
 
@@ -816,9 +835,13 @@ BOOLEAN LoadDrivers (VOID) {
     DriversListUser = NULL;
     if (GlobalConfig.DriverDirs) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_SEP, L"Load Provided Drivers in User Defined Folders");
+        ALT_LOG(1, LOG_THREE_STAR_SEP,
+            L"Load Provided Drivers in User Defined Folders"
+        );
         LOG_MSG("\n\n");
-        LOG_MSG("L O A D   P R O V I D E D   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
+        LOG_MSG(
+            "L O A D   P R O V I D E D   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S"
+        );
         BRK_MAX("\n");
         #endif
 

@@ -16,6 +16,10 @@ jobs:
   handle-labels:
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -26,12 +30,9 @@ jobs:
       # Accepted: PR Merged
       - if: github.event.pull_request.merged == true
         id: add-labels-accepted
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.pull_request.number }}
-          labels: 'Accepted'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr edit "$PR_NUMBER" --add-label 'Accepted'
 
       # Declined: Maintainer/Bot Closed Contributor PR
       - if: >-
@@ -39,29 +40,20 @@ jobs:
           github.event.pull_request.user.login != github.actor &&
           (github.actor == 'refindplusrepo[bot]' || github.actor == 'dakanji')
         id: add-labels-declined
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.pull_request.number }}
-          labels: 'Declined'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr edit "$PR_NUMBER" --add-label 'Declined'
 
       # Withdrawn: PR Author Closed PR Themselves
       - if: >-
           !github.event.pull_request.merged &&
           github.event.pull_request.user.login == github.actor
         id: add-labels-withdrawn
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.pull_request.number }}
-          labels: 'Withdrawn'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr edit "$PR_NUMBER" --add-label 'Withdrawn'
 
       - id: remove-labels
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.pull_request.number }}
-          labels: 'Triage,Queries,Pending,Prorogued'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr edit "$PR_NUMBER" --remove-label 'Triage,Queries,Pending,Prorogued'

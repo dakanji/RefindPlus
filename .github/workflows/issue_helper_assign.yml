@@ -23,12 +23,15 @@ concurrency:
 
 jobs:
 
-  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  # Misc Issue Items
   add_assignees:
     name: Assignment - Self - Add
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Assignment - Self - Add'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -36,18 +39,18 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-assignees'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          assignees: ${{ github.actor }}
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-assignee "${{ github.actor }}"
 
   remove_assignees:
     name: Assignment - Self - Remove
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Assignment - Self - Remove'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -55,9 +58,6 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-assignees'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          assignees: ${{ github.actor }}
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-assignee "${{ github.actor }}"

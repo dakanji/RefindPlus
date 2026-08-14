@@ -55,9 +55,9 @@ Attempting the faster `Mode 1` protocols first allows skipping the `Modes 2to9` 
 > [!CAUTION]
 >
 > The default `badram_tag_wide` setting is currently `0 (OFF)`. \
-> The setting _MUST_ be therefore explicitly activated if wanted. \
+> The setting _MUST_ therefore be explicitly activated if wanted. \
 > The setting _IS NOT_ active by default as intended/documented. \
-> The default has been changed for the next `RefindPlus` release.
+> The default has been fixed for the next version of `RefindPlus`.
 
 <br><br>
 
@@ -67,7 +67,7 @@ Attempting the faster `Mode 1` protocols first allows skipping the `Modes 2to9` 
 
 ## Technical Constraints
 
-The following limits are enforced to ensure system stability:
+The following limits are enforced for system stability:
 
 * **Max Ranges:** A maximum of `20` defective regions can be specified.
 * **Size Limit:** No single defective region can exceed `1.0GB` (0x040000 pages).
@@ -161,10 +161,11 @@ These outputs could potentially be passed to `LLM Bots` for conversion to a comm
 
 ### <ins>Status Report</ins>
 
-The debug log will report the status of the `BadRamTag` operation.
+The debug log reports the status of the `BadRamTag` operation:
 
 | EFI Status        | Description                                                |
 | :---              | :---                                                       |
+| Not Started       | Was not configured to tag BadRAM regions.                  |
 | Success           | All relevant memory regions successfully tagged.           |
 | Not Ready         | Failed to find issues in `Mode 1to7` BadRAM regions.       |
 | Already Started   | `Mode 8/9` automated memory scan did not find issues.      |

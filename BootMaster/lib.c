@@ -2212,8 +2212,8 @@ CHAR16 * GetVolumeNameEx (
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidSwap )) FoundName = StrDuplicate (L"Linux Swap Volume"          );
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHome )) FoundName = StrDuplicate (L"Linux Home Volume"          );
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRaid )) FoundName = StrDuplicate (L"Linux RAID Volume"          );
-            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBoot )) FoundName = StrDuplicate (L"Linux XBOOTLDR Volume"      );
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks )) FoundName = StrDuplicate (L"Linux Encrypted Volume"     );
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBoot )) FoundName = StrDuplicate (L"Linux XBOOTLDR Partition"   );
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS  )) FoundName = StrDuplicate (L"Unidentified HFS+ Partition");
             else {
                 // Try to use fs type and size as name
@@ -3396,12 +3396,12 @@ VOID ScanVolumes (VOID) {
         else if (IsStriStr (Volume->VolName, L"APFS/FileVault"           )) RoleStr = L"?* Type Entity-Container";
         else if (MyStriCmp (Volume->VolName, L"Whole Disk Volume"        )) RoleStr = L" * Type Entity-WholeDisk";
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP        )) RoleStr = L" * Part System EFI (ESP)";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux      )) RoleStr = L" * Part LinuxVolume BASE";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &gRootGuid      )) RoleStr = L" * Part LinuxVolume ROOT";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLinux      )) RoleStr = L" * Type Volume-LinuxBase";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &gRootGuid      )) RoleStr = L" * Type Volume-LinuxRoot";
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBoot       )) RoleStr = L" * Part Extended BootLdr";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHome       )) RoleStr = L" * Part LinuxVolume HOME";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidSwap       )) RoleStr = L" * Part LinuxVolume SWAP";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRaid       )) RoleStr = L" * Part LinuxVolume RAID";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHome       )) RoleStr = L" * Type Volume-LinuxHome";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidSwap       )) RoleStr = L" * Type Volume-LinuxSwap";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRaid       )) RoleStr = L" * Type Volume-LinuxRAID";
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidBasicData  )) RoleStr = L" * Type Volume-BasicData";
         else if (IsStriStr (Volume->VolName, L"Optical Disc"             )) RoleStr = L" * Type Entity-OpticDisk";
         else if (IsStriStr (PartType,        L"Apple RAID"               )) RoleStr = L" * Type Entity-AppleRAID";
@@ -3410,7 +3410,7 @@ VOID ScanVolumes (VOID) {
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD )) RoleStr = L" * Part RecoveryHD (HFS)";
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidWindowsRE  )) RoleStr = L" * Part RecoveryHD (Win)";
         else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidReservedMS )) RoleStr = L" * Part ReservedHD (Win)";
-        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks       )) RoleStr = L" * Type Encrypted Volume";
+        else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidLuks       )) RoleStr = L" * Type LUKS Encrypted"  ;
         else if (MyStriCmp (Volume->VolName, L"Unknown Volume"           )) RoleStr = L"?? Role Not Known"       ;
         else {
             // DA-TAG: Limit to TianoCore

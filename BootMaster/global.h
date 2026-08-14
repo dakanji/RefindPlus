@@ -83,7 +83,7 @@
 #define TAG_INSTALL              (17)
 #define TAG_BOOTORDER            (18)
 #define TAG_CLEAN_NVRAM          (19)
-#define NUM_TOOLS                (20)
+#define LIM_TOOLS                (20)
 // Other Tags
 #define TAG_TOOL                 (21)
 #define TAG_LOADER               (22)
@@ -95,6 +95,7 @@
 #define TAG_SPACER               (98)
 #define TAG_RETURN               (99)
 
+#define NUM_TOOLS     (LIM_TOOLS - 1)
 #define NUM_SCAN_OPTIONS         (10)
 
 // Type of Legacy Boot support detected
@@ -520,7 +521,7 @@ typedef struct {
     BOOLEAN                     PassGopThrough;
     BOOLEAN                     SetConsoleGOP;
     BOOLEAN                     ReloadGOP;
-    BOOLEAN                     UseDirectGop;
+    BOOLEAN                     DirectGOP;
     BOOLEAN                     NormaliseCSR;
     BOOLEAN                     ShutdownAfterTimeout;
     BOOLEAN                     Install;

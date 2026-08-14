@@ -95,6 +95,10 @@ BOOLEAN                FoundFontImage  =  TRUE;
     BOOLEAN            ForensicLogging = FALSE;
 #endif
 
+#define E_S(x, y) GlobalConfig.ShowTools[y] = x
+#define C_S(x, y) GlobalConfig.ShowTools[y] == x
+
+#define SKIP_SCAN(x) MergeUniqueItems (&GlobalConfig.DontScanFiles, x, L',')
 
 #if REFIT_DEBUG > 0
 static
@@ -240,70 +244,43 @@ VOID SyncDontScanDirs (VOID) {
 
 static
 VOID SyncDontScanFiles (VOID) {
-    if (GlobalConfig.DontScanFiles == NULL) {
+    if (GlobalConfig.DontScanFiles != NULL) {
+        SKIP_SCAN(DONT_SCAN_FILES);
+    }
+    else {
         GlobalConfig.DontScanFiles = StrDuplicate (
             DONT_SCAN_FILES
         );
     }
-    else {
-        MergeUniqueItems (
-            &GlobalConfig.DontScanFiles,
-            DONT_SCAN_FILES, L','
-        );
-    }
+    SKIP_SCAN(SP_FILES);
+
 
     // Handle MEMTEST_FILES in 'ScanLoaderDir'
-    // to accomodate fallback loaders.
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        SHELL_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        GDISK_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        GPTSYNC_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        NETBOOT_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        FWUPDATE_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        MOK_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        NVRAMCLEAN_FILES, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        GlobalConfig.WindowsRecoveryFiles, L','
-    );
-    MergeUniqueItems (
-        &GlobalConfig.DontScanFiles,
-        GlobalConfig.MacOSRecoveryFiles, L','
-    );
+    //   to accomodate fallback loaders.
+    SKIP_SCAN(MOK_FILES                        );
+    SKIP_SCAN(SHELL_FILES                      );
+    SKIP_SCAN(GDISK_FILES                      );
+    SKIP_SCAN(GPTSYNC_FILES                    );
+    SKIP_SCAN(NETBOOT_FILES                    );
+    SKIP_SCAN(FWUPDATE_FILES                   );
+    SKIP_SCAN(NVRAMCLEAN_FILES                 );
+    SKIP_SCAN(GlobalConfig.MacOSRecoveryFiles  );
+    SKIP_SCAN(GlobalConfig.WindowsRecoveryFiles);
 } // static VOID SyncDontScanFiles()
 
 static
 VOID SyncShowTools (VOID) {
     if (SetShowTools) {
-        return;
+        SetShowTools = FALSE;
     }
-
-    SetShowTools               =              TRUE;
-    GlobalConfig.ShowTools[0]  =         TAG_ABOUT;
-    GlobalConfig.ShowTools[1]  =        TAG_HIDDEN;
-    GlobalConfig.ShowTools[2]  =    TAG_CSR_ROTATE;
-    GlobalConfig.ShowTools[3]  =     TAG_BOOTORDER;
-    GlobalConfig.ShowTools[4]  =      TAG_SHUTDOWN;
+    else {
+        E_S(TAG_ABOUT,              0);
+        E_S(TAG_HIDDEN,             1);
+        E_S(TAG_CSR_ROTATE,         2);
+        E_S(TAG_BOOTORDER,          3);
+        E_S(TAG_SHUTDOWN,           5);
+        GlobalConfig.HiddenTags = TRUE;
+    }
 } // static VOID SyncShowTools()
 
 // Returns FALSE if *p points to the end of a token, TRUE otherwise.
@@ -439,16 +416,18 @@ VOID HandleStrings (
     }
     else {
         AddMode = FALSE;
-    }
-
-    if (!AddMode && *Target != NULL) {
         MY_FREE_POOL(*Target);
     }
 
     for (i = 1; i < TokenCount; i++) {
         if ((i != 1) || !AddMode) {
-            CleanUpPathNameSlashes (TokenList[i]);
-            MergeStrings (Target, TokenList[i], L',');
+            CleanUpPathNameSlashes (
+                TokenList[i]
+            );
+            MergeStrings (
+                Target,
+                TokenList[i], L','
+            );
         }
     }
 } // static VOID HandleStrings()
@@ -571,21 +550,18 @@ BOOLEAN HandleBoolean (
     IN CHAR16 **TokenList,
     IN UINTN    TokenCount
 ) {
-    BOOLEAN TruthValue;
-
-
-    TruthValue = TRUE;
-    if (TokenCount >= 2 &&
+    // Returns 'TRUE' without explicit 'FALSE'
+    BOOLEAN BoolVal = (
+        TokenCount >= 2 &&
         (
-            MyStriCmp (TokenList[1], L"0")   ||
-            MyStriCmp (TokenList[1], L"off") ||
-            MyStriCmp (TokenList[1], L"false")
+            MyStriCmp (TokenList[1], L"false") ||
+            MyStriCmp (TokenList[1], L"off"  ) ||
+            MyStriCmp (TokenList[1], L"0"    )
         )
-    ) {
-        TruthValue = FALSE;
-    }
+    ) ? FALSE : TRUE;
 
-    return TruthValue;
+
+    return BoolVal;
 } // static BOOLEAN HandleBoolean()
 
 // Sets the default boot loader *IF* the current time is within the
@@ -1876,7 +1852,7 @@ VOID ExitOuter (
         GlobalConfig.RansomDrives = FALSE;
 
         // Disable RescanDXE on Mac
-        // unless forced on by user
+        // Unless Forced on by User
         GlobalConfig.RescanDXE = BaseRescanDXE;
     }
     else {
@@ -1965,7 +1941,7 @@ VOID BadFlag (
     MY_FREE_POOL(MsgStr);
 } // static VOID BadFlag()
 
-// Get a single line of text from a file
+// Get a Single Line of Text From a File
 CHAR16 * ReadLine (
     IN  REFIT_FILE         *File
 ) {
@@ -1989,7 +1965,7 @@ CHAR16 * ReadLine (
         File->Encoding != ENCODING_UTF16_LE  &&
         File->Encoding != ENCODING_ISO8859_1
     ) {
-        // Early Return ... Unsupported encoding
+        // Early Return ... Unsupported Encoding
         return NULL;
     }
 
@@ -2110,7 +2086,7 @@ EFI_STATUS RefitReadFile (
     File->BufferSize =    0;
     *size            =    0;
 
-    // Read the file and allocating a buffer
+    // Read File and Allocate Buffer
     Status = REFIT_CALL_5_WRAPPER(
         BaseDir->Open, BaseDir,
         &FileHandle, FileName,
@@ -2133,7 +2109,7 @@ EFI_STATUS RefitReadFile (
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
         // DA-TAG: Invesigate This
-        //         Print and register the error
+        //         Print and Register Error
         REFIT_CALL_1_WRAPPER(
             FileHandle->Close, FileHandle
         );
@@ -2151,7 +2127,7 @@ EFI_STATUS RefitReadFile (
     );
     if (File->BufferData == NULL) {
        // DA-TAG: Invesigate This
-       //         Print and register the error
+       //         Print and Register Error
        REFIT_CALL_1_WRAPPER(
            FileHandle->Close, FileHandle
        );
@@ -2173,7 +2149,7 @@ EFI_STATUS RefitReadFile (
         MY_FREE_POOL(Message);
 
         // DA-TAG: Invesigate This
-        //         Print and register the error
+        //         Print and Register Error
         REFIT_CALL_1_WRAPPER(
             FileHandle->Close, FileHandle
         );
@@ -2190,15 +2166,15 @@ EFI_STATUS RefitReadFile (
         FileHandle->Close, FileHandle
     );
 
-    // Setup for reading
+    // Setup for Reading
     File->Current08Ptr = (CHAR8  *) File->BufferData;
     File->Current16Ptr = (CHAR16 *) File->BufferData;
     File->End08Ptr     = File->Current08Ptr +  File->BufferSize;
     File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
 
     // DA_TAG: Investigate This
-    //        Detect other encodings
-    //        Some are also implemented
+    //         Detect Other Encodings
+    //         Some are also Implemented
     //
     // Detect Encoding ... Default: Translate CHAR8 to CHAR16 1:1
     File->Encoding = ENCODING_ISO8859_1;
@@ -2462,14 +2438,17 @@ VOID ScanUserConfigured (
 
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while {Infinite}
-        }
+        } // if !EFI_ERROR(Status)
     } // if FileExists
 
     MY_FREE_FILE(File);
 
     #if REFIT_DEBUG > 0
-    CountStr = (ValidEntryCount > 0)
-        ? PoolPrint (L"%d", ValidEntryCount) : NULL;
+    CountStr = (
+        ValidEntryCount > 0
+    ) ? PoolPrint (
+        L"%d", ValidEntryCount
+    ) : NULL;
 
     if (ManualInclude) {
         LogLineType = LOG_THREE_STAR_MID;
@@ -2703,6 +2682,7 @@ VOID ReadConfig (
 
     EFI_STATUS              Status;
     REFIT_FILE             *File;
+    BOOLEAN                 DupTag;
     BOOLEAN                 DoneTool;
     BOOLEAN                 DoneManual;
     BOOLEAN                 CheckManual;
@@ -2721,13 +2701,23 @@ VOID ReadConfig (
     BOOLEAN                 DeclineSetting;
     CHAR16                **TokenList;
     CHAR16                 *Flag; // Do *NOT* Free
-    UINTN                   i, j;
+    UINTN                   i, j, k;
     UINTN                   TokenCount;
     UINTN                   InvalidEntries;
     INTN                    MaxLogLevel;
 
     static UINTN            ReadLoops = 0;
     static BOOLEAN          NotRunBefore = TRUE;
+
+
+// Macros to check strings against 'Flag'
+#define FLAG_X(x) MyStriCmp   (Flag, x)
+#define X_FLAG(x) MyStrBegins (x, Flag)
+
+// Macros to update some global config items
+#define Q_S(x) GlobalConfig.SyncTrust            |= x
+#define Q_G(x) GlobalConfig.GraphicsFor          |= x
+#define Q_H(x) GlobalConfig.HideUIFlags          |= x
 
 
 // Macros to update some static variables
@@ -2931,30 +2921,33 @@ VOID ReadConfig (
 
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                if (MyStriCmp (Flag, L"none")) {
+
+                if (FLAG_X(L"none")) {
                     // DA-TAG: Required despite earlier reset
                     //         This will always be used if in token list
                     GotNoneHideui            = TRUE;
                     GlobalConfig.HideUIFlags = HIDEUI_FLAG_NONE;
+
                     break;
                 }
-                else if (!GotHideuiAll) {
+
+                if (!GotHideuiAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
-                    if (MyStriCmp (Flag, L"all")) {
+                    if (FLAG_X(L"all")) {
                         GotHideuiAll             = TRUE;
                         GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
                     }
                     else {
                         if (0);
-                        else if (MyStriCmp (Flag, L"label"     )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
-                        else if (MyStriCmp (Flag, L"hints"     )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
-                        else if (MyStriCmp (Flag, L"banner"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
-                        else if (MyStriCmp (Flag, L"hwtest"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
-                        else if (MyStriCmp (Flag, L"arrows"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
-                        else if (MyStriCmp (Flag, L"editor"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
-                        else if (MyStriCmp (Flag, L"badges"    )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
-                        else if (MyStriCmp (Flag, L"safemode"  )) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
-                        else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
+                        else if (FLAG_X(L"label"     )) Q_H(HIDEUI_FLAG_LABEL     );
+                        else if (FLAG_X(L"hints"     )) Q_H(HIDEUI_FLAG_HINTS     );
+                        else if (FLAG_X(L"banner"    )) Q_H(HIDEUI_FLAG_BANNER    );
+                        else if (FLAG_X(L"hwtest"    )) Q_H(HIDEUI_FLAG_HWTEST    );
+                        else if (FLAG_X(L"arrows"    )) Q_H(HIDEUI_FLAG_ARROWS    );
+                        else if (FLAG_X(L"editor"    )) Q_H(HIDEUI_FLAG_EDITOR    );
+                        else if (FLAG_X(L"badges"    )) Q_H(HIDEUI_FLAG_BADGES    );
+                        else if (FLAG_X(L"safemode"  )) Q_H(HIDEUI_FLAG_SAFEMODE  );
+                        else if (FLAG_X(L"singleuser")) Q_H(HIDEUI_FLAG_SINGLEUSER);
                         else BadFlag (Flag, TokenList[0], NotRunBefore);
                     }
                 }
@@ -2998,7 +2991,7 @@ VOID ReadConfig (
 
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                if (MyStriCmp (Flag, L"none")) {
+                if (FLAG_X(L"none")) {
                     // DA-TAG: Required despite earlier resets
                     //         Takes precedence if in token list
                     GotNoneGraphicsFor       = TRUE;
@@ -3008,21 +3001,21 @@ VOID ReadConfig (
 
                 if (!GotGraphicsForAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
-                    if (MyStriCmp (Flag, L"everything")) {
+                    if (FLAG_X(L"everything")) {
                         GotGraphicsForAll        = TRUE;
                         GlobalConfig.GraphicsFor = GRAPHICS_FOR_EVERYTHING;
                     }
                     else {
                         if (0);
-                        else if (MyStriCmp (Flag, L"osx"     )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
-                        else if (MyStriCmp (Flag, L"grub"    )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
-                        else if (MyStriCmp (Flag, L"tools"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_TOOLS;
-                        else if (MyStriCmp (Flag, L"linux"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
-                        else if (MyStriCmp (Flag, L"elilo"   )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
-                        else if (MyStriCmp (Flag, L"clover"  )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
-                        else if (MyStriCmp (Flag, L"systemd" )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_SYSTEMD;
-                        else if (MyStriCmp (Flag, L"windows" )) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
-                        else if (MyStriCmp (Flag, L"opencore")) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
+                        else if (FLAG_X(L"osx"     )) Q_G(GRAPHICS_FOR_OSX     );
+                        else if (FLAG_X(L"grub"    )) Q_G(GRAPHICS_FOR_GRUB    );
+                        else if (FLAG_X(L"tools"   )) Q_G(GRAPHICS_FOR_TOOLS   );
+                        else if (FLAG_X(L"linux"   )) Q_G(GRAPHICS_FOR_LINUX   );
+                        else if (FLAG_X(L"elilo"   )) Q_G(GRAPHICS_FOR_ELILO   );
+                        else if (FLAG_X(L"clover"  )) Q_G(GRAPHICS_FOR_CLOVER  );
+                        else if (FLAG_X(L"systemd" )) Q_G(GRAPHICS_FOR_SYSTEMD );
+                        else if (FLAG_X(L"windows" )) Q_G(GRAPHICS_FOR_WINDOWS );
+                        else if (FLAG_X(L"opencore")) Q_G(GRAPHICS_FOR_OPENCORE);
                     }
                 }
             } // for
@@ -3048,7 +3041,7 @@ VOID ReadConfig (
 
             for (i = 1; i < TokenCount; i++) {
                 Flag = TokenList[i];
-                if (MyStriCmp (Flag, L"none")) {
+                if (FLAG_X(L"none")) {
                     // DA-TAG: Required despite earlier reset
                     //         This will always be used if in token list
                     GotNoneSyncTrust       = TRUE;
@@ -3058,19 +3051,19 @@ VOID ReadConfig (
 
                 if (!GotSyncTrustAll) {
                     // DA-TAG: Arranged as so to prioritise 'none' above
-                    if (MyStriCmp (Flag, L"every")) {
+                    if (FLAG_X(L"every")) {
                         GotSyncTrustAll        = TRUE;
                         GlobalConfig.SyncTrust = ENFORCE_TRUST_EVERY;
                     }
                     else {
                         if (0);
-                        else if (MyStriCmp (Flag, L"macos"   )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_MACOS;
-                        else if (MyStriCmp (Flag, L"linux"   )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_LINUX;
-                        else if (MyStriCmp (Flag, L"windows" )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_WINDOWS;
-                        else if (MyStriCmp (Flag, L"opencore")) GlobalConfig.SyncTrust |= ENFORCE_TRUST_OPENCORE;
-                        else if (MyStriCmp (Flag, L"clover"  )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_CLOVER;
-                        else if (MyStriCmp (Flag, L"similar" )) GlobalConfig.SyncTrust |= ENFORCE_TRUST_OTHERS;
-                        else if (MyStriCmp (Flag, L"verify"  )) GlobalConfig.SyncTrust |= REQUIRE_TRUST_VERIFY;
+                        else if (FLAG_X(L"macos"   )) Q_S(ENFORCE_TRUST_MACOS   );
+                        else if (FLAG_X(L"linux"   )) Q_S(ENFORCE_TRUST_LINUX   );
+                        else if (FLAG_X(L"windows" )) Q_S(ENFORCE_TRUST_WINDOWS );
+                        else if (FLAG_X(L"opencore")) Q_S(ENFORCE_TRUST_OPENCORE);
+                        else if (FLAG_X(L"clover"  )) Q_S(ENFORCE_TRUST_CLOVER  );
+                        else if (FLAG_X(L"similar" )) Q_S(ENFORCE_TRUST_OTHERS  );
+                        else if (FLAG_X(L"verify"  )) Q_S(REQUIRE_TRUST_VERIFY  );
                         else BadFlag (Flag, TokenList[0], NotRunBefore);
                     }
                 }
@@ -3334,13 +3327,6 @@ VOID ReadConfig (
             }
             #endif
 
-            if (SetShowTools) {
-                // Clear Showtools List
-                for (j = 0; j < NUM_TOOLS; j++) {
-                    GlobalConfig.ShowTools[j] = TAG_BASE;
-                } // for
-            }
-
             // DA-TAG: Resetting HiddenTags here looks strange but is valid
             //         Artificial default of 'TRUE' was a misconfig exit option
             //         This sets the real default of 'FALSE' if 'showtools' is set
@@ -3348,55 +3334,110 @@ VOID ReadConfig (
                 GlobalConfig.HiddenTags = FALSE;
             }
 
+            // Clear Showtools List
+            SetShowTools = TRUE;
+            for (j = 0; j < NUM_TOOLS; j++) {
+                if (GlobalConfig.ShowTools[j] == TAG_BASE) break;
+                E_S(TAG_BASE, j);
+            } // for
+
             DoneTool = FALSE;
             InvalidEntries = 0;
             i = j = 0;
-            while (1) {
-                // DA-TAG: Start Index is 1 Here ('i' for NUM_TOOLS/TokenList)
-                ++i;
+            while (1) { // OUTER
+                // DA-TAG: Start Index is 1 Here
+                //         'i' for LIM_TOOLS and TokenCount
+                i += 1;
 
                 if (i >= TokenCount ||
-                    i >= (NUM_TOOLS + InvalidEntries)
+                    i >= (LIM_TOOLS + InvalidEntries)
                 ) {
                     // Break Loop
                     break;
                 }
 
                 // Set Showtools Index
-                j = (DoneTool) ? j + 1 : 0;
+                j = (
+                    DoneTool
+                ) ? j + 1 : 0;
 
+                // Check for Duplicate Entries
+                k = 0;
+                DupTag = FALSE;
                 Flag = TokenList[i];
+                while (1) { // INNER
+                    if (k >= NUM_TOOLS            ||
+                        k >= TokenCount           ||
+                        GlobalConfig.ShowTools[k] == TAG_BASE
+                    ) {
+                        // Break Loop
+                        break;
+                    }
+
+                    if (0);
+                    else if (X_FLAG(L"mok_tool"        ) && C_S(TAG_MOK,          k)) DupTag = TRUE;
+                    else if (X_FLAG(L"exit"            ) && C_S(TAG_EXIT,         k)) DupTag = TRUE;
+                    else if (X_FLAG(L"about"           ) && C_S(TAG_ABOUT,        k)) DupTag = TRUE;
+                    else if (X_FLAG(L"shell"           ) && C_S(TAG_SHELL,        k)) DupTag = TRUE;
+                    else if (X_FLAG(L"gdisk"           ) && C_S(TAG_GDISK,        k)) DupTag = TRUE;
+                    else if (X_FLAG(L"reboot"          ) && C_S(TAG_REBOOT,       k)) DupTag = TRUE;
+                    else if (X_FLAG(L"gptsync"         ) && C_S(TAG_GPTSYNC,      k)) DupTag = TRUE;
+                    else if (X_FLAG(L"memtest"         ) && C_S(TAG_MEMTEST,      k)) DupTag = TRUE;
+                    else if (X_FLAG(L"install"         ) && C_S(TAG_INSTALL,      k)) DupTag = TRUE;
+                    else if (X_FLAG(L"netboot"         ) && C_S(TAG_NETBOOT,      k)) DupTag = TRUE;
+                    else if (X_FLAG(L"shutdown"        ) && C_S(TAG_SHUTDOWN,     k)) DupTag = TRUE;
+                    else if (X_FLAG(L"firmware"        ) && C_S(TAG_FIRMWARE,     k)) DupTag = TRUE;
+                    else if (X_FLAG(L"fwupdate"        ) && C_S(TAG_FWUPDATE,     k)) DupTag = TRUE;
+                    else if (X_FLAG(L"bootorder"       ) && C_S(TAG_BOOTORDER,    k)) DupTag = TRUE;
+                    else if (X_FLAG(L"csr_rotate"      ) && C_S(TAG_CSR_ROTATE,   k)) DupTag = TRUE;
+                    else if (X_FLAG(L"clean_nvram"     ) && C_S(TAG_CLEAN_NVRAM,  k)) DupTag = TRUE;
+                    else if (X_FLAG(L"windows_recovery") && C_S(TAG_RECOVERY_WIN, k)) DupTag = TRUE;
+                    else if (X_FLAG(L"apple_recovery"  ) && C_S(TAG_RECOVERY_MAC, k)) DupTag = TRUE;
+                    else if (X_FLAG(L"hidden_tags"     ) && C_S(TAG_HIDDEN,       k)) DupTag = TRUE;
+
+                    if (DupTag) {
+                        Flag = L"Duplicate";
+
+                        break;
+                    }
+
+                    // Iterate counter
+                    k += 1;
+                } // while {Infinite} ... INNER
+
                 if (0);
-                else if (MyStrBegins (L"mok_tool",         Flag)) GlobalConfig.ShowTools[j] = TAG_MOK;
-                else if (MyStrBegins (L"exit",             Flag)) GlobalConfig.ShowTools[j] = TAG_EXIT;
-                else if (MyStrBegins (L"about",            Flag)) GlobalConfig.ShowTools[j] = TAG_ABOUT;
-                else if (MyStrBegins (L"shell",            Flag)) GlobalConfig.ShowTools[j] = TAG_SHELL;
-                else if (MyStrBegins (L"gdisk",            Flag)) GlobalConfig.ShowTools[j] = TAG_GDISK;
-                else if (MyStrBegins (L"reboot",           Flag)) GlobalConfig.ShowTools[j] = TAG_REBOOT;
-                else if (MyStrBegins (L"gptsync",          Flag)) GlobalConfig.ShowTools[j] = TAG_GPTSYNC;
-                else if (MyStrBegins (L"memtest",          Flag)) GlobalConfig.ShowTools[j] = TAG_MEMTEST;
-                else if (MyStrBegins (L"install",          Flag)) GlobalConfig.ShowTools[j] = TAG_INSTALL;
-                else if (MyStrBegins (L"netboot",          Flag)) GlobalConfig.ShowTools[j] = TAG_NETBOOT;
-                else if (MyStrBegins (L"shutdown",         Flag)) GlobalConfig.ShowTools[j] = TAG_SHUTDOWN;
-                else if (MyStrBegins (L"firmware",         Flag)) GlobalConfig.ShowTools[j] = TAG_FIRMWARE;
-                else if (MyStrBegins (L"fwupdate",         Flag)) GlobalConfig.ShowTools[j] = TAG_FWUPDATE;
-                else if (MyStrBegins (L"bootorder",        Flag)) GlobalConfig.ShowTools[j] = TAG_BOOTORDER;
-                else if (MyStrBegins (L"csr_rotate",       Flag)) GlobalConfig.ShowTools[j] = TAG_CSR_ROTATE;
-                else if (MyStrBegins (L"clean_nvram",      Flag)) GlobalConfig.ShowTools[j] = TAG_CLEAN_NVRAM;
-                else if (MyStrBegins (L"windows_recovery", Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_WIN;
-                else if (MyStrBegins (L"apple_recovery",   Flag)) GlobalConfig.ShowTools[j] = TAG_RECOVERY_MAC;
-                else if (MyStrBegins (L"hidden_tags",      Flag)) {
-                    GlobalConfig.ShowTools[j] = TAG_HIDDEN;
+                else if (X_FLAG(L"mok_tool"        )) E_S(TAG_MOK,          j );
+                else if (X_FLAG(L"exit"            )) E_S(TAG_EXIT,         j );
+                else if (X_FLAG(L"about"           )) E_S(TAG_ABOUT,        j );
+                else if (X_FLAG(L"shell"           )) E_S(TAG_SHELL,        j );
+                else if (X_FLAG(L"gdisk"           )) E_S(TAG_GDISK,        j );
+                else if (X_FLAG(L"reboot"          )) E_S(TAG_REBOOT,       j );
+                else if (X_FLAG(L"gptsync"         )) E_S(TAG_GPTSYNC,      j );
+                else if (X_FLAG(L"memtest"         )) E_S(TAG_MEMTEST,      j );
+                else if (X_FLAG(L"install"         )) E_S(TAG_INSTALL,      j );
+                else if (X_FLAG(L"netboot"         )) E_S(TAG_NETBOOT,      j );
+                else if (X_FLAG(L"shutdown"        )) E_S(TAG_SHUTDOWN,     j );
+                else if (X_FLAG(L"firmware"        )) E_S(TAG_FIRMWARE,     j );
+                else if (X_FLAG(L"fwupdate"        )) E_S(TAG_FWUPDATE,     j );
+                else if (X_FLAG(L"bootorder"       )) E_S(TAG_BOOTORDER,    j );
+                else if (X_FLAG(L"csr_rotate"      )) E_S(TAG_CSR_ROTATE,   j );
+                else if (X_FLAG(L"clean_nvram"     )) E_S(TAG_CLEAN_NVRAM,  j );
+                else if (X_FLAG(L"windows_recovery")) E_S(TAG_RECOVERY_WIN, j );
+                else if (X_FLAG(L"apple_recovery"  )) E_S(TAG_RECOVERY_MAC, j );
+                else if (X_FLAG(L"hidden_tags"     )) {
+                    E_S(TAG_HIDDEN, j);
                     GlobalConfig.HiddenTags = TRUE;
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    if (NotRunBefore) MuteLogger = FALSE;
-                    ALT_LOG(1, LOG_THREE_STAR_MID,
-                        L"Invalid Config Entry in 'showtools' List:- '%s'!!",
-                        Flag
+                    MuteLogger = FALSE;
+                    LOG_MSG(
+                        "%s!!! %s Item in 'showtools' List:- '%s'",
+                        OffsetNext,
+                        (DupTag) ? Flag : L"Invalid",
+                        TokenList[i]
                     );
-                    if (NotRunBefore) MuteLogger = TRUE;
+                    MuteLogger = TRUE;
                     #endif
 
                     // Handle Showtools Index
@@ -3415,11 +3456,6 @@ VOID ReadConfig (
                 // Update 'DoneTool' if false
                 if (!DoneTool) {
                     DoneTool = TRUE;
-                }
-
-                // Update 'SetShowTools' if false
-                if (!SetShowTools) {
-                    SetShowTools = TRUE;
                 }
             } // while {Infinite} ... OUTER
         }
@@ -3452,12 +3488,12 @@ VOID ReadConfig (
             #endif
 
             Flag = TokenList[1];
-            if (MyStriCmp (Flag, L"noscale")) {
+            if (FLAG_X(L"noscale")) {
                 GlobalConfig.BannerScale = BANNER_NOSCALE;
             }
             else if (
-                MyStriCmp (Flag, L"fillscreen") ||
-                MyStriCmp (Flag, L"fullscreen")
+                FLAG_X(L"fillscreen") ||
+                FLAG_X(L"fullscreen")
             ) {
                 GlobalConfig.BannerScale = BANNER_FILLSCREEN;
             }
@@ -4358,7 +4394,7 @@ VOID ReadConfig (
             #endif
 
             // DA_TAG: Accomodate Deprecation
-            GlobalConfig.UseDirectGop = HandleBoolean (
+            GlobalConfig.DirectGOP = HandleBoolean (
                 TokenList, TokenCount
             );
         }

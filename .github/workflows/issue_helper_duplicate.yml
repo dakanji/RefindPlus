@@ -20,11 +20,14 @@ concurrency:
 
 jobs:
 
-  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  # Misc Issue Items
   issue_duplicate1:
     name: Issue - Duplicate1
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -33,21 +36,25 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: issueduplicate_03
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item is a duplicate of one or more existing items
-
-            Please refer to Item #${{ github.event.inputs.orig_id }}.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ORIG_ID: ${{ github.event.inputs.orig_id }}
+        run: |
+          {
+            echo "This item is a duplicate of one or more existing items"
+            echo ""
+            echo "Please refer to Item #${ORIG_ID}."
+          } > comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
   issue_duplicate2:
     name: Issue - Duplicate2
     needs: [issue_duplicate1]
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -56,18 +63,18 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: issueduplicate_04
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Duplicate'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Duplicate'
 
   issue_duplicate3:
     name: Issue - Duplicate3
     needs: [issue_duplicate2]
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -76,18 +83,18 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: issueduplicate_05
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Queries,Parked,Prorogued,Unclear,Uncertain'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries,Parked,Prorogued,Unclear,Uncertain'
 
   issue_duplicate4:
     name: Issue - Duplicate4
     needs: [issue_duplicate3]
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -96,9 +103,6 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: issueduplicate_06
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"

@@ -40,7 +40,7 @@ jobs:
           labels: "Bug, Enhancement"
           exit_type: success
 
-  # Add  Labels  - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_close_act:
     name: Close Issue Label - Cancel
     needs: [add_label_user_close_check]
@@ -50,6 +50,9 @@ jobs:
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]' &&
       needs.add_label_user_close_check.outputs.status == 'success'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -57,12 +60,9 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Cancelled'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Cancelled'
 
   add_label_user_open_enhance:
     name: Enhancement Request Label
@@ -75,6 +75,9 @@ jobs:
       contains(github.event.issue.body, 'Suggested Feature') &&
       contains(github.event.issue.body, 'Additional Context') &&
       contains(github.event.issue.body, 'Background Information')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -82,14 +85,11 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Enhancement'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Enhancement'
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open_drop1:
     name: Drop Modified Code Build
     needs: [add_label_user_open_enhance]
@@ -101,6 +101,9 @@ jobs:
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]' &&
       contains(github.event.issue.body, 'Unofficially Modified Code Build')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -114,43 +117,39 @@ jobs:
           node-version: 24
 
       # Add Comment
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |-
-            Issue was manifested on a modified/customised build.
-            Such issues cannot be looked into here at this time.
+      - name: Add Comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Issue was manifested on a modified/customised build.
+          Such issues cannot be looked into here at this time.
 
-            > [!IMPORTANT]
-            > Issues found on modified/customised builds must be tested on official files/code.
-            > Should they also appear on these sources, raise your issue based on such sources.
+          > [!IMPORTANT]
+          > Issues found on modified/customised builds must be tested on official files/code.
+          > Should they also appear on these sources, raise your issue based on such sources.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Add 'Dropped' Label
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Dropped'
+      - name: Add Dropped Label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
       # Close Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Close Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"
 
       # Lock Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Lock Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
       # Update Issue Title - GitHub API
       - env:
@@ -167,7 +166,7 @@ jobs:
             https://api.github.com/repos/${ENV_REPO}/issues/${ENV_ISSUE_ID} \
             -d "{\"title\": \"${NewTitle}\"}" || { echo "Title Update Failed"; exit 1; }
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open_drop2:
     name: Drop for Ignored Logs
     needs: [add_label_user_open_drop1]
@@ -179,6 +178,9 @@ jobs:
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]' &&
       contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -187,40 +189,36 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |-
-            Issues without debug logs cannot be looked into at this time.
+      - name: Add Comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Issues without debug logs cannot be looked into at this time.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Add 'Dropped' Label
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Dropped'
+      - name: Add Dropped Label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
       # Close Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Close Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"
 
       # Lock Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Lock Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open_drop3:
     name: Drop for Ignored Tests
     needs: [add_label_user_open_drop2]
@@ -232,6 +230,9 @@ jobs:
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]' &&
       contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -240,40 +241,36 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |-
-            Running the test items before raising an issue is required.
+      - name: Add Comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Running the test items before raising an issue is required.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Add 'Dropped' Label
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Dropped'
+      - name: Add Dropped Label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
       # Close Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Close Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"
 
       # Lock Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Lock Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open_drop4:
     name: Drop for Forgotten Details
     needs: [add_label_user_open_drop3]
@@ -286,6 +283,9 @@ jobs:
       github.actor != 'refindplusrepo[bot]' &&
       contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
       !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -294,38 +294,34 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add Comment
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |-
-            Kindly only raise issues after properly noting key details.
+      - name: Add Comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Kindly only raise issues after properly noting key details.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Add 'Dropped' Label
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Dropped'
+      - name: Add Dropped Label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
       # Close Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Close Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"
 
       # Lock Issue
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - name: Lock Issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
   add_label_user_outdated:
     name: Handle Outdated Version
@@ -340,6 +336,9 @@ jobs:
       contains(github.event.issue.body, 'Official Older Released Version') &&
       !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
       !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -355,32 +354,29 @@ jobs:
           releases-only: true
 
       - id: outdated_2_1b
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            You appear to be running an outdated version of RefindPlus.
-            Run the current release version and update this thread accordingly.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<EOF > comment-body.md
+          You appear to be running an outdated version of RefindPlus.
+          Run the current release version and update this thread accordingly.
 
-            The current release version is **${{ steps.outdated_2_1a.outputs.tag }}**.
-            You can get a copy of the current release version [HERE](https://github.com/RefindPlusRepo/RefindPlus/releases).
+          The current release version is **${{ steps.outdated_2_1a.outputs.tag }}**.
+          You can get a copy of the current release version [HERE](https://github.com/RefindPlusRepo/RefindPlus/releases).
 
-            Refer to [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to build RefindPlus.
-            NB: Use the `Remote GitHub Build Option` to obtain a verifiably unmodified build
+          Refer to [BUILDING.md](https://github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/BUILDING.md) for how to build RefindPlus.
+          NB: Use the \`Remote GitHub Build Option\` to obtain a verifiably unmodified build
 
-            > [!IMPORTANT]
-            > Add debug logging from the new run to the thread update if the issue remains.
-            > That is, run the RefindPlus `DBG` efi file to generate a log file.
+          > [!IMPORTANT]
+          > Add debug logging from the new run to the thread update if the issue remains.
+          > That is, run the RefindPlus \`DBG\` efi file to generate a log file.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       - id: outdated_3_1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Queries'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Queries'
 
   chk_bot_user_open:
     name: Handle ChatBot
@@ -403,6 +399,9 @@ jobs:
         !contains(github.event.issue.body, 'Log Requirement') &&
         !contains(github.event.issue.body, 'Additional Context')
       ))
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: chatbot
         run: echo "result=true" >> "$GITHUB_OUTPUT"
@@ -414,14 +413,14 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - id: chatbot_2_1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            This item appears to be LLM ChatBot generated.
-            Such items cannot be entertained at this time.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          This item appears to be LLM ChatBot generated.
+          Such items cannot be entertained at this time.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Set NodeJS Up - https://github.com/actions/setup-node
       - id: chatbot_3_1
@@ -447,29 +446,21 @@ jobs:
 
       # Add 'ChatBot' Label
       - id: chatbot_4_1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'ChatBot, Dropped'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'ChatBot,Dropped'
 
       - id: chatbot_5_1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
       - id: chatbot_5_2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open1:
     name: Default Issue Label
     needs: [chk_bot_user_open]
@@ -486,6 +477,9 @@ jobs:
       !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
       !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') &&
       !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -494,14 +488,11 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       # Add 'Triage' Label
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Triage'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Triage'
 
-  # Add Labels - https://github.com/actions-cool/issues-helper
+  # Add Labels
   add_label_user_open2:
     name: Log Absent Label
     needs: [add_label_user_open1, chk_bot_user_open]
@@ -528,7 +519,7 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
             github-token: ${{ steps.app-token.outputs.token }}
             script: |
@@ -553,7 +544,7 @@ jobs:
                   labels: labelsToAdd
                 });
 
-  # Check Similarity - https://github.com/actions-cool/issues-similarity-analysis
+  # Similarity Check (Jaccard Word Overlap)
   similarity_analysis:
     name: Check Similarity
     needs: [add_label_user_open2, chk_bot_user_open]
@@ -568,8 +559,7 @@ jobs:
       !contains(github.event.issue.body, 'Official Older Released Version') &&
       !contains(github.event.issue.body, 'Unofficially Modified Code Build') &&
       !contains(github.event.issue.body, 'No_Idea and/or Forgotten_Details') &&
-      !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item') &&
-      !contains(github.event.issue.body, 'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given')
+      !contains(github.event.issue.body, 'SUGGESTED_TESTS_IGNORED despite applicable_item')
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -577,14 +567,191 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-similarity-analysis@v1
+      - uses: actions/github-script@v9
         with:
-          token: ${{ steps.app-token.outputs.token }}
-          since-days: 540
-          filter-threshold: 0.41
-          comment-title: '### Similar Item(s):'
-          comment-body: '${index}. [Similarity Rating: ${similarity}] ... [${title}](https://github.com/${{ github.repository }}/issues/${number})'
-          show-footer: false
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const DAYS_PAST = 915;
+            const THRESHOLD = 0.41;
+
+            // Weighted combination of head (title) vs body similarity.
+            const HEAD_WEIGHT = 0.65;
+            const BODY_WEIGHT = 0.35;
+
+            // Guards against 'tiny-token-set' false positives (like two
+            // near empty items matching at '1.0' on a few shared words).
+            const MIN_HEAD_OVERLAP = 3;
+            const MIN_BODY_OVERLAP = 5;
+
+            // Static Boilerplate (Mainly for Titles).
+            // Stripped as whole phrases before comparison so
+            // common terms shared by many issues do not inflate
+            // title similarity between otherwise unrelated issues.
+            const BOILERPLATE_ITEMS_HEAD = [
+              'Refind Plus',
+              'RefindPlus',
+              'rEFInd',
+              'Version',
+              'Program',
+              'Official',
+              'Release',
+              'Before',
+              'After',
+              'Debug',
+              'While',
+              'There',
+              'Then',
+              'The'
+            ];
+
+            // Static Boilerplate (Mainly Issue Templates).
+            // Stripped as whole phrases before comparison so
+            // scaffolding shared by each issue does not inflate
+            // body similarity between otherwise unrelated issues.
+            const BOILERPLATE_ITEMS_BODY = [
+              'Issue Screened',
+              'SUGGESTED_TESTS_EXECUTED or no_applicable_item',
+              'DEBUG_LOGS_ARE_PROVIDED or omission_clearly_justified',
+              'DEBUG_LOGS_NOT_PROVIDED - disregarding_guidance_given',
+              'Pre-Release Code Build',
+              'Device Type',
+              'UEFI PC',
+              'Apple Mac',
+              'Other Device',
+              'Problem Point',
+              'Screen is Visible',
+              'Problem Description',
+              'Screen Shows but Hangs',
+              'Starting a Loader or Tool',
+              'Another Point / Not Applicable',
+              'One/More Tools (2nd Row Items)',
+              'All OS Loaders (1st Row Items)',
+              'OS Loader',
+              'GRUB Loader',
+              'SDBoot Loader',
+              'OpenCore Loader',
+              'Clover Loader',
+              'Other Loader',
+              'Other Item',
+              'All Items',
+              'Affected Item(s',
+              'Suggested Feature',
+              'Background Information',
+              'Additional Context',
+              'Requirement',
+              'Windows',
+              'Linux',
+              'macOS',
+              'Mac',
+              'Win',
+              'Lin'
+            ];
+
+            function escapeRegex(s) {
+              return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            const BOILERPLATE_REGEX_HEAD = new RegExp(
+              BOILERPLATE_ITEMS_HEAD.map(p => `\\b${escapeRegex(p)}\\b`).join('|'),
+              'gi'
+            );
+
+            const BOILERPLATE_REGEX_BODY = new RegExp(
+              BOILERPLATE_ITEMS_BODY.map(p => {
+                const escaped = escapeRegex(p);
+                const startBoundary = /^\w/.test(p) ? '\\b' : '';
+                const endBoundary = /\w$/.test(p) ? '\\b' : '';
+                return `${startBoundary}${escaped}${endBoundary}`;
+              }).join('|'),
+              'gi'
+            );
+
+            function dropBoilerplate(text, type) {
+              if (type === 'head') {
+                return (text || '').replace(BOILERPLATE_REGEX_HEAD, ' ');
+              }
+              return (text || '').replace(BOILERPLATE_REGEX_HEAD, ' ').replace(BOILERPLATE_REGEX_BODY, ' ');
+            }
+
+            function tokenizeText(text, type) {
+              return new Set(
+                dropBoilerplate(text, type)
+                  .toLowerCase()
+                  .replace(/[^a-z0-9\s]/g, ' ')
+                  .split(/\s+/)
+                  .filter(w => w.length > 2)
+              );
+            }
+
+            function jaccardOverlap(a, b) {
+              const intersection = new Set([...a].filter(x => b.has(x)));
+              const union = new Set([...a, ...b]);
+              return {
+                overlap: intersection.size,
+                score: union.size === 0 ? 0 : intersection.size / union.size
+              };
+            }
+
+            // Reload Live State
+            // By the time this job runs (after upstream jobs via 'needs'),
+            // the issue may have since been closed/locked by an earlier
+            // job and the webhook payload snapshot now become stale.
+            const newIssue = context.payload.issue;
+            const { data: liveIssue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: newIssue.number
+            });
+            if (liveIssue.state !== 'open' || liveIssue.locked) return;
+
+            const tokensNewHead = tokenizeText(newIssue.title, 'head');
+            const tokensNewBody = tokenizeText(newIssue.body || '', 'body');
+
+            const sinceDate = new Date(Date.now() - (DAYS_PAST * 24 * 60 * 60 * 1000));
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo,
+              state: 'all',
+              since: sinceDate.toISOString(),
+              per_page: 100
+            });
+
+            const matches = [];
+            for (const oldIssue of issues) {
+              if (oldIssue.number === newIssue.number) continue;
+              if (oldIssue.pull_request) continue;
+
+              const tokensOldHead = tokenizeText(oldIssue.title, 'head');
+              const tokensOldBody = tokenizeText(oldIssue.body || '', 'body');
+
+              const headResult = jaccardOverlap(tokensNewHead, tokensOldHead);
+              const bodyResult = jaccardOverlap(tokensNewBody, tokensOldBody);
+
+              // Skip matches propped up by too few shared tokens in each
+              // field to avoid spurious 1.0 scores on nearly empty sets.
+              if (headResult.overlap < MIN_HEAD_OVERLAP && bodyResult.overlap < MIN_BODY_OVERLAP) {
+                continue;
+              }
+
+              const score = (HEAD_WEIGHT * headResult.score) + (BODY_WEIGHT * bodyResult.score);
+
+              if (score >= THRESHOLD) {
+                matches.push({ number: oldIssue.number, title: oldIssue.title, score });
+              }
+            }
+
+            matches.sort((a, b) => b.score - a.score);
+
+            if (matches.length > 0) {
+              const lines = matches.map((matchedIssue, i) =>
+                `${i + 1}. [Similarity Rating: ${(matchedIssue.score * 100).toFixed(2)}%] ... [${matchedIssue.title}](https://github.com/${context.repo.owner}/${context.repo.repo}/issues/${matchedIssue.number})`
+              );
+              const body = `### Similar Item(s):\n${lines.join('\n')}`;
+
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: newIssue.number,
+                body
+              });
+            }
 
   add_label_base_reopen:
     name: Reopen Issue Label - Base
@@ -593,6 +760,9 @@ jobs:
     if: |
       github.event.action == 'reopened' &&
       github.actor == 'dakanji'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -600,12 +770,9 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Not-Planned,Tagged,Stale,Cannot-Replicate,Known-Issue,Incomplete,Uncertain,Resolved,Unclear,Invalid,Unclear'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Not-Planned,Tagged,Stale,Cannot-Replicate,Known-Issue,Incomplete,Uncertain,Resolved,Unclear,Invalid'
 
   add_label_user_reopen:
     name: Reopen Issue Label - User
@@ -615,6 +782,9 @@ jobs:
       github.event.action == 'reopened' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -622,14 +792,11 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Triage'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Triage'
 
-  # Del Labels - https://github.com/actions-cool/issues-helper
+  # Del Labels
   del_label_user_reopen:
     name: Remove Cancelled Label
     runs-on: ubuntu-latest
@@ -638,6 +805,9 @@ jobs:
       github.event.action == 'reopened' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -645,12 +815,9 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Cancelled'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Cancelled'
 
   del_label_user_close:
     name: Remove Misc Labels
@@ -660,6 +827,9 @@ jobs:
       github.event.action == 'closed' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -667,12 +837,9 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          labels: 'Stale,Tagged,Triage,No-Log,Cannot-Replicate,Known-Issue,Incomplete,Uncertain,Unclear,Invalid,Queries,Unclear'
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Stale,Tagged,Triage,No-Log,Cannot-Replicate,Known-Issue,Incomplete,Uncertain,Unclear,Invalid,Queries'
 
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_bug_check1:
@@ -702,13 +869,16 @@ jobs:
           labels: "Bug"
           exit_type: success
 
-  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  # Reopen Issue
   bounce_bug_act1:
     name: Bounce Bug - Act1
     needs: [bounce_bug_check1]
     runs-on: ubuntu-latest
 
     if: needs.bounce_bug_check1.outputs.status == 'success'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -716,13 +886,11 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'open-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue reopen "$ISSUE_NUMBER"
 
-  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  # Comment on Issue
   bounce_bug_act2:
     name: Bounce Bug - Act2
     needs: [bounce_bug_act1]
@@ -732,6 +900,9 @@ jobs:
       github.event.action == 'closed' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -739,14 +910,14 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            Please do not close confirmed bug items in future.
-            Work is planned or aleady started on such items.
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Please do not close confirmed bug items in future.
+          Work is planned or aleady started on such items.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
   # Check Labels - https://github.com/mheap/github-action-required-labels
   bounce_enhance_check1:
@@ -798,7 +969,7 @@ jobs:
           count: 1
           labels: "Accepted"
 
-  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  # Reopen Issue
   bounce_enhance_act1:
     name: Bounce Enhance - Act1
     needs: [bounce_enhance_check2]
@@ -808,6 +979,9 @@ jobs:
       github.event.action == 'closed' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -815,13 +989,11 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'open-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue reopen "$ISSUE_NUMBER"
 
-  # Reopen Issue - https://github.com/actions-cool/issues-helper
+  # Comment on Issue
   bounce_enhance_act2:
     name: Bounce Enhance - Act2
     needs: [bounce_enhance_act1]
@@ -831,6 +1003,9 @@ jobs:
       github.event.action == 'closed' &&
       github.actor != 'dakanji' &&
       github.actor != 'refindplusrepo[bot]'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -838,11 +1013,11 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            Please do not close accepted enhancement items in future.
-            Work is planned or aleady started on such items.
+      - env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Please do not close accepted enhancement items in future.
+          Work is planned or aleady started on such items.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md

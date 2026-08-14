@@ -35,6 +35,10 @@ jobs:
     name: Issue - Change - Title
     runs-on: ubuntu-latest
 
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
+
     steps:
       # Generate App Token - https://github.com/actions/create-github-app-token
       - id: app-token
@@ -45,7 +49,7 @@ jobs:
 
       # Get/Save Issue Data - GitHub API
       - id: changetitle_01
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
@@ -77,61 +81,49 @@ jobs:
 
       - if: github.event.inputs.provenance_known == 'NO'
         id: changetitle_03
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            The issue appears to have come from a modified/customised instance.
-            This item is therefore considered invalid and cannot be looked into.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          The issue appears to have come from a modified/customised instance.
+          This item is therefore considered invalid and cannot be looked into.
 
-            > [!IMPORTANT]
-            > Issues found on modified/customised builds must be tested on official files/code.
-            > Should they also appear on these sources, raise your issue based on such sources.
-            > Additionally, debug logging and such should be obtained from the official sources.
+          > [!IMPORTANT]
+          > Issues found on modified/customised builds must be tested on official files/code.
+          > Should they also appear on these sources, raise your issue based on such sources.
+          > Additionally, debug logging and such should be obtained from the official sources.
 
-            Thank you.
+          Thank you.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
       # Remove Some Prior Labels if Present
       - if: github.event.inputs.provenance_known == 'NO'
         id: changetitle_04
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Queries,Noted,Incomplete,Tagged,Stale'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries,Noted,Incomplete,Tagged,Stale'
 
       # Add 'Invalid' Label
       - if: github.event.inputs.provenance_known == 'NO'
         id: changetitle_05
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Invalid'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Invalid'
 
       # Close Issue if Open
       - if: ${{ github.event.inputs.provenance_known == 'NO' && env.isclosed == 'false' }}
         id: changetitle_06
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
       # Lock Issue if Unlocked
       - if: ${{ github.event.inputs.provenance_known == 'NO' && env.islocked == 'false' }}
         id: changetitle_07
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          issue-state: 'closed'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
       # Update Issue Title - GitHub API
       - id: changetitle_08

@@ -326,8 +326,8 @@ jobs:
           echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "A copy of GNU GPLv3 is supplied with this build." >> "${GITHUB_STEP_SUMMARY}"
           echo "If missing, you can access copies at the links below:" >> "${GITHUB_STEP_SUMMARY}"
-          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
           echo "- github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
           echo '' >> "${GITHUB_STEP_SUMMARY}"
 
           echo "<br><br>" >> "${GITHUB_STEP_SUMMARY}"
@@ -345,14 +345,14 @@ jobs:
 
           echo "> [!IMPORTANT]" >> "${GITHUB_STEP_SUMMARY}"
           echo "> Output files with \`BLB_xx_???\` in their filename metadata ARE NOT part of RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> These are binaries bundled with RefindPlusUDK and are provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> These binary blobs are bundled with RefindPlusUDK and provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs WERE NOT built on RefindPlus code and were developed by others." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs are separately licensed by their actual respective developers." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_shell.efi**: OpenCore Project (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_CleanNvram.efi**: OpenCore Project ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_memtest86p.efi**: MemTest Project ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_gdisk.efi**: Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_ipxe.efi**: IPXE Project ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
           echo '' >> "${GITHUB_STEP_SUMMARY}"
 
           echo "<br>" >> "${GITHUB_STEP_SUMMARY}"
@@ -390,8 +390,8 @@ jobs:
           echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "A copy of GNU GPLv3 is supplied with this build." >> "${GITHUB_STEP_SUMMARY}"
           echo "If missing, you can access copies at the links below:" >> "${GITHUB_STEP_SUMMARY}"
-          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
           echo "- github.com/RefindPlusRepo/RefindPlus/blob/GOPFix/LICENSE.txt" >> "${GITHUB_STEP_SUMMARY}"
+          echo "- gnu.org/licenses/gpl-3.0.en.html" >> "${GITHUB_STEP_SUMMARY}"
           echo '' >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Validate Repository Secrets
@@ -426,7 +426,6 @@ jobs:
             echo "       Exiting Now"
             exit 1
           fi
-
 
       - name: Fetch Interim Artefact (REL)
         if: contains(github.event.inputs.build_type, 'REL')
@@ -474,16 +473,16 @@ jobs:
             fi
           fi
 
-          if [[ -z "${ENV_USER_CRT}" ]]; then
-            ENV_USER_KEY="${CERT_PATH}.key"
-            ENV_USER_CRT="${CERT_PATH}.crt"
-            ENV_USER_CER="${CERT_PATH}.cer"
+          OUR_CERT_KEY="${CERT_PATH}.key"
+          OUR_CERT_CRT="${CERT_PATH}.crt"
+          OUR_CERT_CER="${CERT_PATH}.cer"
 
+          if [[ ! -f "${OUR_CERT_CRT}" ]]; then
             echo "Cert/Key: Generate Transient"
             openssl req -new -x509 -nodes \
               -newkey rsa:2048 \
-              -keyout "${ENV_USER_KEY}" \
-              -out "${ENV_USER_CRT}" \
+              -keyout "${OUR_CERT_KEY}" \
+              -out "${OUR_CERT_CRT}" \
               -days 3650 \
               -subj "/CN=RefindPlus Build Artefact ${NOW}/"
 
@@ -499,18 +498,18 @@ jobs:
             echo "See [RefindPlus Documentation](https://github.com/RefindPlusRepos/RefindPlus/blob/GOPFix/BUILDING.md) for how to supply reusable credentials." >> "${GITHUB_STEP_SUMMARY}"
           fi
 
-          if [[ -f "${ENV_USER_CRT}" && (-z "${ENV_USER_CER}" || ! -f "${ENV_USER_CER}") ]]; then
+          if [[ -f "${OUR_CERT_CRT}" && ! -f "${OUR_CERT_CER}" ]]; then
             # Create '.cer' From '.crt' For UEFI Enrolment
             openssl x509 \
-              -in "${ENV_USER_CRT}" \
-              -out "${ENV_USER_CER}" \
+              -in "${OUR_CERT_CRT}" \
+              -out "${OUR_CERT_CER}" \
               -outform DER
           fi
 
           # Store Outputs for Subsequent Steps
-          echo "PATH_KEY=${ENV_USER_KEY}" >> $GITHUB_ENV
-          echo "PATH_CRT=${ENV_USER_CRT}" >> $GITHUB_ENV
-          echo "PATH_CER=${ENV_USER_CER}" >> $GITHUB_ENV
+          echo "FILE_KEY=${OUR_CERT_KEY}" >> $GITHUB_ENV
+          echo "FILE_CRT=${OUR_CERT_CRT}" >> $GITHUB_ENV
+          echo "FILE_CER=${OUR_CERT_CER}" >> $GITHUB_ENV
           echo "FLAG_NOW=${NOW}"          >> $GITHUB_ENV
 
       - name: Sign Requested Binaries
@@ -543,8 +542,8 @@ jobs:
             local file_out="${2}"
 
             echo "[SIGN] '${file_in}' >>---> as >>---> '${file_out}'"
-            sbsign --key "${PATH_KEY}" \
-                   --cert "${PATH_CRT}" \
+            sbsign --key "${FILE_KEY}" \
+                   --cert "${FILE_CRT}" \
                    --output "${file_out}" "${file_in}" || {
               do_summary ;
 
@@ -692,6 +691,7 @@ jobs:
           [[ "${FLAG}" == "DBG" || "${FLAG}" == "ALL" || "${FLAG}" == "TWO" ]] && sign_artefacts DBG || true
           [[ "${FLAG}" == "NPT" || "${FLAG}" == "ALL" ]]                       && sign_artefacts NPT || true
 
+
         ###
         # Handle interim artefacts, which are now deleted to leave
         # a final definititve set of artefacts with the same names
@@ -752,8 +752,8 @@ jobs:
         with:
           name: x64_RefindPlus-Artefacts_REL
           path: |
-              ${{ env.PATH_CER }}
-              ${{ env.PATH_CRT }}
+              ${{ env.FILE_CER }}
+              ${{ env.FILE_CRT }}
               REL_signed_DIR/*.efi
               REL_signed_DIR/*.txt
 
@@ -763,8 +763,8 @@ jobs:
         with:
           name: x64_RefindPlus-Artefacts_DBG
           path: |
-              ${{ env.PATH_CER }}
-              ${{ env.PATH_CRT }}
+              ${{ env.FILE_CER }}
+              ${{ env.FILE_CRT }}
               DBG_signed_DIR/*.efi
               DBG_signed_DIR/*.txt
 
@@ -774,8 +774,8 @@ jobs:
         with:
           name: x64_RefindPlus-Artefacts_NPT
           path: |
-              ${{ env.PATH_CER }}
-              ${{ env.PATH_CRT }}
+              ${{ env.FILE_CER }}
+              ${{ env.FILE_CRT }}
               NPT_signed_DIR/*.efi
               NPT_signed_DIR/*.txt
 
@@ -804,14 +804,14 @@ jobs:
 
           echo "> [!IMPORTANT]" >> "${GITHUB_STEP_SUMMARY}"
           echo "> Output files with \`BLB_xx_???\` in their filename metadata ARE NOT part of RefindPlus." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> These are binaries bundled with RefindPlusUDK and are provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> These binary blobs are bundled with RefindPlusUDK and provided as convenience items." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs WERE NOT built on RefindPlus code and were developed by others." >> "${GITHUB_STEP_SUMMARY}"
           echo "> These binary blobs are separately licensed by their actual respective developers." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_shell.efi**: From OpenCore (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_CleanNvram.efi**: From OpenCore ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_memtest86p.efi**: From memtest.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_gdisk.efi**: From Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
-          echo "> \- **x64_ipxe.efi**: From ipxe.org ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_shell.efi**: OpenCore Project (OpenShell) ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_CleanNvram.efi**: OpenCore Project ... BSD 3-Clause License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_memtest86p.efi**: MemTest Project ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_gdisk.efi**: Roderick Smith ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
+          echo "> \- **x64_ipxe.efi**: IPXE Project ... GNU GPLv2 License." >> "${GITHUB_STEP_SUMMARY}"
 
           echo '' >> "${GITHUB_STEP_SUMMARY}"
           echo "<br>" >> "${GITHUB_STEP_SUMMARY}"

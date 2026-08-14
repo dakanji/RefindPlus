@@ -37,307 +37,321 @@ concurrency:
 
 jobs:
 
-  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  # ── Remove: Abandoned ─────────────────────────────────────────────
   label_remove_abandoned:
     name: Label - Remove - Abandoned
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Abandoned'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Abandoned label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Abandoned'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Abandoned'
-
+  # ── Remove: Cancelled ─────────────────────────────────────────────
   label_remove_cancelled:
     name: Label - Remove - Cancelled
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Cancelled'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Cancelled label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Cancelled'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Cancelled'
-
+  # ── Remove: Cannot-Replicate ──────────────────────────────────────
   label_remove_cannot-replicate:
     name: Label - Remove - Cannot-Replicate
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Cannot-Replicate'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Cannot-Replicate label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Cannot-Replicate'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Cannot-Replicate'
-
+  # ── Remove: Declined ─────────────────────────────────────────────
   label_remove_declined:
     name: Label - Remove - Declined
     runs-on: ubuntu-latest
-
-    if: github.event.inputs.operation == 'Label - Remove - Duplicate'
+    if: github.event.inputs.operation == 'Label - Remove - Declined'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Declined label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Declined'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Declined'
-
+  # ── Remove: Duplicate ─────────────────────────────────────────────
   label_remove_duplicate:
     name: Label - Remove - Duplicate
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Duplicate'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Duplicate and Resolved labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Duplicate,Resolved'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Duplicate,Resolved'
-
+  # ── Remove: Incomplete ────────────────────────────────────────────
   label_remove_incomplete:
     name: Label - Remove - Incomplete
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Incomplete'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Incomplete label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Incomplete'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Incomplete'
-
+  # ── Remove: Invalid ───────────────────────────────────────────────
   label_remove_invalid:
     name: Label - Remove - Invalid
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Invalid'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Invalid label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Invalid'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Invalid'
-
+  # ── Remove: NoLog ─────────────────────────────────────────────────
   label_remove_nolog:
     name: Label - Remove - NoLog
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - NoLog'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove No-Log label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'No-Log'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'No-Log'
-
+  # ── Remove: Triage ────────────────────────────────────────────────
   label_remove_triage:
     name: Label - Remove - Triage
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Triage'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Triage and No-Log labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log'
-
+  # ── Remove: Parked ────────────────────────────────────────────────
   label_remove_parked:
     name: Label - Remove - Parked
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Parked'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Parked label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Parked'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Parked'
-
+  # ── Remove: Prorogued ─────────────────────────────────────────────
   label_remove_prorogued:
     name: Label - Remove - Prorogued
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Prorogued'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Prorogued label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Prorogued'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Prorogued'
-
+  # ── Remove: Resolved ──────────────────────────────────────────────
   label_remove_resolved:
     name: Label - Remove - Resolved
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Resolved'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Resolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Resolved'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Resolved'
-
+  # ── Remove: Tagged ────────────────────────────────────────────────
   label_remove_tagged:
     name: Label - Remove - Tagged
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Tagged'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Tagged label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Tagged'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Tagged'
-
+  # ── Remove: Queries ───────────────────────────────────────────────
   label_remove_queries:
     name: Label - Remove - Queries
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Queries'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Queries label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Queries'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Queries'
-
+  # ── Remove: Upstream ──────────────────────────────────────────────
   label_remove_upstream:
     name: Label - Remove - Upstream
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Upstream'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Remove Upstream label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Upstream'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Upstream'
-
+  # ── Remove: Not-Planned ───────────────────────────────────────────
   label_remove_wontfix:
     name: Label - Remove - Not-Planned
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Remove - Not-Planned'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Not-Planned'
+      - name: Remove Not-Planned label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Not-Planned'

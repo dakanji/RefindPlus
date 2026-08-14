@@ -1,4 +1,4 @@
-This directory holds icons used by rEFInd. This file describes their
+This directory holds icons used by RefindPlus. This file describes their
 sources, both in overview and in file-by-file detail, and provides pointers
 to the relevant licenses under which the icons are distributed.
 
@@ -135,7 +135,7 @@ os_xenial.png
 os_zesty.png
 
 
-Icons created by me (Roderick W. Smith):
+Icons created by Roderick W. Smith:
 
 boot_win.png
 func_csr_rotate.png

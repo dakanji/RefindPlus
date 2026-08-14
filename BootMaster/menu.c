@@ -120,15 +120,16 @@ REFIT_MENU_ENTRY MenuEntryYes = {
     1, 0, NULL, NULL, NULL
 };
 
-extern UINT64              GetCurrentMS (VOID);
+extern CHAR16             *BlankLine;
 extern CHAR16             *VendorInfo;
-extern EG_PIXEL            MenuBackgroundPixel;
+extern UINT64              GetCurrentMS (VOID);
 extern BOOLEAN             FoundExternalDisk;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
 extern BOOLEAN             BlockRescan;
 extern BOOLEAN             OneMainLoop;
+extern EG_PIXEL            PixelMenuBG;
 extern EFI_GUID            RefindPlusGuid;
 
 
@@ -772,7 +773,7 @@ VOID DrawText (
         FieldWidth,
         TextLineHeight(),
         FALSE,
-        &MenuBackgroundPixel
+        &PixelMenuBG
     );
     if (TextBuffer == NULL) {
         // Early Return
@@ -780,7 +781,7 @@ VOID DrawText (
     }
 
     if (!Selected) {
-        TextBackground = MenuBackgroundPixel;
+        TextBackground = PixelMenuBG;
     }
     else {
         // Draw selection bar background
@@ -834,13 +835,18 @@ UINT8 AverageBrightness (
     UINTN Size;
 
 
-    if (Image == NULL || (Image->Width * Image->Height) == 0) {
+    if (Image == NULL) {
         // Early Return
         return 0;
     }
 
-    Sum  = 0;
     Size = Image->Width * Image->Height;
+    if (Size == 0) {
+        // Early Return
+        return 0;
+    }
+
+    Sum = 0;
 
     for (i = 0; i < Size; i++) {
         Sum += Image->PixelData[i].r;
@@ -1986,6 +1992,16 @@ VOID GetStateInfo (
 
 } // static VOID GetStateInfo()
 
+static
+VOID TextScreenHeader (
+    IN CHAR16 *Title
+) {
+    BlankScreenLine();
+    DrawScreenHeader (
+        Title
+    );
+} // static VOID TextScreenHeader()
+
 // Returns a constant ... Do *NOT* Free
 CHAR16 * MenuExitInfo (
     IN UINTN MenuExit
@@ -2307,14 +2323,10 @@ UINTN DrawMenuScreen (
         }
     }
     else {
-        if (!AllowGraphicsMode &&
-            (
-                IsMainMenu ||
-                MyStrBegins (L"Confirm System", Screen->Title)
-            )
-        ) {
-            PrepareBlankLine();
-            DrawScreenHeader (Screen->Title);
+        if (!AllowGraphicsMode && IsMainMenu) {
+            TextScreenHeader (
+                Screen->Title
+            );
         }
 
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -2474,10 +2486,13 @@ UINTN DrawMenuScreen (
             PointerActive      = TRUE;
             TimeSinceKeystroke =    0;
 
-            if (StyleFunc != MainMenuStyle && pdGetState().Press) {
-                // Exit all submenus on pointer click.
-                // These return to main menu by default.
+            if (pdGetState().Press &&
+                StyleFunc != MainMenuStyle
+            ) {
+                // Exit submenus on pointer click.
+                // Returns to main menu by default.
                 MenuExit = MENU_EXIT_ENTER;
+                UserKeyPress = TRUE;
 
                 break;
             }
@@ -2528,19 +2543,22 @@ UINTN DrawMenuScreen (
                 }
                 else {
                     if (GlobalConfig.ScreensaverTime > 0 &&
-                        TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10)
+                        TimeSinceKeystroke > (
+                            GlobalConfig.ScreensaverTime * 10
+                        )
                     ) {
                         SaveScreen();
                         State.PaintAll     = TRUE;
                         TimeSinceKeystroke =    0;
 
                         if (!AllowGraphicsMode) {
-                            PrepareBlankLine();
-                            DrawScreenHeader (Screen->Title);
+                            TextScreenHeader (
+                                Screen->Title
+                            );
                         }
                     }
                 }
-            } // if/else !HaveTimeout
+            } // if/else !HaveTimeout && GlobalConfig.ScreensaverTime < 1
 
             continue;
         } // if/else !EFI_ERROR(Status)
@@ -2787,6 +2805,8 @@ UINTN DrawMenuScreen (
                     }
                     else {
                         MenuExit = MENU_EXIT_ENTER;
+                        BlockRescan        = FALSE;
+                        UserKeyPress        = TRUE;
 
                         // Log Pointer Event
                         #if REFIT_DEBUG > 0
@@ -3127,9 +3147,9 @@ VOID TextMenuStyle (
         break;
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
-                // Clear message
-                if (!BlankLine) {
-                    PrepareBlankLine();
+                // Clear Message
+                if (BlankLine == NULL) {
+                    BlankScreenLine();
                 }
 
                 REFIT_CALL_2_WRAPPER(
@@ -3651,8 +3671,9 @@ UINTN FindMainMenuItem (
     return ItemIndex;
 } // VOID FindMainMenuItem()
 
-VOID GenerateWaitList(VOID) {
-    UINTN PointerCount;
+VOID GenerateWaitList (VOID) {
+    UINTN      Index;
+    UINTN      PointerCount;
 
 
     if (WaitList != NULL) {
@@ -3661,7 +3682,7 @@ VOID GenerateWaitList(VOID) {
     }
 
     PointerCount   = pdCount();
-    WaitListLength = 2 + PointerCount;
+    WaitListLength = PointerCount + 1;
 
     WaitList = AllocatePool (
         WaitListLength * sizeof (EFI_EVENT)
@@ -3671,7 +3692,7 @@ VOID GenerateWaitList(VOID) {
     }
 
     WaitList[0] = gST->ConIn->WaitForKey;
-    for (UINTN Index = 0; Index < PointerCount; Index++) {
+    for (Index = 0; Index < PointerCount; Index++) {
         WaitList[Index + 1] = pdWaitEvent (Index);
     } // for
 } // VOID GenerateWaitList()
@@ -3680,26 +3701,33 @@ UINTN WaitForInput (
     IN UINTN Timeout
 ) {
     EFI_STATUS  Status;
-    UINTN       Length;
     UINTN       Index;
+    UINTN       NumEvents;
     EFI_EVENT   TimerEvent;
 
 
     // Generate WaitList
     GenerateWaitList();
 
-    Length = WaitListLength;
+    if (WaitListLength == 0) {
+        // No input events available
+        return INPUT_TIMER_ERROR;
+    }
+
     TimerEvent = NULL;
 
-    Status = REFIT_CALL_5_WRAPPER(
-        gBS->CreateEvent, EVT_TIMER,
-        0, NULL,
-        NULL, &TimerEvent
-    );
     if (Timeout == 0) {
-        Length--;
+        // No timeout requested
+        // Waits indefinitely for input events.
+        NumEvents = WaitListLength;
     }
     else {
+        // Create timer event
+        Status = REFIT_CALL_5_WRAPPER(
+            gBS->CreateEvent, EVT_TIMER,
+            0, NULL,
+            NULL, &TimerEvent
+        );
         if (EFI_ERROR(Status)) {
             // Pause for 0.1 Sec
             // DA-TAG: 100 Loops == 1 Sec
@@ -3713,15 +3741,28 @@ UINTN WaitForInput (
             gBS->SetTimer, TimerEvent,
             TimerRelative, Timeout * 10000
         );
-        WaitList[Length - 1] = TimerEvent;
-    }
 
-    Index  = INPUT_TIMEOUT;
+        // Append timer event to the WaitList
+        // Allowed for in 'GenerateWaitList()'
+        WaitList[WaitListLength] = TimerEvent;
+        NumEvents = WaitListLength + 1;
+    } // if/else Timeout == 0
+
+    // Event index default value
+    Index = INPUT_TIMEOUT;
+
+    // Wait for event signal
     Status = REFIT_CALL_3_WRAPPER(
-        gBS->WaitForEvent, Length,
+        gBS->WaitForEvent, NumEvents,
         WaitList, &Index
     );
-    REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
+
+    // Close timer event if present
+    if (TimerEvent != NULL) {
+        REFIT_CALL_1_WRAPPER(
+            gBS->CloseEvent, TimerEvent
+        );
+    }
 
     if (EFI_ERROR(Status)) {
         // Pause for 0.2 Sec
@@ -3736,8 +3777,23 @@ UINTN WaitForInput (
         return INPUT_KEY;
     }
 
-    if (Index < Length - 1) {
-        return INPUT_POINTER;
+    if (Timeout == 0) {
+        // No timer event set
+        // Pointer Event: Index > 0
+        if (Index > 0 &&
+            Index < WaitListLength
+        ) {
+            return INPUT_POINTER;
+        }
+    }
+    else {
+        // NB: Timer event previously appended at "WaitListLength" index
+        // Pointer Event: 1 <= Index <= WaitListLength-1
+        if (Index > 0 &&
+            Index < WaitListLength
+        ) {
+            return INPUT_POINTER;
+        }
     }
 
     // Timer event timed out if we get here
@@ -4326,6 +4382,7 @@ UINTN RunMainMenu (
     #endif
 
     REFIT_MENU_ENTRY   *TempChosenOption;
+    REFIT_MENU_ENTRY   *KeptChosenOption;
     MENU_STYLE_FUNC     MainStyle;
     MENU_STYLE_FUNC     Style;
     BOOLEAN             KeyStrokeFound;
@@ -4471,16 +4528,26 @@ UINTN RunMainMenu (
                 MenuExit = MENU_EXIT_ZERO;
             }
             else {
-                SubScreenBoot = TRUE;
-
-                BREAD_CRUMB(L"%a:  9a 3a 1b 1", __func__);
+                BREAD_CRUMB(L"%a:  9a 3a 1b 1 - Show SubScreen", __func__);
                 DefaultSubmenuIndex = 9999;
-                MenuExit = DrawMenuScreen (
-                    TempChosenOption->SubScreen,
-                    Style,
-                    &DefaultSubmenuIndex,
-                    &TempChosenOption
-                );
+                KeptChosenOption = TempChosenOption;
+                while (1) {
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 1a 1", __func__);
+                    MenuExit = DrawMenuScreen (
+                        TempChosenOption->SubScreen, Style,
+                        &DefaultSubmenuIndex, &TempChosenOption
+                    );
+
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 1a 2", __func__);
+                    if (TempChosenOption->Tag == TAG_SPACER) {
+                        BREAD_CRUMB(L"%a:  9a 3a 1b 1a 2a 1", __func__);
+                        TempChosenOption = KeptChosenOption;
+                        continue;
+                    }
+
+                    BREAD_CRUMB(L"%a:  9a 3a 1b 1a 3", __func__);
+                    break;
+                } // while {Infinite}
 
                 BREAD_CRUMB(L"%a:  9a 3a 1b 2", __func__);
                 #if REFIT_DEBUG > 0
@@ -4511,6 +4578,12 @@ UINTN RunMainMenu (
             }
 
             BREAD_CRUMB(L"%a:  9a 3a 2", __func__);
+            if (MenuExit == MENU_EXIT_ENTER) {
+                BREAD_CRUMB(L"%a:  9a 3a 2a 1", __func__);
+                SubScreenBoot = TRUE;
+            }
+
+            BREAD_CRUMB(L"%a:  9a 3a 3", __func__);
         } // if MenuExit == MENU_EXIT_DETAILS
 
         BREAD_CRUMB(L"%a:  9a 4", __func__);

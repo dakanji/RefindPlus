@@ -59,38 +59,38 @@
 #include "../include/egemb_refindplus_banner_lorez.h"
 #include "../include/egemb_refindplus_banner_hidpi.h"
 
-UINTN      ConWidth               = 80;
-UINTN      ConHeight              = 25;
 
-CHAR16    *BlankLine              = NULL;
+CHAR16    *BlankLine           =                    NULL;
 
-UINTN      ScreenW                = 0;
-UINTN      ScreenH                = 0;
-UINTN      ScreenLongest          = 0;
-UINTN      ScreenShortest         = 0;
+UINTN      ScreenW             =                       0;
+UINTN      ScreenH             =                       0;
+UINTN      ConWidth            =                      80;
+UINTN      ConHeight           =                      25;
+UINTN      ScreenLongest       =                       0;
+UINTN      ScreenShortest      =                       0;
 
-BOOLEAN    GraphicsScreenDirty    = FALSE;
-BOOLEAN    AllowGraphicsMode      = FALSE;
-BOOLEAN    ClearedBuffer          = FALSE;
-BOOLEAN    DefaultBanner          =  TRUE;
-BOOLEAN    haveError              = FALSE;
+BOOLEAN    GraphicsScreenDirty =                   FALSE;
+BOOLEAN    AllowGraphicsMode   =                   FALSE;
+BOOLEAN    ClearedBuffer       =                   FALSE;
+BOOLEAN    DefaultBanner       =                    TRUE;
+BOOLEAN    HaveError           =                   FALSE;
 
-EG_PIXEL   BlackPixel             = { 0x00, 0x00, 0x00, 0 };
-EG_PIXEL   GrayPixel              = { 0xBF, 0xBF, 0xBF, 0 };
-EG_PIXEL   WhitePixel             = { 0xFF, 0xFF, 0xFF, 0 };
+EG_PIXEL   BlackPixel          = { 0x00, 0x00, 0x00, 0 };
+EG_PIXEL   GrayPixel           = { 0xBF, 0xBF, 0xBF, 0 };
+EG_PIXEL   WhitePixel          = { 0xFF, 0xFF, 0xFF, 0 };
+EG_PIXEL   PixelMenuBG         = { 0xBF, 0xBF, 0xBF, 0 };
+EG_PIXEL   PixelDarkBG         = { 0x00, 0x00, 0x00, 0 };
 
-EG_PIXEL   MenuBackgroundPixel    = { 0xBF, 0xBF, 0xBF, 0 };
-EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
 
+extern BOOLEAN                                    IsBoot;
+extern BOOLEAN                              IconScaleSet;
+extern BOOLEAN                              ExtremeHiDPI;
+extern BOOLEAN                             egHasGraphics;
+extern BOOLEAN                            FlushFailedTag;
+extern BOOLEAN                            UserDefinedRez;
+extern BOOLEAN                         GotConsoleControl;
 
-extern BOOLEAN                       IsBoot;
-extern BOOLEAN                       IconScaleSet;
-extern BOOLEAN                       ExtremeHiDPI;
-extern BOOLEAN                       egHasGraphics;
-extern BOOLEAN                       FlushFailedTag;
-extern BOOLEAN                       UserDefinedRez;
-extern BOOLEAN                       GotConsoleControl;
-extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
+extern EFI_GRAPHICS_OUTPUT_PROTOCOL             *GOPDraw;
 
 
 #if 0
@@ -212,21 +212,23 @@ VOID FixIconScale (VOID) {
     } // if/else GlobalConfig.ScaleUI
 } // VOID FixIconScale()
 
-VOID PrepareBlankLine (VOID) {
+VOID BlankScreenLine (VOID) {
     UINTN i;
 
 
     MY_FREE_POOL(BlankLine);
-
-    // Make a buffer for a whole text line
-    BlankLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
-    if (BlankLine) {
-        for (i = 0; i < ConWidth; i++) {
-            BlankLine[i] = ' ';
-        }
-        BlankLine[i] = 0;
+    BlankLine = AllocateZeroPool (
+        sizeof (CHAR16) * (ConWidth + 1)
+    );
+    if (BlankLine == NULL) {
+        return;
     }
-} // VOID PrepareBlankLine()
+
+    // DA-TAG: Already NULL Terminated
+    for (i = 0; i < ConWidth; i++) {
+        BlankLine[i] = ' ';
+    }
+} // VOID BlankScreenLine()
 
 VOID InitScreen (VOID) {
     #if REFIT_DEBUG > 1
@@ -291,7 +293,7 @@ VOID InitScreen (VOID) {
         ConHeight = 25;
     }
 
-    PrepareBlankLine();
+    BlankScreenLine();
 
     // Show the banner if in text mode and not in DirectBoot mode
     if (GlobalConfig.TextOnly || !AllowGraphicsMode) {
@@ -702,7 +704,7 @@ VOID SwitchToText (
     }
     #endif
 
-    PrepareBlankLine();
+    BlankScreenLine();
 
     #if REFIT_DEBUG > 0
     if (TextModeOnEntry) {
@@ -758,7 +760,7 @@ VOID BeginTextScreen (
     SwitchToText (FALSE);
 
     // Reset error flag
-    haveError = FALSE;
+    HaveError = FALSE;
 
     BREAD_CRUMB(L"%a:  4 - END:- VOID", __func__);
     LOG_DECREMENT();
@@ -772,7 +774,7 @@ VOID FinishTextScreen (
     LOG_INCREMENT();
     BREAD_CRUMB(L"%a:  1 - START", __func__);
 
-    if (haveError || WaitAlways) {
+    if (HaveError || WaitAlways) {
         BREAD_CRUMB(L"%a:  1a 1", __func__);
         SwitchToText (FALSE);
         BREAD_CRUMB(L"%a:  1a 2", __func__);
@@ -780,7 +782,7 @@ VOID FinishTextScreen (
     }
 
     // Reset error flag
-    haveError = FALSE;
+    HaveError = FALSE;
 
     BREAD_CRUMB(L"%a:  2 - END:- VOID", __func__);
     LOG_DECREMENT();
@@ -806,7 +808,7 @@ VOID BeginExternalScreen (
         LOG_SEP(L"X");
 
         // Reset error flag
-        haveError = FALSE;
+        HaveError = FALSE;
 
         // Early Return
         return;
@@ -859,7 +861,7 @@ VOID BeginExternalScreen (
     }
 
     // Reset error flag
-    haveError = FALSE;
+    HaveError = FALSE;
     BREAD_CRUMB(L"%a:  4 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
@@ -873,7 +875,7 @@ VOID FinishExternalScreen (VOID) {
     // Make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
-    if (haveError) {
+    if (HaveError) {
         BREAD_CRUMB(L"%a:  1a 1", __func__);
         SwitchToText (FALSE);
         BREAD_CRUMB(L"%a:  1a 2", __func__);
@@ -885,7 +887,7 @@ VOID FinishExternalScreen (VOID) {
     SetupScreen();
 
     // Reset error flag
-    haveError = FALSE;
+    HaveError = FALSE;
     BREAD_CRUMB(L"%a:  3 - END:- VOID", __func__);
     LOG_DECREMENT();
     LOG_SEP(L"X");
@@ -915,7 +917,7 @@ VOID DrawScreenHeader (
     UINTN i;
 
     // Clear to black background ... First clear in graphics mode
-    egClearScreen (&DarkBackgroundPixel);
+    egClearScreen (&PixelDarkBG);
 
     // Then clear in text mode
     REFIT_CALL_2_WRAPPER(
@@ -975,18 +977,23 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
 
     EFI_STATUS           Status;
     BOOLEAN              GotKeyStrokes;
+    BOOLEAN              GotConIn;
     EFI_INPUT_KEY        key;
 
     static BOOLEAN       FirstCall = TRUE;
 
 
-    GotKeyStrokes = FALSE;
-
     #if REFIT_DEBUG > 0
     EmptyBuffer = FALSE;
     #endif
 
-    if (FirstCall || !GlobalConfig.DirectBoot) {
+    GotKeyStrokes = FALSE;
+    GotConIn = (
+        gST        != NULL &&
+        gST->ConIn != NULL
+    );
+
+    if ((FirstCall || !GlobalConfig.DirectBoot) && GotConIn) {
         while (1) {
             Status = REFIT_CALL_2_WRAPPER(
                 gST->ConIn->ReadKeyStroke,
@@ -1023,7 +1030,10 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    if (!FirstCall && GlobalConfig.DirectBoot) {
+    if (!GotConIn) {
+        Status = EFI_NOT_FOUND;
+    }
+    else if (!FirstCall && GlobalConfig.DirectBoot) {
         Status = EFI_NOT_STARTED;
     }
     else if (GotKeyStrokes) {
@@ -1060,25 +1070,52 @@ VOID PrintUglyText (
     IN CHAR16 *Text,
     IN UINTN    PositionCode
 ) {
-    if (Text != NULL) {
-        if (AppleFirmware &&
-            AllowGraphicsMode &&
-            egIsGraphicsModeEnabled()
-        ) {
-            egDisplayMessage (
-                Text, &BGColorFail,
-                PositionCode, 0, NULL
-            );
-            GraphicsScreenDirty = TRUE;
-        }
-        else {
-            // Non-Mac or in Text Mode
-            // Print statement will work
-            Print (Text);
-            Print (L"\n");
-        }
+    if (Text == NULL) {
+        return;
     }
+
+    if (!AppleFirmware          ||
+        !AllowGraphicsMode      ||
+        !egIsGraphicsModeEnabled()
+    ) {
+        // Non-Mac or Text Mode
+        Print (Text);
+        Print (L"\n");
+
+        return;
+    }
+
+    egDisplayMessage (
+        Text, &BGColorFail,
+        PositionCode, 0, NULL
+    );
+    GraphicsScreenDirty = TRUE;
 } // VOID PrintUglyText()
+
+// As 'PrintUglyText()' with text decoration.
+VOID ShowErrorUglyText (
+    IN CHAR16 *Text,
+    IN UINTN    PositionCode
+) {
+    #if REFIT_DEBUG > 0
+    BOOLEAN  CheckMute = FALSE;
+
+
+    MY_MUTELOGGER_SET;
+    #endif
+    REFIT_CALL_2_WRAPPER(
+        gST->ConOut->SetAttribute,
+        gST->ConOut, ATTR_ERROR
+    );
+    PrintUglyText (Text, PositionCode);
+    REFIT_CALL_2_WRAPPER(
+        gST->ConOut->SetAttribute,
+        gST->ConOut, ATTR_BASIC
+    );
+    #if REFIT_DEBUG > 0
+    MY_MUTELOGGER_OFF;
+    #endif
+} // VOID ShowErrorUglyText()
 
 VOID PauseForKey (VOID) {
     #if REFIT_DEBUG > 0
@@ -1174,15 +1211,17 @@ VOID PauseForKey (VOID) {
 
                 Breakout = TRUE;
             }
-            else if (WaitOut == INPUT_TIMER_ERROR) {
-                #if REFIT_DEBUG > 0
-                MsgStr = L"Pause Terminated on Timer Error";
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("%s      * %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
-                #endif
+            else {
+                if (WaitOut == INPUT_TIMER_ERROR) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = L"Pause Terminated on Timer Error";
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+                    LOG_MSG("%s      * %s", OffsetNext, MsgStr);
+                    LOG_MSG("\n\n");
+                    #endif
 
-                Breakout = TRUE;
+                    Breakout = TRUE;
+                }
             }
 
             if (Breakout) {
@@ -1233,12 +1272,16 @@ VOID PauseSeconds (
 
             Breakout = TRUE;
         }
-        else if (WaitOut == INPUT_TIMER_ERROR) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timer Error!!");
-            #endif
+        else {
+            if (WaitOut == INPUT_TIMER_ERROR) {
+                #if REFIT_DEBUG > 0
+                ALT_LOG(1, LOG_LINE_NORMAL,
+                    L"Pause Terminated on Timer Error!!"
+                );
+                #endif
 
-            Breakout = TRUE;
+                Breakout = TRUE;
+            }
         }
 
         if (Breakout) {
@@ -1364,7 +1407,7 @@ BOOLEAN CheckFatalError (
         gST->ConOut->SetAttribute,
         gST->ConOut, ATTR_BASIC
     );
-    haveError = TRUE;
+    HaveError = TRUE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
@@ -1428,15 +1471,17 @@ BOOLEAN CheckError (
 
     // Defeat need to "Press a Key to Continue" in debug mode
     // Override this if volume is full
-    haveError = (
+    HaveError = (
         MyStrStr (where, L"While Reading Boot Sector") ||
         MyStrStr (where, L"in ReadHiddenTags")
     ) ? FALSE : TRUE;
-    haveError = (!haveError && (Status == EFI_VOLUME_FULL)) ? TRUE : FALSE;
+    HaveError = (
+        !HaveError && Status == EFI_VOLUME_FULL
+    ) ? TRUE : FALSE;
 
     MY_FREE_POOL(Temp);
 
-    return haveError;
+    return HaveError;
 } // BOOLEAN CheckError()
 
 VOID SwitchToGraphicsAndClear (
@@ -1483,9 +1528,9 @@ EG_PIXEL FontComplement (VOID) {
     UINTN    MaxRGB;
     UINTN    MinRGB;
     UINTN    LumIndex;
-    UINTN    PixelR = (UINTN) MenuBackgroundPixel.r;
-    UINTN    PixelG = (UINTN) MenuBackgroundPixel.g;
-    UINTN    PixelB = (UINTN) MenuBackgroundPixel.b;
+    UINTN    PixelR = (UINTN) PixelMenuBG.r;
+    UINTN    PixelG = (UINTN) PixelMenuBG.g;
+    UINTN    PixelB = (UINTN) PixelMenuBG.b;
 
     if (PixelR == 191 &&
         PixelG == 191 &&
@@ -1586,8 +1631,9 @@ VOID BltClearScreen (
         /* Not Showing Banner */
         // Clear to Background Colour
         egClearScreen (
-            (GlobalConfig.DirectBoot)
-                ? &BlackPixel : &MenuBackgroundPixel
+            (
+                GlobalConfig.DirectBoot
+            ) ? &BlackPixel : &PixelMenuBG
         );
     }
     else {
@@ -1598,7 +1644,7 @@ VOID BltClearScreen (
             LOG_MSG("%s  - Fetch Banner", LineSpace);
             #endif
 
-            if (GlobalConfig.BannerFileName) {
+            if (GlobalConfig.BannerFileName != NULL) {
                 Banner = egLoadImage (
                     SelfDir,
                     GlobalConfig.BannerFileName,
@@ -1607,11 +1653,13 @@ VOID BltClearScreen (
             }
 
             if (Banner != NULL) {
-                MenuBackgroundPixel = (GlobalConfig.DirectBoot)
-                    ? BlackPixel : Banner->PixelData[0];
-
                 // Using Custom Title Banner
                 DefaultBanner = FALSE;
+
+                PixelMenuBG = (
+                    GlobalConfig.DirectBoot
+                ) ? BlackPixel : Banner->PixelData[0];
+
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
@@ -1631,16 +1679,16 @@ VOID BltClearScreen (
                 GlobalConfig.BannerScale = BANNER_NOSCALE;
 
                 if (GlobalConfig.DirectBoot) {
-                    MenuBackgroundPixel = BlackPixel;
+                    PixelMenuBG = BlackPixel;
                 }
                 else if (!GlobalConfig.CustomScreenBG) {
-                    MenuBackgroundPixel = GrayPixel;
+                    PixelMenuBG = GrayPixel;
                 }
                 else {
                     // Override Default Values
-                    MenuBackgroundPixel.r = GlobalConfig.ScreenR;
-                    MenuBackgroundPixel.g = GlobalConfig.ScreenG;
-                    MenuBackgroundPixel.b = GlobalConfig.ScreenB;
+                    PixelMenuBG.r = GlobalConfig.ScreenR;
+                    PixelMenuBG.g = GlobalConfig.ScreenG;
+                    PixelMenuBG.b = GlobalConfig.ScreenB;
                 }
 
                 #if REFIT_DEBUG > 0
@@ -1660,9 +1708,9 @@ VOID BltClearScreen (
 
                 MsgStr = PoolPrint (
                     L"Colour (Base) ... %3d %3d %3d",
-                    MenuBackgroundPixel.r,
-                    MenuBackgroundPixel.g,
-                    MenuBackgroundPixel.b
+                    PixelMenuBG.r,
+                    PixelMenuBG.g,
+                    PixelMenuBG.b
                 );
                 LOG_MSG(
                     "%s%s  %s",
@@ -1727,8 +1775,7 @@ VOID BltClearScreen (
                 CompImage = egCreateFilledImage (
                     Banner->Width,
                     Banner->Height,
-                    FALSE,
-                    &MenuBackgroundPixel
+                    FALSE, &PixelMenuBG
                 );
 
                 if (CompImage != NULL) {
@@ -1783,7 +1830,7 @@ VOID BltClearScreen (
 
         if (GlobalConfig.ScreensaverTime != -1) {
             BREAD_CRUMB(L"%a:  2b 2a 1 - (Set Screen to Menu Background Colour)", __func__);
-            egClearScreen (&MenuBackgroundPixel);
+            egClearScreen (&PixelMenuBG);
         }
         else {
             BREAD_CRUMB(L"%a:  2b 2b 1 - (Set Screen to Black)", __func__);

@@ -53,31 +53,35 @@ concurrency:
 
 jobs:
 
-  # Misc Issue Items - https://github.com/actions-cool/issues-helper
+  # ── Label: Abandoned ──────────────────────────────────────────────
   label_add_abandoned:
     name: Label - Add - Abandoned
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Abandoned'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Add Abandoned label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Abandoned'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Abandoned'
-
+  # ── Label: Bug ────────────────────────────────────────────────────
   label_add_bug:
     name: Label - Add - Bug
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Bug'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -85,39 +89,38 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Bug - 0
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            Thank you for taking the time to report a problem with RefindPlus.
-            The problem has been confirmed and will be addressed presently.
+      - name: Create comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Thank you for taking the time to report a problem with RefindPlus.
+          The problem has been confirmed and will be addressed presently.
 
-            ${{ github.event.inputs.comment_data }}
+          EOF
+          printf '%s\n' "$COMMENT_DATA" >> comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-      - name: Label - Add - Bug - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Bug'
+      - name: Add Bug label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Bug'
 
-      - name: Label - Add - Bug - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Not-Planned, Uncertain, Confirmed, Cancelled, Accepted, Resolved, Triage, No-Log, Parked, Tagged, Stale, Config, Queries, Unclear, Invalid, Prorogued, Incomplete, Known-Issue, Cannot-Replicate'
+      - name: Remove other labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Not-Planned,Uncertain,Confirmed,Cancelled,Accepted,Resolved,Triage,No-Log,Parked,Tagged,Stale,Config,Queries,Unclear,Invalid,Prorogued,Incomplete,Known-Issue,Cannot-Replicate'
 
+  # ── Label: Cancelled ──────────────────────────────────────────────
   label_add_cancelled:
     name: Label - Add - Cancelled
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Cancelled'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -125,35 +128,30 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Cancelled - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Cancelled'
+      - name: Add Cancelled label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Cancelled'
 
-      - name: Label - Add - Cancelled - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log'
+      - name: Remove Triage and No-Log labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log'
 
-      - name: Label - Add - Cancelled - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
+  # ── Label: Discussion ────────────────────────────────────────────
   label_add_discussion:
     name: Label - Add - Discussion
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Discussion'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -161,147 +159,110 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Discussion - 0
-        shell: bash
-        run: sudo apt install jq -y
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
-      - name: Label - Add - Discussion - 1
-        id: get-issue-details
+      - name: Fetch issue details
+        id: get-issue
         env:
-          ENV_TOKEN: ${{ steps.app-token.outputs.token }}
-          ENV_REPO: ${{ github.repository }}
-          ENV_ITEM_ID: ${{ github.event.inputs.item_id }}
-        shell: bash
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # Generate Comment
-          issue=$(curl -s -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${ENV_TOKEN}" \
-            "https://api.github.com/repos/${ENV_REPO}/issues/${ENV_ITEM_ID}")
-          echo "$issue" > issue.json
-          title=$(jq -r '.title' issue.json)
-          body=$(jq -r '.body' issue.json)
-          notice="# This Discussion Item is an Automated Converstion of Issue/Enhancement Item #${ENV_ITEM_ID}\n\n${body}"
+          issue=$(gh issue view "$ISSUE_NUMBER" --json title,body)
+          title=$(echo "$issue" | jq -r '.title')
+          body=$(echo "$issue" | jq -r '.body')
+          notice="# This Discussion Item is an Automated Conversion of Issue/Enhancement Item #${ISSUE_NUMBER}"$'\n\n'"${body}"
 
           # Safe Multiline Write
-          echo "title<<EOF" >> "${GITHUB_ENV}"
-          echo "${title}" >> "${GITHUB_ENV}"
-          echo "EOF" >> "${GITHUB_ENV}"
+          echo "ISSUE_TITLE<<EOF" >> "$GITHUB_ENV"
+          echo "$title" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
-          # Safe Multiline Write
-          echo "body<<EOF" >> "${GITHUB_ENV}"
-          echo "${notice}" >> "${GITHUB_ENV}"
-          echo "EOF" >> "${GITHUB_ENV}"
+          echo "NOTICE_BODY<<EOF" >> "$GITHUB_ENV"
+          echo "$notice" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
 
-        # 'category_id' below was derived from https://docs.github.com/en/graphql/overview/explorer
-        # query {
-        #   repository(owner: "dakanji", name: "RefindPlus") {
-        #     id
-        #     name
-        #     discussionCategories(first: 5) {
-        #       nodes {
-        #         id # Category ID
-        #         name
-        #       }
-        #     }
-        #   }
-        # }
-      - name: Label - Add - Discussion - 2
+      # category_id is hard-coded (same as before)
+      - name: Create discussion
         id: create-discussion
         env:
-          ENV_REPO: ${{ github.repository }}
-        shell: bash
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TITLE: ${{ env.ISSUE_TITLE }}
+          BODY: ${{ env.NOTICE_BODY }}
         run: |
-            # GitHub API Request to Create Discussion Item
-            response=$(curl -s -X POST -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ steps.app-token.outputs.token }}" \
-            https://api.github.com/repos/${ENV_REPO}/discussions \
-            -d @- << EOF
-            {
-                "title": "${{ env.title }}",
-                "body": "${{ env.body }}",
-                "category_id": "MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyMDE4Mjgy"
-            }
-            EOF)
+          response=$(gh api "repos/$GH_REPO/discussions" \
+            --method POST \
+            --field title="$TITLE" \
+            --field body="$BODY" \
+            --field category_id="MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyMDE4Mjgy")
+          discussion_url=$(echo "$response" | jq -r '.html_url')
+          echo "DISCUSSION_URL=$discussion_url" >> "$GITHUB_ENV"
 
-            # Extract Discussion Item URL from Response
-            discussion_url=$(echo ${response} | jq -r '.html_url')
-            echo "discussion_url=${discussion_url}" >> "${GITHUB_ENV}"
+      - name: Comment on original issue (Question/Comment-Only)
+        if: github.event.inputs.discussion_reason == 'Question/Comment-Only'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DISCUSSION_URL: ${{ env.DISCUSSION_URL }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          {
+            echo "This item has been converted to [THIS DISCUSSION ITEM](${DISCUSSION_URL})."
+            echo ""
+            echo "> [!IMPORTANT]"
+            echo "> You have just asked a question or simply made a comment."
+            echo "> The template indicates these should be under Discussions."
+            echo "> The guidance in the template appears to have been ignored."
+            echo ""
+            echo "Please use the Discussions Feature for similar items in future."
+            echo ""
+            printf '%s\n' "$COMMENT_DATA"
+            echo ""
+            echo "Thank you."
+          } > comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-      - if: ${{ github.event.inputs.discussion_reason == 'Question/Comment-Only' }}
-        name: Label - Add - Discussion - 3a
-        id: add-comment-1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
+      - name: Comment on original issue (Other)
+        if: github.event.inputs.discussion_reason == 'Other'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          DISCUSSION_URL: ${{ env.DISCUSSION_URL }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          {
+            echo "This item has been converted to [THIS DISCUSSION ITEM](${DISCUSSION_URL})."
+            echo ""
+            printf '%s\n' "$COMMENT_DATA"
+          } > comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-            > [!IMPORTANT]
-            > You have just asked a question or simply made a comment.
-            > The template indicates these should be under Discussions.
-            > The guidance in the template appears to have been ignored.
+      - name: Remove various labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Not-Planned,Parked,Stale,Queries,Invalid,Prorogued,Duplicate,Incomplete,Known-Issue,Enhancement,Cannot-Replicate'
 
-            Please use the Discussions Feature for similar items in future.
+      - name: Add Discussion label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Discussion'
 
-            ${{ github.event.inputs.comment_data }}
+      - name: Close original issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
-            Thank you.
+      - name: Lock original issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
-      - if: ${{ github.event.inputs.discussion_reason == 'Other' }}
-        name: Label - Add - Discussion - 3b
-        id: add-comment-2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            This item has been converted to [THIS DISCUSSION ITEM](${discussion_url}).
-
-            ${{ github.event.inputs.comment_data }}
-
-      - name: Label - Add - Discussion - 4
-        id: remove-labels
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Not-Planned,Parked,Stale,Queries,Invalid,Prorogued,Duplicate,Incomplete,Known-Issue,Enhancement,Cannot-Replicate'
-
-      - name: Label - Add - Discussion - 5
-        id: add-labels
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Discussion'
-
-      - name: Label - Add - Discussion - 6
-        id: close-original-issue
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
-      - name: Label - Add - Discussion - 7
-        id: lock-original-issue
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
+  # ── Label: Dropped ────────────────────────────────────────────────
   label_add_dropped:
     name: Label - Add - Dropped
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Dropped'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -309,42 +270,35 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Dropped - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Dropped'
+      - name: Add Dropped label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Dropped'
 
-      - name: Label - Add - Dropped - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Enhancement, Not-Planned, Unresolved, Uncertain, Confirmed, Cancelled, Accepted, Resolved, Triage, No-Log, Parked, Tagged, Stale, Bug, Config, Queries, Unclear, Invalid, Prorogued, Incomplete, Known-Issue, Cannot-Replicate'
+      - name: Remove most labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Enhancement,Not-Planned,Unresolved,Uncertain,Confirmed,Cancelled,Accepted,Resolved,Triage,No-Log,Parked,Tagged,Stale,Bug,Config,Queries,Unclear,Invalid,Prorogued,Incomplete,Known-Issue,Cannot-Replicate'
 
-      - name: Label - Add - Dropped - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
-      - name: Label - Add - Dropped - 4
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'lock-issue'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      - name: Lock issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue lock "$ISSUE_NUMBER"
 
+  # ── Label: Noted ──────────────────────────────────────────────────
   label_add_noted:
     name: Label - Add - Noted
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Noted'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -352,47 +306,43 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Noted - 0
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            Thank you for taking the time to report a problem with RefindPlus.
-            The problem is noted and will be considered as required.
+      - name: Create comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Thank you for taking the time to report a problem with RefindPlus.
+          The problem is noted and will be considered as required.
 
-            ${{ github.event.inputs.comment_data }}
+          EOF
+          printf '%s\n' "$COMMENT_DATA" >> comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-      - name: Label - Add - Noted - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Noted'
+      - name: Add Noted label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Noted'
 
-      - name: Label - Add - Noted - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage, No-Log, Queries, Confirmed'
+      - name: Remove Triage, No-Log, Queries, Confirmed labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries,Confirmed'
 
-      - name: Label - Add - Noted - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
+  # ── Label: Config ─────────────────────────────────────────────────
   label_add_config:
     name: Label - Add - Config
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Config'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -400,54 +350,48 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+      - name: Create comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Thank you for taking the time to report a problem with RefindPlus.
+          The problem has been assessed as being configuration/setup related.
 
-      - name: Label - Add - Config - 0
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            Thank you for taking the time to report a problem with RefindPlus.
-            The problem has been assessed as being configuration/setup related.
+          Please consult available documentation and amend your setup as required.
+          Documentation is provided in the `ReadMe` on the front page of this repository
+          as well as in the sample `config.conf` file. Additionally, extensive documentation
+          provided upstream can be consulted as this is largely also applicable to RefindPlus.
 
-            Please consult available documentation and amend your setup as required.
-            Documentation is provided in the `ReadMe` on the front page of this repository
-            as well as in the sample `config.conf` file. Additionally, extensive documentation
-            provided upstream can be consulted as this is largely also applicable to RefindPlus.
+          EOF
+          printf '%s\n' "$COMMENT_DATA" >> comment-body.md
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-            ${{ github.event.inputs.comment_data }}
+      - name: Add Config label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Config'
 
+      - name: Remove Triage, No-Log, Queries, Confirmed labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries,Confirmed'
 
-      - name: Label - Add - Config - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Config'
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
-      - name: Label - Add - Config - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage, No-Log, Queries, Confirmed'
-
-      - name: Label - Add - Config - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
+  # ── Label: Cannot-Replicate ───────────────────────────────────────
   label_add_cannot-replicate:
     name: Label - Add - Cannot-Replicate
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Cannot-Replicate'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -455,36 +399,30 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+      - name: Add Cannot-Replicate label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Cannot-Replicate'
 
-      - name: Label - Add - Cannot-Replicate - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Cannot-Replicate'
+      - name: Remove Triage, No-Log, Queries, Confirmed labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries,Confirmed'
 
-      - name: Label - Add - Cannot-Replicate - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage, No-Log, Queries, Confirmed'
+      - name: Close issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "completed"
 
-      - name: Label - Add - Cannot-Replicate - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'completed'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
+  # ── Label: Incomplete (Issues) ────────────────────────────────────
   label_add_incomplete_issue:
     name: Label - Add - Incomplete - Issues
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Incomplete - Issues'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -492,47 +430,47 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Incomplete - Issues - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            Thank you for taking the time to report a problem with RefindPlus.
+      - name: Create comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Thank you for taking the time to report a problem with RefindPlus.
 
-            However, at least one required item is missing.
-            This is typically debug log(s) or suggested initial tests.
+          However, at least one required item is missing.
+          This is typically debug log(s) or suggested initial tests.
 
-            On debug logs, note that...
-            - They are invariably required.
-            - They are always produced when running the 'DBG' file.
+          On debug logs, note that...
+          - They are invariably required.
+          - They are always produced when running the 'DBG' file.
 
-            ${{ github.event.inputs.comment_data }}
+          EOF
+          printf '%s\n' "$COMMENT_DATA" >> comment-body.md
+          cat <<'EOF' >> comment-body.md
 
-            Please rectify the oversight.
+          Please rectify the oversight.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-      - name: Label - Add - Incomplete - Issues - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Incomplete'
+      - name: Add Incomplete label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Incomplete'
 
-      - name: Label - Add - Incomplete - Issues - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log'
+      - name: Remove Triage, No-Log labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log'
 
+  # ── Label: Incomplete (Enhancement) ───────────────────────────────
   label_add_incomplete_enhancement:
     name: Label - Add - Incomplete - Enhancement
     runs-on: ubuntu-latest
-
     if: github.event.inputs.operation == 'Label - Add - Incomplete - Enhancement'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -540,43 +478,44 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Incomplete - Enhancement - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-comment'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          body: |
-            Thank you for taking the time to suggest improvements to RefindPlus.
+      - name: Create comment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMMENT_DATA: ${{ github.event.inputs.comment_data }}
+        run: |
+          cat <<'EOF' > comment-body.md
+          Thank you for taking the time to suggest improvements to RefindPlus.
 
-            However, at least one required item is missing.
-            This is typically useful background information.
+          However, at least one required item is missing.
+          This is typically useful background information.
 
-            ${{ github.event.inputs.comment_data }}
+          EOF
+          printf '%s\n' "$COMMENT_DATA" >> comment-body.md
+          cat <<'EOF' >> comment-body.md
 
-            Please amend your post accordingly.
+          Please amend your post accordingly.
+          EOF
+          gh issue comment "$ISSUE_NUMBER" --body-file comment-body.md
 
-      - name: Label - Add - Incomplete - Enhancement - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Incomplete'
+      - name: Add Incomplete label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Incomplete'
 
-      - name: Label - Add - Incomplete - Enhancement - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log'
+      - name: Remove Triage, No-Log labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log'
 
+  # ── Label: Invalid ────────────────────────────────────────────────
   label_add_invalid:
     name: Label - Add - Invalid
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Invalid'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -584,18 +523,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Invalid'
+      - name: Add Invalid label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Invalid'
 
+  # ── Label: Triage ─────────────────────────────────────────────────
   label_add_pending:
     name: Label - Add - Triage
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Triage'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -603,18 +544,19 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage'
+      - name: Add Triage label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Triage'
 
+  # ── Label: Parked ─────────────────────────────────────────────────
   label_add_parked:
     name: Label - Add - Parked
     runs-on: ubuntu-latest
-
     if: github.event.inputs.operation == 'Label - Add - Parked'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -622,18 +564,19 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Parked'
+      - name: Add Parked label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Parked'
 
+  # ── Label: Prorogued ──────────────────────────────────────────────
   label_add_prorogued:
     name: Label - Add - Prorogued
     runs-on: ubuntu-latest
-
     if: github.event.inputs.operation == 'Label - Add - Prorogued'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -641,18 +584,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Prorogued'
+      - name: Add Prorogued label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Prorogued'
 
+  # ── Label: Resolved ───────────────────────────────────────────────
   label_add_resolved:
     name: Label - Add - Resolved
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Resolved'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -660,25 +605,25 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Resolved'
+      - name: Add Resolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Resolved'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Unresolved'
+      - name: Remove Unresolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Unresolved'
 
+  # ── Label: Unresolved ─────────────────────────────────────────────
   label_add_unresolved:
     name: Label - Add - Unresolved
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Unresolved'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -686,25 +631,25 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Unresolved'
+      - name: Add Unresolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Unresolved'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Resolved'
+      - name: Remove Resolved label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Resolved'
 
+  # ── Label: Stale ──────────────────────────────────────────────────
   label_add_stale:
     name: Label - Add - Stale
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Stale'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -712,18 +657,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Stale'
+      - name: Add Stale label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Stale'
 
+  # ── Label: Tagged ─────────────────────────────────────────────────
   label_add_tagged:
     name: Label - Add - Tagged
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Tagged'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -731,18 +678,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Tagged'
+      - name: Add Tagged label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Tagged'
 
+  # ── Label: Queries ────────────────────────────────────────────────
   label_add_queries:
     name: Label - Add - Queries
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Queries'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -750,18 +699,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Queries'
+      - name: Add Queries label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Queries'
 
+  # ── Label: Upstream ───────────────────────────────────────────────
   label_add_upstream:
     name: Label - Add - Upstream
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Upstream'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -769,18 +720,20 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Upstream'
+      - name: Add Upstream label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Upstream'
 
+  # ── Label: Enhancement only ───────────────────────────────────────
   label_add_enhancement:
     name: Label - Add - Enhancement - Only
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Enhancement - Only'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -788,25 +741,25 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Enhancement'
+      - name: Add Enhancement label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Enhancement'
 
-      - uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Queries'
+      - name: Remove Triage, No-Log, Queries labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries'
 
+  # ── Label: Not-Planned + Enhancement ─────────────────────────────
   label_add_not-planned_enhancement:
     name: Label - Add - Not-Planned_and_Enhancement
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Not-Planned_and_Enhancement'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -814,36 +767,30 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
+      - name: Add Enhancement and Not-Planned labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Enhancement,Not-Planned'
 
-      - name: Label - Add - Not-Planned_and_Enhancement - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Enhancement,Not-Planned'
+      - name: Remove Triage, No-Log, Queries labels
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --remove-label 'Triage,No-Log,Queries'
 
-      - name: Label - Add - Not-Planned_and_Enhancement - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'remove-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Triage,No-Log,Queries'
+      - name: Close issue (not planned)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"
 
-      - name: Label - Add - Not-Planned_and_Enhancement - 3
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-
+  # ── Label: Not-Planned only ──────────────────────────────────────
   label_add_not-planned:
     name: Label - Add - Not-Planned - Only
     runs-on: ubuntu-latest
 
     if: github.event.inputs.operation == 'Label - Add - Not-Planned - Only'
+    env:
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.inputs.item_id }}
     steps:
       - id: app-token
         uses: actions/create-github-app-token@v3
@@ -851,18 +798,12 @@ jobs:
           client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Label - Add - Not-Planned - Only - 1
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'add-labels'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
-          labels: 'Not-Planned'
+      - name: Add Not-Planned label
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue edit "$ISSUE_NUMBER" --add-label 'Not-Planned'
 
-      - name: Label - Add - Not-Planned - Only - 2
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issue'
-          close-reason: 'not planned'
-          token: ${{ steps.app-token.outputs.token }}
-          issue-number: ${{ github.event.inputs.item_id }}
+      - name: Close issue (not planned)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh issue close "$ISSUE_NUMBER" --reason "not planned"

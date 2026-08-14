@@ -121,7 +121,7 @@ REFIT_CONFIG GlobalConfig = {
     .PassGopThrough            =                    TRUE,
     .SetConsoleGOP             =                    TRUE,
     .ReloadGOP                 =                    TRUE,
-    .UseDirectGop              =                   FALSE,
+    .DirectGOP                 =                   FALSE,
     .NormaliseCSR              =                   FALSE,
     .ShutdownAfterTimeout      =                   FALSE,
     .Install                   =                   FALSE,
@@ -227,6 +227,7 @@ UINTN                  AppleFramebuffers    =                     0;
 UINTN                  EfiMajorVersion      =                     0;
 UINT32                 AccessFlagsBoot      =     ACCESS_FLAGS_BOOT;
 UINT32                 AccessFlagsFull      =     ACCESS_FLAGS_FULL;
+CHAR16                *FlagCSM              =                  NULL;
 CHAR16                *ArchType             =                  NULL;
 CHAR16                *ThisDevKit           =                  NULL;
 CHAR16                *OurToolTag           =                  NULL;
@@ -2472,8 +2473,8 @@ CHAR16 * DynamicShellList (
     BOOLEAN                          BreakLoop;
     BOOLEAN                          MatchFile;
 
-    const CHAR16                    *ShellStrEnd   = L".efi";
-    const CHAR16                    *ShellStrStart = L"EFI_Shell-";
+    const CHAR16                    *ShellStrEnd   = SHELL_STR_END;
+    const CHAR16                    *ShellStrStart = SHELL_STR_START;
 
 
     if (Path == NULL) {
@@ -3115,19 +3116,35 @@ VOID AboutRefindPlus (VOID) {
     }
 
     TmpStr = StrDuplicate (VendorInfo);
-    // More than ~65 causes empty info page on 800x600 display ... '21' is current preamble length
+    // More than ~65 causes empty info page on 800x600 display
+    // Current preamble length is 21
     BufferLen = MAX_LINE_LENGTH - 21;
     if (ScreenSize < 801) {
         LimitStringLength (TmpStr, BufferLen);
     }
-
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Firmware           : %s", TmpStr),   TRUE);
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Platform           : %s", ArchType), TRUE);
-    MY_FREE_POOL(TmpStr);
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"System EFI Version        : %s %d.%02d%s",
+            L"Firmware           : %s",
+            TmpStr
+        ),
+        TRUE
+    );
+    MY_FREE_POOL(TmpStr);
+
+    AddMenuInfoLine (
+        AboutMenu,
+        PoolPrint (
+            L"Platform           : %s",
+            ArchType
+        ),
+        TRUE
+    );
+
+    AddMenuInfoLine (
+        AboutMenu,
+        PoolPrint (
+            L"EFI Version        : %s %d.%02d%s",
             (EfiMajorVersion > 1) ? L"UEFI" : L"EFI",
             EfiMajorVersion,
             gST->Hdr.Revision & ((1 << 16) - 1),
@@ -3136,6 +3153,15 @@ VOID AboutRefindPlus (VOID) {
                 : (
                     SetSysTab
                 ) ? L" (Self Spoof)" : L""
+        ),
+        TRUE
+    );
+
+    AddMenuInfoLine (
+        AboutMenu,
+        PoolPrint (
+            L"Legacy Boot        : %s",
+            FlagCSM
         ),
         TRUE
     );
@@ -3171,14 +3197,12 @@ VOID AboutRefindPlus (VOID) {
             : PoolPrint (L"%s ... %r", gCsrStatus, Status);
         // More than ~65 causes empty info page on 800x600 display
         // Current preamble length is 21
-        if (ScreenSize < 801) {
-            LimitStringLength (TmpStr, BufferLen);
-        }
+        if (ScreenSize < 801) LimitStringLength (TmpStr, BufferLen);
 
         AddMenuInfoLine (
             AboutMenu,
             PoolPrint (
-                L"System CSR Setting        : %s",
+                L"CSR Setting        : %s",
                 TmpStr
             ),
             TRUE
@@ -3189,7 +3213,7 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (
         AboutMenu,
         PoolPrint (
-            L"System Secure Boot %s : %s",
+            L"Secure Boot %s : %s",
             (AppleFirmware)   ? L"(UEFI)"                    : L"      ",
             (SecureFlag)
                 ? (ShimFound) ? L"Active and Shim Present"   : L"Active but Shim Absent"
@@ -3200,10 +3224,8 @@ VOID AboutRefindPlus (VOID) {
 
     TmpStr = egScreenDescription();
     // More than ~65 causes empty info page on 800x600 display ... '21' is current preamble length
-    if (ScreenSize < 801) {
-        LimitStringLength (TmpStr, BufferLen);
-    }
-    AddMenuInfoLine (AboutMenu, PoolPrint (L"System Screen Mode/Output : %s", TmpStr), TRUE);
+    if (ScreenSize < 801) LimitStringLength (TmpStr, BufferLen);
+    AddMenuInfoLine (AboutMenu, PoolPrint (L"Screen Mode/Output : %s", TmpStr), TRUE);
     MY_FREE_POOL(TmpStr);
 
     AddMenuInfoLine (AboutMenu, L"",                                                           FALSE);
@@ -3624,10 +3646,6 @@ BOOLEAN SecureBootSetup (VOID) {
 // Returns TRUE on success, FALSE otherwise
 static
 BOOLEAN SecureBootUninstall (VOID) {
-    #if REFIT_DEBUG > 0
-    BOOLEAN CheckMute = FALSE;
-    #endif
-
     EFI_STATUS  Status;
     CHAR16     *MsgStr;
     BOOLEAN     Success;
@@ -3647,22 +3665,7 @@ BOOLEAN SecureBootUninstall (VOID) {
             END_TAG();
             #endif
 
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_SET;
-            #endif
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_ERROR
-            );
-            PrintUglyText (MsgStr, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(
-                gST->ConOut->SetAttribute,
-                gST->ConOut, ATTR_BASIC
-            );
-            #if REFIT_DEBUG > 0
-            MY_MUTELOGGER_OFF;
-            #endif
-
+            ShowErrorUglyText (MsgStr, NEXTLINE);
             PauseSeconds (9);
 
             REFIT_CALL_4_WRAPPER(
@@ -4292,16 +4295,18 @@ EFI_STATUS EFIAPI efi_main (
         OurTypeTag = L"macOS";
     #elif defined(__linux__)
         OurTypeTag = L"Linux";
+    #elif defined(_WIN32)
+        OurTypeTag = L"Windows";
+    #elif defined(__DragonFly__)
+        OurTypeTag = L"DragonFlyBSD";
+    #elif defined(__MidnightBSD__)
+        OurTypeTag = L"MidnightBSD";
     #elif defined(__FreeBSD__)
         OurTypeTag = L"FreeBSD";
     #elif defined(__OpenBSD__)
         OurTypeTag = L"OpenBSD";
     #elif defined(__NetBSD__)
         OurTypeTag = L"NetBSD";
-    #elif defined(__unix__)
-        OurTypeTag = L"Unix";
-    #elif defined(_WIN32) || defined(_WIN64)
-        OurTypeTag = L"Windows";
     #else
         OurTypeTag = L"Other";
     #endif
@@ -4557,7 +4562,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("'%s'", (GlobalConfig.TextOnly) ? L"Active" : L"Inactive"          );
     }
 
-    LOG_MSG("%s      DirectGOP:- '%s'",      TAG_ITEM_C(GlobalConfig.UseDirectGop ));
+    LOG_MSG("%s      DirectGOP:- '%s'",      TAG_ITEM_C(GlobalConfig.DirectGOP    ));
     LOG_MSG("%s      ScanAllESP:- '%s'",     TAG_ITEM_C(GlobalConfig.ScanAllESP   ));
     LOG_MSG("%s      DirectBoot:- '%s'",     TAG_ITEM_C(GlobalConfig.DirectBoot   ));
     LOG_MSG("%s      ProtectNvram:- ",       OffsetNext                            );
@@ -4649,19 +4654,21 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     LOG_MSG("%s      Supply Support:- 'NVME  :  %r'", OffsetNext, Status);
     LOG_MSG("\n\n");
+    #endif
 
     /* Record CSM Type */
     switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC1: MsgStr = StrDuplicate (L"Apple-Style on Mac"); break;
-        case LEGACY_TYPE_MAC2: MsgStr = StrDuplicate (L"UEFI-Style on Mac" ); break;
-        case LEGACY_TYPE_MAC3: MsgStr = StrDuplicate (L"Absent: Cat3 Mac"  ); break;
-        case LEGACY_TYPE_MAC8: MsgStr = StrDuplicate (L"Assumed on Mac"    ); break;
-        case LEGACY_TYPE_MAC9: MsgStr = StrDuplicate (L"Broken on Mac"     ); break;
-        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"        ); break;
-        default:               MsgStr = StrDuplicate (L"Absent"            ); break;
+        case LEGACY_TYPE_MAC1: FlagCSM = StrDuplicate (L"Apple-Style on Mac"); break;
+        case LEGACY_TYPE_MAC2: FlagCSM = StrDuplicate (L"UEFI-Style on Mac" ); break;
+        case LEGACY_TYPE_MAC3: FlagCSM = StrDuplicate (L"Absent: Cat3 Mac"  ); break;
+        case LEGACY_TYPE_MAC8: FlagCSM = StrDuplicate (L"Assumed on Mac"    ); break;
+        case LEGACY_TYPE_MAC9: FlagCSM = StrDuplicate (L"Broken on Mac"     ); break;
+        case LEGACY_TYPE_UEFI: FlagCSM = StrDuplicate (L"UEFI-Style"        ); break;
+        default:               FlagCSM = StrDuplicate (L"Absent"            ); break;
     }
-    LOG_MSG("INFO: Legacy BIOS Boot Support:- '%s'", MsgStr);
-    MY_FREE_POOL(MsgStr);
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("INFO: Legacy BIOS Boot Support:- '%s'", FlagCSM);
     #endif
 
     /* Regularise CSM Flag */

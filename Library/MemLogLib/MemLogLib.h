@@ -1,13 +1,13 @@
 /** @file
     Provides simple log services to memory buffer.
 **/
-/*
- * Modified for RefindPlus
- * Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
- *
- * THIS PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
- * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
- */
+/**
+** Modified for RefindPlus
+** Copyright (c) 2020-2023 Dayo Akanji (sf.net/u/dakanji/profile)
+**
+** THIS PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+** WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+**/
 
 #ifndef __MEMLOG_LIB_H__
 #define __MEMLOG_LIB_H__

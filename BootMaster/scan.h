@@ -152,11 +152,14 @@ Kubuntu,Lubuntu,Xubuntu,Ubuntu,Void,Zorin"
 L"Arch,CachyOS,Debian,Deepin,Elementary,EndeavourOS,Fedora,Gentoo,\
 LinuxMint,Manjaro,OpenSUSE,Redhat,Slackware,SUSE,Ubuntu,Zorin"
 
-#define RECOVERY_NAME_HFS       L"HFS+ Instance"
-#define RECOVERY_NAME_APFS      L"APFS Instance"
+#define RECOVERY_NAME_HFS          L"HFS+ Instance"
+#define RECOVERY_NAME_APFS         L"APFS Instance"
 
-#define BLS1_PATH               L"loader\\entries"
-#define BLS2_PATH               L"EFI\\Linux"
+#define BLS1_PATH                  L"loader\\entries"
+#define BLS2_PATH                  L"EFI\\Linux"
+
+#define SHELL_STR_END              L".efi"
+#define SHELL_STR_START            L"EFI_Shell-"
 
 
 EG_IMAGE * GetDiskBadge (IN UINT8 DiskType);

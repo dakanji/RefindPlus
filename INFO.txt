@@ -9,7 +9,7 @@ Portions Copyright The Intel Corporation & Others
 RefindPlus is free software. You can modify it and/or redistribute it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation. Either version 3 of the License (GNU GPLv3)
-or at your option, any later version of the License.
+or, at your option, any later version of the License.
 
 RefindPlus is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty
